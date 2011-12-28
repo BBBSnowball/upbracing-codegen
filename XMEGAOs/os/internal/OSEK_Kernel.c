@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "generated/Os_cfg_generated.h"
+#include "Os_cfg_generated.h"
 #include "OSEK_Kernel.h"
 #include "OSEK_Task.h"
 #include <avr/interrupt.h>
@@ -151,8 +151,8 @@ void Os_TimerIncrement(void)
 	{
 		Os_Alarm alarm = os_alarms[i];
 		os_alarms[i].tick++;
-		if (alarm.active/* &&
-		    alarm.tick % alarm.basetype.ticksperbase == 0*/) 
+		if (alarm.active &&
+		    alarm.tick % alarm.basetype.ticksperbase == 0) 
 		{
 			RunAlarm(&os_alarms[i]);
 		}
@@ -183,17 +183,15 @@ void TCC0_CCA_vect(void)
 
 void Os_Schedule(void) __attribute__ ( (naked) );
 void Os_Schedule(void)
-{
-	OSEK_ENTER_CRITICAL();
-	
-	volatile uint8_t i;
+{	
 	// Decide which task to run next...
 	#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+	OSEK_ENTER_CRITICAL();
 	void * newtcb = NULL;
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
-		for (i = OSEK_NUMBER_OF_TCBS - 1; i > 0; i--)
+		for (volatile uint8_t i = OSEK_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
 			if (os_ready_queue[i])
 			{
@@ -218,14 +216,6 @@ void Os_Schedule(void)
 	#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
-	
-	
-	//if (os_counter % 8 == 0 && os_tcbs[2].state == READY)
-		//os_currentTcb = &os_tcbs[2];
-	//else if (os_counter % 4 == 0 && os_tcbs[1].state == READY)
-		//os_currentTcb = &os_tcbs[1];
-	//else
-		//os_currentTcb = &os_tcbs[0];
 		
 	asm volatile("reti");
 }

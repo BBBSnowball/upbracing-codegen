@@ -5,6 +5,7 @@
  *  Author: peer
  */ 
 
+#include "Os_cfg_generated.h"
 #include "OSEK_Alarm.h"
 
 StatusType GetAlarmBase(AlarmType alarmId, AlarmBaseRefType info)
@@ -90,7 +91,7 @@ void RunAlarm(volatile Os_Alarm * alarm)
 	// Activate Task?
 	if (alarm->tcb != NULL) 
 	{
-		ActivateTask(alarm->tcb->id);
+		ActivateTask(((Os_Tcb *)alarm->tcb)->id);
 	}
 	// Run Callback function?
 	else if (alarm->callback != NULL) 

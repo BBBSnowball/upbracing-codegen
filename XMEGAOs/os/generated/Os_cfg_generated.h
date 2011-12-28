@@ -9,9 +9,9 @@
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
-#include "../datatypes/OSEK_StatusTypes.h"
-#include "../datatypes/OSEK_AlarmTypes.h"
-#include "../datatypes/OSEK_TaskTypes.h"
+#include "OSEK_StatusTypes.h"
+#include "OSEK_AlarmTypes.h"
+#include "OSEK_TaskTypes.h"
 
 extern TASK(Task_Increment);
 extern TASK(Task_Update);

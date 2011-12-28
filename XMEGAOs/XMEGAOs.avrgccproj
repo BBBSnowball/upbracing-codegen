@@ -69,21 +69,24 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGcc>
-        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcc.compiler.directories.IncludePaths>
-          <ListValues>
-            <Value>../drivers</Value>
-            <Value>../os</Value>
-          </ListValues>
-        </avrgcc.compiler.directories.IncludePaths>
-        <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
-        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.assembler.debugging.DebugLevel>Default (-g2)</avrgcc.assembler.debugging.DebugLevel>
-      </AvrGcc>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>../os</Value>
+      <Value>../os/internal</Value>
+      <Value>../os/datatypes</Value>
+      <Value>../os/generated</Value>
+      <Value>../os/drivers</Value>
+    </ListValues>
+  </avrgcc.compiler.directories.IncludePaths>
+  <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.assembler.debugging.DebugLevel>Default (-g2)</avrgcc.assembler.debugging.DebugLevel>
+</AvrGcc>
     </ToolchainSettings>
     <MemorySettings>
       <MemorySegments>
@@ -98,18 +101,6 @@
     <GenerateEepFile>True</GenerateEepFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="drivers\Clock.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="drivers\Clock.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="drivers\Timer.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="drivers\Timer.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
@@ -125,10 +116,46 @@
     <Compile Include="os\datatypes\Platform_Types.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="os\drivers\Clock.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Clock.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Timer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Timer.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="os\generated\Os_cfg_generated.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\generated\Os_cfg_generated.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Alarm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Alarm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Kernel.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Kernel.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\OSEK_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\OSEK.c">
@@ -137,30 +164,13 @@
     <Compile Include="os\OSEK.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\OSEK_Alarm.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\OSEK_Alarm.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\OSEK_Kernel.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\OSEK_Kernel.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\OSEK_Task.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\OSEK_Task.h">
-      <SubType>compile</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="drivers" />
     <Folder Include="os" />
     <Folder Include="os\datatypes" />
+    <Folder Include="os\drivers\" />
     <Folder Include="os\generated" />
+    <Folder Include="os\internal" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\AvrGCC.targets" />
 </Project>

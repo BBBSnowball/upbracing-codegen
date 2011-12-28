@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "generated/Os_cfg_generated.h"
+#include "Os_cfg_generated.h"
 #include "OSEK_Task.h"
 #include "OSEK_Kernel.h"
 

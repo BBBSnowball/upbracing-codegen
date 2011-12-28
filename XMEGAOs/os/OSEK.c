@@ -5,8 +5,18 @@
  *  Author: peer
  */ 
 
+#include "Os_cfg_generated.h"
 #include "OSEK.h"
 #include <avr/interrupt.h>
+
+#ifndef OSEK_CONFORMANCE_CLASS
+#error No Conformance Class specified!
+#endif
+
+#if OSEK_CONFORMANCE_CLASS != BCC1 && OSEK_CONFORMANCE_CLASS != BCC2 && \
+	OSEK_CONFORMANCE_CLASS != ECC1 && OSEK_CONFORMANCE_CLASS != ECC2
+#error No valid Conformance Class specified
+#endif
 
 void StartOS(void) 
 {

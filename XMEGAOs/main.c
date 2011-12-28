@@ -7,17 +7,10 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "Clock.h"
 #include "Timer.h"
-//#include "os/generated/Os_Cfg.h"
 #include "OSEK.h"
 
 volatile uint8_t j = 0;
-
-void PortsInit() 
-{
-	PORTE.DIR = 0xFF;	  // Set PORTE as 8bit wide output
-}	
 
 int main(void)
 {
@@ -25,7 +18,7 @@ int main(void)
 	ClockInit();
 	
 	// Init PortE
-	PortsInit();
+	GpioInit();
 	
 	// Init Timer
 	TimerInit(TIMER_PRESCALE_1_bm, 0x7D00);

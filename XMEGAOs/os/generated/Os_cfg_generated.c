@@ -40,7 +40,7 @@ volatile Os_Tcb os_tcbs[OSEK_NUMBER_OF_TCBS] =
 
 volatile Os_Alarm os_alarms[OSEK_NUMBER_OF_ALARMS] = 
 {						
-	{	
+	{	// Alarm for Task_Update
 		0,				
 		{				
 			65535,		
@@ -51,18 +51,18 @@ volatile Os_Alarm os_alarms[OSEK_NUMBER_OF_ALARMS] =
 		1,
 		&os_tcbs[1],
 	},					
-	{	
+	{	// Alarm for Task_Increment
 		0,				
 		{				
 			65535,		
-			1,			
+			64,			
 			0,			
 		},				
 		NULL,
 		1,	
 		&os_tcbs[2],
 	},	
-	{	
+	{	// Alarm for callback test
 		0,			
 		{				
 			65535,		
