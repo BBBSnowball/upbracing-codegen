@@ -7,7 +7,7 @@
 
 #include "Os_cfg_generated.h"
 
-volatile Os_Tcb os_tcbs[OSEK_NUMBER_OF_TCBS] = 
+volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] = 
 {	
 	{		 
 		(StackPointerType *) 0x3DFF,	/* Top of stack	*/
@@ -38,7 +38,7 @@ volatile Os_Tcb os_tcbs[OSEK_NUMBER_OF_TCBS] =
 	}													 
 };
 
-volatile Os_Alarm os_alarms[OSEK_NUMBER_OF_ALARMS] = 
+volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] = 
 {						
 	{	// Alarm for Task_Update
 		0,				

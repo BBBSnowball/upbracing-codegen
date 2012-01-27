@@ -15,11 +15,11 @@
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];
 
-#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
-extern uint8_t os_ready_queue[OSEK_NUMBER_OF_TCBS];
-#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+extern uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
+#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 #error Multiple activations for basic tasks, multiple tasks per priority
 #endif
 

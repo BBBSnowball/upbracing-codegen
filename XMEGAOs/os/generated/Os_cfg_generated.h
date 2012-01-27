@@ -18,9 +18,12 @@ extern TASK(Task_Update);
 extern TASK(Task_Idle);
 extern ALARMCALLBACK(Alarm_Test);
 
-#define OSEK_CONFORMANCE_CLASS BCC1
+#define OS_CFG_CC BCC1
 
-#define OSEK_NUMBER_OF_TCBS 3
-#define OSEK_NUMBER_OF_ALARMS 3
+#define OS_NUMBER_OF_TCBS			3
+#define OS_NUMBER_OF_ALARMS			3
 
+#define OS_TIMER_PRESCALE			TIMER_PRESCALE_1_bm
+#define OS_TIMER_COMPARE_VALUE		0x7D00
+ 
 #endif /* OS_CFG_H_ */

@@ -16,16 +16,16 @@ volatile Os_Tcb * os_currentTcb = &os_tcbs[0];
 volatile uint16_t os_counter = 0;
 volatile uint8_t os_isStarted = 0;
 
-#if OSEK_CONFORMANCE_CLASS != BCC1 && OSEK_CONFORMANCE_CLASS != BCC2 && \
-	OSEK_CONFORMANCE_CLASS != ECC1 && OSEK_CONFORMANCE_CLASS != ECC2
+#if OS_CFG_CC != BCC1 && OS_CFG_CC != BCC2 && \
+	OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
 #error No valid Conformance Class specified
 #endif
 
-#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
-uint8_t os_ready_queue[OSEK_NUMBER_OF_TCBS];
-#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
+#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 #error Multiple activations for basic tasks, multiple tasks per priority
 #endif
 
@@ -147,7 +147,7 @@ void Os_TimerIncrement(void)
 	os_counter++;
 	
 	///* Run Os Alarms */
-	for (volatile uint8_t i = 0; i < OSEK_NUMBER_OF_ALARMS; i++)
+	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
 		Os_Alarm alarm = os_alarms[i];
 		os_alarms[i].tick++;
@@ -185,13 +185,13 @@ void Os_Schedule(void) __attribute__ ( (naked) );
 void Os_Schedule(void)
 {	
 	// Decide which task to run next...
-	#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	OSEK_ENTER_CRITICAL();
 	void * newtcb = NULL;
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
-		for (volatile uint8_t i = OSEK_NUMBER_OF_TCBS - 1; i > 0; i--)
+		for (volatile uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
 			if (os_ready_queue[i])
 			{
@@ -213,7 +213,7 @@ void Os_Schedule(void)
 	}
 	
 	OSEK_EXIT_CRITICAL();
-	#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 		
@@ -223,11 +223,11 @@ void Os_Schedule(void)
 StatusType Schedule(void)
 {
 	// Decide which task to run next...
-	#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
-		for (volatile int8_t i = OSEK_NUMBER_OF_TCBS - 1; i >= 0; i--)
+		for (volatile int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
 		{
 			if (os_ready_queue[i])
 			{
@@ -237,7 +237,7 @@ StatusType Schedule(void)
 			}
 		}
 	}
-	#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 	//

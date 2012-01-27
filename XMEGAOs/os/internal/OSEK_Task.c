@@ -67,7 +67,7 @@ StatusType GetTaskState(TaskType taskId, TaskStateRefType state)
 	OSEK_ENTER_CRITICAL();
 	
 	// Check, if the task id is valid
-	if (taskId > (OSEK_NUMBER_OF_TCBS - 1))
+	if (taskId > (OS_NUMBER_OF_TCBS - 1))
 	{
 		OSEK_EXIT_CRITICAL();
 		return E_OS_ID;
@@ -81,10 +81,10 @@ StatusType GetTaskState(TaskType taskId, TaskStateRefType state)
 
 StatusType ActivateTask(TaskType taskId)
 {
-	#if OSEK_CONFORMANCE_CLASS == BCC1 || OSEK_CONFORMANCE_CLASS == ECC1
+	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	os_ready_queue[taskId] = 1;
 	os_tcbs[taskId].state = READY;
-	#elif OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
 	

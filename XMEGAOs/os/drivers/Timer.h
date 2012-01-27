@@ -22,6 +22,6 @@
 #define TIMER_PRESCALE_1024_bm	(TC0_CLKSEL2_bm | TC0_CLKSEL1_bm | TC0_CLKSEL0_bm)
 
 // Initializes TCC0 with a prescaling and a compare match value
-extern void TimerInit(uint8_t prescale, uint16_t compare);
+extern void TimerInit(void);
 
 #endif /* TIMER_H_ */

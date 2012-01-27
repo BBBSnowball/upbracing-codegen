@@ -52,7 +52,7 @@ typedef struct
 {
 	volatile StackPointerType *topOfStack;		// Points to the item that was pushed last
 	volatile StackPointerType *baseOfStack;		// Base address of the stack
-	#if OSEK_CONFORMANCE_CLASS == BCC2 || OSEK_CONFORMANCE_CLASS == ECC2
+	#if OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	TaskPriorityType priority;					// Priority of current task where 0 is the lowest priority
 	#endif
 	TaskConformanceClass complexity;			// Complexity (Basic/Extended)

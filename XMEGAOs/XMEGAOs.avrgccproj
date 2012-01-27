@@ -23,15 +23,15 @@
     <RootNamespace>XMEGATest2</RootNamespace>
     <avrtool>com.atmel.avrdbg.tool.jtagicemkii</avrtool>
     <com_atmel_avrdbg_tool_jtagicemkii>
-      <ToolType xmlns="">com.atmel.avrdbg.tool.jtagicemkii</ToolType>
-      <ToolName xmlns="">JTAGICE mkII</ToolName>
-      <ToolNumber xmlns="">00B000002588</ToolNumber>
-      <Channel xmlns="">
+      <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
+      <ToolName>JTAGICE mkII</ToolName>
+      <ToolNumber>00B000002588</ToolNumber>
+      <Channel>
         <host>127.0.0.1</host>
         <port>49166</port>
         <ssl>False</ssl>
       </Channel>
-      <ToolOptions xmlns="">
+      <ToolOptions>
         <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
           <JtagDbgClock>1000000</JtagDbgClock>
@@ -51,13 +51,41 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
       <AvrGcc>
-        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
-        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-      </AvrGcc>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>../src/asf/xmega/drivers/cpu</Value>
+      <Value>../src/asf/xmega/drivers/pmic</Value>
+      <Value>../src/asf/xmega/drivers/sleep</Value>
+      <Value>../src/asf/xmega/drivers/ebi</Value>
+      <Value>../src/asf/common/utils</Value>
+      <Value>../src/asf/xmega/utils/preprocessor</Value>
+      <Value>../src/asf/xmega/utils</Value>
+      <Value>../src/asf/common/services/sleepmgr</Value>
+      <Value>../src/config/</Value>
+      <Value>../src/asf/common/services/clock</Value>
+    </ListValues>
+  </avrgcc.compiler.directories.IncludePaths>
+  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/asf/xmega/drivers/cpu</Value>
+      <Value>../src/asf/xmega/drivers/pmic</Value>
+      <Value>../src/asf/xmega/drivers/sleep</Value>
+      <Value>../src/asf/xmega/drivers/ebi</Value>
+      <Value>../src/asf/common/utils</Value>
+      <Value>../src/asf/xmega/utils/preprocessor</Value>
+      <Value>../src/asf/xmega/utils</Value>
+      <Value>../src/asf/common/services/sleepmgr</Value>
+      <Value>../src/config/</Value>
+      <Value>../src/asf/common/services/clock</Value>
+    </ListValues>
+  </avrgcc.assembler.general.IncludePaths>
+</AvrGcc>
     </ToolchainSettings>
     <MemorySettings>
     </MemorySettings>
@@ -78,6 +106,16 @@
       <Value>../os/datatypes</Value>
       <Value>../os/generated</Value>
       <Value>../os/drivers</Value>
+      <Value>../src/asf/xmega/drivers/cpu</Value>
+      <Value>../src/asf/xmega/drivers/pmic</Value>
+      <Value>../src/asf/xmega/drivers/sleep</Value>
+      <Value>../src/asf/xmega/drivers/ebi</Value>
+      <Value>../src/asf/common/utils</Value>
+      <Value>../src/asf/xmega/utils/preprocessor</Value>
+      <Value>../src/asf/xmega/utils</Value>
+      <Value>../src/asf/common/services/sleepmgr</Value>
+      <Value>../src/config/</Value>
+      <Value>../src/asf/common/services/clock</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
   <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
@@ -85,6 +123,20 @@
   <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
   <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/asf/xmega/drivers/cpu</Value>
+      <Value>../src/asf/xmega/drivers/pmic</Value>
+      <Value>../src/asf/xmega/drivers/sleep</Value>
+      <Value>../src/asf/xmega/drivers/ebi</Value>
+      <Value>../src/asf/common/utils</Value>
+      <Value>../src/asf/xmega/utils/preprocessor</Value>
+      <Value>../src/asf/xmega/utils</Value>
+      <Value>../src/asf/common/services/sleepmgr</Value>
+      <Value>../src/config/</Value>
+      <Value>../src/asf/common/services/clock</Value>
+    </ListValues>
+  </avrgcc.assembler.general.IncludePaths>
   <avrgcc.assembler.debugging.DebugLevel>Default (-g2)</avrgcc.assembler.debugging.DebugLevel>
 </AvrGcc>
     </ToolchainSettings>
@@ -126,6 +178,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\drivers\Gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Sdram.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\Sdram.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\drivers\Timer.c">

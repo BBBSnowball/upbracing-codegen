@@ -10,7 +10,7 @@
 
 StatusType GetAlarmBase(AlarmType alarmId, AlarmBaseRefType info)
 {
-	if (alarmId > (OSEK_NUMBER_OF_ALARMS - 1))
+	if (alarmId > (OS_NUMBER_OF_ALARMS - 1))
 	{
 		return E_OS_ID;
 	}
@@ -22,7 +22,7 @@ StatusType GetAlarmBase(AlarmType alarmId, AlarmBaseRefType info)
 
 StatusType GetAlarm(AlarmType alarmId, TickRefType tick)
 {
-	if (alarmId > (OSEK_NUMBER_OF_ALARMS - 1))
+	if (alarmId > (OS_NUMBER_OF_ALARMS - 1))
 	{
 		return E_OS_ID;
 	}
@@ -42,7 +42,7 @@ StatusType SetRelAlarm(AlarmType alarmId, TickType increment, TickType cycle)
 {
 	TickType oldValue;
 	
-	if (alarmId > (OSEK_NUMBER_OF_ALARMS - 1))
+	if (alarmId > (OS_NUMBER_OF_ALARMS - 1))
 	{
 		return E_OS_ID;
 	}
