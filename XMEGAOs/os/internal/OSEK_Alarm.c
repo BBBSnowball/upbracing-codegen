@@ -47,6 +47,7 @@ StatusType SetRelAlarm(AlarmType alarmId, TickType increment, TickType cycle)
 		return E_OS_ID;
 	}
 	
+	//QUESTION(Benjamin): Does that copy the struct? Could we use a pointer instead?
 	Os_Alarm alarm = os_alarms[alarmId];	
 	
 	if (alarm.active)
@@ -66,10 +67,12 @@ StatusType SetRelAlarm(AlarmType alarmId, TickType increment, TickType cycle)
 	alarm.active = 1;
 	alarm.basetype.ticksperbase = cycle;
 	oldValue = os_counter;
+	//QUESTION(Benjamin): Why do you change the global counter here?
 	os_counter += increment;
 	
 	// If increment would lead to more than one alarm,
 	// only one alarm will be triggered
+	//QUESTION(Benjamin): Is this behaviour a bug or a feature?
 	if ((oldValue % cycle) + increment >= alarm.basetype.ticksperbase)
 	{
 		if (alarm.active) 
@@ -83,8 +86,12 @@ StatusType SetRelAlarm(AlarmType alarmId, TickType increment, TickType cycle)
 
 //StatusType SetAbsAlarm(AlarmType alarmId, TickType start, TickType cycle);
 //StatusType CancelAlarm(AlarmType alarmId);
+//QUESTION(Benjamin): Do we have to implement them? ^^
 
 void RunAlarm(volatile Os_Alarm * alarm) __attribute__ ( (naked) );
+//QUESTION(Benjamin): We can we use a naked function here? It is called from normal C
+//                    code. Therefore, it mustn't overwrite any register. How can we
+//                    guarantee that here?
 void RunAlarm(volatile Os_Alarm * alarm) 
 {
 	// Decide, what to do...

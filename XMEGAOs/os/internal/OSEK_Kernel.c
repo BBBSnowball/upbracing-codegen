@@ -24,6 +24,7 @@ volatile uint8_t os_isStarted = 0;
 #if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
+//QUESTION(Benjamin): Could we replace it by a bitfield?
 uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
 #elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 #error Multiple activations for basic tasks, multiple tasks per priority
@@ -65,6 +66,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	sp--;
 	
 	/* R1 up to R31 */
+	//QUESTION(Benjamin): Are those the initial values for the registers? Can't we just set them to zero?
 	*sp = (uint8_t) 0x00;								// R1
 	sp--;
 	*sp = (uint8_t) 0x02;								// R2
@@ -131,22 +133,26 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	tcb->topOfStack = sp;
 }
 
+//QUESTION(Benjamin): Do you mean to make StartFirstTask the naked function?
 void TCC0_CCA_vect(void) __attribute__ ( (naked) );
 void StartFirstTask(void)
 {
 	OSEK_RESTORE_CONTEXT();
 	os_isStarted = 1;
 	
+	//QUESTION(Benjamin): Do we need this "ret" here? Won't the compiler
+	//                    generate one itself (although the function is naked)?
 	asm volatile("ret");
 }
 
+// Called regularly by a timer interrupt
 void Os_TimerIncrement(void) __attribute__ ( (naked) );
 void Os_TimerIncrement(void) 
 {
 	/* Increment os counter */
 	os_counter++;
 	
-	///* Run Os Alarms */
+	/* Run Os Alarms */
 	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
 		Os_Alarm alarm = os_alarms[i];
@@ -158,14 +164,8 @@ void Os_TimerIncrement(void)
 		}
 	}
 	
+	/* Probably switch to another task */
 	Os_Schedule();
-	
-	//if (alarmNeeded) 
-	//{
-		//OSEK_SAVE_CONTEXT();
-		//Schedule();
-		//OSEK_RESTORE_CONTEXT();
-	//}
 	
 	asm volatile ("ret");
 }
@@ -220,6 +220,7 @@ void Os_Schedule(void)
 	asm volatile("reti");
 }
 
+//QUESTION(Benjamin): What is the difference of Schedule and Os_Schedule?
 StatusType Schedule(void)
 {
 	// Decide which task to run next...
@@ -240,7 +241,9 @@ StatusType Schedule(void)
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
-	//
+
+	//QUESTION(Benjamin): Is this old code that was only used, when you didn't have
+	//                    a real scheduler? If so, we could remove it now.
 	//if (os_counter % 8 == 0)
 		//os_currentTcb = &os_tcbs[2];
 	//else if (os_counter % 4 == 0)
@@ -259,6 +262,7 @@ StatusType Schedule(void)
 	return E_OK;	
 }
 
+// This task is run, whenever no other task is ready to run.
 TASK(Task_Idle)
 {
 	uint16_t i = 0;

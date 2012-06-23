@@ -35,6 +35,7 @@ void StartOS(void)
 	ClockInit();
 	
 	// Init UART:
+	//TODO Write a UART driver. This should be its init function.
 	PORTC.DIRSET = PIN3_bm;							// TXD as Output
 	PORTC.OUTSET = PIN3_bm;							// TXD high
 	PORTC.DIRCLR = PIN2_bm;							// RXD as Input		
@@ -49,10 +50,12 @@ void StartOS(void)
 	//uint8_t dummyread = USARTC0.DATA;
 	// Hopefully, we are done now...	
 	
-	// Write to UART:	
+	// Write to UART:
+	//TODO use the UART driver
 	for (volatile int p = 0; p < 256; p++)
 	{
 		USARTC0.DATA = p;
+		//TODO don't use a timed wait, but wait for a flag instead
 		_delay_ms(5);
 	}
 	
@@ -66,5 +69,7 @@ void StartOS(void)
 	StartFirstTask();
 	
 	// Globally enable interrupts
+	//QUESTION(Benjamin): I think the program will never get here. This line should be earlier,
+	//                    but I think that is already the case - otherwise nothing would work ;-)
 	sei();
 }

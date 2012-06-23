@@ -58,6 +58,7 @@ typedef struct
 	TaskConformanceClass complexity;			// Complexity (Basic/Extended)
 	TaskStateType state;						// State of current task (Suspended/Ready/Running/Waiting)
 	TaskFunctionPointerType func;				// Pointer to task function
+	//QUESTION(Benjamin): Do we need a task id in the struct? Can't we simply use the position in the array as an id?
 	TaskType id;								// ID of this task
 	TaskPreemptable preempt;
 	
