@@ -11,6 +11,6 @@
 
 #include "OSEK_Kernel.h"
 
-extern void StartOS(void);
+void StartOS(void);
 
 #endif /* OS_H_ */

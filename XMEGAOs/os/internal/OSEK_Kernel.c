@@ -50,13 +50,10 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	
 	/* Return address of this stack: init to function pointer */
 	taskAddress = (uint16_t) tcb->func;
-	taskAddressLow = (uint8_t) (((uint16_t) tcb->func) & 0x00FF);
-	taskAddressHigh = (uint8_t) (((uint16_t)tcb->func) >> 8) & 0xFF;
-	*sp = (uint8_t) taskAddressLow;						// Low byte
+	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
-	*sp = (uint8_t) taskAddressHigh;					// High byte
-	sp--;
-	*sp = (uint8_t) 0x00;								// 3 byte address?
+	taskAddress >>= 8;
+	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
 	
 	/* R0, then the status register */
@@ -133,8 +130,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	tcb->topOfStack = sp;
 }
 
-//QUESTION(Benjamin): Do you mean to make StartFirstTask the naked function?
-void TCC0_CCA_vect(void) __attribute__ ( (naked) );
+void StartFirstTask(void) __attribute__ ( (naked) );
 void StartFirstTask(void)
 {
 	OSEK_RESTORE_CONTEXT();
@@ -145,7 +141,6 @@ void StartFirstTask(void)
 	asm volatile("ret");
 }
 
-// Called regularly by a timer interrupt
 void Os_TimerIncrement(void) __attribute__ ( (naked) );
 void Os_TimerIncrement(void) 
 {
@@ -155,24 +150,23 @@ void Os_TimerIncrement(void)
 	/* Run Os Alarms */
 	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
-		Os_Alarm alarm = os_alarms[i];
-		os_alarms[i].tick++;
-		if (alarm.active &&
-		    alarm.tick % alarm.basetype.ticksperbase == 0) 
+		volatile Os_Alarm * base = &os_alarms;
+		base += i;
+		base->tick++;
+		if (base->tick % base->ticksperbase == 0) 
 		{
-			RunAlarm(&os_alarms[i]);
+			RunAlarm(base);
 		}
 	}
 	
-	/* Probably switch to another task */
 	Os_Schedule();
 	
 	asm volatile ("ret");
 }
 
-// Interrupt routine for compare match of TCC0
-void TCC0_CCA_vect(void) __attribute__ ( (signal, naked) );
-void TCC0_CCA_vect(void)
+// Interrupt routine for compare match of Timer1
+void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
+void TIMER1_COMPA_vect(void)
 {
 	OSEK_SAVE_CONTEXT();
 	Os_TimerIncrement();	
@@ -191,7 +185,7 @@ void Os_Schedule(void)
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
-		for (volatile uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
+		for (uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
 			if (os_ready_queue[i])
 			{
@@ -201,7 +195,7 @@ void Os_Schedule(void)
 			}
 		}
 	}
-	
+
 	if (newtcb == NULL)
 	{
 		// Switch to idle then...
@@ -217,10 +211,9 @@ void Os_Schedule(void)
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 		
-	asm volatile("reti");
+	asm volatile("ret");
 }
 
-//QUESTION(Benjamin): What is the difference of Schedule and Os_Schedule?
 StatusType Schedule(void)
 {
 	// Decide which task to run next...
@@ -228,7 +221,7 @@ StatusType Schedule(void)
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
-		for (volatile int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
+		for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
 		{
 			if (os_ready_queue[i])
 			{
@@ -242,32 +235,14 @@ StatusType Schedule(void)
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 
-	//QUESTION(Benjamin): Is this old code that was only used, when you didn't have
-	//                    a real scheduler? If so, we could remove it now.
-	//if (os_counter % 8 == 0)
-		//os_currentTcb = &os_tcbs[2];
-	//else if (os_counter % 4 == 0)
-		//os_currentTcb = &os_tcbs[1];
-	//else
-		//os_currentTcb = &os_tcbs[0];
-		
-	//if (os_counter % 8 == 0 && os_tcbs[2].state == READY)
-		//os_currentTcb = &os_tcbs[2];
-	//else if (os_counter % 4 == 0 && os_tcbs[1].state == READY)
-		//os_currentTcb = &os_tcbs[1];
-	//else
-		//os_currentTcb = &os_tcbs[0];
-	
 	// Should never get here...
 	return E_OK;	
 }
 
-// This task is run, whenever no other task is ready to run.
 TASK(Task_Idle)
 {
-	uint16_t i = 0;
 	for (;;)
 	{
-		i++;
+		//Os_Schedule();
 	}
 }
