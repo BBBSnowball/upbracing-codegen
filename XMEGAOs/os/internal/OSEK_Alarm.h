@@ -11,15 +11,11 @@
 
 #include "OSEK_StatusTypes.h"
 #include "OSEK_AlarmTypes.h"
+#include "Os_cfg_generated.h"
 
-extern volatile Os_Alarm os_alarms[];
+//extern volatile Os_Alarm os_alarms[];
 extern volatile uint16_t os_counter;
 
-StatusType GetAlarmBase(AlarmType alarmId, AlarmBaseRefType info);
-StatusType GetAlarm(AlarmType alarmId, TickRefType tick);
-StatusType SetRelAlarm(AlarmType alarmId, TickType increment, TickType cycle);
-StatusType SetAbsAlarm(AlarmType alarmId, TickType start, TickType cycle);
-StatusType CancelAlarm(AlarmType alarmId);
 void RunAlarm(volatile Os_Alarm * alarm);
 
 

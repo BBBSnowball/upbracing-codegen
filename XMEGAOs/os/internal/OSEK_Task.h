@@ -57,6 +57,6 @@ StatusType GetTaskID(TaskRefType taskId);
 //************************************
 StatusType GetTaskState(TaskType taskId, TaskStateRefType state);
 
-StatusType ActivateTask(TaskType taskId);
+StatusType ActivateTask(volatile TaskType taskId);
 
 #endif /* OSEK_TASK_H_ */

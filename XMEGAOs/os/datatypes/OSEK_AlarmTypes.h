@@ -17,18 +17,9 @@ typedef uint16_t TickType;
 typedef TickType * TickRefType;
 typedef struct 
 {
-	volatile TickType maxallowedvalue;
-	volatile TickType ticksperbase;
-	volatile TickType mincycle;	// Optional
-} AlarmBaseType;
-typedef AlarmBaseType * AlarmBaseRefType;
-typedef struct 
-{
+	volatile uint8_t taskid;
 	volatile TickType tick;
-	AlarmBaseType basetype;
-	AlarmFunctionPointerType callback;
-	uint8_t active;
-	void *tcb;	// We don't need a Os_Tcb pointer here. We can cast it later...
+	volatile TickType ticksperbase;
 } Os_Alarm;
 typedef uint8_t AlarmType;
 

@@ -7,30 +7,27 @@
 
 #include "Os_cfg_generated.h"
 
-volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] = 
+extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] = 
 {	
 	{		 
-		(StackPointerType *) 0x3DFF,	/* Top of stack	*/
-		(StackPointerType *) 0x3DFF, /* Base address of the stack */
-		BASIC, /* Task Type */
+		(StackPointerType *) 0x08FF,	/* Top of stack	*/
+		(StackPointerType *) 0x08FF, /* Base address of the stack */
 		READY, /* Task State */
 		Task_Idle,	/* Function Pointer */
 		0, /* Id/Priority */
 		PREEMPTABLE,
 	},				 				 
 	{
-		(StackPointerType *) 0x3BFF,									
-		(StackPointerType *) 0x3BFF,							
-		BASIC,											 
+		(StackPointerType *) 0x06FF,									
+		(StackPointerType *) 0x06FF,																	 
 		SUSPENDED,										 
 		Task_Update,									 
 		1,
 		PREEMPTABLE,												 
 	},
 	{		 
-		(StackPointerType *) 0x39FF,	/* Top of stack	*/
-		(StackPointerType *) 0x39FF, /* Base address of the stack */
-		BASIC, /* Task Type */
+		(StackPointerType *) 0x04FF,	/* Top of stack	*/
+		(StackPointerType *) 0x04FF, /* Base address of the stack */
 		SUSPENDED, /* Task State */
 		Task_Increment,	/* Function Pointer */
 		2, /* Id/Priority */
@@ -38,39 +35,18 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] =
 	}													 
 };
 
-volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] = 
+extern volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] = 
 {						
 	{	// Alarm for Task_Update
-		0,				
-		{				
-			65535,		
-			1,		
-			0,		    
-		},				
-		NULL,
-		1,
-		&os_tcbs[1],
+		1,				// Task ID: Update
+		0,				// Current Value
+		1,				// Ticks Per Base			
+		//1,				// Active state
 	},					
 	{	// Alarm for Task_Increment
-		0,				
-		{				
-			65535,		
-			64,			
-			0,			
-		},				
-		NULL,
-		1,	
-		&os_tcbs[2],
-	},	
-	{	// Alarm for callback test
-		0,			
-		{				
-			65535,		
-			8192,		
-			0,		    
-		},				
-		Alarm_Test,
-		0,
-		NULL,
-	}				
+		2,				// Task ID: Increment
+		0,				// Current Value
+		4,			// Ticks Per Base		
+		//1,				// Active state
+	}			
 };

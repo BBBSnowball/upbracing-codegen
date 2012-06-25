@@ -8,7 +8,7 @@
 #include "Gpio.h"
 #include <avr/io.h>
 
-extern void GpioInit(void)
+void GpioInit(void)
 {
-	PORTE.DIR = 0xFF;	  // Set PORTE as 8bit wide output
+	DDRA = 0xFF;	  // Set PORTA (LEDs) as 8bit wide output
 }

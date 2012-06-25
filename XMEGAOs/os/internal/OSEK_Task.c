@@ -20,25 +20,22 @@ StatusType TerminateTask(void)
 	os_currentTcb->state = SUSPENDED;
 	os_currentTcb->topOfStack = os_currentTcb->baseOfStack;
 	
-	asm volatile(	"lds r26, os_currentTcb		\n\t"	\
-					"lds r27, os_currentTcb + 1	\n\t"	\
-					"ld r28, x+					\n\t"	\
-					"out __SP_L__, r28			\n\t"	\
-					"ld r29, x+					\n\t"	\
-					"out __SP_H__, r29			\n\t"	);
+	//asm volatile(	"lds r26, os_currentTcb		\n\t"	\
+					//"lds r27, os_currentTcb + 1	\n\t"	\
+					//"ld r28, x+					\n\t"	\
+					//"out __SP_L__, r28			\n\t"	\
+					//"ld r29, x+					\n\t"	\
+					//"out __SP_H__, r29			\n\t"	);
 	
 	/* Reset return address to os_currentTcb->func */
 	taskAddress = (uint16_t) os_currentTcb->func;
-	taskAddressLow = (uint8_t) (((uint16_t)os_currentTcb->func & 0x00FF));
-	taskAddressHigh = (uint8_t) (((uint16_t)os_currentTcb->func) >> 8) & 0xFF;
-	*sp = (uint8_t) taskAddressLow;						// Low byte
+	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
-	*sp = (uint8_t) taskAddressHigh;					// High byte
-	sp--;
-	*sp = (uint8_t) 0x00;								// 3 byte address?
+	taskAddress >>= 8;
+	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
 	
-	os_currentTcb->topOfStack = sp - 33;
+	os_currentTcb->topOfStack = os_currentTcb->baseOfStack - 35;
 	
 	asm volatile(	"lds r26, os_currentTcb		\n\t"	\
 					"lds r27, os_currentTcb + 1	\n\t"	\
@@ -49,7 +46,7 @@ StatusType TerminateTask(void)
 		
 	Os_Schedule();
 	OSEK_RESTORE_CONTEXT();
-	asm volatile("ret");
+	asm volatile("reti");
 	
 	return E_OK;
 }
@@ -79,7 +76,7 @@ StatusType GetTaskState(TaskType taskId, TaskStateRefType state)
 	return E_OK;
 }
 
-StatusType ActivateTask(TaskType taskId)
+StatusType ActivateTask(volatile TaskType taskId)
 {
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	os_ready_queue[taskId] = 1;

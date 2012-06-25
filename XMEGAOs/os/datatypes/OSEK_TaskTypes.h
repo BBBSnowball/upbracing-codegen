@@ -33,13 +33,6 @@ typedef enum
 // TaskStateRefType
 typedef TaskStateType * TaskStateRefType;
 
-// Task complexity
-typedef enum
-{
-	BASIC = 0,
-	EXTENDED = 1,
-} TaskConformanceClass;
-
 // Preemptible?
 typedef enum
 {
@@ -52,10 +45,6 @@ typedef struct
 {
 	volatile StackPointerType *topOfStack;		// Points to the item that was pushed last
 	volatile StackPointerType *baseOfStack;		// Base address of the stack
-	#if OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	TaskPriorityType priority;					// Priority of current task where 0 is the lowest priority
-	#endif
-	TaskConformanceClass complexity;			// Complexity (Basic/Extended)
 	TaskStateType state;						// State of current task (Suspended/Ready/Running/Waiting)
 	TaskFunctionPointerType func;				// Pointer to task function
 	TaskType id;								// ID of this task
