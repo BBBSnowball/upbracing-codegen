@@ -12,6 +12,7 @@ import javax.script.ScriptException;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
+import org.simpleframework.xml.strategy.CycleStrategy;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
 
@@ -42,7 +43,7 @@ public class SimpleTest {
 			exception.printStackTrace();
 		}
 		
-		Serializer serializer = new Persister();
+		Serializer serializer = new Persister(new CycleStrategy());
 		serializer.write(config, System.out);
 	}
 

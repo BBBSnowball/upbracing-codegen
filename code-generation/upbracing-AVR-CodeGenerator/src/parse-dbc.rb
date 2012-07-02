@@ -11,6 +11,7 @@ if $jruby
   DBCMessage = Java::de::upbracing::dbc::DBCMessage
   DBCEcu = Java::de::upbracing::dbc::DBCEcu
   DBC = Java::de::upbracing::dbc::DBC
+  DBCValueTable = Java::de::upbracing::dbc::DBCValueTable
 end
 
 class DBCSignal
@@ -159,11 +160,12 @@ end
 def parse_dbc(filename = nil)
   filename = File.dirname(__FILE__) + "/../can_final.dbc"    unless filename
   
-  dbc_result = {} #TODO use a class
+  dbc_result = nil
   mode = :init
   context = nil
 	open(filename, "rt") do |f|
 		DBCTokenizer.new.tokenize_dbc f do |tokens|
+		  #DEBUG: puts tokens.inspect
 		  if tokens.length > 0 && !(mode == :skip_indented && tokens.first == " ")
 		    case tokens[0]
 		    when "VERSION"
@@ -186,7 +188,11 @@ def parse_dbc(filename = nil)
           context = nil
 		    when "VAL_TABLE_"
           name = tokens[1]
-          values = {}
+          if $jruby
+            values = DBCValueTable.new
+          else
+            values = {}
+          end
           i = 2
           while i+1 < tokens.length
             values[tokens[i]] = tokens[i+1]
@@ -228,7 +234,7 @@ def parse_dbc(filename = nil)
           if tokens[5] == "Vector__XXX"
             ecus = []
           else
-            ecus = tokens[5].split(",")
+            ecus = tokens[5].split(",").map { |ecuname| dbc_result.ecus[ecuname] }
           end
           id = id.to_i
           extended = (id & (1<<31)) != 0
@@ -238,8 +244,7 @@ def parse_dbc(filename = nil)
             msg = DBCMessage.new(id, raw_id, extended, name, len, ecus).init
             dbc_result.messages[name] = msg
             dbc_result.messages[raw_id] = msg
-            ecus.each do |ecuname|
-              ecu = dbc_result.ecus[ecuname]
+            ecus.each do |ecu|
               ecu.tx_msgs << msg
             end
             mode = :message
@@ -268,7 +273,7 @@ def parse_dbc(filename = nil)
               unit = tokens[7]
               if (tokens[8] != "Vector__XXX")
                 #TODO resolve names? -> dbc_result[:ecus][ecuname]
-                ecus = tokens[8].split(",")
+                ecus = tokens[8].split(",").map { |ecuname| dbc_result.ecus[ecuname] }
               else
                 ecus = []
               end
@@ -278,8 +283,7 @@ def parse_dbc(filename = nil)
               if !msg.signals[name]
                 dbc_result.signals[name] = signal
                 msg.add_signal(signal)
-                ecus.each do |ecuname|
-                  ecu = dbc_result.ecus[ecuname]
+                ecus.each do |ecu|
                   if !ecu
                     puts "WARN: invalid ecu name: #{ecuname}"
                   else
@@ -305,7 +309,7 @@ def parse_dbc(filename = nil)
             ecu = dbc_result.ecus[ecuname]
             if !ecu.tx_msgs.member? msg
               ecu.tx_msgs << msg
-              msg.tx_ecus << ecuname
+              msg.tx_ecus << dbc_result.ecus[ecuname]
             end
           end
 		    when "CM_"
@@ -333,7 +337,7 @@ class DBCTokenizer
   def tokenize_dbc(f)
     @f = f
     while (@line = @f.gets)
-      @line = @line.sub(/\n$/, "")
+      @line = @line.sub(/\r\n$/, "")
   		tokens = []
   		@i = 0
   		while true

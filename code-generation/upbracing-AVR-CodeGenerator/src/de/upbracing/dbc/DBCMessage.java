@@ -3,6 +3,9 @@ package de.upbracing.dbc;
 import java.util.Collection;
 import java.util.Map;
 
+import org.simpleframework.xml.Default;
+
+@Default(required=false)
 public class DBCMessage {
 	private int id;
 	private String raw_id;

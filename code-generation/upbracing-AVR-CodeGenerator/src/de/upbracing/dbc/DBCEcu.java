@@ -2,6 +2,9 @@ package de.upbracing.dbc;
 
 import java.util.Collection;
 
+import org.simpleframework.xml.Default;
+
+@Default(required=false)
 public class DBCEcu {
 	private String name;
 	private Collection<DBCMessage> txMsgs, rxMsgs;
