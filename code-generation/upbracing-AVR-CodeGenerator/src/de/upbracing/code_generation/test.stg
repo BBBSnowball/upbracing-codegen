@@ -1,0 +1,4 @@
+import "test2.stg"
+
+a() ::= <<blub>>
+main(config) ::= "<a()>_<a()>-<b()>"

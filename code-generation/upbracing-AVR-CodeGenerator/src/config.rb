@@ -12,3 +12,5 @@ ecus = read_ecu_list("../../ecu-list.xml")
 $config.ecus = ecus
 
 $config.can = parse_dbc("../../can_final.dbc")
+
+$config.selectEcu("Cockpit")
