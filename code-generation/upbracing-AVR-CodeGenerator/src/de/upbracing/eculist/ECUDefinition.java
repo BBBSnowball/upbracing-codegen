@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.simpleframework.xml.Default;
+
+@Default(required=false)
 public class ECUDefinition {
 	private String name, path, buildDir, type, node_id, node_name;
 	private List<EEPROMValue> eeprom_values;

@@ -1,9 +1,11 @@
 package de.upbracing.dbc;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.simpleframework.xml.Default;
+
+@Default(required=false)
 public class DBCSignal {
 	private String name, sign, endianness;
 	private int start, length;

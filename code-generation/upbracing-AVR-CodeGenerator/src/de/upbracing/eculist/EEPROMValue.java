@@ -1,5 +1,8 @@
 package de.upbracing.eculist;
 
+import org.simpleframework.xml.Default;
+
+@Default
 public class EEPROMValue {
 	private String name, type, defaultValue;
 	

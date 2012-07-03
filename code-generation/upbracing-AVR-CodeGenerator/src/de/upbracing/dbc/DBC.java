@@ -3,9 +3,21 @@ package de.upbracing.dbc;
 import java.util.Collection;
 import java.util.Map;
 
+import org.simpleframework.xml.Default;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementMap;
+import org.simpleframework.xml.convert.Convert;
+import org.simpleframework.xml.convert.Converter;
+import org.simpleframework.xml.stream.InputNode;
+import org.simpleframework.xml.stream.OutputNode;
+
+@Default(required=false)
 public class DBC {
 	private String version;
-	private Map<String, Map<String, String>> valueTables;
+	//@Element(required=false)
+	//@Convert(ConvertMapMap.class)
+	@ElementMap(valueType=DBCValueTable.class)
+	private Map<String, DBCValueTable> valueTables;
 	private Map<String, DBCEcu> ecus;
 	private Map<String, DBCMessage> messages;
 	private Map<String, DBCSignal> signals;
@@ -24,11 +36,11 @@ public class DBC {
 		this.version = version;
 	}
 
-	public Map<String, Map<String, String>> getValueTables() {
+	public Map<String, DBCValueTable> getValueTables() {
 		return valueTables;
 	}
 
-	public void setValueTables(Map<String, Map<String, String>> valueTables) {
+	public void setValueTables(Map<String, DBCValueTable> valueTables) {
 		this.valueTables = valueTables;
 	}
 
@@ -62,5 +74,20 @@ public class DBC {
 
 	public void setEcuNames(Collection<String> ecuNames) {
 		this.ecuNames = ecuNames;
+	}
+	
+	//TODO implement serialization for value tables
+	private class ConvertMapMap implements Converter<Map<String, Map<String, String>>> {
+		@Override
+		public Map<String, Map<String, String>> read(InputNode arg0)
+				throws Exception {
+			return null;
+		}
+
+		@Override
+		public void write(OutputNode arg0, Map<String, Map<String, String>> arg1)
+				throws Exception {
+			
+		}
 	}
 }

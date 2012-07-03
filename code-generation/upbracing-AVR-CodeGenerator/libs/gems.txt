@@ -1,0 +1,5 @@
+# http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar/
+
+export GEM_HOME=./GEM_HOME
+java -jar jruby-complete-1.6.7.2.jar -S gem install xml-simple
+jar cf ruby-gems.jar -C GEM_HOME .

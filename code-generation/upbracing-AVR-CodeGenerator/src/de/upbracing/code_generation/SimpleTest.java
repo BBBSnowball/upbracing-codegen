@@ -12,6 +12,9 @@ import javax.script.ScriptException;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
+import org.simpleframework.xml.strategy.CycleStrategy;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroupFile;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
 
@@ -42,8 +45,15 @@ public class SimpleTest {
 			exception.printStackTrace();
 		}
 		
-		Serializer serializer = new Persister();
-		serializer.write(config, System.out);
+		//Serializer serializer = new Persister(new CycleStrategy());
+		//serializer.write(config, System.out);
+		
+		STGroupFile tgroup = new STGroupFile(
+				SimpleTest.class.getClassLoader().getResource("de/upbracing/code_generation/test.stg"),
+				"utf-8", '<', '>');
+		ST template = tgroup.getInstanceOf("main");
+		template.add("config", config);
+		System.out.println(template.render());
 	}
 
 }
