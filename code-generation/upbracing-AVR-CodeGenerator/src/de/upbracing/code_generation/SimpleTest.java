@@ -48,12 +48,14 @@ public class SimpleTest {
 		//Serializer serializer = new Persister(new CycleStrategy());
 		//serializer.write(config, System.out);
 		
-		STGroupFile tgroup = new STGroupFile(
-				SimpleTest.class.getClassLoader().getResource("de/upbracing/code_generation/test.stg"),
+		/*STGroupFile tgroup = new STGroupFile(
+				SimpleTest.class.getClassLoader().getResource("de/upbracing/code_generation/eeprom.stg"),
 				"utf-8", '<', '>');
 		ST template = tgroup.getInstanceOf("main");
 		template.add("config", config);
-		System.out.println(template.render());
+		System.out.println(template.render());*/
+		
+		System.out.println(new EepromTemplate().generate(config));
 	}
 
 }

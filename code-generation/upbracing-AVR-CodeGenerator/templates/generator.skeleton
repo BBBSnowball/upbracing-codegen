@@ -1,0 +1,15 @@
+public class CLASS {
+  
+  public void warn(StringBuffer stringBuffer, String message) {
+    stringBuffer.append("\n#warning ");
+    stringBuffer.append(message);
+    stringBuffer.append("\n");
+  }
+
+  /* (non-javadoc)
+    * @see IGenerator#generate(Object)
+    */
+  public String generate(de.upbracing.code_generation.config.MCUConfiguration config) {
+    return "";
+  }
+}
