@@ -1,0 +1,83 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="EepromTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.*" %>
+
+/////////////////////////
+///    EEPROM data    ///
+/////////////////////////
+
+// only define EEPROM stuff, if avr/eeprom.h has been included
+#ifdef EEMEM
+#ifndef DEFS_MAIN_FILE
+
+//#pragma pack(push, 1)
+typedef struct {
+<% for (EEPROMVariable var : config.getEeprom()) { %>
+	<%=var.getType()%> <%=var.getName()%>;
+<% } %>
+} EEPROMDATA;
+//#pragma pack(pop)
+
+#endif	// not defined DEFS_MAIN_FILE
+
+#ifdef DEFS_MAIN_FILE
+	EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
+<% for (EEPROMVariable var : config.getEeprom()) {
+	Object defaultValue = var.getDefaultValue();
+	if (defaultValue == null)
+		defaultValue = "(" + var.getType() + ")(uint64_t)-1";
+%>
+		<%=defaultValue%>,	// <%=var.getName()%>
+<% } %>
+	};
+#else
+	extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
+#endif
+
+#ifndef DEFS_MAIN_FILE
+
+#undef  EEPROM_POINTER
+#define EEPROM_POINTER(name) &eeprom_data.name
+
+<%
+for (EEPROMVariable var : config.getEeprom()) {
+	String name = var.getName();
+	String NAME = var.getName().toUpperCase();
+	String type = var.getType();
+	int size = var.getSize();
+	if (size <= 0) {
+		size = CType.getSizeOf(type);
+		
+		if (size <= 0) {
+			warn(stringBuffer, "Cannot determine length of type '" + type
+				+ "'. Please set size for value '" + name + "' in ecu-list.xml. READ_"
+				+ NAME + " and WRITE_" + NAME + " will not be generated now.");
+			continue;
+		}
+	}
+	
+	String len_name;
+	switch (size) {
+		case 1:  len_name = "byte";  break;
+		case 2:  len_name = "word";  break;
+		case 4:  len_name = "dword"; break;
+		default: len_name = "block"; break;
+	}
+	
+	if (!len_name.equals("block")) {
+		String uint_type = "uint" + (8*size) + "_t";
+		boolean need_cast = (!uint_type.equals(type) && !type.equals("u" + (8*size)));
+%>
+#define READ_<%=NAME%>() <%= need_cast ? "("+type+")" : "" %>eeprom_read_<%=len_name%>(EEPROM_POINTER(<%=name%>))
+#define WRITE_<%=NAME%>(value) eeprom_write_<%=len_name%>(EEPROM_POINTER(<%=name%>), <%= need_cast ? "("+uint_type+")(value)" : "value" %>)
+<% 	} else { %>
+#define READ_<%=NAME%>(dst) (<%=type%>)eeprom_read_block(dst, EEPROM_POINTER(<%=name%>), <%=size%>)
+#define WRITE_<%=NAME%>(value) eeprom_write_block(EEPROM_POINTER(<%=name%>), value, <%=size%>)
+<% 	}
+}
+%>
+
+#endif	// not defined DEFS_MAIN_FILE
+#endif	// defined EEMEM

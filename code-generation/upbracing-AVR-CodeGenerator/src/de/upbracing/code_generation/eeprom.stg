@@ -1,0 +1,137 @@
+type_size ::= [
+  "int8_t":"1",
+  "int16_t":"2",
+  "int32_t":"4",
+  "int64_t":"8",
+  "uint8_t":"1",
+  "uint16_t":"2",
+  "uint32_t":"4",
+  "uint64_t":"8",
+  
+  "s8":"1",
+  "s16":"2",
+  "s32":"4",
+  "s64":"8",
+  "u8":"1",
+  "u16":"2",
+  "u32":"4",
+  "u64":"8",
+
+  "char":"1",
+  "byte":"1",
+  "signed char":"1",
+  "unsigned char":"1",
+  "signed byte":"1",
+  "unsigned byte":"1",
+
+  "short":"2",
+  "signed short":"2",
+  "unsigned short":"2",
+
+  "int":"4",
+  "long":"4",
+  "unsigned int":"4",
+  "unsigned long":"4",
+  "signed int":"4",
+  "signed long":"4",
+
+  "long long":"8",
+  "unsigned long long":"8",
+  "signed long long":"8",
+
+  "float":"4",
+  "double":"8",
+  
+  default: ""
+]
+
+eeprom_type_by_size ::= [
+  "1":"byte",
+  "2":"word",
+  "4":"dword",
+  default: "block"
+]
+
+main(config) ::= <<
+/////////////////////////
+///    EEPROM data    ///
+/////////////////////////
+
+// only define EEPROM stuff, if avr/eeprom.h has been included
+#ifdef EEMEM
+#ifndef DEFS_MAIN_FILE
+
+<eeprom_struct(config.eeprom)>
+
+#endif  // not defined DEFS_MAIN_FILE
+
+<eeprom_variable(config.eeprom)>
+
+#ifndef DEFS_MAIN_FILE
+
+#undef  EEPROM_POINTER
+#define EEPROM_POINTER(name) &eeprom_data.name
+
+<config.eeprom:eeprom_accessors()>
+
+#endif  // not defined DEFS_MAIN_FILE
+#endif  // defined EEMEM
+>>
+
+eeprom_struct(eeprom) ::= <<
+//#pragma pack(push, 1)
+typedef struct {
+<eeprom:eeprom_struct_variable()>
+} EEPROMDATA;
+//#pragma pack(pop)
+>>
+
+eeprom_struct_variable(var) ::= <<
+  <var.type> <var.name>;
+>>
+
+eeprom_variable(eeprom) ::= <<
+#ifdef DEFS_MAIN_FILE
+  EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
+<eeprom:eeprom_default_value()>
+  };
+#else
+  extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
+#endif
+>>
+
+eeprom_default_value(var) ::= <<
+    <var.defaultValue>,    // <var.name>
+>>
+
+eeprom_accessor_name(var) ::= "<var.name.toUpperCase>"
+
+eeprom_accessors(var) ::= <%
+<if(type_size.(var.type) == "")>
+  <warn("Cannot determine length of type '<var.type>'. Please set length= for value '<name>' in ecu-list.xml. READ_<eeprom_accessor_name(var)> and WRITE_<eeprom_accessor_name(var)> will not be generated now.")>
+<elseif(eeprom_type_by_size.(type_size.(var.type)) == "block")>
+  <eeprom_block_accessors(var, type_size.(var.type))>
+<else>
+  <!eeprom_normal_accessors(var, type_size[var.type], eeprom_type_by_size[type_size[var.type]]!>
+  //TODO
+    $uint_type = "uint" . (8*$length) . "_t";
+    $need_cast = ($uint_type != $type && "u" . (8*$length) != $type);
+    $table[] = array("#define READ_$NAME() ", ($need_cast ? "($type)" : ""),
+             "eeprom_read_${len_name}", "(EEPROM_POINTER($name))");
+    $table[] = array("#define WRITE_$NAME(value) ", "", "eeprom_write_${len_name}",
+             "(EEPROM_POINTER($name), " . ($need_cast ? "($uint_type)(value))" : "value)"));
+<endif>
+%>
+
+eeprom_block_accessors(var, size) ::= <<
+    #define READ_<eeprom_accessor_name(var)> (dst)   eeprom_read_block(dst, EEPROM_POINTER(<var.name>), <size>)
+    #define WRITE_<eeprom_accessor_name(var)>(value) eeprom_write_block(EEPROM_POINTER(<var.name>), value, <size>)
+>>
+
+warn(message) ::= "#warning <message>"
+
+<!
+eeprom_accessor(var) ::= <<
+#define READ_<eeprom_accessor_name(var)>         <eeprom_read_function_name(var)> (EEPROM_POINTER(<var.name>))
+#define WRITE_<eeprom_accessor_name(var)>(value) <eeprom_write_function_name(var)>(EEPROM_POINTER(<var.name>), value)
+>> !>
