@@ -7,8 +7,6 @@
 	<classpathentry kind="lib" path="libs/jruby-complete-1.6.7.2.jar" sourcepath="libs/jruby-1.7.0.preview1/src"/>
 	<classpathentry kind="lib" path="libs/simple-xml-2.6.4.jar"/>
 	<classpathentry kind="lib" path="libs/ruby-gems.jar"/>
-	<classpathentry kind="lib" path="libs/ST-4.0.5.jar" sourcepath="libs/ST-4.0.5-src.zip"/>
-	<classpathentry kind="lib" path="libs/antlr-3.4-complete.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

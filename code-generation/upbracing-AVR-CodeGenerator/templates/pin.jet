@@ -1,0 +1,37 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="PinTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.*" %>
+
+/////////////////////////
+///  Pin definitions  ///
+/////////////////////////
+
+<%
+for (java.util.Map.Entry<String, Pin> e : config.getPins().entrySet()) {
+	String name = e.getKey();
+	Pin pin = e.getValue();
+	char port = pin.getPortName();
+%>
+#define <%=name%>_PORT  PORT<%=port%>
+#define <%=name%>_PIN   PIN<%=port%>
+#define <%=name%>_DDR   DDR<%=port%>
+#define <%=name%>_BIT   <%=pin.getBit()%>
+#define <%=name%>_MASK  <%=pin.getMaskExpr()%>
+#define <%=name%>_IS_<%=pin.getPinName()%>
+
+<% } %>
+
+<%
+for (java.util.Map.Entry<String, Character> e : config.getPins().getPorts().entrySet()) {
+	String name = e.getKey();
+	char port = e.getValue();
+%>
+#define <%=name%>_OUTPUT()               { DDR<%=port%>  = 0xff;  }
+#define <%=name%>_INPUT()                { DDR<%=port%>  = 0x00;  }
+#define <%=name%>_TOGGLE_INPUT_OUTPUT()  { DDR<%=port%>  ^= 0xff; }
+#define SET_<%=name%>(x)                 { PORT<%=port%> = x;     }
+#define GET_<%=name%>()                  (PIN<%=port%>)
+
+<% } %>

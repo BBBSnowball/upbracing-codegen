@@ -20,6 +20,7 @@ public class MCUConfiguration {
 	//TODO we have to wrap the DBC model to allow configuration of the code generation
 	private DBC can;
 	private EEPROMConfig eeprom = new EEPROMConfig();
+	private PinConfig pins = new PinConfig();
 
 	public List<ECUDefinition> getEcus() {
 		return ecus;
@@ -43,6 +44,10 @@ public class MCUConfiguration {
 	
 	public EEPROMConfig getEeprom() {
 		return eeprom;
+	}
+
+	public PinConfig getPins() {
+		return pins;
 	}
 
 	public void selectEcu(ECUDefinition ecu) {
