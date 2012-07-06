@@ -1,0 +1,69 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="GlobalVariableTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* java.security.MessageDigest java.util.*" %>
+
+//////////////////////////
+///  global variables  ///
+//////////////////////////
+
+#ifdef DEFS_MAIN_FILE
+<%
+HashMap<String, String> varnames = new HashMap<String, String>();
+Table t = new Table(stringBuffer);
+t.start();
+for (GlobalVariable var : config.getGlobalVariables()) {
+	String varname = var.getName();
+	varname += "_" + TemplateHelpers.md5(varname);
+	varnames.put(var.getName(), varname);
+%>
+<%= var.getType() %>&&&<%= varname %><% if (var.getInitialValue() != null) { %>&&&= <%= var.getInitialValue() %><% } %>;
+<% } t.finish(" "); %>
+#else	// not defined DEFS_MAIN_FILE
+<%
+t.start();
+for (GlobalVariable var : config.getGlobalVariables()) {
+	String varname = varnames.get(var.getName());
+%>
+extern <%= var.getType() %>&&&<%= varname %>;
+<% } t.finish(" "); %>
+#endif
+
+
+<%
+for (GlobalVariable var : config.getGlobalVariables()) {
+	String name = var.getName();
+	String varname = varnames.get(name);
+	String Name = TemplateHelpers.capitalize(name);
+	String NAME= name.toUpperCase();
+	int size = var.getSize();
+	if (size < 0) {
+		size = CType.getSizeOf(var.getType());
+		if (size < 0)
+			warn(stringBuffer, "Couldn't determine size of type '" + var.getType() + "'. Will use a critical section, although this may be unnecessary.");
+	}
+	boolean needs_critical_section = (size != 1);
+%>
+inline static <%= var.getType() %> get<%= Name %>() {
+<% if (needs_critical_section) { %>
+	OS_ENTER_CRITICAL();
+	volatile <%= var.getType() %> tmp = <%= varname %>;
+	OS_EXIT_CRITICAL();
+	return tmp;
+<% } else { %>
+	return <%= varname %>;
+<% } %>
+}
+
+inline static void set<%= Name %>(<%= var.getType() %> value) {
+<% if (needs_critical_section) { %>
+	OS_ENTER_CRITICAL();
+	<%= varname %> = value;
+	OS_EXIT_CRITICAL();
+<% } else { %>
+	<%= varname %> = value;
+<% } %>
+}
+
+<% } %>

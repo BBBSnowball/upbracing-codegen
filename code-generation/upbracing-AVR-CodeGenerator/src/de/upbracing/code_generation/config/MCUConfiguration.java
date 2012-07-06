@@ -21,6 +21,7 @@ public class MCUConfiguration {
 	private DBC can;
 	private EEPROMConfig eeprom = new EEPROMConfig();
 	private PinConfig pins = new PinConfig();
+	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 
 	public List<ECUDefinition> getEcus() {
 		return ecus;
@@ -48,6 +49,10 @@ public class MCUConfiguration {
 
 	public PinConfig getPins() {
 		return pins;
+	}
+
+	public GlobalVariableConfig getGlobalVariables() {
+		return global_variables;
 	}
 
 	public void selectEcu(ECUDefinition ecu) {
