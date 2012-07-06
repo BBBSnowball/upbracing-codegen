@@ -13,8 +13,6 @@ import javax.script.ScriptException;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.strategy.CycleStrategy;
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroupFile;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
 
