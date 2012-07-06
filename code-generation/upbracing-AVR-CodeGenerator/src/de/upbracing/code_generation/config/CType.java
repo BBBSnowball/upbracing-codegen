@@ -4,10 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Provides information about types used in C code
+ * 
+ * @author benny
+ */
 public class CType {
 	private static Map<String, Integer> sizeof;
 	private static Pattern type_modifiers = Pattern.compile("^((signed|unsigned|const|volatile) )*");
 	
+	/**
+	 * initialize static data structures, e.g. the map of type sizes
+	 */
 	static {
 		sizeof = new HashMap<String, Integer>();
 		
@@ -26,6 +34,11 @@ public class CType {
 			sizeof.put(type, 8);
 	}
 	
+	/**
+	 * Find out the size of a C type
+	 * @param type type name
+	 * @return size in bytes
+	 */
 	public static int getSizeOf(String type) {
 		// remove type prefixes that don't change the size
 		type = type_modifiers.matcher(type).replaceAll("");

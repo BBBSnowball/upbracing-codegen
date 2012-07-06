@@ -3,7 +3,17 @@ package de.upbracing.code_generation;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Contains static functions which are called from the templates
+ * 
+ * @author benny
+ */
 public class TemplateHelpers {
+	/**
+	 * Calculate MD5 hash of the string and return it as a String of hex values
+	 * @param x String to compute the hash of
+	 * @return MD5 hash as a String of hex values
+	 */
 	public static String md5(String x) {
 		MessageDigest md5;
 		try {
@@ -21,6 +31,12 @@ public class TemplateHelpers {
 		return sb.toString();
 	}
 	
+	/**
+	 * Convert the first letter of the String to upper case
+	 * 
+	 * @param x input
+	 * @return modified String
+	 */
 	public static String capitalize(String x) {
 		if (x.length() < 1)
 			return x;

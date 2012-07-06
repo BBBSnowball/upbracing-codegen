@@ -65,8 +65,6 @@ public class Main {
 		
 		// execute the script
 		Reader script_reader = new InputStreamReader(stream, Charset.forName("utf-8"));
-		//Bindings b = engine.createBindings();
-		//b.put("config", config);
 		engine.eval(script_reader);
 		try {
 			script_reader.close();
