@@ -1,23 +1,23 @@
 package de.upbracing.code_generation;
 
 public class Table {
-	private StringBuilder sb;
+	private StringBuffer sb;
 	private String seperator_regex;
 	private int index = -1;
 	private boolean spaces_at_end_of_line;
 	
-	public Table(StringBuilder sb, String seperator_regex,
+	public Table(StringBuffer sb, String seperator_regex,
 			boolean spaces_at_end_of_line) {
 		this.sb = sb;
 		this.seperator_regex = seperator_regex;
 		this.spaces_at_end_of_line = spaces_at_end_of_line;
 	}
 
-	public Table(StringBuilder sb, String seperator_regex) {
+	public Table(StringBuffer sb, String seperator_regex) {
 		this(sb, seperator_regex, false);
 	}
 	
-	public Table(StringBuilder sb) {
+	public Table(StringBuffer sb) {
 		this(sb, "&&&");
 	}
 

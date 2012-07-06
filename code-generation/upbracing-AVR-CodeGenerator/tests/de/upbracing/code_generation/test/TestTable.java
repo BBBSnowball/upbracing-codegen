@@ -10,7 +10,7 @@ public class TestTable {
 	@Test
 	public void testIt() {
 		// test base functionality
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
 		sb.append("some text\n");
 		Table t = new Table(sb);
 		sb.append("some more text\n");

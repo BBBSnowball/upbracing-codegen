@@ -14,9 +14,15 @@
 
 //#pragma pack(push, 1)
 typedef struct {
-<% for (EEPROMVariable var : config.getEeprom()) { %>
-	<%=var.getType()%> <%=var.getName()%>;
-<% } %>
+<%
+Table t = new Table(stringBuffer);
+t.start();
+for (EEPROMVariable var : config.getEeprom()) { %>
+	<%=var.getType()%>&&&<%=var.getName()%>;
+<%
+}
+t.finish(" ");
+%>
 } EEPROMDATA;
 //#pragma pack(pop)
 
@@ -24,13 +30,18 @@ typedef struct {
 
 #ifdef DEFS_MAIN_FILE
 	EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
-<% for (EEPROMVariable var : config.getEeprom()) {
+<%
+t.start();
+for (EEPROMVariable var : config.getEeprom()) {
 	Object defaultValue = var.getDefaultValue();
 	if (defaultValue == null)
 		defaultValue = "(" + var.getType() + ")(uint64_t)-1";
 %>
-		<%=defaultValue%>,	// <%=var.getName()%>
-<% } %>
+		<%=defaultValue%>, &&&// <%=var.getName()%>
+<%
+}
+t.finish();
+%>
 	};
 #else
 	extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;

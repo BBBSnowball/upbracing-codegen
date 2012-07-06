@@ -9,11 +9,11 @@
 
 //#pragma pack(push, 1)
 typedef struct {
-	uint8_t wdt_reset_count;
-	float xyz;
-	s16 foo;
+	uint8_t       wdt_reset_count;
+	float         xyz;
+	s16           foo;
 	unsigned char bar;
-	signed long foobar;
+	signed long   foobar;
 	struct PointD abc;
 	struct PointD def;
 } EEPROMDATA;
@@ -23,13 +23,13 @@ typedef struct {
 
 #ifdef DEFS_MAIN_FILE
 	EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
-		17,	// wdt_reset_count
-		1.75,	// xyz
-		0x4242,	// foo
-		(unsigned char)(uint64_t)-1,	// bar
-		(signed long)(uint64_t)-1,	// foobar
-		(struct PointD)(uint64_t)-1,	// abc
-		{1,2},	// def
+		17,                          // wdt_reset_count
+		1.75,                        // xyz
+		0x4242,                      // foo
+		(unsigned char)(uint64_t)-1, // bar
+		(signed long)(uint64_t)-1,   // foobar
+		(struct PointD)(uint64_t)-1, // abc
+		{1,2},                       // def
 	};
 #else
 	extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
