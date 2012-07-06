@@ -1,4 +1,4 @@
-public class CLASS implements IGenerator {
+public class CLASS implements ITemplate {
   
   public void warn(StringBuffer stringBuffer, String message) {
     stringBuffer.append("\n#warning ");

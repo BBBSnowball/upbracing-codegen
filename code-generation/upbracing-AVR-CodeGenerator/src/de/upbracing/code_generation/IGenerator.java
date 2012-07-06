@@ -1,5 +1,8 @@
 package de.upbracing.code_generation;
 
+import java.util.Map;
+
 public interface IGenerator {
-	String generate(de.upbracing.code_generation.config.MCUConfiguration config);
+	String getName();
+	Map<String, ITemplate> getFiles();
 }

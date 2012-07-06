@@ -1,0 +1,3 @@
+de.upbracing.code_generation.generators.GlobalVariableGenerator
+de.upbracing.code_generation.generators.EEPROMAccessorGenerator
+de.upbracing.code_generation.generators.PinNameGenerator
