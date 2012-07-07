@@ -1,8 +1,5 @@
 puts "Hello from config.rb"
 
-$config.a = 42
-$config.b = 7
-
 puts Dir.pwd
 
 require 'parse-dbc.rb'
