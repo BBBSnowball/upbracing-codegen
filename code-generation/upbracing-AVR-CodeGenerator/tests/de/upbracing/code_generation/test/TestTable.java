@@ -55,4 +55,37 @@ public class TestTable {
 		assertEquals("------\n\n\n\n--\n\n\n\n\n",
 				sb.toString());
 	}
+
+	@Test
+	public void testAdvancedFeatures() {
+		StringBuffer sb = new StringBuffer();
+		Table t = new Table(sb, "&%OPT%&");
+
+		// test column alignment
+		sb.setLength(0);
+		t.start();
+		sb.append("a&>&bc&-&xyz\nabc&&xxxxx&&a\na&<&b&&zzzzzz");
+		t.finish("|");
+		assertEquals("a  |   bc| xyz\nabc|xxxxx|  a\na  |b    |zzzzzz",
+				sb.toString());
+		
+		// test alignment for first column
+		sb.setLength(0);
+		t.start();
+		sb.append("&_-&a&>&bc&<&xyz\na&&xxxxx&-&a\naaaaaa&-&b&&zzzzzz\n&_>&a&-&b&&c\n");
+		t.finish("|");
+		assertEquals("  a   |   bc|xyz\n  a   |xxxxx|  a\naaaaaa|  b  |zzzzzz\n     a|  b  |c\n",
+				sb.toString());
+
+		// test simple table options
+		sb.setLength(0);
+		t.start();
+		sb.append("&:<->:&\n&_>&a&&b&&c\nd&<&e&&f\naaa&&bbb&&ccc");
+		t.finish("|");
+		assertEquals("  a| b |  c\nd  |e  |  f\naaa|bbb|ccc",
+				sb.toString());
+		
+		
+		//TODO test column sets and column spanning
+	}
 }
