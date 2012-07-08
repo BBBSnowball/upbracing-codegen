@@ -251,6 +251,13 @@ public class Main {
 			return;
 		}
 		
+		// make sure that we have a config file
+		if (config_file == null) {
+			System.err.println("Please give me a configuration file!");
+			System.exit(-1);
+			return;
+		}
+		
 		// only print dependencies, if the -d option is given
 		// This can be used to specify dependencies in a Makefile.
 		if (cmd.hasOption("d") || cmd.hasOption("D")) {
@@ -283,11 +290,6 @@ public class Main {
 		}
 		
 		// load config file
-		if (config_file == null) {
-			System.err.println("Please give me a configuration file!");
-			System.exit(-1);
-			return;
-		}
 		MCUConfiguration config = loadConfig(config_file);
 		
 		// generate the files
