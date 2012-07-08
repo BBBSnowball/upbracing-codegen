@@ -3,6 +3,7 @@ package de.upbracing.code_generation.config;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.simpleframework.xml.Default;
 
@@ -88,6 +89,30 @@ public class PinConfig extends TreeMap<String, Pin> {
 		for (int bit=0;bit<8;bit++)
 			add(basename + bit, new Pin(port, bit));
 	}
+
+	/** add names for a whole port
+	 * 
+	 * Names will be generated for each pin of the port.
+	 *   addPort("LEDS", "PC");
+	 * defines the same names as
+	 *   add("LEDS0", "PC0");
+	 *   add("LEDS1", "PC1");
+	 *   ...
+	 *   
+	 * In addition, the port is put into the map of port names. The
+	 * code generator will create additional methods that can be used
+	 * to efficiently manipulate the whole port.
+	 * 
+	 * @param basename base name; the numbers 0 to 7 will be appended for the pins
+	 * @param port port name, e.g. "PA" for PA0 to PA7
+	 * @see #getPorts()
+	 */
+	public void addPort(String basename, String port) {
+		if (!Pattern.matches("^P[A-Z]$", port))
+			throw new IllegalArgumentException("invalid port");
+		
+		addPort(basename, port.charAt(1));
+	}
 	
 	/** get the map of ports
 	 * 
@@ -97,5 +122,26 @@ public class PinConfig extends TreeMap<String, Pin> {
 	 */
 	public SortedMap<String, Character> getPorts() {
 		return Collections.unmodifiableSortedMap(ports);
+	}
+	
+	/** add an alias for an existing pin or port definition
+	 * 
+	 * @param alias new name
+	 * @param existing_name old name
+	 */
+	public void addAlias(String alias, String existing_name) {
+		Pin pin = get(existing_name);
+		if (pin != null) {
+			add(alias, pin);
+			return;
+		}
+		
+		Character port = getPorts().get(existing_name);
+		if (port != null) {
+			addPort(alias, port);
+			return;
+		}
+		
+		throw new IllegalStateException("Cannot create an alias for a pin or port that doesn't exist: " + existing_name);
 	}
 }
