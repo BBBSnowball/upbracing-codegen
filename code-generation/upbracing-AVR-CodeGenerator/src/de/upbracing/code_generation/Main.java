@@ -369,6 +369,7 @@ public class Main {
 		//      http://www.mail-archive.com/bug-make@gnu.org/msg03318.html
 		//      http://www.cmcrossroads.com/ask-mr-make/7859-gnu-make-meets-file-names-with-spaces-in-them
 		//      http://www.cmcrossroads.com/ask-mr-make/8442-gnu-make-escaping-a-walk-on-the-wild-side
-		return str.replaceAll("\\$", "$$").replaceAll("[:#\\\\?*%~\\[\\]]", "\\\\$1");
+		//NOTE Using '$$' for '$' doesn't seem to work.
+		return str.replaceAll("([:#\\\\?*%~\\[\\]$])", "\\\\$1");
 	}
 }
