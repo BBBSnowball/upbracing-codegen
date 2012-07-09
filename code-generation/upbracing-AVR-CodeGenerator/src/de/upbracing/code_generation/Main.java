@@ -68,6 +68,8 @@ public class Main {
 		MCUConfiguration config = new MCUConfiguration();
 		engine.put("config", config);
 		
+		engine.eval("require 'config-helpers.rb'");
+		
 		// go to directory of the script
 		String old_pwd = null;
 		if (directory != null) {
