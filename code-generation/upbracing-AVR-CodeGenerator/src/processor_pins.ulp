@@ -1,0 +1,34 @@
+string result = "";
+string tmp;
+
+void listConnectedPins(UL_SCHEMATIC SCH, UL_PART PART) {
+  SCH.nets(NET) {
+    NET.pinrefs(PR) {
+      if (PR.part.name == PART.name) {
+        if (strsub(PR.pin.name, 0, 1) == "P" && strchr(PR.pin.name, '$') < 0)
+          result += ",\n  '" + PR.pin.name + "' => '" + NET.name + "'";
+      }
+    }
+  }
+}
+
+schematic(SCH) {
+  SCH.parts(P) {
+    if (P.deviceset.name == "AT90CAN") {
+      result += "PINS_" + P.name + " = {\n";
+      result += "  '--type--' => '" + P.deviceset.name + "',\n";
+      result += "  '--type2--' => '" + P.device.name + "',\n";
+      result += "  '--value--' => '" + P.value + "',\n";
+      result += "  '--package--' => '" + P.device.package.name + "'";
+      listConnectedPins(SCH, P);
+      result += "\n}\n\n";
+    }
+  }
+}
+
+if (argc > 1) {
+  output(argv[1])
+    printf("%s", result);
+} else {
+  dlgMessageBox(result);
+}

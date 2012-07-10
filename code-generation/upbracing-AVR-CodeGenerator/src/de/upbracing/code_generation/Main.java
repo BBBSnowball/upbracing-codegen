@@ -147,8 +147,8 @@ public class Main {
 		// find lines which contain 'DEPENDS ON'
 		// The pattern p1 finds all of those lines; p2 only
 		// find the valid ones.
-		Pattern p1 = Pattern.compile("^#[ \t]*DEPENDS ON", Pattern.MULTILINE);
-		Pattern p2 = Pattern.compile("^#[ \t]*DEPENDS ON:?[ \t]*(\"([^\"]+)\"|(\\S+)|\r?\n[^\"\r\n]*\"([^\"\r\n]+)\"[^\"\r\n]*$)", Pattern.MULTILINE);
+		Pattern p1 = Pattern.compile("^\\s*#[ \t]*DEPENDS ON", Pattern.MULTILINE);
+		Pattern p2 = Pattern.compile("^\\s*#[ \t]*DEPENDS ON:?[ \t]*(\"([^\"]+)\"|(\\S+)|\r?\n[^\"\r\n]*\"([^\"\r\n]+)\"[^\"\r\n]*$)", Pattern.MULTILINE);
 		Matcher m1 = p1.matcher(config_contents);
 		Matcher m2 = p2.matcher(config_contents);
 
