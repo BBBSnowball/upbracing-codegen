@@ -1,4 +1,4 @@
-string result = "";
+string result = "# This is a generated file. Do not modify it!\n\nPINNAMES = {}\n\n";
 string tmp;
 
 void listConnectedPins(UL_SCHEMATIC SCH, UL_PART PART) {
@@ -15,7 +15,7 @@ void listConnectedPins(UL_SCHEMATIC SCH, UL_PART PART) {
 schematic(SCH) {
   SCH.parts(P) {
     if (P.deviceset.name == "AT90CAN") {
-      result += "PINS_" + P.name + " = {\n";
+      result += "PINNAMES['" + P.name + "'] = {\n";
       result += "  '--type--' => '" + P.deviceset.name + "',\n";
       result += "  '--type2--' => '" + P.device.name + "',\n";
       result += "  '--value--' => '" + P.value + "',\n";

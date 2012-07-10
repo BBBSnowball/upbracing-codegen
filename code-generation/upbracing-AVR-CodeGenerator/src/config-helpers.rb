@@ -54,3 +54,33 @@ def generate_pins_from_eagle(eagle_sch_file, output)
     file.unlink
   end
 end
+
+def load_pins_from_eagle(eagle_sch_file)
+  #TODO This generates a file. This fact should be available to the Makefile.
+  generate_pins_from_eagle(
+    eagle_sch_file,
+    "pins_from_eagle.rb")
+  
+  require 'pins_from_eagle'
+end
+
+def string_or_regex_matches(pattern, str)
+  case pattern
+  when String
+    return pattern == str
+  when Regexp
+    return pattern =~ str
+  end
+end
+
+def eagle_pins(ic_regex, name_regex, pin_regex = //)
+  PINNAMES.each do |part_name,pins|
+    if string_or_regex_matches(ic_regex, part_name)
+      pins.each do |pin,name|
+        if string_or_regex_matches(pin_regex, pin) and string_or_regex_matches(name_regex, name)
+          pin(name, pin.split("_")[0])
+        end
+      end
+    end
+  end
+end
