@@ -84,3 +84,30 @@ def eagle_pins(ic_regex, name_regex, pin_regex = //)
     end
   end
 end
+
+def eagle_port(port_name, ic_regex, name_regex, pin_regex = //)
+  ports = {}
+  PINNAMES.each do |part_name,pins|
+    if string_or_regex_matches(ic_regex, part_name)
+      pins.each do |pin,name|
+        if string_or_regex_matches(pin_regex, pin) and string_or_regex_matches(name_regex, name)
+          port = pin[1..1]
+          bit = pin[2..2].to_i
+          
+          ports[port] ||= 0
+          ports[port] |= (1<<bit)
+        end
+      end
+    end
+  end
+  
+  full_ports = ports.select {|port,bits| bits == 0xff}.map {|x| x[0]}
+  case full_ports.length
+  when 1
+    port(port_name, "P" + full_ports[0])
+  when 0
+    raise "ERROR: No complete port found. Candidates: #{ports.inspect}"
+  else
+    raise "ERROR: More than one full port: #{full_ports.join(", ")}"
+  end
+end
