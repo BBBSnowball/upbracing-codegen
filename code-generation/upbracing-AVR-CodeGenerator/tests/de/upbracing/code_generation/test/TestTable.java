@@ -85,7 +85,44 @@ public class TestTable {
 		assertEquals("  a| b |  c\nd  |e  |  f\naaa|bbb|ccc",
 				sb.toString());
 		
+		// test column sets
+		sb.setLength(0);
+		t.start();
+		sb.append("abcde&&abcd&&abcde\n&b&ab&&c\n&_>&a&&bc\n&>&x\n&a-&j&-&k&-&l\n&b>&x");
+		t.finish("-");
+		assertEquals("abcde-abcd-abcde\nab-c\n a-bc\n  - x\n  j  - k  -  l\n x",
+				sb.toString());
 		
-		//TODO test column sets and column spanning
+		// test column spanning
+		sb.setLength(0);
+		t.start();
+		sb.append("&_2&abcdef&&ghi&&jkl&2&mnopqr\nab&2&cdefgh&2&jklmn&&qr\na&&cd&2&ghijkl&2&nop");
+		t.finish("");
+		assertEquals("abcdefghijklmnopqr\nab cdefghjklmn  qr\na  cd ghijklnop",
+				sb.toString());
+
+		// test column spanning with column seperator
+		sb.setLength(0);
+		t.start();
+		sb.append("&_2&abcdef&&ghi&&jkl&2&mnopqr\nab&2&cdefgh&2&jklmn&&qr\na&&cd&2&ghijkl&2&nop&0&ignored");
+		t.finish("-");
+		assertEquals("abcdef-ghi-jkl-mnopqr\nab -cdefgh-jklmn  -qr\na  -cd-ghijkl -nop",
+				sb.toString());
+		
+		// test ignored columns (span = 0)
+		sb.setLength(0);
+		t.start();
+		sb.append("&_2&abcdef&0&ignored&&ghi&&jkl&2&mnopqr&0&ignored\n&_0&ignored&&ab&2&cdefgh&2&jklmn&&qr\na&&cd&2&ghijkl&2&nop&0&ignored");
+		t.finish("-");
+		assertEquals("abcdef-ghi-jkl-mnopqr\nab -cdefgh-jklmn  -qr\na  -cd-ghijkl -nop",
+				sb.toString());
+		
+		// test zero spanning and column alignment with spanning
+		sb.setLength(0);
+		t.start();
+		sb.append("&_2&abcdef&&ghi&&jkl&2&mnopqr\n&_>&ab&2&cdefgh&2&jklmn&&qr\na&&cd&2&ghijkl&2>&nop");
+		t.finish("-");
+		assertEquals("abcdef-ghi-jkl-mnopqr\n ab-cdefgh-jklmn  -qr\na  -cd-ghijkl -   nop",
+				sb.toString());
 	}
 }
