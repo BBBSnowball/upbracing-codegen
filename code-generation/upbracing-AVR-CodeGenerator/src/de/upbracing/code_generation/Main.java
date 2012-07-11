@@ -68,6 +68,8 @@ public class Main {
 		MCUConfiguration config = new MCUConfiguration();
 		engine.put("config", config);
 		
+		engine.eval("require 'config-helpers.rb'");
+		
 		// go to directory of the script
 		String old_pwd = null;
 		if (directory != null) {
@@ -145,8 +147,8 @@ public class Main {
 		// find lines which contain 'DEPENDS ON'
 		// The pattern p1 finds all of those lines; p2 only
 		// find the valid ones.
-		Pattern p1 = Pattern.compile("^#[ \t]*DEPENDS ON", Pattern.MULTILINE);
-		Pattern p2 = Pattern.compile("^#[ \t]*DEPENDS ON:?[ \t]*(\"([^\"]+)\"|(\\S+)|\r?\n[^\"\r\n]*\"([^\"\r\n]+)\"[^\"\r\n]*$)", Pattern.MULTILINE);
+		Pattern p1 = Pattern.compile("^\\s*#[ \t]*DEPENDS ON", Pattern.MULTILINE);
+		Pattern p2 = Pattern.compile("^\\s*#[ \t]*DEPENDS ON:?[ \t]*(\"([^\"]+)\"|(\\S+)|\r?\n[^\"\r\n]*\"([^\"\r\n]+)\"[^\"\r\n]*$)", Pattern.MULTILINE);
 		Matcher m1 = p1.matcher(config_contents);
 		Matcher m2 = p2.matcher(config_contents);
 
@@ -369,6 +371,7 @@ public class Main {
 		//      http://www.mail-archive.com/bug-make@gnu.org/msg03318.html
 		//      http://www.cmcrossroads.com/ask-mr-make/7859-gnu-make-meets-file-names-with-spaces-in-them
 		//      http://www.cmcrossroads.com/ask-mr-make/8442-gnu-make-escaping-a-walk-on-the-wild-side
-		return str.replaceAll("\\$", "$$").replaceAll("[:#\\\\?*%~\\[\\]]", "\\\\$1");
+		//NOTE Using '$$' for '$' doesn't seem to work.
+		return str.replaceAll("([:#\\\\?*%~\\[\\]$])", "\\\\$1");
 	}
 }
