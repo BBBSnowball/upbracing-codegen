@@ -54,7 +54,7 @@ StatusType TerminateTask(void)
 
 	// Switch to another task
 	Os_Schedule();
-	OSEK_RESTORE_CONTEXT();
+	OS_RESTORE_CONTEXT();
 	asm volatile("reti");
 	
 	// will never get here
@@ -64,27 +64,27 @@ StatusType TerminateTask(void)
 StatusType GetTaskID(TaskRefType taskId)
 {
 	//QUESTION(Benjamin): Do we need a critical section to access the id?
-	OSEK_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 	*taskId = os_currentTcb->id;
-	OSEK_EXIT_CRITICAL();
+	OS_EXIT_CRITICAL();
 	return E_OK;
 }
 
 StatusType GetTaskState(TaskType taskId, TaskStateRefType state)
 {
-	OSEK_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 	
 	// Check, if the task id is valid
 	if (taskId > (OS_NUMBER_OF_TCBS - 1))
 	{
-		OSEK_EXIT_CRITICAL();
+		OS_EXIT_CRITICAL();
 		return E_OS_ID;
 	}		
 		
 	// Return the state of current task
 	//QUESTION(Benjamin): Why would we have the taskId parameter, if it returns the state for the current task?
 	*state = os_currentTcb->state;
-	OSEK_EXIT_CRITICAL();
+	OS_EXIT_CRITICAL();
 	return E_OK;
 }
 
