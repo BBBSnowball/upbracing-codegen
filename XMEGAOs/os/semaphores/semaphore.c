@@ -5,6 +5,7 @@
  *  Author: Krishna
  */ 
 #include "semaphore.h"
+#include <util\delay.h>
 
 
 /*	@brief Performs wait operation on semaphore
@@ -14,25 +15,29 @@
 	@detail	Wait function decrements the value of semaphore count by 1. If the count is negative, the task is added to the end of the queue.
 */
 void _sem_wait(Semaphore name){
-	//Definition pending
-	while(name->queue_cap <= name->queue_end){ /* Check if the capacity of the queue is less than the end of the queue - this is illegal */
+	//Definition check needed
+	TaskRefType t;
+	GetTaskID(&t);
+	while(name->queue_cap <= name->queue_end){ 
+		/* Check if the capacity of the queue is less than or equal to the end of the queue - this is illegal/queue is full */
 		//add sleep function here	
+		_delay_ms(1);
 	}
-	
-	
-	if (name->queue_end < name->queue_cap) // location for critical section wrap
+	if (name->queue_end < name->queue_cap) // critical section wrap in task or here ?
 	{
+		OS_ENTER_CRITICAL();
 		name->count--;
 		if (name->count < 0) 
 		{
 			name->queue_end++;
-			name->queue[name->queue_end] = GetTaskID(os_currentTcb->id); // How to get reference of self task pointer ?
-			//save context here ?
-			//TerminateTask();
-			//load context here ?
-			//will the program resume here to load context back ? 
-			//if it loads back here, why do we need load context ? then is save context needed ?
-		}		
+			name->queue[name->queue_end] = t; 
+		}	
+		OS_EXIT_CRITICAL();	
+	}
+	while (name->queue[0] != t)
+	/* Check if the head of the queue is this task, i.e., if this task has been granted semaphore. Sleep in between. */
+	{
+		_delay_ms(1);
 	}
 }
 
@@ -43,7 +48,7 @@ void _sem_wait(Semaphore name){
 	@detail	Signal function increments the semaphore count. If the count is negative, the next blocking task is put into the ready queue.
 */
 void _sem_signal(Semaphore name){
-	//Definition Pending
+	//Definition check
 	uint8_t i;
 	
 	name->count++;
@@ -117,6 +122,11 @@ bool _sem_continue_wait(Semaphore name , sem_token_t token){
 	//Should i check if token is valid or not ?
 	uint8_t i,tok;
 	tok = token;
+	if (tok == 0)
+	{
+		return true;
+	}
+	
 	for (i=0;i<=255;i++)
 	{
 		if (tok == SEM_TOKEN.token_array[i])
@@ -125,7 +135,7 @@ bool _sem_continue_wait(Semaphore name , sem_token_t token){
 		}
 	}
 	
-	if (tok == name->queue[0])
+	if (tok == name->queue[0]) // should this be like signal or just check if sem has granted? if latter, then will signal() be called by task after finishing ?
 	{
 		name->count++;
 		for (i=0;i<=name->queue_end;i++)

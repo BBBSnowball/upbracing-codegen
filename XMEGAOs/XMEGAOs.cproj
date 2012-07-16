@@ -292,6 +292,12 @@
     <Compile Include="os\internal\OSEK_Task.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="os\IPC\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\IPC\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="os\OSEK.c">
       <SubType>compile</SubType>
     </Compile>
@@ -311,6 +317,7 @@
     <Folder Include="os\drivers\" />
     <Folder Include="os\generated" />
     <Folder Include="os\internal" />
+    <Folder Include="os\IPC" />
     <Folder Include="os\semaphores" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\AvrGCC.targets" />

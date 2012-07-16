@@ -31,6 +31,7 @@ typedef struct { //Declarations incomplete
 	struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } SEM_##name##; SEM_##name##.count=1;SEM_##name##.queue_cap=(queue_capacity);SEM_##name##.queue_end=0
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
+// what is the max length of queue ?
 
 /* Synchronous wait and signal */
 
