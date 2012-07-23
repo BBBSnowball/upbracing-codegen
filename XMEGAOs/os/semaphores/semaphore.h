@@ -4,10 +4,12 @@
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
  */ 
-
+#include "OSEK.h"
 
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
+
+typedef uint8_t bool;
 
 struct  
 {
@@ -35,11 +37,11 @@ typedef struct { //Declarations incomplete
 
 /* Synchronous wait and signal */
 
-#define sem_wait(name) _sem_wait(&SEM_##name.sem)
+#define sem_wait(name) _sem_wait(&SEM_##name##.sem)
 void _sem_wait(Semaphore* sem);
 
 //void sem_wait(Semaphore name);
-#define sem_signal(name) _sem_signal(&SEM_##name.sem)
+#define sem_signal(name) _sem_signal(&SEM_##name##.sem)
 void _sem_signal(Semaphore* sem);
 
 
@@ -76,22 +78,22 @@ typedef struct Semaphore_n{ /*Declarations incomplete */
  //Synchronous wait & signal
  
  #define sem_wait_n(name, n) _sem_wait_n(&SEM_##name##_n, n)
- void _sem_wait_n (SEMAPHORE_n name , uint8_t n);
+ void _sem_wait_n (Semaphore_n* name , uint8_t n);
  
  #define sem_signal_n(name, n) _sem_signal_n(&SEM_##name##_n, n)
- void _sem_signal_n (Semaphore_n name , uint8_t n);
+ void _sem_signal_n (Semaphore_n* name , uint8_t n);
  
  //Start waiting for queue
  #define sem_start_wait_n(name,n) _sem_start_wait_n(&SEM_##name##_n, n)
- sem_token_t _sem_start_wait_n (SEMAPHORE_n name , uint8_t n);
+ sem_token_t _sem_start_wait_n (Semaphore_n* name , uint8_t n);
  
  //Continue waiting for queue
  #define sem_continue_wait_n(name, token) _sem_continue_wait_n(&SEM_##name##_n, token)
- bool _sem_continue_wait_n (Semaphore_n name , sem_token_t token );
+ bool _sem_continue_wait_n (Semaphore_n* name , sem_token_t token );
  
  //Stop waiting for queue
   #define sem_stop_wait_n(name, token) _sem_stop_wait_n(&SEM_##name##_n, token)
- void _sem_stop_wait_n (SEMAPHORE_n name , sem_token_t token );
+ void _sem_stop_wait_n (Semaphore_n* name , sem_token_t token );
 
 
 #endif /* SEMAPHORE_H_ */

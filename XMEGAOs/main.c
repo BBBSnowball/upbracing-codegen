@@ -68,9 +68,9 @@ int main(void)
 TASK(Task_Update)
 {
 	// Update the port with the leds connected
-	OS_ENTER_CRITICAL;
+	OS_ENTER_CRITICAL();
 	PORTA = j;
-	OS_EXIT_CRITICAL;
+	OS_EXIT_CRITICAL();
 	
 	// Terminate this task
 	TerminateTask();
@@ -80,9 +80,9 @@ TASK(Task_Increment)
 {
 	// Increment global counter for leds
 	//j++;
-	OS_ENTER_CRITICAL;
+	OS_ENTER_CRITICAL();
 	j++;
-	OS_EXIT_CRITICAL;
+	OS_EXIT_CRITICAL();
 	// Terminate this task
 	TerminateTask();
 }

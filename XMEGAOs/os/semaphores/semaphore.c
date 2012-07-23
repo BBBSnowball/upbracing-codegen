@@ -5,6 +5,7 @@
  *  Author: Krishna
  */ 
 #include "semaphore.h"
+#include "OSEK.h"
 #include <util\delay.h>
 
 
@@ -37,7 +38,8 @@ void _sem_wait(Semaphore name){
 	while (name->queue[0] != t)
 	/* Check if the head of the queue is this task, i.e., if this task has been granted semaphore. Sleep in between. */
 	{
-		_delay_ms(1);
+		//_delay_ms(1);
+		//call for suspend event
 	}
 }
 
@@ -59,7 +61,8 @@ void _sem_signal(Semaphore name){
 	name->queue_end--;
 	if (name->count < 0)
 	{
-		ActivateTask(name->queue[0]);
+		//ActivateTask(name->queue[0]);
+		//call event(semaphore_event, taskid);
 	}
 	
 }
