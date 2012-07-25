@@ -133,7 +133,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 void StartFirstTask(void) __attribute__ ( (naked) );
 void StartFirstTask(void)
 {
-	OSEK_RESTORE_CONTEXT();
+	OS_RESTORE_CONTEXT();
 	os_isStarted = 1;
 	
 	//QUESTION(Benjamin): Do we need this "ret" here? Won't the compiler
@@ -168,9 +168,9 @@ void Os_TimerIncrement(void)
 void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
 void TIMER1_COMPA_vect(void)
 {
-	OSEK_SAVE_CONTEXT();
+	OS_SAVE_CONTEXT();
 	Os_TimerIncrement();	
-	OSEK_RESTORE_CONTEXT();
+	OS_RESTORE_CONTEXT();
 	
 	asm volatile("reti");
 }
@@ -180,7 +180,7 @@ void Os_Schedule(void)
 {	
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	OSEK_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 	void * newtcb = NULL;
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
@@ -206,7 +206,7 @@ void Os_Schedule(void)
 		os_currentTcb = newtcb;
 	}
 	
-	OSEK_EXIT_CRITICAL();
+	OS_EXIT_CRITICAL();
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif

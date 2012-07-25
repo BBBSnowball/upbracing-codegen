@@ -31,7 +31,15 @@ extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] =
 		SUSPENDED, /* Task State */
 		Task_Increment,	/* Function Pointer */
 		2, /* Id/Priority */
-		NONPREEMPTABLE,
+		PREEMPTABLE,
+	},
+	{
+		(StackPointerType *) 0x02FF,	/* Top of stack */
+		(StackPointerType *) 0x02FF,	/*Base address of stack */
+		SUSPENDED, /* Task State */
+		Task_Shift,
+		3, /* ID/Priority */
+		PREEMPTABLE,
 	}													 
 };
 
@@ -46,7 +54,13 @@ extern volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] =
 	{	// Alarm for Task_Increment
 		2,				// Task ID: Increment
 		0,				// Current Value
-		4,			// Ticks Per Base		
+		5,			// Ticks Per Base		
+		//1,				// Active state
+	},
+	{	// Alarm for Task_Shift
+		3,				// Task ID: Shift
+		0,				// Current Value
+		1,			// Ticks Per Base
 		//1,				// Active state
 	}			
 };
