@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "Os_config.h"
 #include "Timer.h"
 
 // Initializes Timer1 with a prescaling and a compare match value

@@ -1,0 +1,1 @@
+OBJS += ./os/config/Os_application_dependent_code.o 

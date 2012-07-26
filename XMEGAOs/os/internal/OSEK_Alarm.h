@@ -11,7 +11,7 @@
 
 #include "OSEK_StatusTypes.h"
 #include "OSEK_AlarmTypes.h"
-#include "Os_cfg_generated.h"
+#include "Os_config.h"
 
 //extern volatile Os_Alarm os_alarms[];
 extern volatile uint16_t os_counter;
