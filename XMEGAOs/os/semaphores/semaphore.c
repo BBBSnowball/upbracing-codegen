@@ -6,7 +6,7 @@
  */ 
 #include "semaphore.h"
 #include "OSEK.h"
-#include <util\delay.h>
+#include <util/delay.h>
 
 //NOTE(Benjamin): It is very good that you write documentation for your functions. However, I think that it should be in the
 //                header file, as other programmers won't look at the c file, when they want to learn about the interface. Of

@@ -7,6 +7,7 @@
 
 #include "Os_cfg_generated.h"
 #include "OSEK_Alarm.h"
+#include "OSEK_Task.h"
 
 void RunAlarm(volatile Os_Alarm * alarm) __attribute__ ( (naked) );
 //QUESTION(Benjamin): We can we use a naked function here? It is called from normal C

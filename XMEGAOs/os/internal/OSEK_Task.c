@@ -26,12 +26,12 @@ StatusType TerminateTask(void)
 	//                    them without further precautions? You could let the
 	//                    compiler choose the registers.
 	//QUESTION(Benjamin): Why to you use assembly code? Is it because we have to change SP?	
-	//asm volatile(	"lds r26, os_currentTcb		\n\t"	\
+	/*asm volatile(	"lds r26, os_currentTcb		\n\t"	\
 					//"lds r27, os_currentTcb + 1	\n\t"	\
 					//"ld r28, x+					\n\t"	\
 					//"out __SP_L__, r28			\n\t"	\
 					//"ld r29, x+					\n\t"	\
-					//"out __SP_H__, r29			\n\t"	);
+					//"out __SP_H__, r29			\n\t"	);*/
 	
 	/* Reset return address to os_currentTcb->func */
 	//QUESTION(Benjamin): What "return address" do we set here? Is it the instruction pointer

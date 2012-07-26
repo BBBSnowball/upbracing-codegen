@@ -31,6 +31,8 @@ uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
 #endif
 
 
+// pre-declaration; used by several functions
+void Os_Schedule(void) __attribute__ ( (naked) );
 
 
 // Initializes the stack of a given TCB for first time use
@@ -150,7 +152,7 @@ void Os_TimerIncrement(void)
 	/* Run Os Alarms */
 	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
-		volatile Os_Alarm * base = &os_alarms;
+		volatile Os_Alarm * base = os_alarms;
 		base += i;
 		base->tick++;
 		if (base->tick % base->ticksperbase == 0) 
@@ -181,7 +183,7 @@ void Os_Schedule(void)
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	OS_ENTER_CRITICAL();
-	void * newtcb = NULL;
+	volatile void * newtcb = NULL;
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
