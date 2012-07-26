@@ -1,2 +1,0 @@
-../os/config/Os_application_dependent_code.c: ../os/config/Os_application_dependent_code.c.sh $(subst ../os/config/Os_application_dependent_code.c,,$(wildcard ../os/*.c ../os/*/*.c ../os/*/*/*.c))
-	../os/config/Os_application_dependent_code.c.sh

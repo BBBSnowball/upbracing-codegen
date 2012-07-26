@@ -9,8 +9,8 @@
 #ifndef OSEK_TASK_H_
 #define OSEK_TASK_H_
 
-#include "OSEK_StatusTypes.h"
-#include "OSEK_TaskTypes.h"
+#include "datatypes/OSEK_StatusTypes.h"
+#include "datatypes/OSEK_TaskTypes.h"
 
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];

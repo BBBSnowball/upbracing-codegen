@@ -9,9 +9,9 @@
 #ifndef OSEK_ALARM_H_
 #define OSEK_ALARM_H_
 
-#include "OSEK_StatusTypes.h"
-#include "OSEK_AlarmTypes.h"
-#include "Os_config.h"
+#include "datatypes/OSEK_StatusTypes.h"
+#include "datatypes/OSEK_AlarmTypes.h"
+#include "config/Os_config.h"
 
 //extern volatile Os_Alarm os_alarms[];
 extern volatile uint16_t os_counter;

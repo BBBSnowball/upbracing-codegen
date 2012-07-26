@@ -14,11 +14,11 @@
 #ifndef OS_CONFIG_H_
 #define OS_CONFIG_H_
 
-#include "OSEK_StatusTypes.h"
-#include "OSEK_AlarmTypes.h"
-#include "OSEK_TaskTypes.h"
+#include "datatypes/OSEK_StatusTypes.h"
+#include "datatypes/OSEK_AlarmTypes.h"
+#include "datatypes/OSEK_TaskTypes.h"
 
-#include "OS_cfg_features.h"
+#include "Os_cfg_features.h"
 
 extern volatile Os_Alarm os_alarms[];
 extern volatile Os_Tcb os_tcbs[];
