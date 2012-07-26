@@ -1,2 +1,4 @@
-XMEGAOs/Debug/*
-XMEGAos/Release/*
+Debug
+Release
+default
+*.suo

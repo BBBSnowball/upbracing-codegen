@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "Os_config.h"
 #include "OSEK_Kernel.h"
 #include "OSEK_Task.h"
 #include <avr/interrupt.h>
@@ -17,22 +17,21 @@ volatile uint16_t os_counter = 0;
 volatile uint8_t os_isStarted = 0;
 
 #if OS_CFG_CC != BCC1 && OS_CFG_CC != BCC2 && \
-	OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
-#error No valid Conformance Class specified
+		OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
+#	error No valid Conformance Class specified
 #endif
 
+// will be compiled in Os_application_dependent_code.c:
+#ifdef APPLICATION_DEPENDENT_CODE
 #if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
 //QUESTION(Benjamin): Could we replace it by a bitfield?
-uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
+uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 #elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-#error Multiple activations for basic tasks, multiple tasks per priority
+#	error Multiple activations for basic tasks, multiple tasks per priority
 #endif
-
-
-// pre-declaration; used by several functions
-void Os_Schedule(void) __attribute__ ( (naked) );
+#endif	// end of APPLICATION_DEPENDENT_CODE
 
 
 // Initializes the stack of a given TCB for first time use

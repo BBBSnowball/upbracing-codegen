@@ -11,11 +11,10 @@
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="de.innot.avreclipse.buildArtefactType.app" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=de.innot.avreclipse.buildArtefactType.app" description="" id="de.innot.avreclipse.configuration.app.debug.1588283416" name="Debug" parent="de.innot.avreclipse.configuration.app.debug">
+				<configuration artifactExtension="a" artifactName="${ProjName}" buildArtefactType="de.innot.avreclipse.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=de.innot.avreclipse.buildArtefactType.staticLib" description="" id="de.innot.avreclipse.configuration.app.debug.1588283416" name="Debug" parent="de.innot.avreclipse.configuration.app.debug">
 					<folderInfo id="de.innot.avreclipse.configuration.app.debug.1588283416." name="/" resourcePath="">
 						<toolChain id="de.innot.avreclipse.toolchain.winavr.app.debug.1646822663" name="AVR-GCC Toolchain" superClass="de.innot.avreclipse.toolchain.winavr.app.debug">
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objcopy.flash.app.debug.1298636890" name="Generate HEX file for Flash memory" superClass="de.innot.avreclipse.toolchain.options.toolchain.objcopy.flash.app.debug"/>
@@ -33,11 +32,7 @@
 								<option id="de.innot.avreclipse.compiler.option.debug.level.104051804" name="Generate Debugging Info" superClass="de.innot.avreclipse.compiler.option.debug.level"/>
 								<option id="de.innot.avreclipse.compiler.option.optimize.1486182346" name="Optimization Level" superClass="de.innot.avreclipse.compiler.option.optimize"/>
 								<option id="de.innot.avreclipse.compiler.option.incpath.1086883617" name="Include Paths (-I)" superClass="de.innot.avreclipse.compiler.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os/datatypes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os/internal}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os/generated}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.453139429" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
 							</tool>
@@ -86,7 +81,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="Debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="config/Os_application_dependent_code.c|IPC/queue.c|semaphores/semaphore.c|Debug|os/IPC/queue.c|os/semaphores/semaphore.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -184,14 +179,20 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="XMegaOS.de.innot.avreclipse.project.winavr.elf_2.1.0.921116290" name="AVR Cross Target Application" projectType="de.innot.avreclipse.project.winavr.elf_2.1.0"/>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.391750834;de.innot.avreclipse.configuration.app.release.391750834.;de.innot.avreclipse.tool.compiler.winavr.app.release.437146879;de.innot.avreclipse.compiler.winavr.input.1090797261">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="refreshScope" versionNumber="1">
 		<resource resourceType="PROJECT" workspacePath="/XMegaOS"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.1588283416;de.innot.avreclipse.configuration.app.debug.1588283416.;de.innot.avreclipse.tool.compiler.winavr.app.debug.1862471956;de.innot.avreclipse.compiler.winavr.input.453139429">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.391750834;de.innot.avreclipse.configuration.app.release.391750834.;de.innot.avreclipse.tool.compiler.winavr.app.release.437146879;de.innot.avreclipse.compiler.winavr.input.1090797261">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.1588283416;de.innot.avreclipse.configuration.app.debug.1588283416.1641541037;de.innot.avreclipse.tool.compiler.winavr.app.debug.535401091;de.innot.avreclipse.compiler.winavr.input.1466403821">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

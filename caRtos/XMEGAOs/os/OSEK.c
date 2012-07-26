@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "Os_config.h"
 #include "OSEK.h"
 #include "Timer.h"
 #include <avr/interrupt.h>
