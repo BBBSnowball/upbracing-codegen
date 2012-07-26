@@ -11,11 +11,7 @@
 #define QUEUE_H_
 
 typedef uint8_t bool;
-typedef struct
-{
-	TaskType id;
-	uint8_t n;
-}ipc_queue;
+
 
 typedef struct  
 {
@@ -24,13 +20,15 @@ typedef struct
 	uint8_t capacity; // capacity of the queue
 	uint8_t occupied; // number of bytes present in the queue
 	
-	uint8_t ipc_queue[1];
+	uint8_t q_queue[1];
 }Queue;
 #define QUEUE(name, capacity) \
-		struct { Queue q; ipc_queue rest_ipc_queue[(capacity)-1]; }QUEUE_##name##; QUEUE_##name##.capacity=(capacity); QUEUE_##name##.queue_front=0; QUEUE_##name##.queue_end=0; QUEUE_##name##.occupied=0
+		struct { Queue q; uint8_t rest_q_queue[(capacity)-1]; }QUEUE_##name##; QUEUE_##name##.capacity=(capacity); QUEUE_##name##.queue_front=0; QUEUE_##name##.queue_end=0; QUEUE_##name##.occupied=0
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
 // what is the max length of queue ?
+
+
 
 //How to create queues ?
 //implement macro overloading

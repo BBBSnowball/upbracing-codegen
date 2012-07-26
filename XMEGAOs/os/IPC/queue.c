@@ -17,7 +17,16 @@ void _queue_enqueue(Queue* name, uint8_t data )
 	//queue name ?
 	//should i assume critical section wrap or implement it here ?
 	
+	while (name->occupied >= name->capacity)
+	{
+		//suspend yourself
+	}
 	
+	if (name->occupied < name->capacity)
+	{
+		name->queue_end++;
+		
+	}
 	
 }
 
