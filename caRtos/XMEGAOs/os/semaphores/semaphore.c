@@ -6,8 +6,27 @@
  */ 
 #include "semaphore.h"
 #include "OSEK.h"
-#include <util\delay.h>
+#include <util/delay.h>
 
+//NOTE(Benjamin): It is very good that you write documentation for your functions. However, I think that it should be in the
+//                header file, as other programmers won't look at the c file, when they want to learn about the interface. Of
+//                course, you can describe the details of your implementation in the c file.
+
+//NOTE(Benjamin): Your comments look like they are meant to be processed by some automatic system similar to JavaDoc. It looks
+//                like Doxygen, but for that you have to start your comments with two stars instead of one, so Doxygen will
+//                know that they are special.
+//                see http://www.stack.nl/~dimitri/doxygen/docblocks.html#specialblock
+
+//NOTE(Benjamin): Your function signatures are wrong. Please make sure that you copy them from the header file. Otherwise, the
+//                program will crash. You have to use a pointer because only then can you change the variable.
+
+//NOTE(Benjamin): I get the impression that there are quite a few bugs in your implementation. We aren't the first ones who
+//                implement semaphores. Please look at pseudo code in books or at existing implementations! That way you will
+//                not only save yourself a lot of work, but we will also have fewer bugs.
+
+//NOTE(Benjamin): The parameter "name" contains the semaphore. On the macro, this parameter name makes sense. For the functions, you
+//                should consider calling it "sem" or something similar, as it contains a pointer to the semaphore and not its name.
+//                Please update the documentation accordingly.
 
 /*	@brief Performs wait operation on semaphore
 	
@@ -19,11 +38,17 @@ void _sem_wait(Semaphore name){
 	//Definition check needed
 	TaskRefType t;
 	GetTaskID(&t);
+	//NOTE(Benjamin): We shouldn't check that before we know that we need the queue -> first decrement and check the name->count
 	while(name->queue_cap <= name->queue_end){ 
 		/* Check if the capacity of the queue is less than or equal to the end of the queue - this is illegal/queue is full */
-		//add sleep function here	
+		//add sleep function here
+		//NOTE(Benjamin): This shouldn't happen. If it does, this is an error in the design of the system. Therefore, we should
+		//                report it to the error handling function. If it returns, we can use this loop. The loop is a really
+		//                good idea.
+		//TODO use a sleep function which is provided by the OS, so we don't waste processing time
 		_delay_ms(1);
 	}
+	//NOTE(Benjamin): What does this condition do? I don't understand the comment!
 	if (name->queue_end < name->queue_cap) // critical section wrap in task or here ?
 	{
 		OS_ENTER_CRITICAL();
@@ -35,6 +60,10 @@ void _sem_wait(Semaphore name){
 		}	
 		OS_EXIT_CRITICAL();	
 	}
+	//NOTE(Benjamin): You mustn't run into this loop, if the semaphore has been granted immediately.
+	//NOTE(Benjamin): A semaphore mustn't do "busy waiting". Instead, it must use a OS function to disable the current
+	//                task, so it doesn't waste any processing time while waiting. sem_signal will unblock the first
+	//                process in the queue (if it is really a process (smaller than OS_NUMBER_OF_TCBS) and not a token).
 	while (name->queue[0] != t)
 	/* Check if the head of the queue is this task, i.e., if this task has been granted semaphore. Sleep in between. */
 	{
@@ -54,6 +83,8 @@ void _sem_signal(Semaphore name){
 	uint8_t i;
 	
 	name->count++;
+	//NOTE(Benjamin): This is very slow. For a first implementation, this may be ok. However, you have to replace
+	//                this by a ring buffer.
 	for (i=0;i<=name->queue_end;i++)
 	{
 		name->queue[i]=name->queue[i+1];
@@ -61,7 +92,8 @@ void _sem_signal(Semaphore name){
 	name->queue_end--;
 	if (name->count < 0)
 	{
-		//ActivateTask(name->queue[0]);
+		//if (name->queue[0] < OS_NUMBER_OF_TCBS)
+		//	ActivateTask(name->queue[0]);
 		//call event(semaphore_event, taskid);
 	}
 	

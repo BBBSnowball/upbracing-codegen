@@ -7,7 +7,7 @@
 
 #include "Os_cfg_generated.h"
 
-extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] = 
+volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] =
 {	
 	{		 
 		(StackPointerType *) 0x08FF,	/* Top of stack	*/
@@ -43,7 +43,7 @@ extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] =
 	}													 
 };
 
-extern volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] = 
+volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] =
 {						
 	{	// Alarm for Task_Update
 		1,				// Task ID: Update
