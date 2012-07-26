@@ -9,8 +9,8 @@
 #ifndef OSEK_TASK_H_
 #define OSEK_TASK_H_
 
-#include "OSEK_StatusTypes.h"
-#include "OSEK_TaskTypes.h"
+#include "datatypes/OSEK_StatusTypes.h"
+#include "datatypes/OSEK_TaskTypes.h"
 
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];
@@ -18,7 +18,7 @@ extern volatile Os_Tcb os_tcbs[];
 #if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
-extern uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
+extern uint8_t os_ready_queue[];
 #elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 #error Multiple activations for basic tasks, multiple tasks per priority
 #endif

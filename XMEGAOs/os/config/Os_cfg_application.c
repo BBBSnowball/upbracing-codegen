@@ -5,9 +5,14 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "Os_cfg_application.h"
 
-extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] = 
+#define COUNT_OF(x) (sizeof(x) / sizeof(*(x)))
+
+const uint8_t OS_NUMBER_OF_TCBS   = OS_NUMBER_OF_TCBS_DEFINE;
+const uint8_t OS_NUMBER_OF_ALARMS = OS_NUMBER_OF_ALARMS_DEFINE;
+
+volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 {	
 	{		 
 		(StackPointerType *) 0x08FF,	/* Top of stack	*/
@@ -43,7 +48,7 @@ extern volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS] =
 	}													 
 };
 
-extern volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS] = 
+volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS_DEFINE] =
 {						
 	{	// Alarm for Task_Update
 		1,				// Task ID: Update
