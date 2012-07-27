@@ -12,10 +12,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.jruby.compiler.ir.operands.Array;
+
+import com.kenai.jaffl.annotations.In;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
 
@@ -109,7 +113,7 @@ public class Main {
 	private static MCUConfiguration loadConfig(String file) throws FileNotFoundException, ScriptException {
 		return loadConfig(
 				new FileInputStream(file),
-				new File(file).getParent());
+				new File(file).getParentFile().getAbsolutePath());
 	}
 	
 	/** Read contents of a file
@@ -322,6 +326,110 @@ public class Main {
 				result.add(f.getPath());
 		}
 	}
+	
+	/** Make a set of used generators
+	 * 
+	 * @param gen generator to query used generators for
+	 * @return the set
+	 */
+	private static Set<Class<IGenerator>> getUsedSet(IGenerator gen) {
+		HashSet<Class<IGenerator>> used = new HashSet<Class<IGenerator>>();
+		for (Class<IGenerator> used_gen : gen.getUsedGenerators())
+			used.add(used_gen);
+		return used;
+	}
+	
+	/** Test whether the class or one of its superclasses or interfaces is in the set
+	 * 
+	 * @param gen_class the class to look for
+	 * @param used the set
+	 * @return whether the class or one of its superclasses or interfaces is in the set
+	 */
+	private static boolean inUsedSet(Class<?> gen_class, Set<Class<IGenerator>> used) {
+		do {
+			if (used.contains(gen_class))
+				return true;
+			
+			for (Class<?> gen_interface : gen_class.getInterfaces())
+				if (inUsedSet(gen_interface, used))
+					return true;
+			
+			gen_class = gen_class.getSuperclass();
+		} while (gen_class != null);
+		
+		return false;
+	}
+	
+	/** Test whether the class or one of its superclasses or interfaces is in the set
+	 * 
+	 * @param gen the generator to look for
+	 * @param used the set
+	 * @return whether the class or one of its superclasses or interfaces is in the set
+	 */
+	private static boolean inUsedSet(IGenerator gen, Set<Class<IGenerator>> used) {
+		return inUsedSet(gen.getClass(), used);
+	}
+	
+	/**
+	 * Sort generators according to the information {@link IGenerator#getUsedGenerators()}
+	 * @param generators
+	 * @return
+	 */
+	private static Iterable<IGenerator> sortGenerators(Iterable<IGenerator> generators) {
+		//TODO This algorithm will only work for simple cases. We have to build a graph.
+		ArrayList<IGenerator> list = new ArrayList<IGenerator>();
+		for (IGenerator gen : generators) {
+			Set<Class<IGenerator>> used = getUsedSet(gen);
+			
+			// find the first generator that is used by the generator
+			int index;
+			for (index=0;index<list.size();index++) {
+				if (inUsedSet(list.get(index), used))
+					break;
+			}
+			
+			// place the generator before the used class
+			// (This works in all cases because add(...) allows index==list.size().)
+			int add_index = index;
+			list.add(index, gen);
+			
+			// make sure that the generator is not used by any of the generators following it
+			for (;index<list.size();index++) {
+				if (inUsedSet(gen, getUsedSet(list.get(index)))) {
+					System.err.println("ERROR: Dependency loop in generators (or fail of the "
+							+ "too simple dependency resolution algorithm) with "
+							+ list.get(index).getName() + " -> " + gen.getName() + " -> "
+							+ list.get(add_index+1).getName());
+				}
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * Validate configuration
+	 * 
+	 * @param generators list of generators
+	 * @param config the configuration
+	 * @param after_update_config true, if validate should assume that updateConfig has been run
+	 * @param failed_generators 
+	 * @return
+	 */
+	private static boolean validate(Iterable<IGenerator> generators,
+			MCUConfiguration config, boolean after_update_config, HashSet<IGenerator> failed_generators) {
+		boolean validation_passed = true;
+		for (IGenerator gen : generators) {
+			if (failed_generators.contains(gen))
+				continue;
+			
+			if (!gen.validate(config, after_update_config)) {
+				System.err.println("ERROR: Validation failed for " + gen.getName());
+				validation_passed = false;
+				failed_generators.add(gen);
+			}
+		}
+		return validation_passed;
+	}
 
 	/**
 	 * Run all generators
@@ -330,10 +438,32 @@ public class Main {
 	 */
 	private static void runGenerators(MCUConfiguration config,
 			String target_directory) {
-		for (IGenerator gen : findGenerators()) {
+		Iterable<IGenerator> generators = sortGenerators(findGenerators());
+		
+		HashSet<IGenerator> failed_generators = new HashSet<IGenerator>();
+		
+		if (!validate(generators, config, false, failed_generators))
+			return;
+		
+		for (IGenerator gen : generators) {
+			if (!failed_generators.contains(gen))
+				gen.updateConfig(config);
+		}
+
+		if (!validate(generators, config, true, failed_generators))
+			return;
+		
+		for (IGenerator gen : generators) {
+			if (failed_generators.contains(gen))
+				continue;
+			
 			for (Entry<String, ITemplate> e : gen.getFiles().entrySet()) {
 				File file = new File(target_directory + e.getKey());
 				ITemplate generator = e.getValue();
+				
+				if (!gen.isTemplateActive(e.getKey(), generator, config))
+					//TODO should we delete the file?
+					continue;
 				
 				// run the generator
 				System.out.println("Generating " + file);
@@ -357,6 +487,9 @@ public class Main {
 				}
 			}
 		}
+		
+		if (!failed_generators.isEmpty())
+			System.err.println("\n\n!!! Parts of the code have not been generated (see above) !!!\n");
 	}
 	
 	/** escape a string (e.g. a file name) for use in a Makefile
