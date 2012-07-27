@@ -23,8 +23,8 @@
 
 #ifdef __AVR_AT90CAN128__
 #define TIMER_PRESCALE_1_bm		(1 << CS10)
-#define TIMER_PRESCALE_2_bm		(1 << CS11)
-#define TIMER_PRESCALE_8_bm		((1 << CS11) | (1 << CS10))
+#define TIMER_PRESCALE_8_bm		(1 << CS11)
+#define TIMER_PRESCALE_64_bm	((1 << CS11) | (1 << CS10))
 #define TIMER_PRESCALE_256_bm	(1 << CS12)
 #define TIMER_PRESCALE_1024_bm	((1 << CS12) | (1 << CS10))
 #endif
