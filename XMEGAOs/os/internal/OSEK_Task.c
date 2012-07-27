@@ -16,11 +16,11 @@ StatusType TerminateTask(void)
 	//QUESTION(Benjamin): Why does a local variable have to be volatile?
 	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
-	volatile StackPointerType *sp = os_currentTcb->baseOfStack;
+	volatile StackPointerType *sp = os_currentTcb->topOfStack;
 
 	// Set state to suspended
 	os_currentTcb->state = SUSPENDED;
-	os_currentTcb->topOfStack = os_currentTcb->baseOfStack;
+	os_currentTcb->currentBaseOfStack = os_currentTcb->topOfStack;
 	
 	//QUESTION(Benjamin): The compiler may be using r26-r29. Can we overwrite
 	//                    them without further precautions? You could let the
@@ -43,7 +43,7 @@ StatusType TerminateTask(void)
 	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
 	
-	os_currentTcb->topOfStack = os_currentTcb->baseOfStack - 35;
+	os_currentTcb->currentBaseOfStack = os_currentTcb->topOfStack - 35;
 	
 	asm volatile(	"lds r26, os_currentTcb		\n\t"	\
 					"lds r27, os_currentTcb + 1	\n\t"	\

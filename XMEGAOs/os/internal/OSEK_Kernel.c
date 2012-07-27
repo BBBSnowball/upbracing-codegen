@@ -47,7 +47,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
 	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
-	volatile StackPointerType *sp = tcb->baseOfStack;
+	volatile StackPointerType *sp = tcb->topOfStack;
 	
 	/* Return address of this stack: init to function pointer */
 	taskAddress = (uint16_t) tcb->func;
@@ -128,7 +128,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	*sp = (uint8_t) 0x31;								// R31
 	sp--;
 	
-	tcb->topOfStack = sp;
+	tcb->currentBaseOfStack = sp;
 }
 
 void StartFirstTask(void) __attribute__ ( (naked) );
