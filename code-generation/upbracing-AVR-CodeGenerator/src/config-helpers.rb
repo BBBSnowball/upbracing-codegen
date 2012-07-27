@@ -111,3 +111,6 @@ def eagle_port(port_name, ic_regex, name_regex, pin_regex = //)
     raise "ERROR: More than one full port: #{full_ports.join(", ")}"
   end
 end
+
+READY = Java::de::upbracing::code_generation::config::RTOSTask::TaskState::READY
+SUSPENDED = Java::de::upbracing::code_generation::config::RTOSTask::TaskState::SUSPENDED

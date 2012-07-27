@@ -26,6 +26,7 @@ public class MCUConfiguration {
 	private EEPROMConfig eeprom = new EEPROMConfig();
 	private PinConfig pins = new PinConfig();
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
+	private RTOSConfig rtos = new RTOSConfig();
 
 	/**
 	 * Get the list of electronic control units (ECUs)
@@ -105,6 +106,15 @@ public class MCUConfiguration {
 	 */
 	public GlobalVariableConfig getGlobalVariables() {
 		return global_variables;
+	}
+	
+	/**
+	 * Get operating system config
+	 * 
+	 * @return the config object
+	 */
+	public RTOSConfig getRtos() {
+		return rtos;
 	}
 
 	/**
