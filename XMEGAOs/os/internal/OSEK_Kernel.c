@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_config.h"
+#include "config/Os_config.h"
 #include "OSEK_Kernel.h"
 #include "OSEK_Task.h"
 #include <avr/interrupt.h>
@@ -154,8 +154,9 @@ void Os_TimerIncrement(void)
 		volatile Os_Alarm * base = os_alarms;
 		base += i;
 		base->tick++;
-		if (base->tick % base->ticksperbase == 0) 
+		if (base->tick == base->ticksperbase)
 		{
+			base->tick = 0;
 			RunAlarm(base);
 		}
 	}
