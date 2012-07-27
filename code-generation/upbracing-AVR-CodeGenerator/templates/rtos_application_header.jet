@@ -1,0 +1,35 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="RTOSApplicationHeaderTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* java.util.*" %>
+<% RTOSConfig rtos = config.getRtos(); %>
+/*
+ * Os_cfg_application.h
+ *
+ * This file defines application specific stuff, e.g. the task
+ * entry functions.
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#ifndef OS_CFG_APPLICATION_H_
+#define OS_CFG_APPLICATION_H_
+
+#include "config/Os_config.h"
+
+<% for (RTOSTask task : rtos.getTasks()) { %>
+extern TASK(Task_<%= task.getName() %>);
+<% } %>
+
+<% for (RTOSTask task : rtos.getTasks()) { %>
+#define TASK_ID_<%= task.getName() %> <%= task.getId() %>
+<% } %>
+
+//TODO I don't see how one could set an alarm callback for an alarm. What is this supposed to do?
+//extern ALARMCALLBACK(Alarm_Test);
+
+#define OS_NUMBER_OF_TCBS_DEFINE   <%= rtos.getTasks().size() %>
+#define OS_NUMBER_OF_ALARMS_DEFINE <%= rtos.getAlarms().size() %>
+
+#endif /* OS_CFG_APPLICATION_H_ */
