@@ -5,18 +5,18 @@
  *  Author: peer
  */ 
 
-#include "Os_config.h"
+#include "config/Os_config.h"
 #include "Timer.h"
 
 // Initializes Timer1 with a prescaling and a compare match value
 void TimerInit(void)
 {
-	
-	OCR1A = 3124; // SHORT - just for now...
-	TCCR1B = (1 << WGM12) //CTC
-	       | (1 << CS12); // Prescale 256
-	TIMSK1 = (1 << OCIE1A); // Enable Output Compare Interrupt Match for Timer1/ChannelA.	   
+	OCR1A = OS_TIMER_COMPARE_VALUE;
 	TCNT1 = 0;
+	TCCR1A = 0;
+	TCCR1B = (1 << WGM12) //CTC
+	       | OS_TIMER_PRESCALE;
+	TIMSK1 = (1 << OCIE1A); // Enable Output Compare Interrupt Match for Timer1/ChannelA.
 	
 	//TCC0.CTRLA = OS_TIMER_PRESCALE;							// Prescale (user setting)
 	//TCC0.CTRLB = TC0_CCAEN_bm;								// Compare or Capture enable for counter A
