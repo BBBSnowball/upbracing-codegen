@@ -25,20 +25,20 @@ typedef struct
 
 typedef struct  
 {
-	uint8_t queue_front; // Points to first element in queue; initially 0
-	uint8_t queue_end; // Points to last element in queue; initially 0
-	uint8_t capacity; // capacity of the queue
-	uint8_t occupied; // number of bytes present in the queue
+	int8_t queue_front; // Points to first element in queue; initially -1
+	int8_t queue_end; // Points to last element in queue; initially 0
+	int8_t capacity; // capacity of the queue
+	int8_t occupied; // number of bytes present in the queue
 	
 	uint8_t q_queue[1];
 }Queue;
 //NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
-#define QUEUE(name, capacity, reader_count, writer_count) \
-		struct { Queue q; ipc_queue rest_ipc_queue[(capacity)-1]; } name##_QUEUE \
+#define QUEUE(sem, capacity, reader_count, writer_count) \
+		struct { Queue q; uint8_t rest_q_queue[(capacity)-1]; } sem##_QUEUE \
 			= { { 0, 0, (capacity), 0 } }; \
-		SEMAPHORE(name##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
-		SEMAPHORE_N(name##_QUEUE_FREE, (capacity), (writer_count)); \
-		SEMAPHORE_N(name##_QUEUE_AVAILABLE, 0, (reader_count));
+		SEMAPHORE(sem##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
+		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (writer_count)); \
+		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, 0, (reader_count));
 		/* add the other semaphores here */
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
@@ -50,8 +50,10 @@ typedef struct
 //                queue_capacity is 255. You can reduce it a bit, if you have to. You
 //                should note that in the documentation.
 
-#define QUEUE_REF(name)     (&(name##_QUEUE).q)
-#define QUEUE_SEM_REF(name) SEMAPHORE_REF(name##_QUEUE_SEM)
+#define QUEUE_REF(sem)     (&(sem##_QUEUE).q)
+#define QUEUE_SEM_REF(sem) SEMAPHORE_REF(sem##_QUEUE_SEM)
+#define QUEUE_PROD_REF(sem) SEMAPHORE_REF_N(sem##_QUEUE_FREE)
+#define QUEUE_CONS_REF(sem) SEMAPHORE_REF_N(sem##_QUEUE_AVAILABLE)
 //NOTE(Benjamin): Define similar macros for the other semaphores.
 
 //How to create queues ?
@@ -61,39 +63,39 @@ typedef struct
 //NOTE(Benjamin): When you implement the queues, you will find out which semaphores you
 //                need for each of the functions. Then you can add them as arguments, as
 //                I have done here for queue_enqueue.
-#define queue_enqueue (name, data) _queue_enqueue(QUEUE_REF(name), data, QUEUE_SEM_REF(name))
-void _queue_enqueue(Queue* name, uint8_t data, Semaphore* sem);
-#define queue_enqueue(name, bytes, data) _queue_enqueue(QUEUE_REF(name), bytes, data)
-void _queue_enqueue(Queue* name, uint8_t bytes, const uint8_t* data);
+#define queue_enqueue (sem, data) _queue_enqueue(QUEUE_REF(sem), data, QUEUE_SEM_REF(sem))
+void _queue_enqueue(Queue* sem, uint8_t data, Semaphore* sem);
+#define queue_enqueue(sem, bytes, data) _queue_enqueue(QUEUE_REF(sem), bytes, data)
+void _queue_enqueue(Queue* sem, uint8_t bytes, const uint8_t* data);
 
-#define queue_dequeue(name) _queue_dequeue(QUEUE_REF(name))
-uint8_t _queue_dequeue(Queue* name);
-#define  queue_dequeue(name, bytes, data_out) _queue_dequeue(QUEUE_REF(name), bytes, data_out)
-void _queue_dequeue(Queue* name, uint8_t bytes, uint8_t* data_out);
+#define queue_dequeue(sem) _queue_dequeue(QUEUE_REF(sem))
+uint8_t _queue_dequeue(Queue* sem);
+#define  queue_dequeue(sem, bytes, data_out) _queue_dequeue(QUEUE_REF(sem), bytes, data_out)
+void _queue_dequeue(Queue* sem, uint8_t bytes, uint8_t* data_out);
 
-#define queue_is_data_available(name, bytes) _queue_is_data_available(QUEUE_REF(name), bytes)
-bool _queue_is_data_available (Queue* name, uint8_t number_of_bytes);
+#define queue_is_data_available(sem, bytes) _queue_is_data_available(QUEUE_CONS_REF(sem), bytes)
+bool _queue_is_data_available (Queue* sem, uint8_t number_of_bytes);
 
-#define queue_has_free_space(name, bytes) _queue_has_free_space(QUEUE_REF(name), bytes)
-bool _queue_has_free_space (Queue* name, uint8_t number_of_bytes);
+#define queue_has_free_space(sem, bytes) _queue_has_free_space(QUEUE_PROD_REF(sem), bytes)
+bool _queue_has_free_space (Queue* sem, uint8_t number_of_bytes);
 
-#define sem_start_wait_data_available(name,n) _sem_start_wait_data_available(QUEUE_REF(name), n)
-sem_token_t _sem_start_wait_data_available (Queue* name, uint8_t n);
+#define queue_start_wait_data_available(sem,n) _queue_start_wait_data_available(QUEUE_CONS_REF(sem), n)
+sem_token_t _queue_start_wait_data_available (Semaphore_n* sem, uint8_t n);
 
-#define sem_continue_wait_data_available(name, token) _sem_continue_wait_data_available(QUEUE_REF(name), token)
-bool _sem_continue_wait_data_available (Queue* name , sem_token_t token );
+#define queue_continue_wait_data_available(sem, token) _queue_continue_wait_data_available(QUEUE_CONS_REF(sem), QUEUE_REF(sem), token)
+bool _queue_continue_wait_data_available (Semaphore_n* sem , Queue* que, sem_token_t token );
 
-#define sem_stop_wait_data_available(name, token) _sem_stop_wait_data_available(QUEUE_REF(name), token)
-void _sem_stop_wait_data_available (Queue* name , sem_token_t token );
+#define queue_stop_wait_data_available(sem, token) _queue_stop_wait_data_available(QUEUE_CONS_REF(sem), token)
+void _queue_stop_wait_data_available (Semaphore_n* sem , sem_token_t token );
 
-#define sem_start_wait_free_space(name, n) _sem_start_wait_free_space(QUEUE_REF(name), n)
-sem_token_t _sem_start_wait_free_space (Queue* name , uint8_t n);
+#define queue_start_wait_free_space(sem, n) _queue_start_wait_free_space(QUEUE_PROD_REF(sem), n)
+sem_token_t _queue_start_wait_free_space (Semaphore_n* sem , uint8_t n);
 
-#define sem_continue_wait_free_space(name, token) _sem_continue_wait_free_space(QUEUE_REF(name), token)
-bool _sem_continue_wait_free_space (Queue* name , sem_token_t token );
+#define queue_continue_wait_free_space(sem, token) _queue_continue_wait_free_space(QUEUE_PROD_REF(sem), QUEUE_REF(sem), token)
+bool _queue_continue_wait_free_space (Semaphore_n* sem ,Queue* que, sem_token_t token );
 
-#define sem_stop_wait_data_free_space(name, token) _sem_stop_wait_data_free_space(QUEUE_REF(name), token)
-void _sem_stop_wait_data_free_space (Queue* name , sem_token_t token );
+#define queue_stop_wait_data_free_space(sem, token) _queue_stop_wait_data_free_space(QUEUE_PROD_REF(sem), token)
+void _queue_stop_wait_data_free_space (Semaphore_n* sem , sem_token_t token );
 
 
 #endif /* QUEUE_H_ */
