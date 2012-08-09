@@ -232,6 +232,21 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="os\config\Os_application_dependent_code.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\config\Os_cfg_application.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\config\Os_cfg_application.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\config\Os_cfg_features.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\config\Os_config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="os\datatypes\OSEK_AlarmTypes.h">
       <SubType>compile</SubType>
     </Compile>
@@ -318,7 +333,13 @@
     <Folder Include="os\generated" />
     <Folder Include="os\internal" />
     <Folder Include="os\IPC" />
+    <Folder Include="os\config" />
     <Folder Include="os\semaphores" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="os\config\Os_application_dependent_code.c.sh">
+      <SubType>compile</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\AvrGCC.targets" />
 </Project>
