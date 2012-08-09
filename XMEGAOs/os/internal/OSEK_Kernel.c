@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_config.h"
+#include "config/Os_config.h"
 #include "OSEK_Kernel.h"
 #include "OSEK_Task.h"
 #include <avr/interrupt.h>
@@ -47,7 +47,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
 	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
-	volatile StackPointerType *sp = tcb->baseOfStack;
+	volatile StackPointerType *sp = tcb->topOfStack;
 	
 	/* Return address of this stack: init to function pointer */
 	taskAddress = (uint16_t) tcb->func;
@@ -128,7 +128,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	*sp = (uint8_t) 0x31;								// R31
 	sp--;
 	
-	tcb->topOfStack = sp;
+	tcb->currentBaseOfStack = sp;
 }
 
 void StartFirstTask(void) __attribute__ ( (naked) );
@@ -154,8 +154,9 @@ void Os_TimerIncrement(void)
 		volatile Os_Alarm * base = os_alarms;
 		base += i;
 		base->tick++;
-		if (base->tick % base->ticksperbase == 0) 
+		if (base->tick == base->ticksperbase)
 		{
+			base->tick = 0;
 			RunAlarm(base);
 		}
 	}

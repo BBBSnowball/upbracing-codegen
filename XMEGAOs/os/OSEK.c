@@ -5,9 +5,9 @@
  *  Author: peer
  */ 
 
-#include "Os_config.h"
+#include "config/Os_config.h"
 #include "OSEK.h"
-#include "Timer.h"
+#include "drivers/Timer.h"
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <util/delay.h>

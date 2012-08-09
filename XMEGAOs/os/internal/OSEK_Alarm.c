@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_config.h"
+#include "config/Os_config.h"
 #include "OSEK_Alarm.h"
 #include "OSEK_Task.h"
 
