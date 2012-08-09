@@ -1,4 +1,5 @@
 #include "queue.h"
+#include "semaphore.h"
 #include "OSEK.h"
 /*
  * queue.c
