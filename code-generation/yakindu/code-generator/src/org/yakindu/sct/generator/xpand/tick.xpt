@@ -1,0 +1,57 @@
+«IMPORT sexec»
+«IMPORT stext»
+«IMPORT sgraph»
+
+
+«IMPORT org::yakindu::sct::generator::xpand»
+«EXTENSION org::yakindu::sct::generator::xpand::expression»
+«EXTENSION org::yakindu::sct::generator::xpand::Name»
+
+
+«DEFINE file FOR ExecutionFlow-»
+«FILE this.scName().toString()+'_init.c'»
+void counter_tick(){
+	OS_ENTER_CRITICAL();
+	switch(counter.state){
+		case counter_«this.states.simpleName.first()»:
+			state_time = 0;
+			break;
+		«FOREACH this.states.reject(e|e.simpleName.contains(this.states.simpleName.first())) AS state-»
+	    case «state.simpleName-»:
+	    	state_time++;
+	    	«EXPAND ActionCode FOR state.enterSequence-»
+			break;
+		«ENDFOREACH-»
+		default:
+			break;
+	}
+	OS_EXIT_CRITICAL();
+}
+«ENDFILE»»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Step-»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Sequence -»
+  «EXPAND ActionCode FOREACH this.steps-»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Execution-»
+	«this.statement.toCCode()»;
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Reaction»
+  «EXPAND ActionCode FOR this.effect» 
+«ENDDEFINE»
+
+«DEFINE ReactCode FOR Sequence» 
+«EXPAND ActionCode FOREACH this.steps»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR ScheduleTimeEvent»
+«IF this.comment != null»
+/* «this.comment» */
+«ENDIF»
+	 «this.timeValue.toCCode()»
+«ENDDEFINE»

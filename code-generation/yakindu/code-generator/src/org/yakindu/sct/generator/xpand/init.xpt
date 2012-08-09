@@ -1,0 +1,44 @@
+«IMPORT sexec»
+«IMPORT stext»
+«IMPORT sgraph»
+
+
+«IMPORT org::yakindu::sct::generator::xpand»
+«EXTENSION org::yakindu::sct::generator::xpand::expression»
+«EXTENSION org::yakindu::sct::generator::xpand::Name»
+
+«DEFINE file FOR ExecutionFlow-»
+«FILE "init.c"»
+//data
+typedef enum {
+	«FOREACH this.states AS e SEPARATOR ','-»
+		counter_«e.simpleName»_state
+	«ENDFOREACH-»
+	} counter_state;
+	
+struct {
+	counter_state state;
+	unint8_t state_time;
+} counter;
+
+//initialization function
+void counter_«this.states.simpleName.first()» {
+	counter.state = counter_«this.states.simpleName.first()»_state;
+	
+	//entry actions for state 'init'
+	«EXPAND ActionCode FOR this.enterSequence-»
+	}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Step-»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Sequence -»
+  «EXPAND ActionCode FOREACH this.steps-»
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Execution-»
+	«this.statement.toCCode()»;
+«ENDDEFINE»
+
