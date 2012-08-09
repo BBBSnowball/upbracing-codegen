@@ -1,15 +1,3 @@
-«REM»
-/**
- * Copyright (c) 2011 committers of YAKINDU and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * Contributors:
- * 	committers of YAKINDU - initial API and implementation
- * 
- */
-«ENDREM»
 «IMPORT sexec»
 «IMPORT stext»
 «IMPORT sgraph»
@@ -17,10 +5,17 @@
 
 
 «DEFINE main(sgen::GeneratorEntry entry) FOR sexec::ExecutionFlow-»
+
+«REM»generate header file«ENDREM»
+«EXPAND header::file»
+
+«REM»generate initialization function«ENDREM»
+«EXPAND init::file FOR this»
+«REM»generate tick function that will be called at a regular interval«ENDREM»
+«EXPAND tick::file FOR this»
+
 «FILE this.name+'.c' -»
 
-«EXPAND init::file FOR this»
-«EXPAND tick::file FOR this»
 «EXPAND StateMachine::file FOR this»
 #include<stdio.h>
 

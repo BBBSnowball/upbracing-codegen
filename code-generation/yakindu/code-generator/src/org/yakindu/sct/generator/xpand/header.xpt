@@ -1,0 +1,33 @@
+«IMPORT sexec»
+«IMPORT stext»
+«IMPORT sgraph»
+
+
+«IMPORT org::yakindu::sct::generator::xpand»
+«EXTENSION org::yakindu::sct::generator::xpand::expression»
+«EXTENSION org::yakindu::sct::generator::xpand::Name»
+
+«DEFINE file FOR ExecutionFlow-»
+«FILE this.name + ".h"-»
+#ifndef «this.name.toUpperCase()»_H
+#define «this.name.toUpperCase()»_H
+
+// states
+typedef enum {
+	«FOREACH this.states AS e-»
+	counter_«e.simpleName»_state,
+	«ENDFOREACH-»
+} counter_state;
+
+// data for this state machine
+struct {
+	counter_state state;
+	unint8_t state_time;
+} counter;
+
+void «this.name»_init(void);
+void «this.name»_tick(void);
+
+#endif	// defined «this.name.toUpperCase()»_H
+«ENDFILE»
+«ENDDEFINE»

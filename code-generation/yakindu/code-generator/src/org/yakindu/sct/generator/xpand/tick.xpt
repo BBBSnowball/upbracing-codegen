@@ -7,23 +7,33 @@
 «EXTENSION org::yakindu::sct::generator::xpand::expression»
 «EXTENSION org::yakindu::sct::generator::xpand::Name»
 
-
 «DEFINE file FOR ExecutionFlow-»
-«FILE this.scName().toString()+'_init.c'»
+«FILE this.scName().toString()+'_tick.c'»
+
+«FOREACH this.states AS state -»
+void enter_«state.simpleName»() {
+	«EXPAND ActionCode FOR state.enterSequence-»
+	«this.name».state_time = 0;
+}
+void during_«state.simpleName»() {
+	«EXPAND ActionCode FOR state.reactSequence-»
+	«this.name».state_time++;
+}
+void leave_«state.simpleName»() {
+	«EXPAND ActionCode FOR state.exitSequence-»
+}
+«ENDFOREACH»
+
 void counter_tick(){
 	OS_ENTER_CRITICAL();
-	switch(counter.state){
-		case counter_«this.states.simpleName.first()»:
-			state_time = 0;
-			break;
-		«FOREACH this.states.reject(e|e.simpleName.contains(this.states.simpleName.first())) AS state-»
-	    case «state.simpleName-»:
-	    	state_time++;
-	    	«EXPAND ActionCode FOR state.enterSequence-»
+	switch(«this.name».state){
+		«REM»«FOREACH this.states.reject(e|e.simpleName.contains(this.states.simpleName.first())) AS state-»«ENDREM»
+		«FOREACH this.states AS state -»
+	    case «this.name + "_" + state.simpleName-»_state:
+	    	during_«state.name»();
+	    	//TODO handle transitions
 			break;
 		«ENDFOREACH-»
-		default:
-			break;
 	}
 	OS_EXIT_CRITICAL();
 }

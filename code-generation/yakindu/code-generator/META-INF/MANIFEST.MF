@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: yakindu
-Bundle-SymbolicName: yakindu; singleton:=true
+Bundle-SymbolicName: yakindu-code-generator;singleton:=true
 Bundle-Version: 1.0.0
 Require-Bundle: org.eclipse.jdt.core;bundle-version="3.5.0",
  org.apache.commons.logging,

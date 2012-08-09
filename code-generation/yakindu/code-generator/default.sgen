@@ -3,7 +3,7 @@ GeneratorModel for yakindu::xpand {
 	statechart default {
 
 		feature Outlet {
-			targetProject = "yakindu"
+			targetProject = "yakindu-code-generator"
 			targetFolder = "src-gen-yakindu"
 		}
 
@@ -14,7 +14,7 @@ GeneratorModel for yakindu::xpand {
 //		}
 		
 		feature Template {
-		templateProject = "yakindu"
+		templateProject = "yakindu-code-generator"
 		templatePath = "org::yakindu::sct::generator::xpand::Main::main"
 		}
 	}
