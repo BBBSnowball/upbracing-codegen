@@ -5,6 +5,7 @@
  *  Author: Krishna
  */ 
 #include "semaphore.h"
+#include "queue.h"
 #include "OSEK.h"
 #include <util/delay.h>
 #include "OSEK_Kernel.h"
