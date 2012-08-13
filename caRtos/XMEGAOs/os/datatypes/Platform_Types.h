@@ -14,6 +14,9 @@
 #define NULL ((void *)0)
 
 // Platform dependent type definitions
+
+// type of an item on the stack
+// (whatever a stack pointer points to - not the pointer itself)
 typedef uint8_t StackPointerType;
 typedef uint8_t TaskPriorityType;
 typedef void (*TaskFunctionPointerType)(void);

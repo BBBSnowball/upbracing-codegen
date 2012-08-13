@@ -14,17 +14,17 @@
 
 #define Os_STATUS_REG_INT_ENABLED	0x80
 
-#define OSEK_ENTER_CRITICAL()								\
+#define OS_ENTER_CRITICAL()								\
 			asm volatile("in __tmp_reg__, __SREG__" :: );		\
 			asm volatile("cli" :: );							\
 			asm volatile("push __tmp_reg__" :: )
 			
-#define OSEK_EXIT_CRITICAL()								\
+#define OS_EXIT_CRITICAL()								\
 			asm volatile("pop __tmp_reg__" :: );				\
 			asm volatile("out __SREG__, __tmp_reg__" :: )
 			
 
-#define OSEK_SAVE_CONTEXT()									\
+#define OS_SAVE_CONTEXT()									\
 			asm volatile(	"push r0					\n\t"	\
 							"in r0, __SREG__			\n\t"	\
 							"cli						\n\t"	\
@@ -69,7 +69,7 @@
 							"st x+, r0					\n\t"	\
 						)
 						
-#define OSEK_RESTORE_CONTEXT()								\
+#define OS_RESTORE_CONTEXT()								\
 			asm volatile(	"lds r26, os_currentTcb		\n\t"	\
 							"lds r27, os_currentTcb + 1	\n\t"	\
 							"ld r28, x+					\n\t"	\

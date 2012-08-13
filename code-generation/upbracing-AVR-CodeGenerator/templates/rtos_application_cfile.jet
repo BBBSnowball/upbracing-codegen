@@ -1,0 +1,61 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="RTOSApplicationCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.*" %>
+<% RTOSConfig rtos = config.getRtos(); %>
+/*
+ * Os_cfg_generated.c
+ *
+ * This file defines application specific stuff, e.g. the task
+ * control blocks.
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */ 
+
+#include "Os_cfg_application.h"
+
+#define COUNT_OF(x) (sizeof(x) / sizeof(*(x)))
+
+const uint8_t OS_NUMBER_OF_TCBS   = OS_NUMBER_OF_TCBS_DEFINE;
+const uint8_t OS_NUMBER_OF_ALARMS = OS_NUMBER_OF_ALARMS_DEFINE;
+
+<% for (RTOSTask task : rtos.getTasks()) { %>
+static uint8_t Task_<%= task.getName() %>_Stack[<%= task.getStackSize() %>];
+#define TOP_OF_STACK_<%= task.getName() %> \
+	(Task_<%= task.getName() %>_Stack + sizeof(Task_<%= task.getName() %>_Stack))
+<% } %>
+
+volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
+{
+<% Table t = new Table(stringBuffer); t.start(); %>
+<% for (RTOSTask task : rtos.getTasks()) { %>
+	{		 
+		TOP_OF_STACK_<%= task.getName() %>, &&&/* current stack pointer */
+		TOP_OF_STACK_<%= task.getName() %>, &&&/* top of stack (upper end) */
+		<%= (task.isReady() ? "READY" : "SUSPENDED") %>, &&&/* Task State */
+		Task_<%= task.getName() %>, &&&/* Function Pointer */
+		<%= task.getId() %>, &&&/* Id/Priority */
+		<%= (task.isPreemptable() ? "PREEMPTABLE" : "NONPREEMPTABLE") %>, &&&
+	},
+<% } %>
+<% t.finish(); %>
+};
+
+volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS_DEFINE] =
+{
+<% t = new Table(stringBuffer, "&%OPT%&&"); t.start(); %>
+<% for (RTOSAlarm alarm : rtos.getAlarms()) { %>
+&_2&&	{<%= (alarm.getComment() != null ? "\t// " + alarm.getComment() : "") %>
+		TASK_ID_<%= alarm.getTask().getName() %>, &&&// Task ID: <%= alarm.getTask().getName() %>
+		ALARM_PHASE(<%= alarm.getPhase() %>, <%= alarm.getTicksPerBase() %>), &&&<%
+			%>// Current Value: phase = <%= alarm.getPhase() %> system ticks <%
+			%>= <%= String.format("%2.2f", 1000 * alarm.getPhase() / rtos.getRealTickFrequency()) %> ms
+		<%= alarm.getTicksPerBase() %>, &&&// Ticks Per Base: <%
+			%>f = <%= String.format("%2.2f", rtos.getRealTickFrequency() / alarm.getTicksPerBase()) %> Hz<%
+			%>, T = <%= String.format("%2.2f", 1000 * alarm.getTicksPerBase() / rtos.getRealTickFrequency()) %> ms
+		//1, &&&// Active state
+	},
+<% } %>
+<% t.finish("   "); %>
+};

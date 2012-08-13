@@ -43,12 +43,12 @@ typedef enum
 // OS_Tcb
 typedef struct 
 {
-	volatile StackPointerType *topOfStack;		// Points to the item that was pushed last
-	volatile StackPointerType *baseOfStack;		// Base address of the stack
-	TaskStateType state;						// State of current task (Suspended/Ready/Running/Waiting)
-	TaskFunctionPointerType func;				// Pointer to task function
+	volatile StackPointerType *currentBaseOfStack;		// Points to the item that was pushed last
+	StackPointerType *topOfStack;						// Base address of the stack
+	volatile TaskStateType state;						// State of current task (Suspended/Ready/Running/Waiting)
+	TaskFunctionPointerType func;						// Pointer to task function
 	//QUESTION(Benjamin): Do we need a task id in the struct? Can't we simply use the position in the array as an id?
-	TaskType id;								// ID of this task
+	TaskType id;										// ID of this task
 	TaskPreemptable preempt;
 	
 } Os_Tcb;

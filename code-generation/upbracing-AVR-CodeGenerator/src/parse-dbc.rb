@@ -37,6 +37,7 @@ class DBCSignal
   end
   
   def init
+    return self
   end
   
   def to_s
@@ -78,12 +79,13 @@ class DBCMessage
       @comment = nil
     end
     def init
+      return self
     end
   else
     def init
       self.signals = {}
       self.signal_order = []
-      self
+      return self
     end
   end
   
@@ -111,13 +113,14 @@ class DBCEcu
       @comment = nil
     end
     def init
+      return self
     end
   else
     def init
       self.tx_msgs = []
       self.rx_msgs = []
       self.rx_signals = []
-      self
+      return self
     end
   end
   
@@ -141,6 +144,7 @@ class DBC
       @ecu_names = nil
     end
     def init
+      return self
     end
   else
     def init
@@ -148,7 +152,7 @@ class DBC
       self.ecus = {}
       self.messages = {}
       self.signals = {}
-      self
+      return self
     end
   end
   
@@ -337,7 +341,7 @@ class DBCTokenizer
   def tokenize_dbc(f)
     @f = f
     while (@line = @f.gets)
-      @line = @line.sub(/\r\n$/, "")
+      @line = @line.sub(/\r?\n$/, "")
   		tokens = []
   		@i = 0
   		while true

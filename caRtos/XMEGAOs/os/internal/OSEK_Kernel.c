@@ -5,7 +5,7 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "config/Os_config.h"
 #include "OSEK_Kernel.h"
 #include "OSEK_Task.h"
 #include <avr/interrupt.h>
@@ -17,20 +17,21 @@ volatile uint16_t os_counter = 0;
 volatile uint8_t os_isStarted = 0;
 
 #if OS_CFG_CC != BCC1 && OS_CFG_CC != BCC2 && \
-	OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
-#error No valid Conformance Class specified
+		OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
+#	error No valid Conformance Class specified
 #endif
 
+// will be compiled in Os_application_dependent_code.c:
+#ifdef APPLICATION_DEPENDENT_CODE
 #if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":
  * - Just an array of bools */
 //QUESTION(Benjamin): Could we replace it by a bitfield?
-uint8_t os_ready_queue[OS_NUMBER_OF_TCBS];
+uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 #elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-#error Multiple activations for basic tasks, multiple tasks per priority
+#	error Multiple activations for basic tasks, multiple tasks per priority
 #endif
-
-
+#endif	// end of APPLICATION_DEPENDENT_CODE
 
 
 // Initializes the stack of a given TCB for first time use
@@ -46,7 +47,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
 	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
-	volatile StackPointerType *sp = tcb->baseOfStack;
+	volatile StackPointerType *sp = tcb->topOfStack;
 	
 	/* Return address of this stack: init to function pointer */
 	taskAddress = (uint16_t) tcb->func;
@@ -127,13 +128,13 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	*sp = (uint8_t) 0x31;								// R31
 	sp--;
 	
-	tcb->topOfStack = sp;
+	tcb->currentBaseOfStack = sp;
 }
 
 void StartFirstTask(void) __attribute__ ( (naked) );
 void StartFirstTask(void)
 {
-	OSEK_RESTORE_CONTEXT();
+	OS_RESTORE_CONTEXT();
 	os_isStarted = 1;
 	
 	//QUESTION(Benjamin): Do we need this "ret" here? Won't the compiler
@@ -150,11 +151,12 @@ void Os_TimerIncrement(void)
 	/* Run Os Alarms */
 	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
-		volatile Os_Alarm * base = &os_alarms;
+		volatile Os_Alarm * base = os_alarms;
 		base += i;
 		base->tick++;
-		if (base->tick % base->ticksperbase == 0) 
+		if (base->tick == base->ticksperbase)
 		{
+			base->tick = 0;
 			RunAlarm(base);
 		}
 	}
@@ -168,9 +170,9 @@ void Os_TimerIncrement(void)
 void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
 void TIMER1_COMPA_vect(void)
 {
-	OSEK_SAVE_CONTEXT();
+	OS_SAVE_CONTEXT();
 	Os_TimerIncrement();	
-	OSEK_RESTORE_CONTEXT();
+	OS_RESTORE_CONTEXT();
 	
 	asm volatile("reti");
 }
@@ -180,8 +182,8 @@ void Os_Schedule(void)
 {	
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	OSEK_ENTER_CRITICAL();
-	void * newtcb = NULL;
+	OS_ENTER_CRITICAL();
+	volatile void * newtcb = NULL;
 	if (os_currentTcb->preempt == PREEMPTABLE
 		|| os_currentTcb->state == SUSPENDED) 
 	{
@@ -206,7 +208,7 @@ void Os_Schedule(void)
 		os_currentTcb = newtcb;
 	}
 	
-	OSEK_EXIT_CRITICAL();
+	OS_EXIT_CRITICAL();
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif

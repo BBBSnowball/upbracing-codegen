@@ -5,12 +5,12 @@
  *  Author: peer
  */ 
 
-#include "Os_cfg_generated.h"
+#include "config/Os_config.h"
 #include "OSEK.h"
-#include "Timer.h"
+#include "drivers/Timer.h"
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #ifndef OS_CFG_CC
 #error No Conformance Class specified!

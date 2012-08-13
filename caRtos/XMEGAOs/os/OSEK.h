@@ -9,7 +9,7 @@
 #ifndef OS_H_
 #define OS_H_
 
-#include "OSEK_Kernel.h"
+#include "internal/OSEK_Kernel.h"
 
 void StartOS(void);
 

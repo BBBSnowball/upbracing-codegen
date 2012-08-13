@@ -1,0 +1,8 @@
+# add the caRtos library
+FEATURES_MD5 = $(shell md5sum ../gen/Os_cfg_features.h | sed -ne 's/^\([0-9a-fA-F]\+\)\s\+.*$$/\1/p')
+LIBS += -lcaRtos-$(FEATURES_MD5)
+
+# make sure that Os_cfg_application.c is compiled and linked to the application
+ifeq ($(findstring Os_cfg_application.o,$(OBJS)),)
+	OBJS += Os_cfg_application.o
+endif

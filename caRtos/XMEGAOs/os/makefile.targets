@@ -1,0 +1,11 @@
+../config/Os_application_dependent_code.c: ../config/Os_application_dependent_code.c.sh $(subst ../config/Os_application_dependent_code.c,,$(wildcard ../*.c ../*/*.c ../*/*/*.c))
+	../config/Os_application_dependent_code.c.sh
+
+$(OBJS): ../config/Os_application_dependent_code.c
+
+FEATURES_MD5 = $(shell md5sum ../config/Os_cfg_features.h | sed -ne 's/^\([0-9a-fA-F]\+\)\s\+.*$$/\1/p')
+
+all: libcaRtos-$(FEATURES_MD5).a
+
+libcaRtos-$(FEATURES_MD5).a: libXMegaOS.a
+	cp $< $@
