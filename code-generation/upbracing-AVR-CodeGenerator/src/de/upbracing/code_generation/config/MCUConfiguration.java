@@ -21,8 +21,8 @@ import de.upbracing.eculist.EEPROMValue;
 public class MCUConfiguration {
 	private List<ECUDefinition> ecus;
 	private ECUDefinition currentEcu;
-	//TODO we have to wrap the DBC model to allow configuration of the code generation
 	private DBC can;
+	private DBCConfig canConfig;
 	private EEPROMConfig eeprom = new EEPROMConfig();
 	private PinConfig pins = new PinConfig();
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
@@ -69,7 +69,7 @@ public class MCUConfiguration {
 	public DBC getCan() {
 		return can;
 	}
-
+	
 	/**
 	 * Set CAN configuration
 	 * 
@@ -79,6 +79,27 @@ public class MCUConfiguration {
 	 */
 	public void setCan(DBC can) {
 		this.can = can;
+		setCanConfig(new DBCConfig(can));
+	}
+	
+	/**
+	 * Set CAN configuration
+	 * 
+	 * This is set by the setCan method
+	 * 
+	 * @param can the CAN config
+	 */
+	public void setCanConfig(DBCConfig canConfig) {
+		this.canConfig = canConfig;
+	}
+	
+	/**
+	 * Get CAN configuration
+	 * 
+	 * @return the CAN configuration object
+	 */
+	public DBCConfig getCanConfig() {
+		return canConfig;
 	}
 	
 	/**
