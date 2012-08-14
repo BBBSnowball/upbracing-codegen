@@ -1,5 +1,6 @@
 package de.upbracing.shared.timer.model;
 
+import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
@@ -24,6 +25,12 @@ public class UseCaseModel {
 	
 	// Private Fields (CTC):
 	private CTCTopValues ctcTop = CTCTopValues.ICR;
+	private boolean compareInterruptA;
+	private boolean compareInterruptB;
+	private boolean compareInterruptC;
+	private CTCOutputPinMode comparePinModeA;
+	private CTCOutputPinMode comparePinModeB;
+	private CTCOutputPinMode comparePinModeC;
 	
 	// Private Fields (PWM):
 	private PWMTopValues fastPWMTop = PWMTopValues.BIT8;	
@@ -64,6 +71,24 @@ public class UseCaseModel {
 	// Private Getters (CTC):
 	public CTCTopValues getCtcTop() {
 		return ctcTop;
+	}
+	public boolean getCompareInterruptA() {
+		return compareInterruptA;
+	}
+	public boolean getCompareInterruptB() {
+		return compareInterruptB;
+	}
+	public boolean getCompareInterruptC() {
+		return compareInterruptC;
+	}
+	public CTCOutputPinMode getComparePinModeA() {
+		return comparePinModeA;
+	}
+	public CTCOutputPinMode getComparePinModeB() {
+		return comparePinModeB;
+	}
+	public CTCOutputPinMode getComparePinModeC() {
+		return comparePinModeC;
 	}
 	
 	// Private Getters (PWM):
@@ -111,6 +136,24 @@ public class UseCaseModel {
 	// Public Setters (CTC):
 	public void setCtcTop(CTCTopValues v) {
 		ctcTop = v;
+	}
+	public void setCompareInterruptA(boolean i) {
+		this.compareInterruptA = i;
+	}
+	public void setCompareInterruptB(boolean i) {
+		this.compareInterruptB = i;
+	}
+	public void setCompareInterruptC(boolean i) {
+		this.compareInterruptC = i;
+	}
+	public void setComparePinModeA(CTCOutputPinMode m) {
+		this.comparePinModeA = m;
+	}
+	public void setComparePinModeB(CTCOutputPinMode m) {
+		this.comparePinModeB = m;
+	}
+	public void setComparePinModeC(CTCOutputPinMode m) {
+		this.comparePinModeC = m;
 	}
 
 	// Public Setters (PWM):
