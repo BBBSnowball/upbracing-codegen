@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="de.upbracing.configurationeditor.timer.editors.TimerConfigurationEditor"
+            icon="icons/clock.png"
+            id="de.upbracing.configurationeditor.timer.editors.TimerConfigurationEditor"
+            name="Timer Configuration">
+            <contentTypeBinding
+	           contentTypeId="de.upbracing.configurationeditor.timer.contentTypes.TimerConfigurationType">
+	        </contentTypeBinding>
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+         <content-type
+         		file-extensions="tcxml"
+         		id="de.upbracing.configurationeditor.timer.contentTypes.TimerConfigurationType"
+         		name="AVR Timer Configuration File"
+         		priority="normal">
+         </content-type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="de.upbracing.configurationeditor.timer"
+            name="AVR Timer Configuration">
+      </category>
+      <wizard
+            category="de.upbracing.configurationeditor.timer"
+            class="de.upbracing.configurationeditor.timer.wizards.NewConfigurationFileWizard"
+            icon="icons/clock.png"
+            id="de.upbracing.configurationeditor.timer.wizards.NewConfigurationFileWizard"
+            name="New Timer Configuration">
+      </wizard>
+   </extension>
+
+</plugin>

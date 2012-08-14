@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AT90CAN Timer Code Generator
+Bundle-SymbolicName: upbracing-AVR-TimerConfigurationEditor;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: de.upbracing.configurationeditor.timer.Activator
+Bundle-Vendor: Peer Adelt
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.forms;bundle-version="3.5.101",
+ org.eclipse.ui.ide;bundle-version="3.7.0",
+ org.eclipse.core.resources;bundle-version="3.7.101",
+ org.eclipse.core.databinding;bundle-version="1.4.0",
+ org.eclipse.jface.databinding;bundle-version="1.5.0",
+ org.eclipse.core.databinding.beans;bundle-version="1.2.100"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
