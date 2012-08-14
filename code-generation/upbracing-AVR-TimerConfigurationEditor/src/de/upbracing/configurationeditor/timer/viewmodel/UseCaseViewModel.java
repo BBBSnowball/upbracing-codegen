@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
 import de.upbracing.shared.timer.model.UseCaseModel;
+import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
@@ -91,55 +92,52 @@ public class UseCaseViewModel extends AViewModelBase {
 	
 	// Dynamic data-bound View Data:
 	public boolean getIcrVisibility() {
-		if (getMode() != null && getMode().equals(TimerOperationModes.CTC)) {
-			if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.ICR))
-				return true;
+		if (getMode() != null) {
+			if (getMode().equals(TimerOperationModes.CTC))
+				if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.ICR))
+					return true;
+			if (getMode().equals(TimerOperationModes.PWM_FAST)) 
+				if (getFastPWMTop() != null && getFastPWMTop().equals(PWMTopValues.ICR))
+					return true;
+			if (getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
+				if (getPhaseCorrectPWMTop() != null && getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
+					return true;
+			if (getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
+				if (getPhaseAndFrequencyCorrectPWMTop() != null && getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
+					return true;
 		}
+		
 		return false;
 	}
 	public String getIcrName() {
-		String timerNumber = "0";
-		if (getTimer().equals(TimerEnum.TIMER1))
-			timerNumber = "1";
-		if (getTimer().equals(TimerEnum.TIMER2))
-			timerNumber = "2";
-		if (getTimer().equals(TimerEnum.TIMER3))
-			timerNumber = "3";
-		if (getMode().equals(TimerOperationModes.CTC))
-			if (getCtcTop().equals(CTCTopValues.ICR))
-				return "ICR" + timerNumber + " (Top value register)";
-		return "N/A";
+		return "Input Capture Register (Top)";
 	}
 	public String getOcrAName() {
 		String name = null;
-		if (getTimer().equals(TimerEnum.TIMER0))
-			name = "OCR0";
-		if (getTimer().equals(TimerEnum.TIMER1))
-			name = "OCR1A";
-		if (getTimer().equals(TimerEnum.TIMER2))
-			name = "OCR2";
-		if (getTimer().equals(TimerEnum.TIMER3))
-			name = "OCR3A";
+		if (getTimer().equals(TimerEnum.TIMER0) || getTimer().equals(TimerEnum.TIMER2))
+			name = "Output Compare Register";
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
+			name = "Output Compare Register A";
 		
 		// Top Value Suffix (CTC):
 		if (getMode() != null && getMode().equals(TimerOperationModes.CTC)) {
 			if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.OCRnA))
-				name += " (Top value register)";
+				name += " (Top)";
 		}
 		// Top Value Suffix (FastPWM):
 		if (getMode() != null && (getMode().equals(TimerOperationModes.PWM_FAST))) {
 			if (getFastPWMTop() != null && getFastPWMTop().equals(PWMTopValues.OCRnA))
-				name += " (Top value register)";
+				name += " (Top)";
 		}
 		// Top Value Suffix (Phase Correct PWM):
 		if (getMode() != null && (getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))) {
 			if (getPhaseCorrectPWMTop() != null && getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
-				name += " (Top value register)";
+				name += " (Top)";
 		}
 		// Top Value Suffix (Phase and Frequency Correct PWM):
 		if (getMode() != null && (getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))) {
 			if (getPhaseAndFrequencyCorrectPWMTop() != null && getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
-				name += " (Top value register)";
+				name += " (Top)";
 		}
 		
 		if (name == null)
@@ -147,25 +145,17 @@ public class UseCaseViewModel extends AViewModelBase {
 		return name;
 	}
 	public String getOcrBName() {
-		if (getTimer().equals(TimerEnum.TIMER0))
+		if (getTimer().equals(TimerEnum.TIMER0) || getTimer().equals(TimerEnum.TIMER2))
 			return "N/A";
-		if (getTimer().equals(TimerEnum.TIMER1))
-			return "OCR1B";
-		if (getTimer().equals(TimerEnum.TIMER2))
-			return "N/A";
-		if (getTimer().equals(TimerEnum.TIMER3))
-			return "OCR3B";
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
+			return "Output Compare Register B";
 		return "Undeterminded";
 	}
 	public String getOcrCName() {
-		if (getTimer().equals(TimerEnum.TIMER0))
+		if (getTimer().equals(TimerEnum.TIMER0) || getTimer().equals(TimerEnum.TIMER2))
 			return "N/A";
-		if (getTimer().equals(TimerEnum.TIMER1))
-			return "OCR1C";
-		if (getTimer().equals(TimerEnum.TIMER2))
-			return "N/A";
-		if (getTimer().equals(TimerEnum.TIMER3))
-			return "OCR3C";
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
+			return "Output Compare Register C";
 		return "Undeterminded";
 	}
 	public boolean getOcrChannelsVisibility() {
@@ -271,10 +261,58 @@ public class UseCaseViewModel extends AViewModelBase {
 	public CTCTopValues getCtcTop() {
 		return model.getCtcTop();
 	}
+	public boolean getCompareInterruptA() {
+		return model.getCompareInterruptA();
+	}
+	public boolean getCompareInterruptB() {
+		return model.getCompareInterruptB();
+	}
+	public boolean getCompareInterruptC() {
+		return model.getCompareInterruptC();
+	}
+	public CTCOutputPinMode getComparePinModeA() {
+		return model.getComparePinModeA();
+	}
+	public CTCOutputPinMode getComparePinModeB() {
+		return model.getComparePinModeB();
+	}
+	public CTCOutputPinMode getComparePinModeC() {
+		return model.getComparePinModeC();
+	}
 	
 	public void setCtcTop(CTCTopValues v) {
 		model.setCtcTop(v);
 		changes.firePropertyChange("ctcTop", null, null);
+		triggerUpdateView();
+	}
+	public void setCompareInterruptA(boolean i) {
+		model.setCompareInterruptA(i);
+		changes.firePropertyChange("compareInterruptA", null, null);
+		triggerUpdateView();
+	}
+	public void setCompareInterruptB(boolean i) {
+		model.setCompareInterruptB(i);
+		changes.firePropertyChange("compareInterruptB", null, null);
+		triggerUpdateView();
+	}
+	public void setCompareInterruptC(boolean i) {
+		model.setCompareInterruptC(i);
+		changes.firePropertyChange("compareInterruptC", null, null);
+		triggerUpdateView();
+	}
+	public void setComparePinModeA(CTCOutputPinMode m) {
+		model.setComparePinModeA(m);
+		changes.firePropertyChange("comparePinModeA", null, null);
+		triggerUpdateView();
+	}
+	public void setComparePinModeB(CTCOutputPinMode m) {
+		model.setComparePinModeB(m);
+		changes.firePropertyChange("comparePinModeB", null, null);
+		triggerUpdateView();
+	}
+	public void setComparePinModeC(CTCOutputPinMode m) {
+		model.setComparePinModeC(m);
+		changes.firePropertyChange("comparePinModeC", null, null);
 		triggerUpdateView();
 	}
 		

@@ -15,50 +15,37 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
-import de.upbracing.shared.timer.model.enums.CTCTopValues;
-import de.upbracing.shared.timer.model.enums.PWMTopValues;
-import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
-import de.upbracing.shared.timer.model.enums.PrescaleFactors;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
 public class ConfigurationBaseExpandItem extends ExpandItem {
 	
-	private UseCaseViewModel model;
-	private TimerConfigurationEditor editor;
 	private Composite composite;
 	private Composite settingsComposite;
 	private ExpandBar bar;
-	private Group overflowG;
-	private Group fastPWMG;
-	private Group pcPWMG;
-	private Group pfcPWMG;
-	private Group ctcG;
-	private Group activeG;
+	private ConfigurationCompositeOverflow overflowC;
+	private ConfigurationCompositeCTC ctcC;
+	private ConfigurationCompositeFastPWM fastPWMC;
+	private ConfigurationCompositePhaseCorrectPWM pcPWMC;
+	private ConfigurationCompositePhaseAndFrequencyCorrectPWM pfcPWMC;
+	private AConfigurationCompositeBase activeC;
 	
 	public ConfigurationBaseExpandItem(final ExpandBar parent, int style, final UseCaseViewModel model, final TimerConfigurationEditor editor) {
 		super(parent, style);
 		
-		this.model = model;
-		this.editor = editor;
 		this.bar = parent;
 		composite = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(7, false);
@@ -154,6 +141,12 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		settingsComposite.setLayoutData(d);
 		final StackLayout sl = new StackLayout();
 		settingsComposite.setLayout(sl);
+		
+		overflowC = new ConfigurationCompositeOverflow(settingsComposite, this, SWT.NONE, editor, model);
+		ctcC = new ConfigurationCompositeCTC(settingsComposite, this, SWT.NONE, editor, model);
+		fastPWMC = new ConfigurationCompositeFastPWM(settingsComposite, this, SWT.NONE, editor, model);
+		pcPWMC = new ConfigurationCompositePhaseCorrectPWM(settingsComposite, this, SWT.NONE, editor, model);
+		pfcPWMC = new ConfigurationCompositePhaseAndFrequencyCorrectPWM(settingsComposite, this, SWT.NONE, editor, model);
 		initUseCaseGroups();
 		
 		// Selection Listeners:
@@ -172,7 +165,7 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 
 				selectGroup(mode);
 				
-				sl.topControl = activeG;
+				sl.topControl = activeC;
 				updateLayout();
 				editor.setDirty(true);
 				
@@ -185,7 +178,7 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 
 				selectGroup(mode);
 				
-				sl.topControl = activeG;
+				sl.topControl = activeC;
 				updateLayout();
 				editor.setDirty(true);
 				
@@ -211,382 +204,31 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 	
 	private void initUseCaseGroups() {
 		
-		initOverflowGroup();
-		initFastPWMGroup();
-		initPhaseCorrectPWMGroup();
-		initPhaseAndFrequencyCorrectPWMGroup();
-		initCTCGroup();
-		
-		activeG = overflowG;
+		activeC = overflowC;
 		settingsComposite.layout();
 		setHeight(settingsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-	}
-	
-	private Group initGroupWidget() {
-		Group useCaseG = new Group(settingsComposite, SWT.NONE);
-		GridLayout gl = new GridLayout(2, false);
-		useCaseG.setLayout(gl);
-		GridData g = new GridData();
-		g.horizontalAlignment = SWT.FILL;
-		g.grabExcessHorizontalSpace = true;
-		useCaseG.setLayoutData(g);
-		return useCaseG;
-	}
-	
-	private Group initTopValueGroup(Group g, String title) {
-
-		// OCR Groups
-		initTopValueItem(g, "icrName", "icrPeriod", "icrVisibility", false);
-		initTopValueItem(g, "ocrAName", "ocrAPeriod", null, true);
-		initTopValueItem(g, "ocrBName", "ocrBPeriod", "ocrChannelsVisibility", true);
-		initTopValueItem(g, "ocrCName", "ocrCPeriod", "ocrChannelsVisibility", true);
-		
-		return g;
-	}
-
-	private void initTopValueItem(Group g, String nameProperty, String periodProperty, String enabledProperty, boolean compareInterrupt) {
-		
-		CollapsibleComposite scComp = new CollapsibleComposite(g, SWT.BORDER);
-		GridData d = new GridData();
-		d.horizontalSpan = 4;
-		d.horizontalAlignment = SWT.FILL;
-		d.grabExcessHorizontalSpace = true;
-		scComp.setLayoutData(d);
-		GridLayout l = new GridLayout(3, false);
-		scComp.setLayout(l);
-		
-		DataBindingContext c;
-		c = new DataBindingContext();
-		if (enabledProperty != null) {
-			c.bindValue(SWTObservables.observeEnabled(scComp), 
-					BeansObservables.observeValue(model, enabledProperty));
-		}
-		
-		// Label for Register Name:
-		Label lbPrefix = new Label(scComp, SWT.BORDER);
-		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
-		d = new GridData();
-		d.grabExcessHorizontalSpace = true;
-		d.horizontalAlignment = SWT.FILL;
-		d.horizontalSpan = 3;
-		lbPrefix.setLayoutData(d);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(lbPrefix), 
-				BeansObservables.observeValue(model, nameProperty));
-		setFontStyle(lbPrefix, SWT.BOLD);
-		
-		// Label for Period
-		Label freqLOA = new Label(scComp, SWT.NONE);
-		freqLOA.setText("Period:");
-		// Textbox
-		Text tFreq = new Text(scComp, SWT.BORDER);
-		d = new GridData();
-		d.widthHint = 100;
-		d.minimumWidth = 100;
-		d.horizontalAlignment = SWT.RIGHT;
-		d.grabExcessHorizontalSpace = true;
-		tFreq.setLayoutData(d);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
-				BeansObservables.observeValue(model, periodProperty));
-		if (enabledProperty != null) {
-			c.bindValue(SWTObservables.observeEnabled(tFreq), 
-					BeansObservables.observeValue(model, enabledProperty));
-		}
-		tFreq.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				editor.setDirty(true);
-			}});
-		// Label for Unit
-		Label lbUnit = new Label(scComp, SWT.NONE);
-		lbUnit.setText("s");
-		
-		if (compareInterrupt) {
-			// Interrupt enable checkbox for Compare Match
-			Label intL = new Label(scComp, SWT.NONE);
-			intL.setText("Compare match interrupt:");
-			Button intCb = new Button(scComp, SWT.CHECK);
-			c = new DataBindingContext();
-			c.bindValue(SWTObservables.observeSelection(intCb), 
-					BeansObservables.observeValue(model, "overflowInterrupt"));
-			d = new GridData();
-			d.horizontalSpan = 2;
-			intCb.setLayoutData(d);
-		}
-	}
-	
-	private void initPrescaleCombo(Group g) {
-		
-		Label prescaleL = new Label(g, SWT.NONE);
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		prescaleL.setLayoutData(d);
-		prescaleL.setText("Prescale divisor:");
-		ComboViewer timerC = new ComboViewer(g, SWT.BORDER);
-		timerC.setContentProvider(ArrayContentProvider.getInstance());
-		timerC.setInput(PrescaleFactors.values());
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(timerC),
-				BeansObservables.observeValue(model, "prescale"));
-		
-		timerC.addPostSelectionChangedListener(new ISelectionChangedListener() {
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				editor.setDirty(true);
-			}
-		});
-		
-		// Empty placeholder at end
-		Label place = new Label(g, SWT.NONE);
-		d = new GridData();
-		d.horizontalIndent = 4;
-		place.setLayoutData(d);
-	}
-	
-	private void initSummaryGroup(Group g) {
-		
-		// Summary Group
-		Group descriptionG = new Group(g, SWT.NONE);
-		descriptionG.setText("Configuration Summary:");
-		GridLayout gl = new GridLayout(1, false);
-		descriptionG.setLayout(gl);
-		GridData d = new GridData();
-		d.horizontalAlignment = SWT.RIGHT;
-		d.grabExcessHorizontalSpace = true;
-		d.verticalAlignment = SWT.FILL;
-		d.widthHint = 350;
-		descriptionG.setLayoutData(d);
-		Label descriptionL = new Label(descriptionG, SWT.WRAP | SWT.BORDER);
-		d = new GridData();
-		d.horizontalAlignment = SWT.FILL;
-		d.grabExcessHorizontalSpace = true;
-		d.verticalAlignment = SWT.FILL;
-		d.grabExcessVerticalSpace = true;
-		descriptionL.setLayoutData(d);
-		descriptionG.layout();
-		
-		setFontStyle(descriptionG, SWT.BOLD);
-		
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(descriptionL), 
-				BeansObservables.observeValue(model, "description"));
-	}
-	
-	private Group initSettingsGroup(Group g) {
-		// Settings Group
-		Group settingsG = new Group(g, SWT.NONE);
-		settingsG.setText("Settings:");
-		GridLayout gl = new GridLayout(4, false);
-		settingsG.setLayout(gl);
-		GridData d = new GridData();
-		d.verticalAlignment = SWT.TOP;
-//		d.horizontalAlignment = SWT.FILL;
-//		d.grabExcessHorizontalSpace = true;
-		settingsG.setLayoutData(d);
-		
-		setFontStyle(settingsG, SWT.BOLD);
-		
-		return settingsG;
-	}
-	
-	private void initOverflowGroup() {
-		
-		overflowG = initGroupWidget();
-		
-		
-		Group settingsG = initSettingsGroup(overflowG);
-		initPrescaleCombo(settingsG);
-		initSummaryGroup(overflowG);
-		
-		// Interrupt enable checkbox for overflow
-		Label intL = new Label(settingsG, SWT.NONE);
-		intL.setText("Overflow interrupt:");
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		intL.setLayoutData(d);
-		Button intCb = new Button(settingsG, SWT.CHECK);
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeSelection(intCb), 
-				BeansObservables.observeValue(model, "overflowInterrupt"));
-		d = new GridData();
-		d.horizontalSpan = 2;
-		intCb.setLayoutData(d);
-		
-		// Image
-		ImageDescriptor img = null;
-		try {
-			img = Activator.getImageDescriptor("./images/Overflow.png");
-			Image i = img.createImage();
-			Label comp = new Label(settingsG, SWT.IMAGE_PNG);
-			d = new GridData();
-			d.horizontalSpan = 4;
-			d.grabExcessHorizontalSpace = true;
-			comp.setLayoutData(d);
-			comp.setImage(i);
-		}
-		catch (Exception e) {
-		}
-		
-		overflowG.layout();
-	}
-	
-	private void initFastPWMGroup() {
-		
-		fastPWMG = initGroupWidget();
-		
-		Group settingsG = initSettingsGroup(fastPWMG);
-		initPrescaleCombo(settingsG);
-		initSummaryGroup(fastPWMG);
-		
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		Label topValueL = new Label(settingsG, SWT.NONE);
-		topValueL.setText("Top value register:");
-		topValueL.setLayoutData(d);
-		ComboViewer topValueC = new ComboViewer(settingsG, SWT.BORDER);
-		topValueC.setContentProvider(ArrayContentProvider.getInstance());
-		topValueC.setInput(PWMTopValues.values());
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(topValueC),
-				BeansObservables.observeValue(model, "fastPWMTop"));
-		d = new GridData();
-		d.horizontalSpan = 2;
-		topValueC.getControl().setLayoutData(d);
-		
-		topValueC.addPostSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				editor.setDirty(true);
-			}
-		});
-		
-		fastPWMG.layout();
-	}
-	
-	private void initPhaseCorrectPWMGroup() {
-		
-		pcPWMG = initGroupWidget();
-		
-		Group settingsG = initSettingsGroup(pcPWMG);
-		initPrescaleCombo(settingsG);
-		initSummaryGroup(pcPWMG);
-		
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		Label topValueL = new Label(settingsG, SWT.NONE);
-		topValueL.setText("Top value register:");
-		topValueL.setLayoutData(d);
-		ComboViewer topValueC = new ComboViewer(settingsG, SWT.BORDER);
-		topValueC.setContentProvider(ArrayContentProvider.getInstance());
-		topValueC.setInput(PWMTopValues.values());
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(topValueC),
-				BeansObservables.observeValue(model, "phaseCorrectPWMTop"));
-		d = new GridData();
-		d.horizontalSpan = 2;
-		topValueC.getControl().setLayoutData(d);
-		
-		topValueC.addPostSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				editor.setDirty(true);
-			}
-		});
-		
-		pcPWMG.layout();
-	}
-	
-	private void initPhaseAndFrequencyCorrectPWMGroup() {
-		
-		pfcPWMG = initGroupWidget();
-		
-		Group settingsG = initSettingsGroup(pfcPWMG);
-		initPrescaleCombo(settingsG);
-		initSummaryGroup(pfcPWMG);
-		
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		Label topValueL = new Label(settingsG, SWT.NONE);
-		topValueL.setText("Top value register:");
-		topValueL.setLayoutData(d);
-		ComboViewer topValueC = new ComboViewer(settingsG, SWT.BORDER);
-		topValueC.setContentProvider(ArrayContentProvider.getInstance());
-		topValueC.setInput(PhaseAndFrequencyCorrectPWMTopValues.values());
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(topValueC),
-				BeansObservables.observeValue(model, "phaseAndFrequencyCorrectPWMTop"));
-		d = new GridData();
-		d.horizontalSpan = 2;
-		topValueC.getControl().setLayoutData(d);
-		
-		topValueC.addPostSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				editor.setDirty(true);
-			}
-		});
-		
-		pfcPWMG.layout();
-	}
-	
-	private void initCTCGroup() {
-		
-		ctcG = initGroupWidget();
-		
-		final Group settingsG = initSettingsGroup(ctcG);
-		initPrescaleCombo(settingsG);
-		initSummaryGroup(ctcG);
-		
-		GridData d = new GridData();
-		d.horizontalSpan = 2;
-		Label topValueL = new Label(settingsG, SWT.NONE);
-		topValueL.setLayoutData(d);
-		topValueL.setText("Top value register:");
-		ComboViewer topValueC = new ComboViewer(settingsG, SWT.BORDER);
-		topValueC.setContentProvider(ArrayContentProvider.getInstance());
-		topValueC.setInput(CTCTopValues.values());
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(topValueC),
-				BeansObservables.observeValue(model, "ctcTop"));
-		d = new GridData();
-		d.horizontalSpan = 2;
-		topValueC.getControl().setLayoutData(d);
-		
-		initTopValueGroup(settingsG, "");
-		
-		topValueC.addPostSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				editor.setDirty(true);
-				updateLayout();
-			}
-		});
-	
-		ctcG.layout();
 	}
 	
 	private void selectGroup(TimerOperationModes mode) {
 		
 		if (mode.equals(TimerOperationModes.OVERFLOW)) {
-			activeG = overflowG;
+			activeC = overflowC;
 		}
 		
 		if (mode.equals(TimerOperationModes.CTC)) {;
-			activeG = ctcG;
+			activeC = ctcC;
 		}
 		
 		if (mode.equals(TimerOperationModes.PWM_FAST)) {
-			activeG = fastPWMG;
+			activeC = fastPWMC;
 		}
 		
 		if (mode.equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
-			activeG = pcPWMG;
+			activeC = pcPWMC;
 		}
 		
 		if (mode.equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
-			activeG = pfcPWMG;
+			activeC = pfcPWMC;
 		}
 	}
 
@@ -607,28 +249,11 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		
 	}
 
-	private void updateLayout() {
-		activeG.layout();
+	public void updateLayout() {
+		activeC.layout();
 		settingsComposite.layout();
 		composite.layout();
 		
 		setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-	}
-	
-	private void setFontStyle(Control c, int style) {
-		FontData[] fD = c.getFont().getFontData();
-		fD[0].setStyle(style);
-		final Font newFont = new Font(c.getDisplay(),fD[0]);
-		c.setFont(newFont);
-		
-//		c.addDisposeListener(new DisposeListener() {
-//
-//			@Override
-//			public void widgetDisposed(DisposeEvent arg0) {
-//				// TODO Auto-generated method stub
-//				newFont.dispose();
-//			}
-//			
-//		});
 	}
 }
