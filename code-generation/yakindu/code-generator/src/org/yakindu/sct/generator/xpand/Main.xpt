@@ -1,0 +1,41 @@
+«IMPORT sexec»
+«IMPORT stext»
+«IMPORT sgraph»
+«IMPORT sgen»
+
+
+«DEFINE main(sgen::GeneratorEntry entry) FOR sexec::ExecutionFlow-»
+
+«REM»generate header file«ENDREM»
+«EXPAND header::file»
+
+«REM»generate initialization function«ENDREM»
+«EXPAND init::file FOR this»
+«REM»generate tick function that will be called at a regular interval«ENDREM»
+«EXPAND tick::file FOR this»
+
+«FILE this.name+'.c' -»
+
+«EXPAND StateMachine::file FOR this»
+#include<stdio.h>
+
+int main(void) {
+	
+	«this.reactions» «this.scopes.variables.name.first()»;
+	
+	«FOREACH this.states AS state-»
+	 «state.simpleName»;
+	«ENDFOREACH-»
+	«this.eContainer»
+	
+	
+
+The name of the Statemachine is '«this.name-»'
+
+The Statemachine has the following states:
+
+«FOREACH this.states AS state-»
+«state.name.replaceFirst(this.name+'\\.','')»
+«ENDFOREACH-»
+«ENDFILE-»
+«ENDDEFINE»

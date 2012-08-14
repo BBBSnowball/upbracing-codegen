@@ -1,0 +1,21 @@
+GeneratorModel for yakindu::xpand {
+
+	statechart default {
+
+		feature Outlet {
+			targetProject = "yakindu-code-generator"
+			targetFolder = "src-gen-yakindu"
+		}
+
+		
+//		feature CCodeFeature {
+//			InterfaceEventListener = true
+//			Singleton = true
+//		}
+		
+		feature Template {
+		templateProject = "yakindu-code-generator"
+		templatePath = "org::yakindu::sct::generator::xpand::Main::main"
+		}
+	}
+}

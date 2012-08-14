@@ -343,4 +343,14 @@ inline static void send_<%=msgconfig.getName()%>_nowait(boolean <%=msgconfig.get
 <% } %>
 
 
+<% 
+    return stringBuffer.toString();
+}
 
+void blub(StringBuffer stringBuffer) {
+
+
+}
+
+private String dummy(StringBuffer stringBuffer) {
+%>
