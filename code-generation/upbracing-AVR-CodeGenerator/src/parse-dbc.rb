@@ -133,14 +133,13 @@ end
 
 class DBC
   if !$jruby
-    attr_reader :version, :value_tables, :ecus, :messages, :signals
+    attr_reader :version, :value_tables, :ecus, :messages
     attr_accessor :ecu_names
     def initialize(version)
       @version = version
       @value_tables = {}
       @ecus = {}
       @messages = {}
-      @signals = {}
       @ecu_names = nil
     end
     def init
@@ -151,7 +150,6 @@ class DBC
       self.value_tables = {}
       self.ecus = {}
       self.messages = {}
-      self.signals = {}
       return self
     end
   end
@@ -285,7 +283,6 @@ def parse_dbc(filename = nil)
               msg = context
               signal = DBCSignal.new(name, sign, endianness, start, length, msg, factor, offset, min, max, unit, ecus)
               if !msg.signals[name]
-                dbc_result.signals[name] = signal
                 msg.add_signal(signal)
                 ecus.each do |ecu|
                   if !ecu
