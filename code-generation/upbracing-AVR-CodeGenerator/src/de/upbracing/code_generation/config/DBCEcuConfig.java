@@ -1,9 +1,8 @@
 package de.upbracing.code_generation.config;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 import java.util.Map;
 
 import de.upbracing.dbc.DBCEcu;
@@ -23,32 +22,16 @@ public class DBCEcuConfig extends DBCEcu {
 		setTxMsgs(ecu.getTxMsgs());
 	}
 
-	public void replaceSignalObjects(Map<DBCSignal, DBCSignalConfig> signalMap) {
-		//Replace RX Signals
-				
-		Collection<DBCSignal> newRxSignals = new Vector<DBCSignal>();
-		for (Iterator<DBCSignal> signal = getRxSignals().iterator(); signal.hasNext(); )
-		{
-			DBCSignalConfig signalconfig = signalMap.get(signal.next());
-			if (signalconfig != null)
-				newRxSignals.add(signalconfig);
-
-		}
-		setRxSignals(newRxSignals);
-		
-	}
-	
-	public void replaceMessageObjects(Map<DBCMessage, DBCMessageConfig> messageMap) {
+	public void replaceMessageObjectsAndSignals(Map<DBCMessage, DBCMessageConfig> messageMap) {
 		//Replace RX and TX Messages
 		
-		Collection<DBCMessage> newRxMsgs = new Vector<DBCMessage>();
-		for (Iterator<DBCMessage> message = getRxMsgs().iterator(); message.hasNext(); )
-		{
-			newRxMsgs.add(messageMap.get(message.next()));
+		Collection<DBCMessage> newRxMsgs = new ArrayList<DBCMessage>(getRxMsgs().size());
+		for (DBCMessage message : getRxMsgs()) {
+			newRxMsgs.add(messageMap.get(message));
 		}
 		setRxMsgs(newRxMsgs);
 		
-		Collection<DBCMessage> newTxMsgs = new Vector<DBCMessage>();
+		Collection<DBCMessage> newTxMsgs = new ArrayList<DBCMessage>(getTxMsgs().size());
 		for (Iterator<DBCMessage> message = getTxMsgs().iterator(); message.hasNext(); )
 		{
 			newTxMsgs.add(messageMap.get(message.next()));
@@ -56,5 +39,12 @@ public class DBCEcuConfig extends DBCEcu {
 		setTxMsgs(newTxMsgs);
 		
 		
+		Collection<DBCSignal> newRxSignals = new ArrayList<DBCSignal>(getRxSignals().size());
+		for (DBCSignal signal : getRxSignals()) {
+			DBCMessage newMessage = messageMap.get(signal.getMessage());
+			DBCSignal newSignal = newMessage.getSignals().get(signal.getName());
+			newRxSignals.add(newSignal);
+		}
+		setRxSignals(newRxSignals);
 	}
 }

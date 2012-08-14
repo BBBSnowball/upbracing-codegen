@@ -29,12 +29,24 @@ public class DBCMessageConfig extends DBCMessage {
 		setSignalOrder(message.getSignalOrder());
 	}
 
-	public void replaceSignalObjects(Map<DBCSignal, DBCSignalConfig> signalMap) {
-		//Replace Signals and SignalOrder
-		
+	public void replaceSignalObjects(Map<DBCEcu, DBCEcuConfig> ecuMap) {
+		//Convert the signals to signalConfig objects
+		Map<DBCSignal, DBCSignalConfig> signalMap = new HashMap<DBCSignal, DBCSignalConfig>();
+		Map<String, DBCSignal> oldSignals = getSignals();
 		Map<String, DBCSignal> newSignals = new HashMap<String, DBCSignal>();
-		for(Map.Entry<String, DBCSignal> entry : getSignals().entrySet()) {
-			newSignals.put(entry.getKey(), signalMap.get(entry.getValue()));
+		for(Map.Entry<String, DBCSignal> entry : oldSignals.entrySet()) {
+			//Convert the rxEcu list to a list with the DBCEcuConfig objects
+			List<DBCEcu> newrxecus = new LinkedList<DBCEcu>();
+			for ( Iterator<DBCEcu> ecu = entry.getValue().getRxEcus().iterator(); ecu.hasNext(); )
+			{
+				newrxecus.add(ecuMap.get(ecu.next()));
+			}
+			
+			DBCSignalConfig newSignal = new DBCSignalConfig(entry.getValue(), newrxecus, 
+					this);
+			
+			newSignals.put(entry.getKey(), newSignal);
+			signalMap.put(entry.getValue(), newSignal);
 		}
 		setSignals(newSignals);
 		

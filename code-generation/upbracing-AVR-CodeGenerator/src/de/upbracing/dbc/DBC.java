@@ -4,12 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.simpleframework.xml.Default;
-import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementMap;
-import org.simpleframework.xml.convert.Convert;
-import org.simpleframework.xml.convert.Converter;
-import org.simpleframework.xml.stream.InputNode;
-import org.simpleframework.xml.stream.OutputNode;
 
 /**
  * CAN definition data (model for a DBC file)
@@ -25,7 +20,6 @@ public class DBC {
 	private Map<String, DBCValueTable> valueTables;
 	private Map<String, DBCEcu> ecus;
 	private Map<String, DBCMessage> messages;
-	private Map<String, DBCSignal> signals;
 	private Collection<String> ecuNames;
 	
 	/** constructor
@@ -75,16 +69,6 @@ public class DBC {
 	/** set map of messages (message name -> message definition) */
 	public void setMessages(Map<String, DBCMessage> messages) {
 		this.messages = messages;
-	}
-
-	/** get map of signals (signal name -> signal definition) */
-	public Map<String, DBCSignal> getSignals() {
-		return signals;
-	}
-
-	/** set map of signals (signal name -> signal definition) */
-	public void setSignals(Map<String, DBCSignal> signals) {
-		this.signals = signals;
 	}
 
 	/** get list of ecu names */
