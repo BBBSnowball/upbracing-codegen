@@ -3,6 +3,8 @@ package de.upbracing.configurationeditor.timer.viewmodel;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
+import de.upbracing.configurationeditor.timer.wizards.NewConfigurationFileWizard;
+import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
@@ -11,20 +13,28 @@ import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValue
 import de.upbracing.shared.timer.model.enums.PrescaleFactors;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 public class UseCaseViewModel extends AViewModelBase {
 	
 	private UseCaseModel model;
 	private ConfigurationViewModel parent;
+	private UseCaseModelValidator validator;
 		
 	// Constructor:
-	public UseCaseViewModel(UseCaseModel m) {
+	public UseCaseViewModel(UseCaseModel m, ConfigurationModel parent) {
 		this.model = m;
+		this.validator = new UseCaseModelValidator(parent, m);
 	}
 
 	// Getter for Parent
 	public UseCaseModel getModel() {
 		return model;
+	}
+	
+	// Getter for Validator
+	public UseCaseModelValidator getValidator() {
+		return validator;
 	}
 	
 	// Routed Model Getters:

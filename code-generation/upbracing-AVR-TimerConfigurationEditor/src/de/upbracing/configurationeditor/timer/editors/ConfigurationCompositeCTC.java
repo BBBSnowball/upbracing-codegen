@@ -1,9 +1,13 @@
 package de.upbracing.configurationeditor.timer.editors;
 
 import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.databinding.viewers.ViewersObservables;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -27,7 +31,7 @@ import de.upbracing.shared.timer.model.enums.CTCTopValues;
 
 public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 
-	public ConfigurationCompositeCTC(Composite parent, ConfigurationBaseExpandItem expandItem, int style,
+	public ConfigurationCompositeCTC(Composite parent, ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
@@ -96,14 +100,26 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		d.horizontalAlignment = SWT.RIGHT;
 		d.grabExcessHorizontalSpace = true;
 		tFreq.setLayoutData(d);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
-				BeansObservables.observeValue(model, periodProperty));
 		tFreq.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
 				editor.setDirty(true);
 			}});
+//		ControlDecoration decoration = new ControlDecoration(tFreq, SWT.TOP | SWT.RIGHT);
+//		decoration.setDescriptionText("Error with period setting!");
+//		FieldDecoration fieldDecoration = FieldDecorationRegistry
+//		    .getDefault().getFieldDecoration(
+//		         FieldDecorationRegistry.DEC_ERROR);
+//		decoration.setImage(fieldDecoration.getImage());
+//		c = new DataBindingContext();
+//		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
+//				BeansObservables.observeValue(model, periodProperty),
+//				new UpdateValueStrategy()
+//        			.setAfterConvertValidator(new ValidationRouter(model,
+//                "getIcrError",
+//                 decoration)),
+//                 null);
+		
 		// Label for Unit
 		Label lbUnit = new Label(scComp, SWT.NONE);
 		lbUnit.setText("s");

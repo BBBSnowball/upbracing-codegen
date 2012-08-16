@@ -22,7 +22,7 @@ import de.upbracing.shared.timer.model.enums.PWMTopValues;
 public class ConfigurationCompositeFastPWM extends AConfigurationCompositeBase {
 
 	public ConfigurationCompositeFastPWM(Composite parent,
-			ConfigurationBaseExpandItem expandItem, int style,
+			ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		

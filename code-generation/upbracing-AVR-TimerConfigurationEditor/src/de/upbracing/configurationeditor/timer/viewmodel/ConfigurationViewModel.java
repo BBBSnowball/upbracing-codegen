@@ -19,7 +19,7 @@ public class ConfigurationViewModel extends AViewModelBase {
 		// Init UseCaseConfigurationViewModels
 		if (m.getConfigurations() != null)
 			for (UseCaseModel uc: m.getConfigurations()) {
-				UseCaseViewModel vm = new UseCaseViewModel(uc);
+				UseCaseViewModel vm = new UseCaseViewModel(uc, model);
 				vm.setParent(this);
 				configurations.add(vm);
 			}
@@ -46,7 +46,7 @@ public class ConfigurationViewModel extends AViewModelBase {
 	public UseCaseViewModel addConfiguration() {
 		
 		UseCaseModel m = model.addConfiguration();
-		UseCaseViewModel vm = new UseCaseViewModel(m);
+		UseCaseViewModel vm = new UseCaseViewModel(m, model);
 		vm.setParent(this);
 		configurations.add(vm);
 		return vm;

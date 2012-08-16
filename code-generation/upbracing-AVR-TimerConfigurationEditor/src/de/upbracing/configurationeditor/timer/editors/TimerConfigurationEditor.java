@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
+import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -177,7 +178,8 @@ public class TimerConfigurationEditor extends EditorPart {
 		bar.setLayoutData(data);
 		
 		for (UseCaseViewModel m: model.getConfigurations()) {
-			new ConfigurationBaseExpandItem(bar, SWT.NONE, m, this);
+			ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+			new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, m, this);
 		}
 		
 		b.addListener(SWT.Selection, new Listener() {
@@ -185,7 +187,8 @@ public class TimerConfigurationEditor extends EditorPart {
 				// Add a new configuration to the model
 				UseCaseViewModel newModel = model.addConfiguration();
 				// Add the view for this configuration
-				new ConfigurationBaseExpandItem(bar, SWT.NONE, newModel, getEditor());
+				ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+				new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, getEditor());
 				// Set project status "dirty"
 				setDirty(true);
 			}

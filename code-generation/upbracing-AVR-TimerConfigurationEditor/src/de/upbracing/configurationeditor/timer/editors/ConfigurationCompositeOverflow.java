@@ -16,7 +16,7 @@ import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 
 public class ConfigurationCompositeOverflow extends AConfigurationCompositeBase {
 
-	public ConfigurationCompositeOverflow(Composite parent, ConfigurationBaseExpandItem expandItem, int style,
+	public ConfigurationCompositeOverflow(Composite parent, ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		

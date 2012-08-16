@@ -31,11 +31,11 @@ import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
-public class ConfigurationBaseExpandItem extends ExpandItem {
-	
-	private Composite composite;
-	private Composite settingsComposite;
+public class ConfigurationExpandItemComposite extends Composite {
+
 	private ExpandBar bar;
+	private ExpandItem expandItem;
+	private Composite settingsComposite;
 	private ConfigurationCompositeOverflow overflowC;
 	private ConfigurationCompositeCTC ctcC;
 	private ConfigurationCompositeFastPWM fastPWMC;
@@ -43,49 +43,55 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 	private ConfigurationCompositePhaseAndFrequencyCorrectPWM pfcPWMC;
 	private AConfigurationCompositeBase activeC;
 	
-	public ConfigurationBaseExpandItem(final ExpandBar parent, int style, final UseCaseViewModel model, final TimerConfigurationEditor editor) {
+	public ConfigurationExpandItemComposite(Composite parent, 
+			int style, 
+			final ExpandBar bar, 
+			final ExpandItem expandItem, 
+			final UseCaseViewModel model, 
+			final TimerConfigurationEditor editor) {
 		super(parent, style);
+
+		this.bar = bar;
+		this.expandItem = expandItem;
 		
-		this.bar = parent;
-		composite = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(7, false);
 		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = 5;
 		layout.verticalSpacing = 5;
-		composite.setLayout(layout);
+		setLayout(layout);
 		
 		// Image for Header:
 		ImageDescriptor img = null;
 		try {
 			img = Activator.getImageDescriptor("./icons/clock.png");
-			setImage(img.createImage());
+			expandItem.setImage(img.createImage());
 		}
 		catch (Exception e) {
 			
 		}
 		
 		// Name Setting:
-		Label label = new Label(composite, SWT.NONE);
+		Label label = new Label(this, SWT.NONE);
 		label.setText("Name:");
 		GridData d = new GridData();
 		d.horizontalIndent = 1;
 		d.widthHint = 150;
-		final Text t = new Text(composite, SWT.SINGLE | SWT.BORDER);
+		final Text t = new Text(this, SWT.SINGLE | SWT.BORDER);
 		t.setLayoutData(d);
 		t.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
-				setText("Timer Configuration: " + t.getText());
+				expandItem.setText("Timer Configuration: " + t.getText());
 				editor.setDirty(true);
 			}
 		});
 		
 		// Timer Combo Box:
-		Label timerL = new Label(composite, SWT.NONE);
+		Label timerL = new Label(this, SWT.NONE);
 		timerL.setText("Timer:");
 		d = new GridData();
 		d.horizontalIndent = 2;
 		timerL.setLayoutData(d);
-		ComboViewer timerC = new ComboViewer(composite, SWT.BORDER);
+		ComboViewer timerC = new ComboViewer(this, SWT.BORDER);
 		d = new GridData();
 		d.horizontalIndent = 3;
 		timerC.getControl().setLayoutData(d);
@@ -93,12 +99,12 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		timerC.setInput(TimerEnum.values());
 		
 		// Mode Combo Box:
-		Label modeL = new Label(composite, SWT.NONE);
+		Label modeL = new Label(this, SWT.NONE);
 		modeL.setText("Mode:");
 		d = new GridData();
 		d.horizontalIndent = 4;
 		modeL.setLayoutData(d);
-		ComboViewer modeC = new ComboViewer(composite, SWT.BORDER);
+		ComboViewer modeC = new ComboViewer(this, SWT.BORDER);
 		d = new GridData();
 		d.horizontalIndent = 5;
 		modeC.getControl().setLayoutData(d);
@@ -106,7 +112,7 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		modeC.setInput(TimerOperationModes.values());
 		
 		// Delete Button:
-		final Button delB = new Button(composite, SWT.NONE);
+		final Button delB = new Button(this, SWT.NONE);
 		delB.setText("Delete configuration");
 		d = new GridData();
 		d.horizontalIndent = 6;
@@ -133,7 +139,7 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		});
 		
 		// Settings Composite
-		settingsComposite = new Composite(composite, SWT.NONE);
+		settingsComposite = new Composite(this, SWT.NONE);
 		d = new GridData();
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
@@ -197,16 +203,16 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 				BeansObservables.observeValue(model, "timer"));
 		c = new DataBindingContext();
 		
-		composite.layout();
-		setControl(composite);
-		setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		layout();
+		expandItem.setControl(this);
+		expandItem.setHeight(computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 	}
-	
-	private void initUseCaseGroups() {
+
+private void initUseCaseGroups() {
 		
 		activeC = overflowC;
 		settingsComposite.layout();
-		setHeight(settingsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+//		expandItem.setHeight(settingsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 	}
 	
 	private void selectGroup(TimerOperationModes mode) {
@@ -237,7 +243,7 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		int index = -1;
 		for (ExpandItem i: bar.getItems()) {
 			index++;
-			if (i == this) {
+			if (i == expandItem) {
 				break;
 			}
 		}
@@ -246,14 +252,15 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		bar.getItem(index).getControl().dispose();
 		bar.getItem(index).dispose();
 		bar.layout();
-		
+		dispose();
 	}
 
 	public void updateLayout() {
 		activeC.layout();
 		settingsComposite.layout();
-		composite.layout();
+		layout();
 		
-		setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		expandItem.setHeight(computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 	}
+
 }

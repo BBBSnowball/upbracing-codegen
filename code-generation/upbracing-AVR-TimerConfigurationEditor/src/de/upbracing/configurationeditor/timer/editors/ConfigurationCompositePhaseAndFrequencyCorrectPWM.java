@@ -23,7 +23,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		AConfigurationCompositeBase {
 
 	public ConfigurationCompositePhaseAndFrequencyCorrectPWM(Composite parent,
-			ConfigurationBaseExpandItem expandItem, int style,
+			ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
