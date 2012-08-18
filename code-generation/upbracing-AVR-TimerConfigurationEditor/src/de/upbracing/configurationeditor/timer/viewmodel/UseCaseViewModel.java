@@ -3,6 +3,7 @@ package de.upbracing.configurationeditor.timer.viewmodel;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
+import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
@@ -11,20 +12,28 @@ import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValue
 import de.upbracing.shared.timer.model.enums.PrescaleFactors;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 public class UseCaseViewModel extends AViewModelBase {
 	
 	private UseCaseModel model;
 	private ConfigurationViewModel parent;
+	private UseCaseModelValidator validator;
 		
 	// Constructor:
-	public UseCaseViewModel(UseCaseModel m) {
+	public UseCaseViewModel(UseCaseModel m, ConfigurationModel parent) {
 		this.model = m;
+		this.validator = new UseCaseModelValidator(parent, m);
 	}
 
 	// Getter for Parent
 	public UseCaseModel getModel() {
 		return model;
+	}
+	
+	// Getter for Validator
+	public UseCaseModelValidator getValidator() {
+		return validator;
 	}
 	
 	// Routed Model Getters:
@@ -67,27 +76,33 @@ public class UseCaseViewModel extends AViewModelBase {
 		this.model.setTimer(t);
 		changes.firePropertyChange("timer", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setPrescale(PrescaleFactors p) {
 		this.model.setPrescale(p);
 		changes.firePropertyChange("prescale", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setIcrPeriod(double f) {
 		this.model.setIcrPeriod(f);
 		changes.firePropertyChange("icrPeriod", null, null);
+		validator.updateValidation();
 	}
 	public void setOcrAPeriod(double f) {
 		this.model.setOcrAPeriod(f);
 		changes.firePropertyChange("ocrAPeriod", null, null);
+		validator.updateValidation();
 	}
 	public void setOcrBPeriod(double f) {
 		this.model.setOcrBPeriod(f);
 		changes.firePropertyChange("ocrBPeriod", null, null);
+		validator.updateValidation();
 	}
 	public void setOcrCPeriod(double f) {
 		this.model.setOcrCPeriod(f);
 		changes.firePropertyChange("ocrCPeriod", null, null);
+		validator.updateValidation();
 	}
 	
 	// Dynamic data-bound View Data:
@@ -284,36 +299,43 @@ public class UseCaseViewModel extends AViewModelBase {
 		model.setCtcTop(v);
 		changes.firePropertyChange("ctcTop", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setCompareInterruptA(boolean i) {
 		model.setCompareInterruptA(i);
 		changes.firePropertyChange("compareInterruptA", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setCompareInterruptB(boolean i) {
 		model.setCompareInterruptB(i);
 		changes.firePropertyChange("compareInterruptB", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setCompareInterruptC(boolean i) {
 		model.setCompareInterruptC(i);
 		changes.firePropertyChange("compareInterruptC", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setComparePinModeA(CTCOutputPinMode m) {
 		model.setComparePinModeA(m);
 		changes.firePropertyChange("comparePinModeA", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setComparePinModeB(CTCOutputPinMode m) {
 		model.setComparePinModeB(m);
 		changes.firePropertyChange("comparePinModeB", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setComparePinModeC(CTCOutputPinMode m) {
 		model.setComparePinModeC(m);
 		changes.firePropertyChange("comparePinModeC", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 		
 	// PWM
@@ -331,16 +353,19 @@ public class UseCaseViewModel extends AViewModelBase {
 		model.setFastPWMTop(p);
 		changes.firePropertyChange("fastPWMTop", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setPhaseCorrectPWMTop(PWMTopValues p) {
 		model.setPhaseCorrectPWMTop(p);
 		changes.firePropertyChange("phaseCorrectPWMTop", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setPhaseAndFrequencyCorrectPWMTop(PhaseAndFrequencyCorrectPWMTopValues p) {
 		model.setPhaseAndFrequencyCorrectPWMTop(p);
 		changes.firePropertyChange("phaseAndFrequencyCorrectPWMTop", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public ConfigurationViewModel getParent() {
 		return parent;

@@ -6,15 +6,11 @@ import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
@@ -23,7 +19,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		AConfigurationCompositeBase {
 
 	public ConfigurationCompositePhaseAndFrequencyCorrectPWM(Composite parent,
-			ConfigurationBaseExpandItem expandItem, int style,
+			ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
@@ -82,46 +78,37 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		Label freqLOA = new Label(scComp, SWT.NONE);
 		freqLOA.setText("Duty-Cycle:");
 		
-		// Textbox
-		Text tFreq = new Text(scComp, SWT.BORDER);
-		d = new GridData();
-		d.widthHint = 100;
-		d.minimumWidth = 100;
-		d.horizontalAlignment = SWT.RIGHT;
-		d.grabExcessHorizontalSpace = true;
-		tFreq.setLayoutData(d);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
-				BeansObservables.observeValue(model, periodProperty));
-		if (enabledProperty != null) {
-			c.bindValue(SWTObservables.observeEnabled(tFreq), 
-					BeansObservables.observeValue(model, enabledProperty));
-		}
-		tFreq.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				editor.setDirty(true);
-			}});
+		// Validated Text Box:
+		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
+				SWT.NONE, 
+				model, periodProperty, 
+				model.getValidator());
+		tFreq.getTextBox().addModifyListener(new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent arg0) {
+			editor.setDirty(true);
+		}});
+				
 		// Label for Unit
 		Label lbUnit = new Label(scComp, SWT.NONE);
 		lbUnit.setText("s");
 		
-		if (compareInterrupt) {
-			// Interrupt enable checkbox for Compare Match
-			Label intL = new Label(scComp, SWT.NONE);
-			intL.setText("Compare match interrupt:");
-			Button intCb = new Button(scComp, SWT.CHECK);
-			c = new DataBindingContext();
-			c.bindValue(SWTObservables.observeSelection(intCb), 
-					BeansObservables.observeValue(model, compareInterruptProperty));
-			d = new GridData();
-			d.horizontalSpan = 2;
-			intCb.setLayoutData(d);
-			intCb.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
-					editor.setDirty(true);
-				}
-			});
-		}
+//		if (compareInterrupt) {
+//			// Interrupt enable checkbox for Compare Match
+//			Label intL = new Label(scComp, SWT.NONE);
+//			intL.setText("Compare match interrupt:");
+//			Button intCb = new Button(scComp, SWT.CHECK);
+//			c = new DataBindingContext();
+//			c.bindValue(SWTObservables.observeSelection(intCb), 
+//					BeansObservables.observeValue(model, compareInterruptProperty));
+//			d = new GridData();
+//			d.horizontalSpan = 2;
+//			intCb.setLayoutData(d);
+//			intCb.addSelectionListener(new SelectionAdapter() {
+//				public void widgetSelected(SelectionEvent e) {
+//					editor.setDirty(true);
+//				}
+//			});
+//		}
 	}
 }

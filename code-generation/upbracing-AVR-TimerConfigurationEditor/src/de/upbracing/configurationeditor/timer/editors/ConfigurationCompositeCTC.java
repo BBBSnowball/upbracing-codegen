@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
@@ -27,7 +26,7 @@ import de.upbracing.shared.timer.model.enums.CTCTopValues;
 
 public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 
-	public ConfigurationCompositeCTC(Composite parent, ConfigurationBaseExpandItem expandItem, int style,
+	public ConfigurationCompositeCTC(Composite parent, ConfigurationExpandItemComposite expandItem, int style,
 			TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
@@ -88,22 +87,17 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		Label freqLOA = new Label(scComp, SWT.NONE);
 		freqLOA.setText("Period:");
 		
-		// Textbox
-		Text tFreq = new Text(scComp, SWT.BORDER);
-		d = new GridData();
-		d.widthHint = 100;
-		d.minimumWidth = 100;
-		d.horizontalAlignment = SWT.RIGHT;
-		d.grabExcessHorizontalSpace = true;
-		tFreq.setLayoutData(d);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
-				BeansObservables.observeValue(model, periodProperty));
-		tFreq.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				editor.setDirty(true);
-			}});
+		// Validated Text Box:
+		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
+				SWT.NONE, 
+				model, periodProperty, 
+				model.getValidator());
+		tFreq.getTextBox().addModifyListener(new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent arg0) {
+			editor.setDirty(true);
+		}});
+		
 		// Label for Unit
 		Label lbUnit = new Label(scComp, SWT.NONE);
 		lbUnit.setText("s");

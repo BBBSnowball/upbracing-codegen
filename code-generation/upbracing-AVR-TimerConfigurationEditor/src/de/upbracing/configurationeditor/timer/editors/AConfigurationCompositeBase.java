@@ -27,9 +27,9 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	protected UseCaseViewModel model;
 	private Group settingsGroup;
 	private Group summaryGroup;
-	private ConfigurationBaseExpandItem expandItem;
+	private ConfigurationExpandItemComposite expandItem;
 	
-	public AConfigurationCompositeBase(Composite parent, ConfigurationBaseExpandItem expandItem, int style, final TimerConfigurationEditor editor, UseCaseViewModel model) {
+	public AConfigurationCompositeBase(Composite parent, ConfigurationExpandItemComposite expandItem, int style, final TimerConfigurationEditor editor, UseCaseViewModel model) {
 		super(parent, style);
 		
 		this.editor = editor;
