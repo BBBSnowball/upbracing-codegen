@@ -102,7 +102,7 @@ public class UseCaseModelValidator {
 		// Get Maximum Register Value
 		int maxValue = getMaximumValue();
 		double registerValue = calculateRegisterValue(period);
-		if (registerValue > maxValue)
+		if (Math.round(registerValue) > maxValue)
 			return false;
 		return true;
 	}
