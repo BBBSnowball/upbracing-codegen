@@ -1,13 +1,9 @@
 package de.upbracing.configurationeditor.timer.editors;
 
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.databinding.viewers.ViewersObservables;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -23,7 +19,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
@@ -92,33 +87,16 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		Label freqLOA = new Label(scComp, SWT.NONE);
 		freqLOA.setText("Period:");
 		
-		// Textbox
-		Text tFreq = new Text(scComp, SWT.BORDER);
-		d = new GridData();
-		d.widthHint = 100;
-		d.minimumWidth = 100;
-		d.horizontalAlignment = SWT.RIGHT;
-		d.grabExcessHorizontalSpace = true;
-		tFreq.setLayoutData(d);
-		tFreq.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				editor.setDirty(true);
-			}});
-//		ControlDecoration decoration = new ControlDecoration(tFreq, SWT.TOP | SWT.RIGHT);
-//		decoration.setDescriptionText("Error with period setting!");
-//		FieldDecoration fieldDecoration = FieldDecorationRegistry
-//		    .getDefault().getFieldDecoration(
-//		         FieldDecorationRegistry.DEC_ERROR);
-//		decoration.setImage(fieldDecoration.getImage());
-//		c = new DataBindingContext();
-//		c.bindValue(SWTObservables.observeText(tFreq, SWT.Modify), 
-//				BeansObservables.observeValue(model, periodProperty),
-//				new UpdateValueStrategy()
-//        			.setAfterConvertValidator(new ValidationRouter(model,
-//                "getIcrError",
-//                 decoration)),
-//                 null);
+		// Validated Text Box:
+		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
+				SWT.NONE, 
+				model, periodProperty, 
+				model.getValidator());
+		tFreq.getTextBox().addModifyListener(new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent arg0) {
+			editor.setDirty(true);
+		}});
 		
 		// Label for Unit
 		Label lbUnit = new Label(scComp, SWT.NONE);

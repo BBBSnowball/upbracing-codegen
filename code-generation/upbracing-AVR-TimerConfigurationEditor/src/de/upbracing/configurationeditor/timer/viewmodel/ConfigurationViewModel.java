@@ -36,6 +36,7 @@ public class ConfigurationViewModel extends AViewModelBase {
 		changes.firePropertyChange("frequency", null, null);
 		for (UseCaseViewModel vm: configurations) {
 			vm.triggerUpdateView();
+			vm.getValidator().updateValidation();
 		}
 	}
 	
