@@ -256,4 +256,9 @@ public class ConfigurationBaseExpandItem extends ExpandItem {
 		
 		setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 	}
+	
+	@Override
+	protected void checkSubclass() {
+		// do nothing
+	}
 }
