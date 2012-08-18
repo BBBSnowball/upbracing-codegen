@@ -19,6 +19,26 @@ public class DBCSignalConfig extends DBCSignal {
 		setValueTable(signal.getValueTable());
 
 	}
+	
+	/**
+	 * returns the c type of the needed variable. i.e. "uint8_t"
+	 * It takes into account the length and the sign
+	 * 
+	 * @return the c type
+	 */
+	public String getCType() {
+		
+		//if (!empty($signal['value_table']))
+			//return $signal['value_table'];
+		if (getValueTable() != null && !getValueTable().isEmpty())
+			return getValueTable();
+		else {
+			if (getSign() == "+")
+				return "uint" + getLength() + "_t";
+			else
+				return "int" + getLength() + "_t";
+		}		
+	}
 
 }
 

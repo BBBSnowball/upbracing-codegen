@@ -29,11 +29,11 @@ t.start();
 for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;	 
 %>
-	CAN_<%=msgconfig.getName()%>&&&= <%=msgconfig.getRawId()%>,&&&	// receive
+	CAN_<%=msgconfig.getName()%>&&&= <%=messageId(msgconfig, false)%>,&&&	// receive
 <% 
 	if (msgconfig.getAlias() != null) {
 %>
-	CAN_<%=msgconfig.getAlias()%>&&&= <%=msgconfig.getRawId()%>,&&&	// receive, alias for <%=msgconfig.getName()%>
+	CAN_<%=msgconfig.getAlias()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// receive, alias for <%=msgconfig.getName()%>
 <% 
 	}
 }
@@ -41,11 +41,11 @@ for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
-	CAN_<%=msgconfig.getName()%>&&&= <%=msgconfig.getRawId()%>,&&&	// send
+	CAN_<%=msgconfig.getName()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// send
 <%
 	if (msgconfig.getAlias() != null) {
 %>
-	CAN_<%=msgconfig.getAlias()%>&&&= <%=msgconfig.getRawId()%>,&&&	// send, alias for <%=msgconfig.getName()%>
+	CAN_<%=msgconfig.getAlias()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// send, alias for <%=msgconfig.getName()%>
 <% 
 	}
 } 
@@ -141,19 +141,19 @@ for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 	if (msgconfig.getRxMob() != null)	{
 		if (!mobs.containsKey(msgconfig.getRxMob())) {
 %>
-	MOB_<%=msgconfig.getRxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, receive
+	MOB_<%=msgconfig.getRxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive
 <%
 		}
 		if (mobs.containsKey(msgconfig.getRxMob())) mobs.get(msgconfig.getRxMob()).getMessages().add(msgconfig);
 		else mobs.put(msgconfig.getRxMob(), new Mob(msgconfig));
 	} else {	
 %>
-	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, receive
+	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive
 <%
 		if (msgconfig.getAlias() != null)
 		{
 %>
-	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, receive, alias for <%=msgconfig.getName()%>
+	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive, alias for <%=msgconfig.getName()%>
 <%
 		}
 		if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getMessages().add(msgconfig);
@@ -169,19 +169,19 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 		if (msgconfig.getTxMob() != null)	{
 			if (!mobs.containsKey(msgconfig.getTxMob())) {
 %>
-	MOB_<%=msgconfig.getTxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, send
+	MOB_<%=msgconfig.getTxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send
 <%
 			}
 			if (mobs.containsKey(msgconfig.getTxMob())) mobs.get(msgconfig.getTxMob()).getMessages().add(msgconfig);
 			else mobs.put(msgconfig.getTxMob(), new Mob(msgconfig));
 		} else {	
 %>
-	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, send
+	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send
 <%
 			if (msgconfig.getAlias() != null)
 			{
 %>
-	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>, send, alias for <%=msgconfig.getName()%>
+	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send, alias for <%=msgconfig.getName()%>
 <%
 			}
 			if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getMessages().add(msgconfig);
@@ -209,8 +209,14 @@ t.finish(" ");
 
 <% // TODO include the global variable accessors (and initialisors of the glob vars...)%>
 
+<%
+GlobalVariableConfig globVars = config.getGlobalVariables();
 
 
+
+
+
+%>
 
 
 
@@ -238,7 +244,7 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 		DBCMessageConfig msgconfig = entry.getValue().getMessages().get(0);
 		
 %>
-	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%><%
+	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// CAN ID: <%=messageId(msgconfig, true)%><%
 	if (msgconfig.getAlias() != null) {%>, alias <%=msgconfig.getAlias()%><%}%>	
 		CANPAGE = (MOB_<%=entry.getKey()%><<4);
 		handle_<%=entry.getKey().toLowerCase()%>();
@@ -258,7 +264,7 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 		
 		for (DBCMessageConfig msgconfig : entry.getValue().getMessages()) {
 %>
-		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// <%=msgconfig.getName()%>, CAN ID: <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>
+		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
 		
 		
 
@@ -311,7 +317,7 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 	if (msgconfig.isUsingGeneralTransmitter()) mobName = "GENERAL_MESSAGE_TRANSMITTER";
 
 %>
-// <%=msgconfig.getRawId()%><%=msgconfig.isExtended()?"x":""%>
+// <%=messageId(msgconfig, true)%>
 inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig.getName()%>) {
 	// select MOB
 	CANPAGE = (MOB_<%=mobName%><<4);
@@ -327,9 +333,21 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig
 	// disable mob, as it would be retransmitted otherwise
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0); <%//TODO How is this generated?%>
 
-		<% //TODO Write Signals from global variables...%>
-		
-		
+<%
+		for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
+			DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
+			globVars.add(signal.getName(), signal.getCType());
+			
+%>
+			// writing signal <%=signal.getName()%>
+			{
+				<%=signal.getCType()%> value;
+				value = <%= globVars.get(signal.getName()).getGetterName() %>();
+				CANMSG =<%= signal.getCType().equals("uint8_t") ? "" : " (uint8_t)" %> value;
+			}
+<%
+		}
+%>
 		
 	if (wait)
 		can_mob_transmit_wait(MOB_<%=mobName%>);
@@ -353,9 +371,8 @@ inline static void send_<%=msgconfig.getName()%>_nowait(boolean <%=msgconfig.get
     return stringBuffer.toString();
 }
 
-void blub(StringBuffer stringBuffer) {
-
-
+String messageId(DBCMessage message, boolean suffix) {
+	return "0x" + Integer.toHexString(message.getId()) + ((suffix && message.isExtended()) ? "x" : "");
 }
 
 @SuppressWarnings("unused")
