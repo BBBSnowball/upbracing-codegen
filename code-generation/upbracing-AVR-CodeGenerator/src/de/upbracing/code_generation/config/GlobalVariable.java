@@ -2,6 +2,8 @@ package de.upbracing.code_generation.config;
 
 import org.simpleframework.xml.Default;
 
+import de.upbracing.code_generation.TemplateHelpers;
+
 /**
  * Global variable in the C program
  * 
@@ -59,5 +61,13 @@ public class GlobalVariable extends VariableWithSize {
 	 */
 	public void setInitialValue(Object initialValue) {
 		this.initialValue = initialValue;
+	}
+	
+	public String getGetterName() {
+		return "get" + TemplateHelpers.capitalize(getName());
+	}
+	
+	public String getSetterName() {
+		return "set" + TemplateHelpers.capitalize(getName());
 	}
 }

@@ -45,7 +45,7 @@ for (GlobalVariable var : config.getGlobalVariables()) {
 	}
 	boolean needs_critical_section = (size != 1);
 %>
-inline static <%= var.getType() %> get<%= Name %>() {
+inline static <%= var.getType() %> <%= var.getGetterName() %>() {
 <% if (needs_critical_section) { %>
 	OS_ENTER_CRITICAL();
 	volatile <%= var.getType() %> tmp = <%= varname %>;
@@ -56,7 +56,7 @@ inline static <%= var.getType() %> get<%= Name %>() {
 <% } %>
 }
 
-inline static void set<%= Name %>(<%= var.getType() %> value) {
+inline static void <%= var.getSetterName() %>(<%= var.getType() %> value) {
 <% if (needs_critical_section) { %>
 	OS_ENTER_CRITICAL();
 	<%= varname %> = value;
