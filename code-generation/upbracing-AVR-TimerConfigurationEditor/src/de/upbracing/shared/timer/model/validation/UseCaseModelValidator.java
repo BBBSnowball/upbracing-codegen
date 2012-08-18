@@ -50,28 +50,36 @@ public class UseCaseModelValidator {
 	
 	public String getIcrPeriodErrorText() {
 		if (getIcrPeriodError() == ValidationResult.ERROR)
-			return "The Top value is too high for this timer frequency.";
+			return "The Top value is too high for this timer frequency (" + 
+				calculateRegisterValue(model.getIcrPeriod()) + " > " + getMaximumValue() +
+				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getIcrPeriodError() == ValidationResult.WARNING)
 			return "The Top value cannot be reached exactly. It will be quantized to ...";
 		return "";
 	}
 	public String getOcrAPeriodErrorText() {
 		if (getOcrAPeriodError() == ValidationResult.ERROR)
-			return "The desired period would result in a value too high for this register.";
+			return "The desired period would result in a value too high for this register (" + 
+				calculateRegisterValue(model.getOcrAPeriod()) + " > " + getMaximumValue() +
+				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrAPeriodError() == ValidationResult.WARNING)
 			return "The desired period cannot be reached exactly. It will be quantized to ...";
 		return "";
 	}
 	public String getOcrBPeriodErrorText() {
 		if (getOcrBPeriodError() == ValidationResult.ERROR)
-			return "The desired period would result in a value too high for this register.";
+			return "The desired period would result in a value too high for this register (" + 
+				calculateRegisterValue(model.getOcrBPeriod()) + " > " + getMaximumValue() +
+				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrBPeriodError() == ValidationResult.WARNING)
 			return "The desired period cannot be reached exactly. It will be quantized to ...";
 		return "";
 	}
 	public String getOcrCPeriodErrorText() {
 		if (getOcrCPeriodError() == ValidationResult.ERROR)
-			return "The desired period would result in a value too high for this register.";
+			return "The desired period would result in a value too high for this register (" + 
+				calculateRegisterValue(model.getOcrCPeriod()) + " > " + getMaximumValue() +
+				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrCPeriodError() == ValidationResult.WARNING)
 			return "The desired period cannot be reached exactly. It will be quantized to ...";
 		return "";
@@ -91,25 +99,54 @@ public class UseCaseModelValidator {
 	}
 	
 	private boolean validateMaxPeriod(double period) {
-		
 		// Get Maximum Register Value
-		int frequency = parent.getFrequency();
 		int maxValue = getMaximumValue();
+		double registerValue = calculateRegisterValue(period);
+		if (registerValue > maxValue)
+			return false;
+		return true;
+	}
+	
+	private double calculateRegisterValue(double period) {
+		int frequency = parent.getFrequency();
 		// Get Timer Tick Rate
 		int prescale = model.getPrescale().getNumeric();
 		double timerFreq = ((double) frequency / (double) prescale);
 		double timerPeriod = 1.0 / timerFreq;
 		// Calculate Register Value From Desired Period
 		double registerValue = period / timerPeriod;
-		if (registerValue > maxValue)
-			return false;
-		return true;
+		return registerValue;
+	}
+	
+	private double calculatePeriodForRegisterValue(int registerValue) {
+		// registerValue = period / timerPeriod
+		//               = period * timerFreq
+		//               = period * (frequency / prescale)
+		// <=> period = registerValue / (frequency / prescale)
+		
+		int frequency = parent.getFrequency();
+		int prescale = model.getPrescale().getNumeric();
+		double timerFreq = ((double) frequency / (double) prescale);
+		
+		return registerValue / timerFreq;
 	}
 	
 	private int getMaximumValue() {
 		int maxValue = 255;
 		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65535;
+		//TODO Depending on the settings, the width of the 16-bit timers can be smaller than 8 bits.
 		return maxValue;
+	}
+	
+	private static String formatPeriod(double period) {
+		if (period > 1)
+			return String.format("%4.2f s", period);
+		else if (period > 1e-3)
+			return String.format("%4.2f ms", period * 1e3);
+		else if (period > 1e-6)
+			return String.format("%4.2f us", period * 1e6);
+		else
+			return String.format("%4.2f ns", period * 1e9);
 	}
 }
