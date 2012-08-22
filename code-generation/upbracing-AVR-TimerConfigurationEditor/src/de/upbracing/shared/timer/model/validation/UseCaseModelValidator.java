@@ -2,6 +2,7 @@ package de.upbracing.shared.timer.model.validation;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
@@ -30,21 +31,33 @@ public class UseCaseModelValidator {
 	public ValidationResult getIcrPeriodError() {
 		if (!validateMaxPeriod(model.getIcrPeriod()))
 			return ValidationResult.ERROR;
+		double quantizedPeriod = calculateQuantizedPeriod(model.getIcrPeriod());
+		if (quantizedPeriod != model.getIcrPeriod())
+			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
 	public ValidationResult getOcrAPeriodError() {
 		if (!validateMaxPeriod(model.getOcrAPeriod()))
 			return ValidationResult.ERROR;
+		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrAPeriod());
+		if (quantizedPeriod != model.getOcrAPeriod())
+			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
 	public ValidationResult getOcrBPeriodError() {
 		if (!validateMaxPeriod(model.getOcrBPeriod()))
 			return ValidationResult.ERROR;
+		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrBPeriod());
+		if (quantizedPeriod != model.getOcrBPeriod())
+			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
 	public ValidationResult getOcrCPeriodError() {
 		if (!validateMaxPeriod(model.getOcrCPeriod()))
 			return ValidationResult.ERROR;
+		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrCPeriod());
+		if (quantizedPeriod != model.getOcrCPeriod())
+			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
 	
@@ -54,7 +67,7 @@ public class UseCaseModelValidator {
 				calculateRegisterValue(model.getIcrPeriod()) + " > " + getMaximumValue() +
 				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getIcrPeriodError() == ValidationResult.WARNING)
-			return "The Top value cannot be reached exactly. It will be quantized to ...";
+			return "The Top value " + formatPeriod(model.getIcrPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getIcrPeriod())) + ".";
 		return "";
 	}
 	public String getOcrAPeriodErrorText() {
@@ -63,7 +76,7 @@ public class UseCaseModelValidator {
 				calculateRegisterValue(model.getOcrAPeriod()) + " > " + getMaximumValue() +
 				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrAPeriodError() == ValidationResult.WARNING)
-			return "The desired period cannot be reached exactly. It will be quantized to ...";
+			return "The desired period " + formatPeriod(model.getOcrAPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrAPeriod())) + ".";
 		return "";
 	}
 	public String getOcrBPeriodErrorText() {
@@ -72,7 +85,7 @@ public class UseCaseModelValidator {
 				calculateRegisterValue(model.getOcrBPeriod()) + " > " + getMaximumValue() +
 				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrBPeriodError() == ValidationResult.WARNING)
-			return "The desired period cannot be reached exactly. It will be quantized to ...";
+			return "The desired period " + formatPeriod(model.getOcrBPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrBPeriod())) + ".";
 		return "";
 	}
 	public String getOcrCPeriodErrorText() {
@@ -81,13 +94,13 @@ public class UseCaseModelValidator {
 				calculateRegisterValue(model.getOcrCPeriod()) + " > " + getMaximumValue() +
 				", max. period is " + formatPeriod(calculatePeriodForRegisterValue(getMaximumValue())) + ").";
 		if (getOcrCPeriodError() == ValidationResult.WARNING)
-			return "The desired period cannot be reached exactly. It will be quantized to ...";
+			return "The desired period " + formatPeriod(model.getOcrCPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrCPeriod())) + ".";
 		return "";
 	}
 	
 	public void updateValidation() {
 		
-		// Very primitive, but will make the databinding work...
+		// Very primitive, but will make the Data Binding work...
 		changes.firePropertyChange("icrPeriodError", null, null);
 		changes.firePropertyChange("icrPeriodErrorText", null, null);
 		changes.firePropertyChange("ocrAPeriodError", null, null);
@@ -107,14 +120,14 @@ public class UseCaseModelValidator {
 		return true;
 	}
 	
-	private double calculateRegisterValue(double period) {
+	private int calculateRegisterValue(double period) {
 		int frequency = parent.getFrequency();
 		// Get Timer Tick Rate
 		int prescale = model.getPrescale().getNumeric();
 		double timerFreq = ((double) frequency / (double) prescale);
 		double timerPeriod = 1.0 / timerFreq;
 		// Calculate Register Value From Desired Period
-		double registerValue = period / timerPeriod;
+		int registerValue = (int) (period / timerPeriod) - 1;
 		return registerValue;
 	}
 	
@@ -128,25 +141,30 @@ public class UseCaseModelValidator {
 		int prescale = model.getPrescale().getNumeric();
 		double timerFreq = ((double) frequency / (double) prescale);
 		
-		return registerValue / timerFreq;
+		return (registerValue + 1) / timerFreq;
+	}
+	
+	private double calculateQuantizedPeriod(double period) {
+		int regValue = calculateRegisterValue(period);
+		return calculatePeriodForRegisterValue(regValue);
 	}
 	
 	private int getMaximumValue() {
 		int maxValue = 255;
 		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65535;
-		//TODO Depending on the settings, the width of the 16-bit timers can be smaller than 8 bits.
 		return maxValue;
 	}
 	
 	private static String formatPeriod(double period) {
+		DecimalFormat f = new DecimalFormat("###.##########");
 		if (period > 1)
-			return String.format("%4.2f s", period);
+			return String.format("%4.10f", period) + "s";
 		else if (period > 1e-3)
-			return String.format("%4.2f ms", period * 1e3);
+			return f.format(period * 1e3) + " ms";
 		else if (period > 1e-6)
-			return String.format("%4.2f us", period * 1e6);
+			return f.format(period * 1e6) + " µs";
 		else
-			return String.format("%4.2f ns", period * 1e9);
+			return f.format(period * 1e9) + " ns";
 	}
 }

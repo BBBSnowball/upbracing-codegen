@@ -60,7 +60,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		scComp.setLayoutData(d);
-		GridLayout l = new GridLayout(3, false);
+		GridLayout l = new GridLayout(2, false);
 		scComp.setLayout(l);
 		
 		DataBindingContext c;
@@ -76,7 +76,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
 		d.horizontalAlignment = SWT.FILL;
-		d.horizontalSpan = 3;
+		d.horizontalSpan = 2;
 		lbPrefix.setLayoutData(d);
 		c = new DataBindingContext();
 		c.bindValue(SWTObservables.observeText(lbPrefix), 
@@ -91,16 +91,18 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
 				SWT.NONE, 
 				model, periodProperty, 
-				model.getValidator());
+				model.getValidator(),
+				"s",
+				Double.class);
 		tFreq.getTextBox().addModifyListener(new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent arg0) {
 			editor.setDirty(true);
 		}});
 		
-		// Label for Unit
-		Label lbUnit = new Label(scComp, SWT.NONE);
-		lbUnit.setText("s");
+//		// Label for Unit
+//		Label lbUnit = new Label(scComp, SWT.NONE);
+//		lbUnit.setText("s");
 		
 		if (compareInterrupt) {
 			// Interrupt enable checkbox for Compare Match
@@ -111,7 +113,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 			c.bindValue(SWTObservables.observeSelection(intCb), 
 					BeansObservables.observeValue(model, compareInterruptProperty));
 			d = new GridData();
-			d.horizontalSpan = 2;
+			d.horizontalSpan = 1;
 			intCb.setLayoutData(d);
 			intCb.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {

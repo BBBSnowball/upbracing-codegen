@@ -7,6 +7,8 @@ import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
+import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 import de.upbracing.shared.timer.model.enums.PrescaleFactors;
@@ -348,6 +350,27 @@ public class UseCaseViewModel extends AViewModelBase {
 	public PhaseAndFrequencyCorrectPWMTopValues getPhaseAndFrequencyCorrectPWMTop() {
 		return model.getPhaseAndFrequencyCorrectPWMTop();
 	}
+	public ConfigurationViewModel getParent() {
+		return parent;
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeA() {
+		return model.getSingleSlopePWMPinModeA();
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeB() {
+		return model.getSingleSlopePWMPinModeB();
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeC() {
+		return model.getSingleSlopePWMPinModeC();
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeA() {
+		return model.getDualSlopePWMPinModeA();
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeB() {
+		return model.getDualSlopePWMPinModeB();
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeC() {
+		return model.getDualSlopePWMPinModeC();
+	}
 	
 	public void setFastPWMTop(PWMTopValues p) {
 		model.setFastPWMTop(p);
@@ -367,11 +390,50 @@ public class UseCaseViewModel extends AViewModelBase {
 		triggerUpdateView();
 		validator.updateValidation();
 	}
-	public ConfigurationViewModel getParent() {
-		return parent;
-	}
 	public void setParent(ConfigurationViewModel parent) {
 		this.parent = parent;
+	}
+	public void setSingleSlopePWMPinModeA(PWMSingleSlopeOutputPinMode m)
+	{
+		model.setSingleSlopePWMPinModeA(m);
+		changes.firePropertyChange("singleSlopePWMPinModeA", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
+	}
+	public void setSingleSlopePWMPinModeB(PWMSingleSlopeOutputPinMode m)
+	{
+		model.setSingleSlopePWMPinModeB(m);
+		changes.firePropertyChange("singleSlopePWMPinModeB", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
+	}
+	public void setSingleSlopePWMPinModeC(PWMSingleSlopeOutputPinMode m)
+	{
+		model.setSingleSlopePWMPinModeC(m);
+		changes.firePropertyChange("singleSlopePWMPinModeC", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
+	}
+	public void setDualSlopePWMPinModeA(PWMDualSlopeOutputPinMode m)
+	{
+		model.setDualSlopePWMPinModeA(m);
+		changes.firePropertyChange("dualSlopePWMPinModeA", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
+	}
+	public void setDualSlopePWMPinModeB(PWMDualSlopeOutputPinMode m)
+	{
+		model.setDualSlopePWMPinModeB(m);
+		changes.firePropertyChange("dualSlopePWMPinModeB", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
+	}
+	public void setDualSlopePWMPinModeC(PWMDualSlopeOutputPinMode m)
+	{
+		model.setDualSlopePWMPinModeC(m);
+		changes.firePropertyChange("dualSlopePWMPinModeC", null, null);
+		triggerUpdateView();
+		validator.updateValidation();
 	}
 	
 	// Private Helper Methods:

@@ -3,6 +3,11 @@ package de.upbracing.configurationeditor.timer.editors;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.viewers.ViewersObservables;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -13,6 +18,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
+import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
+import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 
 public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
@@ -32,10 +39,10 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 	private void initPWMTopValueGroup(Group g) {
 
 		// PWM Groups
-		createTopValueItem(g, "icrName", "icrPeriod", "icrVisibility", false, null);
-		createTopValueItem(g, "ocrAName", "ocrAPeriod", null, false, null);
-		createTopValueItem(g, "ocrBName", "ocrBPeriod", "ocrChannelsVisibility", false, null);
-		createTopValueItem(g, "ocrCName", "ocrCPeriod", "ocrChannelsVisibility", false, null);
+		createTopValueItem(g, "icrName", "icrPeriod", "icrVisibility", false, null, null);
+		createTopValueItem(g, "ocrAName", "ocrAPeriod", null, false, null, "dualSlopePWMPinModeA");
+		createTopValueItem(g, "ocrBName", "ocrBPeriod", "ocrChannelsVisibility", false, null, "dualSlopePWMPinModeB");
+		createTopValueItem(g, "ocrCName", "ocrCPeriod", "ocrChannelsVisibility", false, null, "dualSlopePWMPinModeC");
 	}
 	
 	private void createTopValueItem(Composite parent, 
@@ -43,7 +50,8 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 			String periodProperty, 
 			String enabledProperty, 
 			boolean compareInterrupt, 
-			String compareInterruptProperty) {
+			String compareInterruptProperty,
+			String pinModeProperty) {
 		
 		CollapsibleComposite scComp = new CollapsibleComposite(parent, SWT.BORDER);
 		GridData d = new GridData();
@@ -51,7 +59,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		scComp.setLayoutData(d);
-		GridLayout l = new GridLayout(3, false);
+		GridLayout l = new GridLayout(2, false);
 		scComp.setLayout(l);
 		
 		DataBindingContext c;
@@ -67,7 +75,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
 		d.horizontalAlignment = SWT.FILL;
-		d.horizontalSpan = 3;
+		d.horizontalSpan = 2;
 		lbPrefix.setLayoutData(d);
 		c = new DataBindingContext();
 		c.bindValue(SWTObservables.observeText(lbPrefix), 
@@ -82,17 +90,19 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
 				SWT.NONE, 
 				model, periodProperty, 
-				model.getValidator());
+				model.getValidator(),
+				"s",
+				Double.class);
 		tFreq.getTextBox().addModifyListener(new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent arg0) {
 			editor.setDirty(true);
 		}});
 				
-		// Label for Unit
-		Label lbUnit = new Label(scComp, SWT.NONE);
-		lbUnit.setText("s");
-		
+//		// Label for Unit
+//		Label lbUnit = new Label(scComp, SWT.NONE);
+//		lbUnit.setText("s");
+//		
 //		if (compareInterrupt) {
 //			// Interrupt enable checkbox for Compare Match
 //			Label intL = new Label(scComp, SWT.NONE);
@@ -110,5 +120,25 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 //				}
 //			});
 //		}
+		
+		if (pinModeProperty != null) {
+			// Toggle Mode:
+			Label toggleL = new Label(scComp, SWT.NONE);
+			toggleL.setText("Output Pin Operation:");
+			
+			// Toggle Combo:
+			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER);
+			toggleC.setContentProvider(ArrayContentProvider.getInstance());
+			toggleC.setInput(PWMDualSlopeOutputPinMode.values());
+			c = new DataBindingContext();
+			c.bindValue(ViewersObservables.observeSingleSelection(toggleC),
+					BeansObservables.observeValue(model, pinModeProperty));
+			toggleC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent arg0) {
+					editor.setDirty(true);
+				}
+			});
+		}
 	}
 }

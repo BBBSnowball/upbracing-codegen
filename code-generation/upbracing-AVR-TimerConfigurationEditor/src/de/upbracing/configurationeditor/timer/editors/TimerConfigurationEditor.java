@@ -3,12 +3,9 @@ package de.upbracing.configurationeditor.timer.editors;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -135,34 +132,23 @@ public class TimerConfigurationEditor extends EditorPart {
 		gs.setText("General Settings:");
 		Label label = new Label(gs, SWT.NONE);
 		label.setText("CPU Clock:");
-		GridData d = new GridData();
-		d.horizontalIndent = 1;
-		d.widthHint = 100;
-		Text t = new Text(gs, SWT.SINGLE | SWT.BORDER);
-		t.setLayoutData(d);
+		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, model, "frequency", model.getValidator(), "Hz", Integer.class);
+		Text t = text.getTextBox();
 		t.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
 				setDirty(true);
 			}
 		});
-		Label hzLabel = new Label(gs, SWT.NONE);
-		hzLabel.setText("Hz");
-		d = new GridData();
-		d.horizontalIndent = 2;
-		hzLabel.setLayoutData(d);
 		FontData[] fD = gs.getFont().getFontData();
 		fD[0].setStyle(SWT.BOLD);
-		gs.setFont( new Font(gs.getDisplay(),fD[0]));
+		gs.setFont(new Font(gs.getDisplay(),fD[0]));
 		gs.layout();
-			
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(t, SWT.Modify), BeansObservables.observeValue(model, "frequency"));
 		
 		// Add Configuration Button
 		Button b = new Button(arg0, SWT.BORDER);
 		b.setText("Add new configuration");
-		d = new GridData();
+		GridData d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
 		b.setLayoutData(d);
 		

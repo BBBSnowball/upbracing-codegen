@@ -6,11 +6,14 @@ import java.util.ArrayList;
 
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
+import de.upbracing.shared.timer.model.validation.ConfigurationModelValidator;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 public class ConfigurationViewModel extends AViewModelBase {
 	
 	// Reference to the underlying model:
 	private ConfigurationModel model;
+	private ConfigurationModelValidator validator;
 	
 	// Constructor:
 	public ConfigurationViewModel(ConfigurationModel m) {
@@ -23,6 +26,13 @@ public class ConfigurationViewModel extends AViewModelBase {
 				vm.setParent(this);
 				configurations.add(vm);
 			}
+		
+		this.validator = new ConfigurationModelValidator(model);
+	}
+	
+	// Getter for Validator
+	public ConfigurationModelValidator getValidator() {
+		return validator;
 	}
 	
 	// Routed Model Getters:
@@ -38,6 +48,7 @@ public class ConfigurationViewModel extends AViewModelBase {
 			vm.triggerUpdateView();
 			vm.getValidator().updateValidation();
 		}
+		this.validator.updateValidation();
 	}
 	
 	private ArrayList<UseCaseViewModel> configurations = new ArrayList<UseCaseViewModel>();

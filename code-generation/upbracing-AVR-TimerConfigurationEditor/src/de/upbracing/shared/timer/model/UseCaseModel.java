@@ -2,6 +2,8 @@ package de.upbracing.shared.timer.model;
 
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
+import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 import de.upbracing.shared.timer.model.enums.PrescaleFactors;
@@ -36,6 +38,12 @@ public class UseCaseModel {
 	private PWMTopValues fastPWMTop = PWMTopValues.BIT8;	
 	private PWMTopValues phaseCorrectPWMTop = PWMTopValues.BIT8;
 	private PhaseAndFrequencyCorrectPWMTopValues phaseAndFrequencyCorrectPWMTop = PhaseAndFrequencyCorrectPWMTopValues.ICR;
+	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeA;
+	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeB;
+	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeC;
+	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeA;
+	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeB;
+	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeC;
 	
 	// Public Getters (General):
 	public String getName() {
@@ -100,6 +108,24 @@ public class UseCaseModel {
 	}
 	public PhaseAndFrequencyCorrectPWMTopValues getPhaseAndFrequencyCorrectPWMTop() {
 		return phaseAndFrequencyCorrectPWMTop;
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeA() {
+		return singleSlopePWMPinModeA;
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeB() {
+		return singleSlopePWMPinModeB;
+	}
+	public PWMSingleSlopeOutputPinMode getSingleSlopePWMPinModeC() {
+		return singleSlopePWMPinModeC;
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeA() {
+		return dualSlopePWMPinModeA;
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeB() {
+		return dualSlopePWMPinModeB;
+	}
+	public PWMDualSlopeOutputPinMode getDualSlopePWMPinModeC() {
+		return dualSlopePWMPinModeC;
 	}
 	
 	// Public Setters (General):
@@ -166,4 +192,23 @@ public class UseCaseModel {
 	public void setPhaseAndFrequencyCorrectPWMTop(PhaseAndFrequencyCorrectPWMTopValues p) {
 		phaseAndFrequencyCorrectPWMTop = p;
 	}
+	public void setSingleSlopePWMPinModeA(PWMSingleSlopeOutputPinMode m) {
+		this.singleSlopePWMPinModeA = m;
+	}
+	public void setSingleSlopePWMPinModeB(PWMSingleSlopeOutputPinMode m) {
+		this.singleSlopePWMPinModeB = m;
+	}
+	public void setSingleSlopePWMPinModeC(PWMSingleSlopeOutputPinMode m) {
+		this.singleSlopePWMPinModeC = m;
+	}
+	public void setDualSlopePWMPinModeA(PWMDualSlopeOutputPinMode m) {
+		this.dualSlopePWMPinModeA = m;
+	}
+	public void setDualSlopePWMPinModeB(PWMDualSlopeOutputPinMode m) {
+		this.dualSlopePWMPinModeB = m;
+	}
+	public void setDualSlopePWMPinModeC(PWMDualSlopeOutputPinMode m) {
+		this.dualSlopePWMPinModeC = m;
+	}
+
 }
