@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.validation.ConfigurationModelValidator;
-import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 public class ConfigurationViewModel extends AViewModelBase {
 	
@@ -61,6 +60,9 @@ public class ConfigurationViewModel extends AViewModelBase {
 		UseCaseViewModel vm = new UseCaseViewModel(m, model);
 		vm.setParent(this);
 		configurations.add(vm);
+		for (UseCaseViewModel vm2: configurations) {
+			vm2.getValidator().updateValidation();
+		}
 		return vm;
 	}
 	
@@ -68,6 +70,10 @@ public class ConfigurationViewModel extends AViewModelBase {
 		if (configurations.contains(m)) {
 			model.removeConfiguration(m.getModel());
 			configurations.remove(m);
+			
+			for (UseCaseViewModel vm: configurations) {
+				vm.getValidator().updateValidation();
+			}
 		}
 	}
 	
@@ -95,5 +101,11 @@ public class ConfigurationViewModel extends AViewModelBase {
 		
 		// Save the underlying model
 		model.Save(path);
+	}
+	
+	public void updateUseCaseValidation() {
+		for (UseCaseViewModel m: configurations) {
+			m.getValidator().updateValidation();
+		}
 	}
 }

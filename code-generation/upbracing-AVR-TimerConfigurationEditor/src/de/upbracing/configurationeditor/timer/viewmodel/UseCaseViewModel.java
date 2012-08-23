@@ -68,11 +68,14 @@ public class UseCaseViewModel extends AViewModelBase {
 	public void setName(String n) {
 		model.setName(n);
 		changes.firePropertyChange("name", null, null);
+		validator.updateValidation();
+		getParent().updateUseCaseValidation();
 	}
 	public void setMode(TimerOperationModes m) {
 		this.model.setMode(m);
 		changes.firePropertyChange("mode", null, null);
 		triggerUpdateView();
+		validator.updateValidation();
 	}
 	public void setTimer(TimerEnum t) {
 		this.model.setTimer(t);

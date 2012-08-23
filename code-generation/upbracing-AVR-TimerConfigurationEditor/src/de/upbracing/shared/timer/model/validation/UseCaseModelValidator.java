@@ -1,25 +1,14 @@
 package de.upbracing.shared.timer.model.validation;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
 
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
+import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
-public class UseCaseModelValidator {
+public class UseCaseModelValidator extends AValidatorBase {
 
-	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
-	
-	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-		changes.addPropertyChangeListener(propertyName, listener);
-	}
-	
-	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-		changes.removePropertyChangeListener(propertyName, listener);
-	}
-	
 	private ConfigurationModel parent;
 	private UseCaseModel model;
 	
@@ -28,6 +17,18 @@ public class UseCaseModelValidator {
 		this.parent = parent;
 	}
 	
+	public ValidationResult getNameError() {
+		
+		// Check for name collisions
+		if (isNameColliding())
+			return ValidationResult.ERROR;
+		
+		// Check for valid C identifier
+		if (!isNameValidCIdentifier())
+			return ValidationResult.ERROR;
+		
+		return ValidationResult.OK;
+	}
 	public ValidationResult getIcrPeriodError() {
 		if (!validateMaxPeriod(model.getIcrPeriod()))
 			return ValidationResult.ERROR;
@@ -61,6 +62,50 @@ public class UseCaseModelValidator {
 		return ValidationResult.OK;
 	}
 	
+	public ValidationResult getCtcTopError() {
+		return ValidationResult.OK;
+	}
+	public ValidationResult getFastPWMTopError() {
+		return ValidationResult.OK;
+	}
+	public ValidationResult getPhaseCorrectPWMTopError() {
+		return ValidationResult.OK;
+	}
+	public ValidationResult getPhaseAndFrequencyCorrectPWMTopError() {
+		return ValidationResult.OK;
+	}
+	public ValidationResult getModeError() {
+		
+		// Check Mode and Timer collisions
+		if (!isModeValidForTimer())
+			return ValidationResult.ERROR;
+		
+		return ValidationResult.OK;
+	}
+	public ValidationResult getTimerError() {
+		
+		// Check Mode and Timer collisions
+		if (!isModeValidForTimer())
+			return ValidationResult.ERROR;
+		
+		return ValidationResult.OK;
+	}
+	
+	public String getNameErrorText() {
+		// Check for empty name
+		if (model.getName().equals(""))
+			return "Please choose a name for this configuration.";
+		
+		// Check for name collisions
+		if (isNameColliding())
+			return "Each configuration must have a unique name.\nPlease choose another name.";
+		
+		// Check for valid C identifier
+		if (!isNameValidCIdentifier())
+			return "The name of this configuration is not a valid C identifier prefix. Only letters, underscores and digits are allowed.\nName may not start with a digit.";
+		
+		return "";
+	}
 	public String getIcrPeriodErrorText() {
 		if (getIcrPeriodError() == ValidationResult.ERROR)
 			return "The Top value is too high for this timer frequency (" + 
@@ -98,9 +143,38 @@ public class UseCaseModelValidator {
 		return "";
 	}
 	
+	public String getCtcTopErrorText() {
+		return "All ok!";
+	}
+	public String getFastPWMTopErrorText() {
+		return "All ok!";
+	}
+	public String getPhaseCorrectPWMTopErrorText() {
+		return "All ok!";
+	}
+	public String getPhaseAndFrequencyCorrectPWMTopErrorText() {
+		return "All ok!";
+	}
+	public String getModeErrorText() {
+		// Check Mode and Timer collisions
+		if (!isModeValidForTimer())
+			return "This mode is not valid for 8Bit timers. Please choose another mode and/or timer.";
+		
+		return "";
+	}
+	public String getTimerErrorText() {
+		// Check Mode and Timer collisions
+		if (!isModeValidForTimer())
+			return "This mode is not valid for 8Bit timers. Please choose another mode and/or timer.";
+		
+		return "";
+	}
+	
 	public void updateValidation() {
 		
 		// Very primitive, but will make the Data Binding work...
+		changes.firePropertyChange("nameError", null, null);
+		changes.firePropertyChange("nameErrorText", null, null);
 		changes.firePropertyChange("icrPeriodError", null, null);
 		changes.firePropertyChange("icrPeriodErrorText", null, null);
 		changes.firePropertyChange("ocrAPeriodError", null, null);
@@ -109,6 +183,18 @@ public class UseCaseModelValidator {
 		changes.firePropertyChange("ocrBPeriodErrorText", null, null);
 		changes.firePropertyChange("ocrCPeriodError", null, null);
 		changes.firePropertyChange("ocrCPeriodErrorText", null, null);
+		changes.firePropertyChange("ctcTopError", null, null);
+		changes.firePropertyChange("ctcTopErrorText", null, null);
+		changes.firePropertyChange("fastPWMTopError", null, null);
+		changes.firePropertyChange("fastPWMTopErrorText", null, null);
+		changes.firePropertyChange("phaseCorrectPWMTopError", null, null);
+		changes.firePropertyChange("phaseCorrectPWMTopErrorText", null, null);
+		changes.firePropertyChange("phaseAndFrequencyCorrectPWMTopError", null, null);
+		changes.firePropertyChange("phaseAndFrequencyCorrectPWMTopErrorText", null, null);
+		changes.firePropertyChange("modeError", null, null);
+		changes.firePropertyChange("modeErrorText", null, null);
+		changes.firePropertyChange("timerError", null, null);
+		changes.firePropertyChange("timerErrorText", null, null);
 	}
 	
 	private boolean validateMaxPeriod(double period) {
@@ -127,7 +213,7 @@ public class UseCaseModelValidator {
 		double timerFreq = ((double) frequency / (double) prescale);
 		double timerPeriod = 1.0 / timerFreq;
 		// Calculate Register Value From Desired Period
-		int registerValue = (int) (period / timerPeriod) - 1;
+		int registerValue = (int) Math.round(period / timerPeriod) - 1;
 		return registerValue;
 	}
 	
@@ -159,12 +245,44 @@ public class UseCaseModelValidator {
 	private static String formatPeriod(double period) {
 		DecimalFormat f = new DecimalFormat("###.##########");
 		if (period > 1)
-			return String.format("%4.10f", period) + "s";
+			return f.format(period) + "s";
 		else if (period > 1e-3)
 			return f.format(period * 1e3) + " ms";
 		else if (period > 1e-6)
 			return f.format(period * 1e6) + " µs";
 		else
 			return f.format(period * 1e9) + " ns";
+	}
+	
+	private boolean isNameColliding() {
+		// Check for name collisions
+		for (UseCaseModel m: parent.getConfigurations()) {
+			if (m != model && m.getName().equals(model.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private boolean isNameValidCIdentifier() {
+		// Check for valid C identifier
+		// -> Only digits and letters + underscore
+		// -> May not start with digit
+		String regex = "^([_A-Za-z][_A-Za-z0-9]*)";
+		if (model.getName().matches(regex))
+			return true;
+		return false;
+	}
+	
+	private boolean isModeValidForTimer() {
+		
+		boolean isSixteenBit = false;
+		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3))
+			isSixteenBit = true;
+		
+		// Invalid, if Phase and Frequency Correct Mode on 8Bit Timer!
+		if (!isSixteenBit && model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
+			return false;
+		
+		return true;
 	}
 }

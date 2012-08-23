@@ -3,9 +3,6 @@ package de.upbracing.configurationeditor.timer.editors;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -56,13 +53,8 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			// Prescale Combo
 			Label prescaleL = new Label(settingsGroup, SWT.NONE);
 			prescaleL.setText("Prescale divisor:");
-			ComboViewer prescaleC = new ComboViewer(settingsGroup, SWT.BORDER);
-			prescaleC.setContentProvider(ArrayContentProvider.getInstance());
-			prescaleC.setInput(PrescaleFactors.values());
-			DataBindingContext c = new DataBindingContext();
-			c.bindValue(ViewersObservables.observeSingleSelection(prescaleC),
-					BeansObservables.observeValue(model, "prescale"));
-			prescaleC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+			ComboValidationComposite prescaleC = new ComboValidationComposite(settingsGroup, SWT.NONE, model, "prescale", null, PrescaleFactors.values());
+			prescaleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent arg0) {
 					editor.setDirty(true);
@@ -87,7 +79,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		descriptionL.setLayoutData(d);
 		summaryGroup.layout();
 		setFontStyle(summaryGroup, SWT.BOLD);
-		c = new DataBindingContext();
+		DataBindingContext c = new DataBindingContext();
 		c.bindValue(SWTObservables.observeText(descriptionL), 
 				BeansObservables.observeValue(model, "description"));
 	}
@@ -103,14 +95,10 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		
 		Label topValueL = new Label(parent, SWT.NONE);
 		topValueL.setText("Top value register:");
-		ComboViewer topValueC = new ComboViewer(parent, SWT.BORDER);
-		topValueC.setContentProvider(ArrayContentProvider.getInstance());
-		topValueC.setInput(choices);
-		DataBindingContext c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(topValueC),
-				BeansObservables.observeValue(model, choicesProperty));
 		
-		topValueC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+		ComboValidationComposite topComposite = new ComboValidationComposite(parent, SWT.NONE, model, choicesProperty, model.getValidator(), choices);
+		
+		topComposite.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent arg0) {
 				editor.setDirty(true);

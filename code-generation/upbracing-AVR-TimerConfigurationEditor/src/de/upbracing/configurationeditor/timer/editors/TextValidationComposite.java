@@ -22,7 +22,6 @@ import de.upbracing.configurationeditor.timer.converters.StatusImageConverter;
 public class TextValidationComposite extends Composite {
 
 	private Text text;
-	private Label imageLabel;
 	
 	public TextValidationComposite(Composite parent, int style, Object model, String textProperty, Object validator, String unit, Class<?> type) {
 		super(parent, style);
@@ -44,7 +43,7 @@ public class TextValidationComposite extends Composite {
 		
 		DataBindingContext c = new DataBindingContext();
 		
-		// Integer only verification
+		// Integer only character filtering
 		if (type != null && type == Integer.class) {
 			
 			c.bindValue(SWTObservables.observeText(text, SWT.Modify), 
@@ -71,6 +70,7 @@ public class TextValidationComposite extends Composite {
 				}
 			});
 		}
+		// Double character filtering
 		else if (type != null && type == Double.class) {
 			
 			c.bindValue(SWTObservables.observeText(text, SWT.Modify), 
@@ -104,7 +104,7 @@ public class TextValidationComposite extends Composite {
 			l.setText(unit);
 		}
 		
-		imageLabel = new Label(this, SWT.IMAGE_PNG);
+		Label imageLabel = new Label(this, SWT.IMAGE_PNG);
 		c = new DataBindingContext();
 		c.bindValue(SWTObservables.observeImage(imageLabel), 
 				BeansObservables.observeValue(validator, textProperty + "Error"), 

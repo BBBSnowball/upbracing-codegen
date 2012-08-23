@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
-import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 
@@ -98,28 +97,6 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 		public void modifyText(ModifyEvent arg0) {
 			editor.setDirty(true);
 		}});
-		
-//		// Label for Unit
-//		Label lbUnit = new Label(scComp, SWT.NONE);
-//		lbUnit.setText("s");
-//		
-//		if (compareInterrupt) {
-//			// Interrupt enable checkbox for Compare Match
-//			Label intL = new Label(scComp, SWT.NONE);
-//			intL.setText("Compare match interrupt:");
-//			Button intCb = new Button(scComp, SWT.CHECK);
-//			c = new DataBindingContext();
-//			c.bindValue(SWTObservables.observeSelection(intCb), 
-//					BeansObservables.observeValue(model, compareInterruptProperty));
-//			d = new GridData();
-//			d.horizontalSpan = 2;
-//			intCb.setLayoutData(d);
-//			intCb.addSelectionListener(new SelectionAdapter() {
-//				public void widgetSelected(SelectionEvent e) {
-//					editor.setDirty(true);
-//				}
-//			});
-//		}
 		
 		if (pinModeProperty != null) {
 			// Toggle Mode:

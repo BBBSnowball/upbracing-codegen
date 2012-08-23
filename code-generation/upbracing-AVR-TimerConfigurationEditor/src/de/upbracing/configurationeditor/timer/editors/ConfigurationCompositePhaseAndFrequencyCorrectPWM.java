@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
-import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 

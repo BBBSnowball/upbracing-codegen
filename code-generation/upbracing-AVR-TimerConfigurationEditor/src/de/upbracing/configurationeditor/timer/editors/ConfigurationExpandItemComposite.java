@@ -6,8 +6,6 @@ import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -24,7 +22,6 @@ import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
 
 import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
@@ -56,7 +53,6 @@ public class ConfigurationExpandItemComposite extends Composite {
 		
 		GridLayout layout = new GridLayout(7, false);
 		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = 5;
-		layout.verticalSpacing = 5;
 		setLayout(layout);
 		
 		// Image for Header:
@@ -72,15 +68,15 @@ public class ConfigurationExpandItemComposite extends Composite {
 		// Name Setting:
 		Label label = new Label(this, SWT.NONE);
 		label.setText("Name:");
-		GridData d = new GridData();
-		d.horizontalIndent = 1;
-		d.widthHint = 150;
-		final Text t = new Text(this, SWT.SINGLE | SWT.BORDER);
-		t.setLayoutData(d);
-		t.addModifyListener(new ModifyListener() {
+		final TextValidationComposite t = new TextValidationComposite(this, SWT.NONE, null, "name", model.getValidator(), null, String.class);
+//		GridData d = new GridData();
+//		d.widthHint = 150;
+//		final Text t = new Text(this, SWT.SINGLE | SWT.BORDER);
+//		t.setLayoutData(d);
+		t.getTextBox().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
-				expandItem.setText("Timer Configuration: " + t.getText());
+				expandItem.setText("Timer Configuration: " + t.getTextBox().getText());
 				editor.setDirty(true);
 			}
 		});
@@ -88,34 +84,17 @@ public class ConfigurationExpandItemComposite extends Composite {
 		// Timer Combo Box:
 		Label timerL = new Label(this, SWT.NONE);
 		timerL.setText("Timer:");
-		d = new GridData();
-		d.horizontalIndent = 2;
-		timerL.setLayoutData(d);
-		ComboViewer timerC = new ComboViewer(this, SWT.BORDER);
-		d = new GridData();
-		d.horizontalIndent = 3;
-		timerC.getControl().setLayoutData(d);
-		timerC.setContentProvider(ArrayContentProvider.getInstance());
-		timerC.setInput(TimerEnum.values());
+		ComboValidationComposite timerC = new ComboValidationComposite(this, SWT.NONE, null, "timer", model.getValidator(), TimerEnum.values());
 		
 		// Mode Combo Box:
 		Label modeL = new Label(this, SWT.NONE);
 		modeL.setText("Mode:");
-		d = new GridData();
-		d.horizontalIndent = 4;
-		modeL.setLayoutData(d);
-		ComboViewer modeC = new ComboViewer(this, SWT.BORDER);
-		d = new GridData();
-		d.horizontalIndent = 5;
-		modeC.getControl().setLayoutData(d);
-		modeC.setContentProvider(ArrayContentProvider.getInstance());
-		modeC.setInput(TimerOperationModes.values());
+		ComboValidationComposite modeC = new ComboValidationComposite(this, SWT.NONE, null, "mode", model.getValidator(), TimerOperationModes.values());
 		
 		// Delete Button:
 		final Button delB = new Button(this, SWT.NONE);
 		delB.setText("Delete configuration");
-		d = new GridData();
-		d.horizontalIndent = 6;
+		GridData d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
 		delB.setLayoutData(d);
 		delB.addListener(SWT.Selection, new Listener() {
@@ -154,9 +133,14 @@ public class ConfigurationExpandItemComposite extends Composite {
 		pcPWMC = new ConfigurationCompositePhaseCorrectPWM(settingsComposite, this, SWT.NONE, editor, model);
 		pfcPWMC = new ConfigurationCompositePhaseAndFrequencyCorrectPWM(settingsComposite, this, SWT.NONE, editor, model);
 		initUseCaseGroups();
+		setVisibility(overflowC, false);
+		setVisibility(ctcC, false);
+		setVisibility(fastPWMC, false);
+		setVisibility(pcPWMC, false);
+		setVisibility(pfcPWMC, false);
 		
 		// Selection Listeners:
-		timerC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+		timerC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent arg0) {
 				editor.setDirty(true);		
@@ -164,7 +148,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 				updateLayout();
 			}
 		});
-		modeC.addSelectionChangedListener(new ISelectionChangedListener() {
+		modeC.getCombo().addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent arg0) {
 				TimerOperationModes mode = (TimerOperationModes) ((StructuredSelection)arg0.getSelection()).getFirstElement();
@@ -177,7 +161,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 				
 			}
 		});
-		modeC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+		modeC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent arg0) {
 				TimerOperationModes mode = (TimerOperationModes) ((StructuredSelection)arg0.getSelection()).getFirstElement();
@@ -193,26 +177,24 @@ public class ConfigurationExpandItemComposite extends Composite {
 		
 		// DataBindings:
 		DataBindingContext c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeText(t, SWT.Modify), 
+		c.bindValue(SWTObservables.observeText(t.getTextBox(), SWT.Modify), 
 				BeansObservables.observeValue(model, "name"));
 		c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(modeC),
+		c.bindValue(ViewersObservables.observeSingleSelection(modeC.getCombo()),
 				BeansObservables.observeValue(model, "mode"));
 		c = new DataBindingContext();
-		c.bindValue(ViewersObservables.observeSingleSelection(timerC),
+		c.bindValue(ViewersObservables.observeSingleSelection(timerC.getCombo()),
 				BeansObservables.observeValue(model, "timer"));
-		c = new DataBindingContext();
 		
 		layout();
 		expandItem.setControl(this);
-		expandItem.setHeight(computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
 	}
 
 private void initUseCaseGroups() {
 		
 		activeC = overflowC;
 		settingsComposite.layout();
-//		expandItem.setHeight(settingsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 	}
 	
 	private void selectGroup(TimerOperationModes mode) {
@@ -260,7 +242,18 @@ private void initUseCaseGroups() {
 		settingsComposite.layout();
 		layout();
 		
-		expandItem.setHeight(computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
+	}
+	
+	private void setVisibility(Composite c, boolean b) {
+
+		GridData d = (GridData) c.getLayoutData();
+		if (b)
+			d.heightHint = -1;
+		else
+			d.heightHint = 0;
+		d.exclude = !b;
+		c.setVisible(b);
 	}
 
 }
