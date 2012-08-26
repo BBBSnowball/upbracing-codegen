@@ -29,7 +29,7 @@ public class ComboValidationComposite extends Composite {
 		GridLayout gl = new GridLayout(columns, false);
 		setLayout(gl);
 		
-		combo = new ComboViewer(this, SWT.BORDER);
+		combo = new ComboViewer(this, SWT.BORDER | SWT.READ_ONLY);
 		combo.setContentProvider(ArrayContentProvider.getInstance());
 		combo.setInput(choices);
 		GridData d = new GridData();

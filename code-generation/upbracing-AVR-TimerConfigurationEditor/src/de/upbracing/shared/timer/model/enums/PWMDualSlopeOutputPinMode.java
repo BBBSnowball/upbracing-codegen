@@ -8,7 +8,7 @@ public enum PWMDualSlopeOutputPinMode {
 	
 	public String toString() {
 		if (this.equals(PWMDualSlopeOutputPinMode.TOGGLE))
-			return "Toggle Output A on Compare Match. Output B/C reserved!";
+			return "Toggle Output on Compare Match";
 		if (this.equals(PWMDualSlopeOutputPinMode.CLEAR_SET))
 			return "Clear Output while upcounting, set while downcounting";
 		if (this.equals(PWMDualSlopeOutputPinMode.SET_CLEAR))

@@ -128,7 +128,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 			toggleL.setText("Output Pin Operation:");
 			
 			// Toggle Combo:
-			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER);
+			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER | SWT.READ_ONLY);
 			toggleC.setContentProvider(ArrayContentProvider.getInstance());
 			toggleC.setInput(CTCOutputPinMode.values());
 			c = new DataBindingContext();

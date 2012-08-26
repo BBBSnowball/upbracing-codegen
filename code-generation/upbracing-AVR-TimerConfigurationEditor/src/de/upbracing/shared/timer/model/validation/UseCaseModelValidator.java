@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
+import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
@@ -63,16 +65,27 @@ public class UseCaseModelValidator extends AValidatorBase {
 	}
 	
 	public ValidationResult getCtcTopError() {
+		if ((model.getTimer().equals(TimerEnum.TIMER0)
+				|| model.getTimer().equals(TimerEnum.TIMER2))
+				&& !model.getCtcTop().equals(CTCTopValues.OCRnA)) {
+				return ValidationResult.ERROR;
+		}
 		return ValidationResult.OK;
 	}
 	public ValidationResult getFastPWMTopError() {
+		if (model.getTimer().equals(TimerEnum.TIMER0)
+				|| model.getTimer().equals(TimerEnum.TIMER2)) {
+			if (!model.getFastPWMTop().equals(PWMTopValues.BIT8))
+				return ValidationResult.ERROR;
+		}
+		
 		return ValidationResult.OK;
 	}
 	public ValidationResult getPhaseCorrectPWMTopError() {
-		return ValidationResult.OK;
+		return getFastPWMTopError();
 	}
 	public ValidationResult getPhaseAndFrequencyCorrectPWMTopError() {
-		return ValidationResult.OK;
+		return getFastPWMTopError();
 	}
 	public ValidationResult getModeError() {
 		
@@ -144,16 +157,20 @@ public class UseCaseModelValidator extends AValidatorBase {
 	}
 	
 	public String getCtcTopErrorText() {
-		return "All ok!";
+		if (getCtcTopError().equals(ValidationResult.ERROR))
+			return "For 8Bit Timers only OCR can be used for storing the Top value!";
+		return "";
 	}
 	public String getFastPWMTopErrorText() {
-		return "All ok!";
+		if (getFastPWMTopError().equals(ValidationResult.ERROR))
+			return "For 8Bit Timers only the (fixed) value 255 can be used as Top value!";
+		return "";
 	}
 	public String getPhaseCorrectPWMTopErrorText() {
-		return "All ok!";
+		return getFastPWMTopErrorText();
 	}
 	public String getPhaseAndFrequencyCorrectPWMTopErrorText() {
-		return "All ok!";
+		return getFastPWMTopErrorText();
 	}
 	public String getModeErrorText() {
 		// Check Mode and Timer collisions

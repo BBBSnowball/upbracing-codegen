@@ -1,5 +1,7 @@
 package de.upbracing.configurationeditor.timer.editors;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
@@ -96,11 +98,7 @@ public class ConfigurationCompositeFastPWM extends AConfigurationCompositeBase {
 		public void modifyText(ModifyEvent arg0) {
 			editor.setDirty(true);
 		}});
-
-//		// Label for Unit
-//		Label lbUnit = new Label(scComp, SWT.NONE);
-//		lbUnit.setText("s");
-//		
+	
 //		if (compareInterrupt) {
 //			// Interrupt enable checkbox for Compare Match
 //			Label intL = new Label(scComp, SWT.NONE);
@@ -124,10 +122,17 @@ public class ConfigurationCompositeFastPWM extends AConfigurationCompositeBase {
 			Label toggleL = new Label(scComp, SWT.NONE);
 			toggleL.setText("Output Pin Operation:");
 			
-			// Toggle Combo:
-			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER);
+			// Toggle Combo Box:
+			ArrayList<Object> o = new ArrayList<Object>();
+			for (PWMSingleSlopeOutputPinMode m: PWMSingleSlopeOutputPinMode.values())
+			{
+				o.add(m);
+			}
+			if (!nameProperty.startsWith("ocrA"))
+				o.remove(1);
+			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER | SWT.READ_ONLY);
 			toggleC.setContentProvider(ArrayContentProvider.getInstance());
-			toggleC.setInput(PWMSingleSlopeOutputPinMode.values());
+			toggleC.setInput(o.toArray());
 			c = new DataBindingContext();
 			c.bindValue(ViewersObservables.observeSingleSelection(toggleC),
 					BeansObservables.observeValue(model, pinModeProperty));

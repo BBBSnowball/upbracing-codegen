@@ -181,6 +181,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		});
 
 		this.finishedLoading = true;
+		t.setFocus();
 	}
 	
 	private ConfigurationViewModel Load(String path) throws FileNotFoundException {
