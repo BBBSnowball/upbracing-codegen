@@ -13,6 +13,8 @@
 «EXPAND init::file FOR this»
 «REM»generate tick function that will be called at a regular interval«ENDREM»
 «EXPAND tick::file FOR this»
+«REM»generate event function that will be called at a regular interval«ENDREM»
+«EXPAND event::file FOR this»
 
 «FILE this.name+'.c' -»
 

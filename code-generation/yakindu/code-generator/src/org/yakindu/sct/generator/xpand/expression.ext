@@ -193,7 +193,7 @@ String toCCode(OperationDefinition dec) :
 	" " +dec.getMethodName();
 
 String toCCode(TimeEvent time_ev) :
-    " ( eventSet_check( &"+time_ev.statemachineHandleName()+"->base.eventSet, " + time_ev.getEventEnumName() + ") ) ";
+    "(eventSet_check( &"+time_ev.statemachineHandleName()+"->base.eventSet, " + time_ev.getEventEnumName() + ") ) ";
 
 String toCCode(VariableDefinition var) :
 	if(var.getInterface()!="AVR") then
@@ -202,7 +202,12 @@ String toCCode(VariableDefinition var) :
     	"";
 
 String toCCode(EventDefinition evDef) :
+    evDef.getEventEnumName();
+    
+/*
+String toCCode(EventDefinition evDef) :
     " ( eventSet_check( &" + evDef.statemachineHandleName() + "->base.eventSet, " + evDef.getEventEnumName() + ") ) ";
+*/
 
 /*
 String toCCode(EventRaisedReferenceExpression errExp) :

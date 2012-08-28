@@ -135,16 +135,23 @@ String reactSequenceFunctionName(Step this) :
 	  this.stName() + "_react_" + this.getStateName();
 
 /* for some reason, this is handled completely different */ 
+//String reactFunctionName(sexec::Reaction this) :  
+//	  this.stName() + "_react_" + this.getStateName();
+
+//String reactFunctionName(ExecutionNode this) :  
+//	  this.stName() + "_react_" + this.getStateName();
+
+//String reactFunctionName(ExecutionFlow this) :  
+//	  this.stName() + "_react_" + this.getStateName();
+ 
 String reactFunctionName(sexec::Reaction this) :  
-	  this.stName() + "_react_" + this.getStateName();
+	  "react_" + this.getStateName();
 
 String reactFunctionName(ExecutionNode this) :  
-	  this.stName() + "_react_" + this.getStateName();
+	  "react_" + this.getStateName();
 
 String reactFunctionName(ExecutionFlow this) :  
-	  this.stName() + "_react_" + this.getStateName();
- 
-
+	  "react_" + this.getStateName();
 
 //-- Function Definition and Declaration */
 String actionFunction(Step this) :  
@@ -178,8 +185,11 @@ String shallowEnterFunction(Step this) :
 String deepEnterFunction(Step this) :  
 	  this.deepEnterSequenceFunctionName() + "("+ handleAddition() + ")";
 
+//String reactFunction(ExecutionNode this) :  
+//	  this.reactFunctionName() + "("+ handleAddition() + ")";
+	  
 String reactFunction(ExecutionNode this) :  
-	  this.reactFunctionName() + "("+ handleAddition() + ")";
+	  this.reactFunctionName() + "()";
 
 String getName(VariableDefinition this): name.toFirstLower();
 String getName(OperationDefinition this): name.toFirstLower();
@@ -205,10 +215,11 @@ String getStateFqn(Void element) :
 String getStateFqn(emf::EObject element) :
 	element.eContainer.getStateFqn();
 String getStateFqn(ExecutionScope this) :
-	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+"_")+this.name;
+//	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+"_")+this.name;
+	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+".")+this.name;
 String getStateFqn(ExecutionState this) :
-	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+"_")+this.simpleName;
-
+//	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+"_")+this.simpleName;
+	(this.superScope.getStateFqn()==""?"":this.superScope.getStateFqn()+".")+this.simpleName;
 
 private String getNullSafeRegionName(ExecutionRegion this) :
 	if (name == null)
@@ -244,11 +255,22 @@ String interfaceObjectName(InternalScope this) : "ifaceInternal";
 /* Event name information  */
 String getEventEnumName(TimeEvent this) : "ev_" + this.name.toFirstLower();
 String getEventEnumName(Event this) : "ev_" + this.eContainer.getScopeName() + "_" + this.getNameWA().toFirstLower();
-String getEventEnumName(EventDefinition this) : "ev_" + this.eContainer.getScopeName() + "_" + name; //.toFirstLower();
+//String getEventEnumName(EventDefinition this) : "ev_" + this.eContainer.getScopeName() + "_" + name; //.toFirstLower();
+
+String getEventEnumName(EventDefinition this) :"ev_" + this.eContainer.getScopeName() + "_" + name;
 String getEventEnumName(FeatureCall this) : feature.getEventEnumName();
 String getEventEnumName(types::Feature this) : "/* EventEnum requested, but got Feature: "+this+" */";
 String getEventEnumName(Expression this) : "/* EventEnum requested, but got Expression: "+this+" */";
 String getEventEnumName(EObject this) : null;
+
+//String getEventName(Event this) : this.eContainer.getScopeName().toFirstUpper() + this.getNameWA().toFirstUpper();
+//String getEventName(EventDefinition this) : this.eContainer.getScopeName().toFirstUpper() + "_" +name.toFirstUpper();
+//String getEventName(FeatureCall this) : feature.getEventName();
+//String getEventName(EObject this) : "/* Event expected, but got NamedElement: "+this+" */";
+//String getEventName(ElementReferenceExpression this) : reference.getEventName();
+//String getEventName(types::Event this) : this.eContainer.getScopeName().toFirstUpper() + this.name.toFirstUpper();
+//String getEventName(types::Feature this) : "/* Event expected, but got Feature: "+this+" */";
+//String getEventName(Expression this) : "/* Event expected, but got Expression: "+this+" */";
 
 String getEventName(Event this) : this.eContainer.getScopeName().toFirstUpper() + this.getNameWA().toFirstUpper();
 String getEventName(EventDefinition this) : this.eContainer.getScopeName().toFirstUpper() + "_" +name.toFirstUpper();
