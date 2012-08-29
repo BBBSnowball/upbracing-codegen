@@ -27,6 +27,7 @@ struct {
 
 void «this.name»_init(void);
 void «this.name»_tick(void);
+void «this.name»_event(void);
 
 #endif	// defined «this.name.toUpperCase()»_H
 «ENDFILE»
