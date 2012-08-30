@@ -1,0 +1,88 @@
+«IMPORT sexec»
+«IMPORT stext»
+«IMPORT sgraph»
+
+
+«IMPORT org::yakindu::sct::generator::xpand»
+«EXTENSION org::yakindu::sct::generator::xpand::expression»
+«EXTENSION org::yakindu::sct::generator::xpand::Name»
+
+
+«DEFINE file FOR ExecutionFlow-»
+«FILE this.name + "_event_.c"-»
+
+«EXPAND ReactMethodsImplement FOREACH this.states»
+
+void  «this.name»_event();
+{
+	OS_ENTER_CRITICAL();
+	switch(«this.name».state){
+		«FOREACH this.states AS state -»
+	    case «this.name + "_" + state.simpleName-»_state:
+	    	void react_«state.name»;
+			break;	
+		«ENDFOREACH-»
+	}
+	OS_EXIT_CRITICAL();
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+«DEFINE ActionCode FOR Step»
+//metamodel generates sequence according to steps
+«ENDDEFINE»
+
+«DEFINE ActionCode FOR Execution»
+	«this.statement.toCCode()»;
+«ENDDEFINE»
+
+
+«DEFINE ActionCode FOR Sequence -»
+  «EXPAND ActionCode FOREACH this.steps-»
+«ENDDEFINE»
+
+«REM»name of the event«ENDREM»
+«DEFINE ActionCode FOR Check -»
+«IF this != null -»
+«this.condition.toCCode() -»
+«ELSE -» 1 
+«ENDIF -»
+«ENDDEFINE»
+
+
+«REM»conditional part for possible transitions on an event«ENDREM»
+«DEFINE ActionCode FOR If»
+if («EXPAND ActionCode FOR this.check-») { 
+  «EXPAND ActionCode FOR this.thenStep -»
+}
+«IF (this.elseStep != null)-»
+else {
+  «EXPAND ActionCode FOR this.elseStep -»
+}
+«ENDIF»
+«ENDDEFINE»
+
+«REM»For changing state«ENDREM»
+«DEFINE ActionCode FOR EnterState-»
+counter_state=counter_«this.state.simpleName»_state;
+«ENDDEFINE»
+
+«REM»State exit code«ENDREM»
+«DEFINE ActionCode FOR ExitState-»
+«ENDDEFINE»
+
+«DEFINE ReactCode FOR Sequence-» 
+«EXPAND ActionCode FOREACH this.steps»
+«ENDDEFINE»
+
+«REM»event function outer structure«ENDREM»
+«DEFINE ReactMethodsImplement FOR ExecutionNode -»
+«IF (ExecutionState.isInstance(this) || this.reactSequence.caller.size > 0) -»
+void «this.reactFunction()-»
+«REM»void «stName()»_react_«this.simpleName»(«StName()»* handle)«ENDREM»
+{«EXPAND ReactCode FOR reactSequence -»
+}
+«ENDIF -»
+«ENDDEFINE»
+
