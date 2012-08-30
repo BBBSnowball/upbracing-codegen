@@ -14,7 +14,6 @@
 //NOTE(Benjamin): Your function signatures are wrong. Please make sure that you copy them from the header file. Otherwise, the
 //                program will crash. You have to use a pointer because only then can you change the variable.
 
-
 void _sem_wait(Semaphore* sem){
 	//Definition check needed
 	TaskRefType t;
@@ -49,7 +48,10 @@ void _sem_wait(Semaphore* sem){
 				sem->queue_end++;
 			}
 			sem->queue[sem->queue_end] = t; 
-		}	
+			
+			// Wait
+			WaitTask();
+		}
 		OS_EXIT_CRITICAL();	
 		
 		
@@ -78,6 +80,13 @@ void _sem_signal(Semaphore* sem){
 		//if (sem->queue[sem->queue_front] <= OS_NUMBER_OF_TCBS)
 		//	ActivateTask(sem->queue[sem->queue_front]);
 		//call event(semaphore_event, taskid);
+		
+		// Free the first task (make READY)
+		if (sem->queue[sem->queue_front] <= OS_NUMBER_OF_TCBS)
+		{
+			// Ready
+			SignalTask(sem->queue[sem->queue_front]);
+		}			
 	}
 	
 }
@@ -223,8 +232,8 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 		{
 			sem->queue_end++;
 		}
-		sem->queue[sem->queue_end].pid = t;
 		sem->queue[sem->queue_end].n = n;
+		sem->queue[sem->queue_end].pid = t;
 			//wait
 	}
 	OS_EXIT_CRITICAL();
@@ -290,7 +299,7 @@ bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token){
 		return TRUE;
 	}
 	
-	if (sem->queue[sem->queue_front] == token)
+	if (sem->queue[sem->queue_front].pid == token)
 	{
 		return TRUE;
 		//remove token id from front

@@ -5,7 +5,7 @@
  *  Author: Krishna
  */ 
 #include "OSEK.h"
-#include "semaphores/semaphore.h"
+#include "semaphore.h"
 
 #ifndef QUEUE_H_
 #define QUEUE_H_
@@ -64,14 +64,14 @@ typedef struct
 //                need for each of the functions. Then you can add them as arguments, as
 //                I have done here for queue_enqueue.
 #define queue_enqueue (sem, data) _queue_enqueue(QUEUE_REF(sem), data, QUEUE_SEM_REF(sem))
-void _queue_enqueue(Queue* sem, uint8_t data, Semaphore* q_sem);
-#define queue_enqueue(sem, bytes, data) _queue_enqueue(QUEUE_REF(sem), bytes, data)
-void _queue_enqueue(Queue* sem, uint8_t bytes, const uint8_t* data);
+void _queue_enqueue(Queue* sem, uint8_t data);
+#define queue_enqueue(sem, bytes, data) _queue_enqueue2(QUEUE_REF(sem), bytes, data)
+void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 
 #define queue_dequeue(sem) _queue_dequeue(QUEUE_REF(sem))
 uint8_t _queue_dequeue(Queue* sem);
-#define  queue_dequeue(sem, bytes, data_out) _queue_dequeue(QUEUE_REF(sem), bytes, data_out)
-void _queue_dequeue(Queue* sem, uint8_t bytes, uint8_t* data_out);
+#define  queue_dequeue(sem, bytes, data_out) _queue_dequeue2(QUEUE_REF(sem), bytes, data_out)
+void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out);
 
 #define queue_is_data_available(sem, bytes) _queue_is_data_available(QUEUE_CONS_REF(sem), bytes)
 bool _queue_is_data_available (Queue* sem, uint8_t number_of_bytes);

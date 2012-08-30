@@ -30,7 +30,7 @@ void _queue_enqueue(Queue* sem, uint8_t data, Semaphore* q_sem )
 	@param[in] *data	Pointer to data, to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* sem, uint8_t bytes, const uint8_t* data )
+void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)
@@ -66,7 +66,7 @@ uint8_t _queue_dequeue(Queue* sem)
 	@param[in] *data_out	Pointer to memory where data is to be stored
 	
 */
-void _queue_dequeue(Queue* sem, uint8_t bytes, uint8_t* data_out )
+void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)

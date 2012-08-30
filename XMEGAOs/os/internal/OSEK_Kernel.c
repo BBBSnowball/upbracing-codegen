@@ -184,15 +184,14 @@ void Os_Schedule(void)
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	OS_ENTER_CRITICAL();
 	volatile void * newtcb = NULL;
-	if (os_currentTcb->preempt == PREEMPTABLE
-		|| os_currentTcb->state == SUSPENDED) 
+	if (os_currentTcb->preempt == PREEMPTABLE) 
 	{
 		for (uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
-			if (os_ready_queue[i])
+			if (os_ready_queue[i] == READY)
 			{
 				newtcb = &(os_tcbs[i]);
-				os_ready_queue[i] = 0;
+				os_ready_queue[i] = RUNNING;
 				break;
 			}
 		}
@@ -220,15 +219,14 @@ StatusType Schedule(void)
 {
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	if (os_currentTcb->preempt == PREEMPTABLE
-		|| os_currentTcb->state == SUSPENDED) 
+	if (os_currentTcb->preempt == PREEMPTABLE) 
 	{
 		for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
 		{
-			if (os_ready_queue[i])
+			if (os_ready_queue[i] == READY)
 			{
-				os_currentTcb = &os_tcbs[i];
-				os_ready_queue[i] = 0;
+				os_currentTcb = &(os_tcbs[i]);
+				os_ready_queue[i] = RUNNING;
 				break;
 			}
 		}
@@ -237,8 +235,24 @@ StatusType Schedule(void)
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 
+	if (os_currentTcb == NULL)
+	{
+		// Switch to idle then...
+		os_currentTcb = &os_tcbs[0];
+	}
+
 	// Should never get here...
 	return E_OK;	
+}
+
+void WaitTask() {
+	os_ready_queue[os_currentTcb->id] = WAITING;
+	os_currentTcb->state = WAITING;
+	Schedule();
+}
+
+void SignalTask(TaskRefType t) {
+	
 }
 
 TASK(Task_Idle)
