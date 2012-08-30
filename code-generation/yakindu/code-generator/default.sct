@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:sgraph="http://www.yakindu.org/sct/sgraph/2.0.0">
-  <sgraph:Statechart xmi:id="_tWKDwM4LEeGo3PXtl-esxg" specification="interface lights:&#xD;&#xA;var Light:integer&#xD;&#xA;var make:integer=0&#xD;&#xA;&#xD;&#xA;internal:&#xD;&#xA;event  reset&#xD;&#xA;event powerout&#xD;&#xA;event powerrestored" name="default">
+  <sgraph:Statechart xmi:id="_tWKDwM4LEeGo3PXtl-esxg" specification="interface lights:&#xD;&#xA;var Light:integer&#xD;&#xA;var make:integer=0&#xD;&#xA;&#xD;&#xA;internal:&#xD;&#xA;event reset&#xD;&#xA;event powerout&#xD;&#xA;event powerrestored&#xD;&#xA;operation name (a: integer, b: integer):integer" name="default">
     <regions xmi:id="_tWKq0s4LEeGo3PXtl-esxg" name="main region">
       <vertices xsi:type="sgraph:Entry" xmi:id="_tWNHEc4LEeGo3PXtl-esxg">
         <outgoingTransitions xmi:id="_tWSmoM4LEeGo3PXtl-esxg" target="_tWO8RM4LEeGo3PXtl-esxg"/>
       </vertices>
-      <vertices xsi:type="sgraph:State" xmi:id="_tWO8RM4LEeGo3PXtl-esxg" specification="entry/lights.Light=0&#xD;&#xA;exit/lights.make+=1&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;" name="LightOff" incomingTransitions="_tWSmoM4LEeGo3PXtl-esxg __M0jUM4LEeGo3PXtl-esxg">
+      <vertices xsi:type="sgraph:State" xmi:id="_tWO8RM4LEeGo3PXtl-esxg" specification="entry/lights.Light=0&#xD;&#xA;exit/lights.make+=1&#xD;&#xA;exit/name(5,4)&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;" name="LightOff" incomingTransitions="_tWSmoM4LEeGo3PXtl-esxg __M0jUM4LEeGo3PXtl-esxg">
         <outgoingTransitions xmi:id="_AXBsoM4MEeGo3PXtl-esxg" specification="reset" target="_2Mi1oM4LEeGo3PXtl-esxg"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_2Mi1oM4LEeGo3PXtl-esxg" specification="entry/lights.Light=1" name="LightOn" incomingTransitions="_AXBsoM4MEeGo3PXtl-esxg _e9dDgPEjEeG2B9nsRTq3ag">
