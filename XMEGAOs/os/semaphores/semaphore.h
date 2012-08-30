@@ -140,7 +140,7 @@ typedef struct {
 	uint8_t n;
 } Semaphore_n_queue_entry;
 
-typedef struct Semaphore_n{ 
+typedef struct { 
 	int8_t count;
 	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
 	int8_t queue_front;

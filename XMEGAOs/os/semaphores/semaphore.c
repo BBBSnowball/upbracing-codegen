@@ -202,7 +202,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 
 /*	Semaphore synchronization for queues*/
 /*	@brief	Performs wait for queue semaphore*/
-void _sem_wait_n(SEMAPHORE_n* sem , uint8_t n){
+void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 	//Definition pending
 	TaskRefType t;
 	GetTaskID(&t);
@@ -223,7 +223,9 @@ void _sem_wait_n(SEMAPHORE_n* sem , uint8_t n){
 		{
 			sem->queue_end++;
 		}
-		sem->queue[sem->queue_end] = {t, n};
+		sem->queue[sem->queue_end].pid = t;
+		sem->queue[sem->queue_end].n = n;
+			//wait
 	}
 	OS_EXIT_CRITICAL();
 }
@@ -254,7 +256,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n){
 	
 }
 
-sem_token_t _sem_start_wait_n(SEMAPHORE_n* sem, uint8_t n){
+sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 	//Definition pending
 	uint8_t i,tok;
 	tok = sem->token_count++;
@@ -274,7 +276,7 @@ sem_token_t _sem_start_wait_n(SEMAPHORE_n* sem, uint8_t n){
 		}
 		sem->queue[sem->queue_end].pid = tok;
 		sem->queue[sem->queue_end].n = n;
-		//suspend
+		//no suspend
 		
 	}
 	OS_EXIT_CRITICAL();
@@ -291,11 +293,12 @@ bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token){
 	if (sem->queue[sem->queue_front] == token)
 	{
 		return TRUE;
+		//remove token id from front
 	}
 	return FALSE;
 }
 
-void _sem_stop_wait_n(SEMAPHORE_n* sem, sem_token_t token){
+void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token){
 	//Definition pending
 	uint8_t i,j,tok;
 	tok = token;

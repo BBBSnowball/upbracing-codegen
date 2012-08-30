@@ -13,7 +13,7 @@
 	@param[in] data		Data to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* sem, uint8_t data )
+void _queue_enqueue(Queue* sem, uint8_t data, Semaphore* q_sem )
 {
 	sem->queue_end = (sem->queue_end==sem->capacity)? 0 : sem->queue_end + 1;
 	sem->q_queue[sem->queue_end] = data;

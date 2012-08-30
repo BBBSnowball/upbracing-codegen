@@ -283,12 +283,6 @@
     <Compile Include="os\drivers\Timer.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\generated\Os_cfg_generated.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="os\generated\Os_cfg_generated.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="os\internal\OSEK_Alarm.c">
       <SubType>compile</SubType>
     </Compile>
@@ -330,7 +324,6 @@
     <Folder Include="os" />
     <Folder Include="os\datatypes" />
     <Folder Include="os\drivers\" />
-    <Folder Include="os\generated" />
     <Folder Include="os\internal" />
     <Folder Include="os\IPC" />
     <Folder Include="os\config" />
