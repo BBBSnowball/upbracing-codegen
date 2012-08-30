@@ -29,6 +29,12 @@ public class ConfigurationViewModel extends AViewModelBase {
 		this.validator = new ConfigurationModelValidator(model);
 	}
 	
+	// Getter for Model
+	// (Used for built-in CodeGenerator)
+	public ConfigurationModel getModel() {
+		return model;
+	}
+	
 	// Getter for Validator
 	public ConfigurationModelValidator getValidator() {
 		return validator;

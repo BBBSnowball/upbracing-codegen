@@ -29,24 +29,18 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 
+import de.upbracing.codegenerator.timer.CodeGenerator;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 
-public class TimerConfigurationEditor extends EditorPart {
+public class TimerConfigurationEditor extends EditorPart implements Listener {
 
 	private boolean finishedLoading = false;
 	private boolean isDirty = false;
 	private IFile file;
 	private ConfigurationViewModel model;
-	private Composite mainC;
-	
-	public void layout() {
-		mainC.layout();
-	}
-	
-	public TimerConfigurationEditor getEditor() {
-		return this;
-	}
+	private Text freqText;
+	private ExpandBar bar;
 	
 	public TimerConfigurationEditor() {
 		super();
@@ -108,7 +102,10 @@ public class TimerConfigurationEditor extends EditorPart {
 
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
+		// Changing a drop-down value will make the project dirty but will
+		// not allow to save, while no text field is in focus.
+		// -> Focus frequency text field to make sure, that a "Save" command will always work
+		freqText.setFocus();
 	}
 	
 	@Override
@@ -116,10 +113,8 @@ public class TimerConfigurationEditor extends EditorPart {
 		
 		finishedLoading = false;
 		
-		mainC = arg0;
-		
 		// Initializes the view from the loaded file (model)
-		GridLayout fillLayout = new GridLayout(2, false);
+		GridLayout fillLayout = new GridLayout(3, false);
 		fillLayout.marginHeight = fillLayout.marginWidth = 10;
 		arg0.setLayout(fillLayout);
 		
@@ -133,8 +128,8 @@ public class TimerConfigurationEditor extends EditorPart {
 		Label label = new Label(gs, SWT.NONE);
 		label.setText("CPU Clock:");
 		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, model, "frequency", model.getValidator(), "Hz", Integer.class);
-		Text t = text.getTextBox();
-		t.addModifyListener(new ModifyListener() {
+		freqText = text.getTextBox();
+		freqText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
 				setDirty(true);
@@ -146,11 +141,18 @@ public class TimerConfigurationEditor extends EditorPart {
 		gs.layout();
 		
 		// Add Configuration Button
-		Button b = new Button(arg0, SWT.BORDER);
-		b.setText("Add new configuration");
+		Button newConfigButton = new Button(arg0, SWT.BORDER);
+		newConfigButton.setText("Add new configuration");
 		GridData d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
-		b.setLayoutData(d);
+		newConfigButton.setLayoutData(d);
+		
+		// Generate Code Button
+		Button generateCodeButton = new Button(arg0, SWT.BORDER);
+		generateCodeButton.setText("Generate Code");
+		d = new GridData();
+		d.horizontalAlignment = SWT.RIGHT;
+		generateCodeButton.setLayoutData(d);
 		
 		// ExpandBar with individual configurations
 		GridData data = new GridData();
@@ -158,9 +160,9 @@ public class TimerConfigurationEditor extends EditorPart {
 		data.verticalAlignment = GridData.FILL;
 		data.grabExcessHorizontalSpace = true;
 		data.grabExcessVerticalSpace = true;
-		data.horizontalSpan = 2;
+		data.horizontalSpan = 3;
 		
-		final ExpandBar bar = new ExpandBar(arg0, SWT.V_SCROLL);
+		bar = new ExpandBar(arg0, SWT.V_SCROLL);
 		bar.setLayoutData(data);
 		
 		for (UseCaseViewModel m: model.getConfigurations()) {
@@ -168,20 +170,16 @@ public class TimerConfigurationEditor extends EditorPart {
 			new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, m, this);
 		}
 		
-		b.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event) {
-				// Add a new configuration to the model
-				UseCaseViewModel newModel = model.addConfiguration();
-				// Add the view for this configuration
-				ExpandItem ei = new ExpandItem(bar, SWT.NONE);
-				new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, getEditor());
-				// Set project status "dirty"
-				setDirty(true);
-			}
-		});
+		newConfigButton.addListener(SWT.Selection, this);
+		generateCodeButton.addListener(SWT.Selection, new Listener() {
+
+			@Override
+			public void handleEvent(Event arg0) {
+				CodeGenerator gen = new CodeGenerator(model.getModel());
+				gen.generateCode("/Users/peer/timertest", "/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/code-generation/upbracing-AVR-TimerConfigurationEditor/templates/");
+			}});
 
 		this.finishedLoading = true;
-		t.setFocus();
 	}
 	
 	private ConfigurationViewModel Load(String path) throws FileNotFoundException {
@@ -197,12 +195,21 @@ public class TimerConfigurationEditor extends EditorPart {
 			file.refreshLocal(0, null);
 			
 			// File is not dirty anymore
-			isDirty = false;
-			firePropertyChange(IEditorPart.PROP_DIRTY); 
+			setDirty(false);
 			
 		} catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void handleEvent(Event event) {
+		// Add a new configuration to the model
+		UseCaseViewModel newModel = model.addConfiguration();
+		// Add the view for this configuration
+		ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+		new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, this);
+		// Set project status "dirty"
+		setDirty(true);
 	}
 }

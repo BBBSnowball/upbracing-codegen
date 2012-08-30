@@ -1,0 +1,2 @@
+// overflow interrupt is enabled
+TIMSK<%TIMER_NUMBER%> |= (1<<TOIE<%TIMER_NUMBER%>);
