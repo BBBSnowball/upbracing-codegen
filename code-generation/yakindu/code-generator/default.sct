@@ -50,7 +50,7 @@
           <styles xsi:type="notation:ShapeStyle" xmi:id="_tWPjUs4LEeGo3PXtl-esxg" fontName="Verdana" fillColor="15981773" lineColor="12632256"/>
           <styles xsi:type="notation:FontStyle" xmi:id="_tWPjU84LEeGo3PXtl-esxg"/>
           <styles xsi:type="notation:BooleanValueStyle" xmi:id="_tWR_kM4LEeGo3PXtl-esxg"/>
-          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_tWR_kc4LEeGo3PXtl-esxg" x="40" y="80" width="230" height="81"/>
+          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_tWR_kc4LEeGo3PXtl-esxg" x="40" y="80" width="245" height="111"/>
         </children>
         <children xmi:id="_2Mw4EM4LEeGo3PXtl-esxg" type="State" element="_2Mi1oM4LEeGo3PXtl-esxg">
           <children xsi:type="notation:DecorationNode" xmi:id="_2MyGMM4LEeGo3PXtl-esxg" type="StateName">
