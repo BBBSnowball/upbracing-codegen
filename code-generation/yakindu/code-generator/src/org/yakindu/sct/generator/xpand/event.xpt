@@ -19,7 +19,7 @@ void  «this.name»_event();
 	switch(«this.name».state){
 		«FOREACH this.states AS state -»
 	    case «this.name + "_" + state.simpleName-»_state:
-	    	void react_«state.name»;
+	    	void react_«state.name»();
 			break;	
 		«ENDFOREACH-»
 	}
