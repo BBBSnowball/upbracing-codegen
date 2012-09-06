@@ -1,0 +1,114 @@
+<%
+if (m.getMode().equals(TimerOperationModes.CTC)) {
+%>
+// Initializes the timer for CTC mode and sets up interrupts, if necessary.
+void timer_<%=m.getName()%>_init(void) {
+	// First, reset all values to zero
+	// (this will also make the timer stop)
+	TCCR<%=m.getTimer().ordinal()%>A = 0x00;<%
+	if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { %>
+	TCCR<%=m.getTimer().ordinal()%>B = 0x00;<%
+	} %>
+    TIMSK<%=m.getTimer().ordinal()%> = 0x00;
+    
+    <%
+    /* INTERRUPTS */
+	if (m.getCompareInterruptA()) {
+	%>
+    // Enable overflow interrupt for Channel A
+	TIMSK<%=m.getTimer().ordinal()%> |= (1<<OCIE<%=m.getTimer().ordinal()%>A);<%
+	}
+    if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
+    	if (m.getCompareInterruptB()) {
+    	%>
+    // Enable overflow interrupt for Channel B
+	TIMSK<%=m.getTimer().ordinal()%> |= (1<<OCIE<%=m.getTimer().ordinal()%>B);<%
+    	}
+    	if (m.getCompareInterruptC()) {
+    	%>
+    // Enable overflow interrupt for Channel C
+	TIMSK<%=m.getTimer().ordinal()%> |= (1<<OCIE<%=m.getTimer().ordinal()%>C);<%
+    	}
+    } %>
+	<% 
+	/* TOP VALUES */
+	// Check, whether ICRn needs to be used
+    if (m.getCtcTop().equals(CTCTopValues.ICR)) { 
+    %>
+	// Input Capture Register (Top) -> <%=m.getIcrPeriod()%>s
+	ICR<%=m.getTimer().ordinal()%> = <%=validator.calculateRegisterValue(m.getIcrPeriod())%>;<% 
+	} %>
+	// Output Compare Register A <% if (m.getCtcTop().equals(CTCTopValues.OCRnA)) { %>(Top)<% } %> -> <%=m.getOcrAPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>A = <%=validator.calculateRegisterValue(m.getOcrAPeriod())%>;<%
+    if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
+	%>
+	// Output Compare Register B -> <%=m.getOcrBPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>B = <%=validator.calculateRegisterValue(m.getOcrBPeriod())%>;
+	// Output Compare Register C -> <%=m.getOcrCPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>C = <%=validator.calculateRegisterValue(m.getOcrCPeriod())%>;<% 
+	} %>
+	<% 
+	/* PIN MODES */
+	if (!m.getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {%>
+	// Output Pin Mode Channel A: <%=m.getComparePinModeA()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getCTCOutputModeCode(m.getTimer().ordinal(), m.getComparePinModeA(), "A")%>;<% }
+    if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
+	if (!m.getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) { %>
+	// Output Pin Mode Channel B: <%=m.getComparePinModeB()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getCTCOutputModeCode(m.getTimer().ordinal(), m.getComparePinModeB(), "B")%>;<%
+	} if (!m.getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) { %>
+	// Output Pin Mode Channel C: <%=m.getComparePinModeC()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getCTCOutputModeCode(m.getTimer().ordinal(), m.getComparePinModeC(), "C")%>;<%
+	} } %>
+	
+	// Set timer mode to CTC
+	// (Top Value: <%=m.getCtcTop()%>)<%
+	if (m.getTimer().equals(TimerEnum.TIMER0) || m.getTimer().equals(TimerEnum.TIMER2)) { %>
+	TCCR<%=m.getTimer().ordinal()%>A |= (1<<WGM<%=m.getTimer().ordinal()%>1);<%
+	}
+	else {
+		if (m.getCtcTop().equals(CTCTopValues.ICR)) { %>
+	TCCR<%=m.getTimer().ordinal()%>B |= (1<<WGM<%=m.getTimer().ordinal()%>3) | (1<<WGM<%=m.getTimer().ordinal()%>2);<%
+		}
+		else { %>
+	TCCR<%=m.getTimer().ordinal()%>B |= (1<<WGM<%=m.getTimer().ordinal()%>2);<%
+		}
+	}
+	%>
+}
+
+// Returns the register value of Channel A.
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelA(void) {
+	return OCR<%=m.getTimer().ordinal()%>A;
+}
+
+// Sets the register value of Channel A to a new value.
+void timer_<%=m.getName()%>_setPeriod_ChannelA(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>A = p;
+}
+<% 
+if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { 
+%>
+
+// Returns the register value of Channel B
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelB(void) {
+	return OCR<%=m.getTimer().ordinal()%>B;
+}
+
+// Sets the register value of Channel B to a new value.
+void timer_<%=m.getName()%>_setPeriod_ChannelB(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>B = p;
+}
+
+// Returns the register value of Channel C
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelC(void) {
+	return OCR<%=m.getTimer().ordinal()%>C;
+}
+
+// Sets the register value of Channel C to a new value.
+void timer_<%=m.getName()%>_setPeriod_ChannelC(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>C = p;
+}<% } %>
+<%
+}
+%>

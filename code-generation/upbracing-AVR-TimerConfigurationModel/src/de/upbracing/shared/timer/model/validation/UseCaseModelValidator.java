@@ -223,7 +223,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return true;
 	}
 	
-	private int calculateRegisterValue(double period) {
+	public int calculateRegisterValue(double period) {
 		int frequency = parent.getFrequency();
 		// Get Timer Tick Rate
 		int prescale = model.getPrescale().getNumeric();
