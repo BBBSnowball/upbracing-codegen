@@ -7,6 +7,12 @@ import de.upbracing.dbc.DBCSignal;
 
 public class DBCSignalConfig extends DBCSignal {
 
+	private String beforeRx = null;
+	private String afterRx = null;
+	private String immBeforeRx = null;
+	private String immAfterRx = null;
+	private String putValue = null;
+
 	public DBCSignalConfig(DBCSignal signal, List<DBCEcu> newrxecus, DBCMessageConfig newMessage) {
 		//unfortunately the creation of the new rxEcu List has to be done before the constructor is called
 		//and not here because Java doesn't allow (even sideeffectless) statements before super() 
@@ -40,6 +46,46 @@ public class DBCSignalConfig extends DBCSignal {
 		}		
 	}
 
+	public String getBeforeRx() {
+		return beforeRx;
+	}
+
+	public void setBeforeRx(String beforeRx) {
+		this.beforeRx = beforeRx;
+	}
+
+	public String getAfterRx() {
+		return afterRx;
+	}
+
+	public void setAfterRx(String afterRx) {
+		this.afterRx = afterRx;
+	}
+
+	public String getImmBeforeRx() {
+		return immBeforeRx;
+	}
+
+	public void setImmBeforeRx(String immBeforeRx) {
+		this.immBeforeRx = immBeforeRx;
+	}
+
+	public String getImmAfterRx() {
+		return immAfterRx;
+	}
+
+	public void setImmAfterRx(String immAfterRx) {
+		this.immAfterRx = immAfterRx;
+	}
+
+	public String getPutValue() {
+		return putValue;
+	}
+
+	public void setPutValue(String putValue) {
+		this.putValue = putValue;
+	}
+	
 }
 
 
