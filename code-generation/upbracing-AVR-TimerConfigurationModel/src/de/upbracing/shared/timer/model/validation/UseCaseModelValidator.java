@@ -1,11 +1,13 @@
 package de.upbracing.shared.timer.model.validation;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
+import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
@@ -301,5 +303,60 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return false;
 		
 		return true;
+	}
+	
+	public ValidationResult validate() {
+
+		// Aggregate validation statuses
+		ArrayList<ValidationResult> errors = new ArrayList<ValidationResult>();
+		errors.add(getNameError());
+		errors.add(getTimerError());
+		errors.add(getModeError());
+		
+			// Period Errors:
+			if (model.getMode().equals(TimerOperationModes.CTC)
+					|| model.getMode().equals(TimerOperationModes.PWM_FAST)
+					|| model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)
+					|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+				
+				errors.add(getOcrAPeriodError());
+				
+				if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
+					errors.add(getOcrBPeriodError());
+					errors.add(getOcrCPeriodError());
+				}
+			}
+			
+			// Mode specific Errors:
+			if (model.getMode().equals(TimerOperationModes.CTC)) {
+				if (model.getCtcTop().equals(CTCTopValues.ICR))
+					errors.add(getIcrPeriodError());
+				errors.add(getCtcTopError());
+			}
+			else if (model.getMode().equals(TimerOperationModes.PWM_FAST)) {
+				if (model.getFastPWMTop().equals(PWMTopValues.ICR))
+					errors.add(getIcrPeriodError());
+				errors.add(getFastPWMTopError());
+			}
+			else if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
+				if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
+					errors.add(getIcrPeriodError());
+				errors.add(getPhaseCorrectPWMTopError());
+			}
+			else if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+				if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
+					errors.add(getIcrPeriodError());
+				errors.add(getPhaseAndFrequencyCorrectPWMTopError());
+			}
+		
+		// Return the worst ValidationResult
+		ValidationResult max = ValidationResult.OK;
+		for (ValidationResult r: errors) {
+			if (r.equals(ValidationResult.WARNING))
+				max = ValidationResult.WARNING;
+			else if (r.equals(ValidationResult.ERROR))
+				return ValidationResult.ERROR;
+		}
+		return max;
 	}
 }
