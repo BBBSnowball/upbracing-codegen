@@ -1,7 +1,6 @@
 package de.upbracing.code_generation.generators;
 
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
-import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 

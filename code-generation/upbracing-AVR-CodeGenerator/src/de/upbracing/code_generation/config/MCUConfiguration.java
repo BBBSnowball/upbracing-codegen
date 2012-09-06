@@ -29,7 +29,7 @@ public class MCUConfiguration {
 	private PinConfig pins = new PinConfig();
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
-	private ConfigurationModel timer;
+	private ConfigurationModel timer = new ConfigurationModel();
 
 	/**
 	 * Get the list of electronic control units (ECUs)
