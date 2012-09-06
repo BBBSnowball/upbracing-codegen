@@ -1,0 +1,15 @@
+<%
+if (m.getMode().equals(TimerOperationModes.CTC)) {
+%>
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelA(void);
+void timer_<%=m.getName()%>_setPeriod_ChannelA(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p);
+<% 
+if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { 
+%>
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelB(void);
+void timer_<%=m.getName()%>_setPeriod_ChannelB(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p);
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPeriod_ChannelC(void);
+void timer_<%=m.getName()%>_setPeriod_ChannelC(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p);<% } %>
+<%
+}
+%>

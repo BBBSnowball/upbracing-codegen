@@ -28,4 +28,10 @@ public class ConfigurationModelValidator extends AValidatorBase {
 		changes.firePropertyChange("frequencyError", null, null);
 		changes.firePropertyChange("frequencyErrorText", null, null);
 	}
+	
+	public ValidationResult validate() {
+		
+		// Aggregate validation statuses (for now: only frequency)
+		return getFrequencyError();
+	}
 }

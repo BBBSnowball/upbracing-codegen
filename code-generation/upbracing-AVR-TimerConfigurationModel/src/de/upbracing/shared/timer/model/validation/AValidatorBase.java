@@ -13,4 +13,6 @@ public abstract class AValidatorBase {
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		changes.removePropertyChangeListener(propertyName, listener);
 	}
+	
+	public abstract ValidationResult validate();
 }
