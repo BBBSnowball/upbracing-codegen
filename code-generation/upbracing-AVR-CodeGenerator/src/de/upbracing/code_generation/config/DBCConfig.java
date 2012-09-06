@@ -76,9 +76,9 @@ public class DBCConfig extends DBC {
 			
 	}
 	
-	public DBCMessage getMessage(String name) {
+	public DBCMessageConfig getMessage(String name) {
 		if (getMessages().containsKey(name))
-			return getMessages().get(name);
+			return (DBCMessageConfig)getMessages().get(name);
 		
 		throw new RuntimeException("Unknown Message \"" + name + "\""); //TODO replace with special exception
 
