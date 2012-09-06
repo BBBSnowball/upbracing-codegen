@@ -251,8 +251,8 @@ void WaitTask() {
 	Schedule();
 }
 
-void SignalTask(TaskRefType t) {
-	
+void SignalTask(TaskType t) {
+	os_ready_queue[t] = READY;
 }
 
 TASK(Task_Idle)

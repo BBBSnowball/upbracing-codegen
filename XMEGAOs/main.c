@@ -57,7 +57,7 @@ int main(void)
 	
 	sei();
 	USARTInit(51);
-	
+	j=0;
 	// Init Os
 	StartOS();
 
@@ -68,9 +68,9 @@ int main(void)
 TASK(Task_Update)
 {
 	// Update the port with the leds connected
-	OS_ENTER_CRITICAL();
+	//OS_ENTER_CRITICAL();
 	PORTA = j;
-	OS_EXIT_CRITICAL();
+	//OS_EXIT_CRITICAL();
 	
 	// Terminate this task
 	TerminateTask();
@@ -80,9 +80,9 @@ TASK(Task_Increment)
 {
 	// Increment global counter for leds
 	//j++;
-	OS_ENTER_CRITICAL();
+	//OS_ENTER_CRITICAL();
 	j++;
-	OS_EXIT_CRITICAL();
+	//OS_EXIT_CRITICAL();
 	// Terminate this task
 	TerminateTask();
 }
@@ -93,7 +93,7 @@ TASK(Task_Shift)
 	//OS_ENTER_CRITICAL();
 	//j = j >> 1;
 	//OS_EXIT_CRITICAL();
-	PORTA = 0x01;
+	//PORTA = 0x01;
 	USARTWriteChar('a');
 	//Terminate this task
 	TerminateTask();

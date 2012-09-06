@@ -16,7 +16,7 @@
 
 void _sem_wait(Semaphore* sem){
 	//Definition check needed
-	TaskRefType t;
+	TaskType t;
 	GetTaskID(&t);
 	
 	//while(name->queue_cap <= name->count{ 
@@ -213,7 +213,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 /*	@brief	Performs wait for queue semaphore*/
 void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 	//Definition pending
-	TaskRefType t;
+	TaskType t;
 	GetTaskID(&t);
 	
 	OS_ENTER_CRITICAL();

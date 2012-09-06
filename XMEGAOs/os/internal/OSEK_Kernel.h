@@ -131,6 +131,6 @@ StatusType Schedule(void);
 
 void WaitTask(void);
 
-void SignalTask(TaskRefType t);
+void SignalTask(TaskType t);
 
 #endif /* OSEK_SCHEDULER_H_ */

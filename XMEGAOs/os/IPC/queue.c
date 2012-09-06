@@ -188,7 +188,7 @@ bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t t
 	uint8_t n;
 	bool ret = _sem_continue_wait_n(sem, token);
 	
-	if (ret = TRUE)
+	if (ret == TRUE)
 	{
 		n = sem->queue[sem->queue_front].n;
 		if (n > (que->capacity - que->occupied))

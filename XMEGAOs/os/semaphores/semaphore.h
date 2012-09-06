@@ -142,7 +142,7 @@ typedef struct {
 
 typedef struct { 
 	int8_t count;
-	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
+	uint16_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
 	int8_t queue_front;
 	int8_t queue_end;
 	uint8_t queue_cap;
