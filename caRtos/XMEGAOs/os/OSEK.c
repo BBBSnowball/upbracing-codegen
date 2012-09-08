@@ -10,7 +10,7 @@
 #include "drivers/Timer.h"
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 
 #ifndef OS_CFG_CC
 #error No Conformance Class specified!

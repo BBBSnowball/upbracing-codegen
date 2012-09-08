@@ -45,7 +45,7 @@ uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 //************************************
 void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
-	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
+	//volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
 	volatile StackPointerType *sp = tcb->topOfStack;
 	
@@ -149,14 +149,13 @@ void Os_TimerIncrement(void)
 	os_counter++;
 	
 	/* Run Os Alarms */
-	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
+	for (uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
 		volatile Os_Alarm * base = os_alarms;
 		base += i;
 		base->tick++;
 		if (base->tick == base->ticksperbase)
 		{
-			base->tick = 0;
 			RunAlarm(base);
 		}
 	}
@@ -189,10 +188,10 @@ void Os_Schedule(void)
 	{
 		for (uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
-			if (os_ready_queue[i])
+			if (os_ready_queue[i] == READY)
 			{
 				newtcb = &(os_tcbs[i]);
-				os_ready_queue[i] = 0;
+				os_ready_queue[i] = RUNNING;
 				break;
 			}
 		}
@@ -225,10 +224,10 @@ StatusType Schedule(void)
 	{
 		for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
 		{
-			if (os_ready_queue[i])
+			if (os_ready_queue[i] == READY)
 			{
 				os_currentTcb = &os_tcbs[i];
-				os_ready_queue[i] = 0;
+				os_ready_queue[i] = RUNNING;
 				break;
 			}
 		}

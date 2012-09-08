@@ -85,7 +85,6 @@ void _sem_signal(Semaphore* sem);
 /* Asynchronous waiting */
 
 typedef uint8_t sem_token_t;
-const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
 
 /*	@brief	Start waiting on semaphore asynchronously
 
@@ -142,6 +141,8 @@ typedef struct {
 
 typedef struct Semaphore_n{ 
 	int8_t count;
+	//NOTE(Peer): No. "token_count" overruns at 255. Its "unsigned char", this is what "uint8_t" stands for ;)
+	//            Or did I get you wrong here?
 	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
 	int8_t queue_front;
 	int8_t queue_end;

@@ -30,7 +30,7 @@ void _queue_enqueue(Queue* sem, uint8_t data )
 	@param[in] *data	Pointer to data, to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* sem, uint8_t bytes, const uint8_t* data )
+void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)
@@ -66,7 +66,7 @@ uint8_t _queue_dequeue(Queue* sem)
 	@param[in] *data_out	Pointer to memory where data is to be stored
 	
 */
-void _queue_dequeue(Queue* sem, uint8_t bytes, uint8_t* data_out )
+void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)
@@ -188,7 +188,7 @@ bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t t
 	uint8_t n;
 	bool ret = _sem_continue_wait_n(sem, token);
 	
-	if (ret = TRUE)
+	if (ret == TRUE)
 	{
 		n = sem->queue[sem->queue_front].n;
 		if (n > (que->capacity - que->occupied))

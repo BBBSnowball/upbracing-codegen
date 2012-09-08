@@ -14,7 +14,7 @@
 StatusType TerminateTask(void) 
 {	
 	//QUESTION(Benjamin): Why does a local variable have to be volatile?
-	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
+	//volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
 	volatile StackPointerType *sp = os_currentTcb->topOfStack;
 
@@ -36,6 +36,7 @@ StatusType TerminateTask(void)
 	/* Reset return address to os_currentTcb->func */
 	//QUESTION(Benjamin): What "return address" do we set here? Is it the instruction pointer
 	//                    for the terminated task?
+	//ANSWER(Peer): Yes, that's what I meant :)
 	taskAddress = (uint16_t) os_currentTcb->func;
 	*sp = (StackPointerType) ( taskAddress & ( uint16_t ) 0x00ff );
 	sp--;
@@ -92,7 +93,7 @@ StatusType GetTaskState(TaskType taskId, TaskStateRefType state)
 StatusType ActivateTask(volatile TaskType taskId)
 {
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_ready_queue[taskId] = 1;
+	os_ready_queue[taskId] = READY;
 	os_tcbs[taskId].state = READY;
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
