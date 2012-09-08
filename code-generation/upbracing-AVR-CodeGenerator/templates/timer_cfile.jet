@@ -20,7 +20,6 @@ for (UseCaseModel m : config.getTimer().getConfigurations()) {
 UseCaseModelValidator validator = new UseCaseModelValidator(config.getTimer(), m);
 %>
 /* Timer Configuration: <%=m.getName()%> */
-
 <%@ include file="timer/normal_cfile.jetinclude" %>
 <%@ include file="timer/ctc_cfile.jetinclude" %>
 <%@ include file="timer/fastpwm_cfile.jetinclude" %>
@@ -51,6 +50,7 @@ void timer_<%=m.getName()%>_stop(void) {
 void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> t) {
 	TCNT<%=m.getTimer().ordinal()%> = t;
 }
+
 <%
 }
 %>

@@ -18,7 +18,6 @@
 for (UseCaseModel m : config.getTimer().getConfigurations()) {
 %>
 /* Timer Configuration: <%=m.getName()%> */
-
 // Init function (Mode: <%=m.getMode()%>)
 void timer_<%=m.getName()%>_init(void);
 <%@ include file="timer/ctc_header.jetinclude" %>
@@ -26,8 +25,8 @@ void timer_<%=m.getName()%>_start(void);
 void timer_<%=m.getName()%>_stop(void);
 <%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getCounterValue(void);
 void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> t);
+
 <%
 }
 %>
-
 #endif /* TIMER_H_ */
