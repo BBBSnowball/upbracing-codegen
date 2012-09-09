@@ -12,7 +12,7 @@ import org.junit.Test;
 public class TestParsers {
 
 	@Test
-	public void testParseAction() {
+	public void testParseStateActions() {
 		assertListEquals(
 				FSMParsers.parseStateActions("EXIT / blub(a,b/2)"),
 				
@@ -58,6 +58,46 @@ public class TestParsers {
 				
 				new Action(ActionType.EXIT, "blub(a,b/2); \\\n blork(42); {\nabc(\\x);\n}"),
 				new Action(ActionType.ENTER, "b"));
+	}
+
+	@Test
+	public void testParseTransitionInfo() {
+		assertEquals(
+				new TransitionInfo("event", "a>0", "blub(a,b/2)"),
+				FSMParsers.parseTransitionInfo("event [a>0] / blub(a,b/2)"));
+
+		assertEquals(
+				new TransitionInfo("event", "a>0", null),
+				FSMParsers.parseTransitionInfo("event [a>0]"));
+		
+		assertEquals(
+				new TransitionInfo("event", null, "blub(a,b/2)"),
+				FSMParsers.parseTransitionInfo("event / blub(a,b/2)"));
+
+		assertEquals(
+				new TransitionInfo("event", null, null),
+				FSMParsers.parseTransitionInfo("event"));
+
+		assertEquals(
+				new TransitionInfo(null, "a>0", null),
+				FSMParsers.parseTransitionInfo("[a>0]"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub(a,b/2)"),
+				FSMParsers.parseTransitionInfo("/ blub(a,b/2)"));
+
+		assertEquals(
+				new TransitionInfo(null, null, null),
+				FSMParsers.parseTransitionInfo(""));
+		
+
+		assertEquals(
+				new TransitionInfo("event", "a[i]>0", null),
+				FSMParsers.parseTransitionInfo("event [a[i]>0]"));
+
+		assertEquals(
+				new TransitionInfo(null, null, "blub(a,\nb/2)"),
+				FSMParsers.parseTransitionInfo("/ blub(a,\nb/2)"));
 	}
 	
 	private static void assertListEquals(Collection<?> expected, Collection<?> actual) {

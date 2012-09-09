@@ -7,10 +7,7 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.functors.Map;
-import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.functors.Map3;
-import org.codehaus.jparsec.functors.Map4;
-import org.codehaus.jparsec.functors.Pair;
 
 public class FSMParsers {
 	public static List<Action> parseStateActions(String text) {
@@ -28,7 +25,7 @@ public class FSMParsers {
 		Parser<List<Action>> action_parser = Parsers.sequence(
 				withWhitespace(action_name),
 				withWhitespace(Scanners.string("/")),
-				getActionParser(),
+				getActionParser("\n"),
 				new Map3<ActionType, Void, String, Action>() {
 					@Override
 					public Action map(ActionType a, Void b, String c) {
@@ -40,11 +37,32 @@ public class FSMParsers {
 				.parse(text + "\n");
 	}
 	
-	private static Parser<String> getActionParser() {
+	public static TransitionInfo parseTransitionInfo(String text) {
+		Parser<String> event_name = Scanners.IDENTIFIER.source();
+		Parser<String> condition = getActionParser("]").between(Scanners.string("["), Scanners.string("]"));
+		Parser<TransitionInfo> parser = Parsers.sequence(
+				withWhitespace(event_name.optional()),
+				withWhitespace(condition.optional()),
+				Parsers.sequence(
+						withWhitespace(Scanners.string("/")),
+						getActionParser(""))
+					.optional(),
+				new Map3<String, String, String, TransitionInfo>() {
+					@Override
+					public TransitionInfo map(String event_name, String condition, String action) {
+						return new TransitionInfo(event_name, condition, action);
+					}
+				});
+
+		return Parsers.sequence(Scanners.WHITESPACES.optional(), parser)
+				.parse(text);
+	}
+	
+	private static Parser<String> getActionParser(String notAllowedChars) {
 		return textWithMatchingParens(
 				Parsers.or(
 						Scanners.string("\\\n"),
-						Scanners.notAmong("\n([{"))
+						Scanners.notAmong("([{" + notAllowedChars))
 					.source());
 	}
 	
