@@ -29,7 +29,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 
-import de.upbracing.codegenerator.timer.CodeGenerator;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 
@@ -150,6 +149,7 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		// Generate Code Button
 		Button generateCodeButton = new Button(arg0, SWT.BORDER);
 		generateCodeButton.setText("Generate Code");
+		generateCodeButton.setEnabled(false);
 		d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
 		generateCodeButton.setLayoutData(d);
@@ -175,8 +175,8 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 
 			@Override
 			public void handleEvent(Event arg0) {
-				CodeGenerator gen = new CodeGenerator(model.getModel());
-				gen.generateCode("/Users/peer/timertest", "/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/code-generation/upbracing-AVR-TimerConfigurationEditor/templates/");
+//				CodeGenerator gen = new CodeGenerator(model.getModel());
+//				gen.generateCode("/Users/peer/timertest", "/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/code-generation/upbracing-AVR-TimerConfigurationEditor/templates/");
 			}});
 
 		this.finishedLoading = true;

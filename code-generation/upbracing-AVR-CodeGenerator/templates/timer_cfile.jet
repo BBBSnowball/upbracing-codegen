@@ -1,0 +1,56 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="TimerCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.* de.upbracing.shared.timer.model.validation.*" %>
+/*
+ * Timer.c
+ *
+ * This file implements the features of the Timers.
+ * 
+ * NOTE: This file was generated and should not be altered manually!
+ */
+
+#include <avr/io.h>
+#include "timer.h"
+
+<%
+for (UseCaseModel m : config.getTimer().getConfigurations()) {
+
+UseCaseModelValidator validator = new UseCaseModelValidator(config.getTimer(), m);
+%>
+/* Timer Configuration: <%=m.getName()%> */
+<%@ include file="timer/normal_cfile.jetinclude" %>
+<%@ include file="timer/ctc_cfile.jetinclude" %>
+<%@ include file="timer/fastpwm_cfile.jetinclude" %>
+<%@ include file="timer/pcpwm_cfile.jetinclude" %>
+<%@ include file="timer/pfcpwm_cfile.jetinclude" %>
+
+// Starts the timer.
+void timer_<%=m.getName()%>_start(void) {
+	// Start the Timer
+    // (nothing to setup except for prescaling),
+    // Prescale factor is <%=m.getPrescale()%>
+    TCCR<%=m.getTimer().ordinal()%><%=TimerGeneratorHelper.getPrescaleSettingsRegisterSuffix(m.getTimer().ordinal())%> |= <%=TimerGeneratorHelper.getPrescaleCode(m.getTimer().ordinal(), m.getPrescale().getNumeric())%>;
+}
+
+// Stops the timer. Counter value is kept unchanged.
+void timer_<%=m.getName()%>_stop(void) {
+	// Stop the Timer
+	// (clear all prescale flags at once)
+	TCCR<%=m.getTimer().ordinal()%><%=TimerGeneratorHelper.getPrescaleSettingsRegisterSuffix(m.getTimer().ordinal())%> &= ~((1<<CS<%=m.getTimer().ordinal()%>2) | (1<<CS<%=m.getTimer().ordinal()%>1) | (1<<CS<%=m.getTimer().ordinal()%>0));
+}
+
+// Gets the current timer value.
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getCounterValue(void) {
+	return TCNT<%=m.getTimer().ordinal()%>;
+}
+
+// Sets the timer to a new value.
+void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> t) {
+	TCNT<%=m.getTimer().ordinal()%> = t;
+}
+
+<%
+}
+%>

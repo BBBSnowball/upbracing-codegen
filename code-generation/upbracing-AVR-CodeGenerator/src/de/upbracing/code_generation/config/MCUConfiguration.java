@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.config;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.simpleframework.xml.Default;
 import de.upbracing.dbc.DBC;
 import de.upbracing.eculist.ECUDefinition;
 import de.upbracing.eculist.EEPROMValue;
+import de.upbracing.shared.timer.model.ConfigurationModel;
 
 /**
  * main configuration class
@@ -27,6 +29,7 @@ public class MCUConfiguration {
 	private PinConfig pins = new PinConfig();
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
+	private ConfigurationModel timer;
 
 	/**
 	 * Get the list of electronic control units (ECUs)
@@ -137,6 +140,15 @@ public class MCUConfiguration {
 	public RTOSConfig getRtos() {
 		return rtos;
 	}
+	
+	/**
+	 * Get timer config
+	 * 
+	 * @return the config object
+	 */
+	public ConfigurationModel getTimer() {
+		return timer;
+	}
 
 	/**
 	 * Select the ECU (electronic control unit) to generate code for
@@ -177,5 +189,15 @@ public class MCUConfiguration {
 			}
 		}
 		throw new IllegalArgumentException("No such ECU could be found.");
+	}
+	
+	/**
+	 * Loads the timer configuration for this MCU
+	 * 
+	 * @param path to configuration file
+	 * @throws FileNotFoundException
+	 */
+	public void loadTimerConfiguration(String path) throws FileNotFoundException {
+		timer = ConfigurationModel.Load(path);
 	}
 }

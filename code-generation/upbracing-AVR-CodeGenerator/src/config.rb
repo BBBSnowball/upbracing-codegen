@@ -12,6 +12,8 @@ $config.can = parse_dbc("../../../can_final.dbc")
 
 $config.selectEcu("Cockpit")
 
+# Uncomment and specify path for Timer Configuration file
+$config.loadTimerConfiguration("/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/runtime-EclipseApplication/Test/new_configuration.tcxml")
 
 $config.rtos.clock = 8000000
 $config.rtos.tick_frequency = 250

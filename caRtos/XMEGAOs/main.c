@@ -7,7 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "OSEK.h"
 
 volatile uint8_t j = 10;
@@ -68,9 +68,9 @@ int main(void)
 TASK(Task_Update)
 {
 	// Update the port with the leds connected
-	OS_ENTER_CRITICAL();
+	//OS_ENTER_CRITICAL();
 	PORTA = j;
-	OS_EXIT_CRITICAL();
+	//OS_EXIT_CRITICAL();
 	
 	// Terminate this task
 	TerminateTask();
@@ -80,9 +80,9 @@ TASK(Task_Increment)
 {
 	// Increment global counter for leds
 	//j++;
-	OS_ENTER_CRITICAL();
+	//OS_ENTER_CRITICAL();
 	j++;
-	OS_EXIT_CRITICAL();
+	//OS_EXIT_CRITICAL();
 	// Terminate this task
 	TerminateTask();
 }
@@ -91,10 +91,10 @@ TASK(Task_Shift)
 {
 	//Left shifts global counter for leds
 	//OS_ENTER_CRITICAL();
-	//j = j >> 1;
+	j = j << 1;
 	//OS_EXIT_CRITICAL();
-	PORTA = 0x01;
-	USARTWriteChar('a');
+	//PORTA = 0x01;
+	//USARTWriteChar('a');
 	//Terminate this task
 	TerminateTask();
 }

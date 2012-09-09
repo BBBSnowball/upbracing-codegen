@@ -1,0 +1,91 @@
+<%
+if (m.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+%>
+// Initializes the timer for phase and frequency correct PWM mode and sets up interrupts, if necessary.
+void timer_<%=m.getName()%>_init(void) {
+	// First, reset all values to zero
+	// (this will also make the timer stop)
+	TCCR<%=m.getTimer().ordinal()%>A = 0x00;<%
+	if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { %>
+	TCCR<%=m.getTimer().ordinal()%>B = 0x00;<%
+	} %>
+    TIMSK<%=m.getTimer().ordinal()%> = 0x00;
+    
+    <% 
+	/* TOP VALUES */
+	// Check, whether ICRn needs to be used
+    if (m.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR)) { 
+    %>
+	// Input Capture Register (Top) -> <%=m.getIcrPeriod()%>s
+	ICR<%=m.getTimer().ordinal()%> = <%=validator.calculateRegisterValue(m.getIcrPeriod())%>;<% 
+	} %>
+	// Output Compare Register A <% if (m.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA)) { %>(Top)<% } %> -> <%=m.getOcrAPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>A = <%=validator.calculateRegisterValue(m.getOcrAPeriod())%>;<%
+    if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
+	%>
+	// Output Compare Register B -> <%=m.getOcrBPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>B = <%=validator.calculateRegisterValue(m.getOcrBPeriod())%>;
+	// Output Compare Register C -> <%=m.getOcrCPeriod()%>s
+	OCR<%=m.getTimer().ordinal()%>C = <%=validator.calculateRegisterValue(m.getOcrCPeriod())%>;<% 
+	} %>
+	<% 
+	/* PIN MODES */
+	if (!m.getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.NORMAL)) {%>
+	// Output Pin Mode Channel A: <%=m.getDualSlopePWMPinModeA()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getPWMOutputModeCode(m.getTimer().ordinal(), m.getDualSlopePWMPinModeA(), "A")%>;<% }
+    if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
+	if (!m.getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.NORMAL)) { %>
+	// Output Pin Mode Channel B: <%=m.getDualSlopePWMPinModeB()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getPWMOutputModeCode(m.getTimer().ordinal(), m.getDualSlopePWMPinModeB(), "B")%>;<%
+	} if (!m.getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.NORMAL)) { %>
+	// Output Pin Mode Channel C: <%=m.getDualSlopePWMPinModeC()%>
+	TCCR<%=m.getTimer().ordinal()%>A |= <%=TimerGeneratorHelper.getPWMOutputModeCode(m.getTimer().ordinal(), m.getDualSlopePWMPinModeC(), "C")%>;<%
+	} } %>
+	
+	// Set timer mode to PhaseAndFrequencyCorrect PWM
+	// (Top Value: <%=m.getPhaseAndFrequencyCorrectPWMTop()%>)<%
+	if (m.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA)) { %>
+	TCCR<%=m.getTimer().ordinal()%>A |= (1<<WGM<%=m.getTimer().ordinal()%>0);
+	TCCR<%=m.getTimer().ordinal()%>B |= (1<<WGM<%=m.getTimer().ordinal()%>3);<%
+	}
+	else if (m.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR)) { %>
+	TCCR<%=m.getTimer().ordinal()%>B |= (1<<WGM<%=m.getTimer().ordinal()%>3);<%
+	}
+	%>
+}
+
+// Returns the PWM duty-cycle value of Channel A.
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPWM_ChannelA(void) {
+	return OCR<%=m.getTimer().ordinal()%>A;
+}
+
+// Sets the PWM duty-cycle value of Channel A to a new value.
+void timer_<%=m.getName()%>_setPWM_ChannelA(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>A = p;
+}
+<% 
+if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { 
+%>
+
+// Returns the PWM duty-cycle value of Channel B
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPWM_ChannelB(void) {
+	return OCR<%=m.getTimer().ordinal()%>B;
+}
+
+// Sets the PWM duty-cycle value of Channel B to a new value.
+void timer_<%=m.getName()%>_setPWM_ChannelB(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>B = p;
+}
+
+// Returns the PWM duty-cycle value of Channel C
+<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> timer_<%=m.getName()%>_getPWM_ChannelC(void) {
+	return OCR<%=m.getTimer().ordinal()%>C;
+}
+
+// Sets the PWM duty-cycle value of Channel C to a new value.
+void timer_<%=m.getName()%>_setPWM_ChannelC(<%=TimerGeneratorHelper.getDataType(m.getTimer().ordinal())%> p) {
+	OCR<%=m.getTimer().ordinal()%>C = p;
+}<% } %>
+<%
+}
+%>

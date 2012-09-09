@@ -7,7 +7,7 @@
 #include "semaphore.h"
 #include "queue.h"
 #include "OSEK.h"
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "OSEK_Kernel.h"
 
 
@@ -15,9 +15,11 @@
 //                program will crash. You have to use a pointer because only then can you change the variable.
 
 
+const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
+
 void _sem_wait(Semaphore* sem){
 	//Definition check needed
-	TaskRefType t;
+	TaskType t;
 	GetTaskID(&t);
 	
 	//while(name->queue_cap <= name->count{ 
@@ -202,9 +204,9 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 
 /*	Semaphore synchronization for queues*/
 /*	@brief	Performs wait for queue semaphore*/
-void _sem_wait_n(SEMAPHORE_n* sem , uint8_t n){
+void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 	//Definition pending
-	TaskRefType t;
+	TaskType t;
 	GetTaskID(&t);
 	
 	OS_ENTER_CRITICAL();
@@ -223,7 +225,8 @@ void _sem_wait_n(SEMAPHORE_n* sem , uint8_t n){
 		{
 			sem->queue_end++;
 		}
-		sem->queue[sem->queue_end] = {t, n};
+		sem->queue[sem->queue_end].pid = t;
+		sem->queue[sem->queue_end].n = n;
 	}
 	OS_EXIT_CRITICAL();
 }
@@ -254,11 +257,11 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n){
 	
 }
 
-sem_token_t _sem_start_wait_n(SEMAPHORE_n* sem, uint8_t n){
+sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 	//Definition pending
 	uint8_t i,tok;
 	tok = sem->token_count++;
-	if (sem->token_count == 0){ sem->token_count = 65280;	}
+	if (sem->token_count == 0){ sem->token_count = 255;	}
 	
 	OS_ENTER_CRITICAL();
 	sem->count--;
@@ -288,14 +291,14 @@ bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token){
 		return TRUE;
 	}
 	
-	if (sem->queue[sem->queue_front] == token)
+	if (sem->queue[sem->queue_front].pid == token)
 	{
 		return TRUE;
 	}
 	return FALSE;
 }
 
-void _sem_stop_wait_n(SEMAPHORE_n* sem, sem_token_t token){
+void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token){
 	//Definition pending
 	uint8_t i,j,tok;
 	tok = token;

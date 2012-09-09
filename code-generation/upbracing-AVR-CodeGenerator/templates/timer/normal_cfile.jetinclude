@@ -1,0 +1,26 @@
+<%
+if (m.getMode().equals(TimerOperationModes.OVERFLOW)) {
+%>
+// Initializes the timer for normal mode and sets up interrupts, if necessary.
+void timer_<%=m.getName()%>_init(void) {
+	// First, reset all values to zero
+	// (this will also make the timer stop)
+	TCCR<%=m.getTimer().ordinal()%>A = 0x00;<%
+	if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) { %>
+	TCCR<%=m.getTimer().ordinal()%>B = 0x00;<%
+	} %>
+    TIMSK<%=m.getTimer().ordinal()%> = 0x00;
+    
+    <%
+    // Overflow Interrupt?
+    if (m.getOverflowInterrupt()) {
+    %>
+    // Enable overflow interrupt
+	TIMSK<%=m.getTimer().ordinal()%> |= (1<<TOIE<%=m.getTimer().ordinal()%>);
+    <%
+    }
+    %>
+}
+<%
+}
+%>

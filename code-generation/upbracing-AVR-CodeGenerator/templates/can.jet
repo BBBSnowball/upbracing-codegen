@@ -145,7 +145,7 @@ for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 <%
 		}
 		if (mobs.containsKey(msgconfig.getRxMob())) mobs.get(msgconfig.getRxMob()).getMessages().add(msgconfig);
-		else mobs.put(msgconfig.getRxMob(), new Mob(msgconfig));
+		else mobs.put(msgconfig.getRxMob(), new Mob(msgconfig, false));
 	} else {	
 %>
 	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive
@@ -157,7 +157,7 @@ for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 <%
 		}
 		if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getMessages().add(msgconfig);
-		else mobs.put(msgconfig.getName(), new Mob(msgconfig));	
+		else mobs.put(msgconfig.getName(), new Mob(msgconfig, false));	
 	}
 	mobNumber++;
 }
@@ -173,7 +173,7 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 <%
 			}
 			if (mobs.containsKey(msgconfig.getTxMob())) mobs.get(msgconfig.getTxMob()).getMessages().add(msgconfig);
-			else mobs.put(msgconfig.getTxMob(), new Mob(msgconfig));
+			else mobs.put(msgconfig.getTxMob(), new Mob(msgconfig, true));
 		} else {	
 %>
 	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send
@@ -185,7 +185,7 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 <%
 			}
 			if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getMessages().add(msgconfig);
-			else mobs.put(msgconfig.getName(), new Mob(msgconfig));	
+			else mobs.put(msgconfig.getName(), new Mob(msgconfig, true));	
 		}
 		mobNumber++;
 	}
@@ -200,11 +200,6 @@ t.finish(" ");
 #endif	// not defined DEFS_MAIN_FILE
 
 #include "can_at90.h"
-
-<%=warnings.print("test Warning!!!")%>
-
-
-
 
 
 <% // TODO include the global variable accessors (and initialisors of the glob vars...)%>
@@ -239,58 +234,69 @@ ISR(SIG_CAN_INTERRUPT1) {
 	if (0) {	// dummy clause to make code generation easier
 <%
 for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
+	
+	if( entry.getValue().isTx() ) continue;
+	
+	//DBCMessageConfig msgconfig;
+	String mobdesc;
 	if (entry.getValue().getMessages().size() == 1) {
-		//Only one Message in MOB
 		DBCMessageConfig msgconfig = entry.getValue().getMessages().get(0);
-		
-%>
-	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// CAN ID: <%=messageId(msgconfig, true)%><%
-	if (msgconfig.getAlias() != null) {%>, alias <%=msgconfig.getAlias()%><%}%>	
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);
-		handle_<%=entry.getKey().toLowerCase()%>();
-		// only necessary, if we change CANPAGE in our message handler
-		// But if we forget to do that, the interrupt handler will be called forever.
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);	
-<%
-	
+		mobdesc = "CAN ID: " + messageId(msgconfig, true);
+		if (msgconfig.getAlias() != null) mobdesc += ", alias: " + msgconfig.getAlias();
 	} else {
-		//Multiple Message in MOB
-	
-%>
-	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// shared mob
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);
-		if (0) {	// dummy clause to make code generation easier
-<%
-		
-		for (DBCMessageConfig msgconfig : entry.getValue().getMessages()) {
-%>
-		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
-		
-		
-
-
-
-		<% } %>
-
-
-		}
-		// only necessary, if we change CANPAGE in our message handler
-		// But if we forget to do that, the interrupt handler will be called forever.
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);	
-<%
-
-	
+		mobdesc = "shared mob";
 	}
 	
+	
+%>
+	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// <%= mobdesc %>
+		CANPAGE = (MOB_<%=entry.getKey()%><<4);
+<%
+	if (entry.getValue().getMessages().size() == 1) {
+		//Only one Message in MOB
+			readMessageCode(stringBuffer, warnings, globVars, entry.getValue().getMessages().get(0), dbcEcu, "\t\t");
+		} else {
+		//Multiple Message in MOB
 
-
-
+%>
+		if (0) {	// dummy clause to make code generation easier
+<%
+		for (DBCMessageConfig msgconfig : entry.getValue().getMessages()) {
+		
+			String ifstatement = "(1";
+			
+			if ((entry.getValue().getMask()[3] & 1) != 1) {
+				// mcu doen't check this bit
+				if (msgconfig.isExtended())
+					ifstatement += " && (CANCDMOB & (1<<IDE))";
+				else
+					ifstatement += " && !(CANCDMOB & (1<<IDE))";
+			}
+			int[] significant_diffs = entry.getValue().getSignificantDiffs();
+			int[] id = msgconfig.canIdForMob();
+			for (int i=0; i<4; i++) {
+				if (significant_diffs[i] != 0)
+					ifstatement += " && CANIDT" + (i+1) + " == " + id[i];
+			}
+				
+			ifstatement += ")";
+		
+%>
+		} else if <%= ifstatement %> {	// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
+<%
+			readMessageCode(stringBuffer, warnings, globVars, msgconfig, dbcEcu, "\t\t\t");			
+		}
+%>
+		}
+<%
+	}
+%>
+		// only necessary, if we change CANPAGE in our message handler
+		// But if we forget to do that, the interrupt handler will be called forever.
+		CANPAGE = (MOB_<%=entry.getKey()%><<4);
+<%
 }
 %>
-	
-	<%//TODO Multiple Messages per MOB, Signals, Code Replacement%>
-
-
 	} else {
 		// well, this shouldn't happen
 		// do nothing...
@@ -312,6 +318,8 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 
+	if (msgconfig.isNoSendMessage()) continue;
+
 	String mobName = msgconfig.getName();
 	if (msgconfig.getTxMob() != null) mobName = msgconfig.getTxMob();
 	if (msgconfig.isUsingGeneralTransmitter()) mobName = "GENERAL_MESSAGE_TRANSMITTER";
@@ -331,11 +339,12 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig
 	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
 
 	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0); <%//TODO How is this generated?%>
+	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 
 <%
 		for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
 			DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
+			
 			globVars.add(signal.getName(), signal.getCType());
 			
 %>
@@ -374,6 +383,173 @@ inline static void send_<%=msgconfig.getName()%>_nowait(boolean <%=msgconfig.get
 String messageId(DBCMessage message, boolean suffix) {
 	return "0x" + Integer.toHexString(message.getId()) + ((suffix && message.isExtended()) ? "x" : "");
 }
+
+void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariableConfig globVars, DBCMessageConfig msg, DBCEcu currentEcu, String indent) {
+
+	printCode(stringBuffer, msg.getBeforeRx(), indent);
+	for(DBCSignal signal : msg.getSignalOrder()) {
+		if (signal.getRxEcus().contains(currentEcu)) 
+			printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeRx(), indent);
+	}
+	
+	if (!printCode(stringBuffer, msg.getRxHandler(), indent)) {
+		int addr = 0;
+		
+		for(DBCSignal sig : msg.getSignalOrder()) {
+			DBCSignalConfig signal = (DBCSignalConfig)sig;
+			if (signal.getRxEcus().contains(currentEcu)) {
+					
+				globVars.add(signal.getName(), signal.getCType());
+			
+				int start = signal.getStart();
+				int len = signal.getLength();
+				String name = signal.getName();
+				
+				//TODO The pdf file says that '1' would mean big endian, but
+				//     CANdb++ shows that as "intel" - which is little endian.
+				//     Our programs agree with that so the RapidPro seems to
+				//     use '1' for little endian as well.
+				boolean big_endian = !signal.getEndianness().equals("1");
+
+				//TODO by how much must we change the start index?
+				if (big_endian)
+					// this formula is for the values shown in CANdb++
+					// start -= len - 8;
+					// this formula is for the values that are saved in the dbc file
+					start -= 7;
+				
+				if (start%8 != 0 || len%8 != 0) {
+					//TODO support that
+					warnings.print("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.");
+					continue;
+				}
+				if (addr > start) {
+					//TODO support overlapping signals (only if CANdb++ support them, of course)
+					warnings.print("Cannot read overlapping signals. Ignoring signal " + name + ".");
+					continue;
+				}
+					
+				if (addr < start) {
+%>
+<%=indent%>// skipping <%= ((start-addr)/8) %> byte(s)
+<%
+					while (addr < start) {
+%>
+<%=indent%>CANMSG;
+<%
+						addr += 8;
+					}
+				}
+		
+				//TODO support other types
+				//TODO or should we use get_signal_int_type? what happens, if we use
+				//     an enum in a union - the size of the enum can be chosen by the
+				//     compiler
+				String type = signal.getCType();		
+%>
+<%=indent%>// reading signal <%= signal.getName() %>
+<%=indent%>{
+<%
+				printCode(stringBuffer, signal.getImmBeforeRx(), indent + "\t");
+
+
+				if (len == 8) {
+%>
+<%=indent%>	<%= type %> value = <%= (type.equals("uint8_t")) ? "" : "(" + type + ")" %> CANMSG;
+<% 
+					//echo "$indent\t$type value = ";
+					//if ($type != "uint8_t")
+					//	echo "($type) ";
+					//echo "CANMSG;\n";
+					addr += 8;
+				} else {
+%>
+<%=indent%>	union {
+<%=indent%>		<%= type %> value;
+<%=indent%>		struct {
+<%
+					for (int i=0; i<len/8; i++) {
+%>
+<%=indent%>			uint8_t byte<%= i %>;
+<%
+					}
+%>					
+<%=indent%>		} bytes;
+<%=indent%>	} x;
+<%					
+					int bytes = len/8;
+					if (big_endian) {	//TODO which one is big endian?
+						// big endian
+						for (int i=0; i<bytes; i++) {
+%>
+<%=indent%>	x.bytes.byte<%= (bytes-i-1) %> = CANMSG;
+<%
+							addr += 8;
+						}
+					} else {
+						// little endian
+						for (int i=0; i<bytes; i++) {
+%>
+<%=indent%>	x.bytes.byte<%= i %> = CANMSG;
+<%
+							addr += 8;
+						}
+					}
+					
+					if (signal.getFactor() != 1 || signal.getOffset() != 0) //TODO: implement factor and offset
+						warnings.print("This signal uses factor or offset, which is not supported yet.");
+%>
+<%=indent%>	<%= type %> value = x.value;
+<%
+				}	// len != 8
+				
+				if (! printCode(stringBuffer, signal.getPutValue(), indent + "\t")) {
+					//Not sure if we still need places and variables now that we use the os global variables...
+					/*String var = "";
+					if (signal.getPlace() != null && signal.getPlace().length() > 0)
+						var = signal.getPlace();
+					else if (signal.getVariable() != null && signal.getVariable().length() > 0)
+						var = signal.getVariable();
+					else
+						var = signal.getName();
+						
+					var = value;  */
+%>
+<%=indent%>	<%= globVars.get(signal.getName()).getSetterName() %>(value);
+<%
+				}
+				printCode(stringBuffer, signal.getImmAfterRx(), indent + "\t");
+%>
+<%=indent%>}
+<%
+
+			}
+		}
+		
+		if (addr > msg.getLength()*8)
+			warnings.print("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".");
+		
+	}
+	
+	for(DBCSignal signal : msg.getSignalOrder()) {
+		if (signal.getRxEcus().contains(currentEcu)) 
+			printCode(stringBuffer, ((DBCSignalConfig)signal).getAfterRx(), indent);
+	}
+	printCode(stringBuffer, msg.getAfterRx(), indent);
+	
+}
+
+boolean printCode(StringBuffer stringBuffer, String code, String indent) {
+
+	if (code == null || indent == null) return false;
+	
+	for(String line : code.split("\n")) {
+		stringBuffer.append("\n" + indent + line);
+	}
+	
+	return code.length() > 0;
+}
+
 
 @SuppressWarnings("unused")
 private String dummy(StringBuffer stringBuffer) {%>
