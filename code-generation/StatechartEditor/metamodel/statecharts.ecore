@@ -14,7 +14,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="textboxes" upperBound="-1"
         eType="#//TextArea" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="contains" lowerBound="1"
-        eType="#//OrthogonalState"/>
+        eType="#//SuperState"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="State" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//State">
@@ -71,7 +71,7 @@
       </eAnnotations>
     </eStructuralFeatures>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OrthogonalState" eSuperTypes="#//State">
+  <eClassifiers xsi:type="ecore:EClass" name="SuperState" eSuperTypes="#//State">
     <eAnnotations source="gmf.node">
       <details key="label" value="name"/>
       <details key="label.icon" value="false"/>
@@ -82,7 +82,7 @@
       <details key="border.color" value="0,0,0"/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="2"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"
         eType="#//Region" containment="true">
       <eAnnotations source="gmf.compartment">
         <details key="collapsible" value="true"/>

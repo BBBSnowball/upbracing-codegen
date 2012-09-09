@@ -6,7 +6,7 @@ class StateMachine {
   val Transition[*] transitions;
   val State[*] states;
   val TextArea[*] textboxes;
-  ref OrthogonalState[1] contains;
+  ref SuperState[1] contains;
 }
 
 abstract class State {
@@ -37,11 +37,11 @@ class NormalState extends State {
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 20 20 0", color="255,240,245", border.color="0,0,0")
-class OrthogonalState extends State {
+class SuperState extends State {
   attr String name;
 
   @gmf.compartment(collapsible="true")
-  val Region[0..2] regions;
+  val Region[*] regions;
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 10 10 0", border.color="0,0,0")
