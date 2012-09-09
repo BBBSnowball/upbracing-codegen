@@ -75,7 +75,7 @@
     <eAnnotations source="gmf.node">
       <details key="label" value="name"/>
       <details key="label.icon" value="false"/>
-      <details key="figure" value="polygon"/>
+      <details key="figure" value="rectangle"/>
       <details key="polygon.x" value="0 40 40 0 0"/>
       <details key="polygon.y" value="0 0 20 20 0"/>
       <details key="color" value="255,240,245"/>
@@ -93,7 +93,7 @@
     <eAnnotations source="gmf.node">
       <details key="label" value="name"/>
       <details key="label.icon" value="false"/>
-      <details key="figure" value="polygon"/>
+      <details key="figure" value="rectangle"/>
       <details key="polygon.x" value="0 40 40 0 0"/>
       <details key="polygon.y" value="0 0 10 10 0"/>
       <details key="border.color" value="0,0,0"/>

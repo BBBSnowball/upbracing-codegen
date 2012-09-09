@@ -36,7 +36,7 @@ class NormalState extends State {
   attr String[*] duringAction;
 }
 
-@gmf.node(label="name", label.icon="false", figure="polygon", polygon.x="0 40 40 0 0", polygon.y="0 0 20 20 0", color="255,240,245", border.color="0,0,0")
+@gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 20 20 0", color="255,240,245", border.color="0,0,0")
 class OrthogonalState extends State {
   attr String name;
 
@@ -44,7 +44,7 @@ class OrthogonalState extends State {
   val Region[0..2] regions;
 }
 
-@gmf.node(label="name", label.icon="false", figure="polygon", polygon.x="0 40 40 0 0", polygon.y="0 0 10 10 0", border.color="0,0,0")
+@gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 10 10 0", border.color="0,0,0")
 class Region {
   attr String name;
 
