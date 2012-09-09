@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText=""
+    modelDirectory="/statemachine/src" modelPluginID="statemachine" modelName="Statecharts"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="6.0" copyrightFields="false">
+  <foreignModel>statecharts.emf</foreignModel>
+  <genPackages prefix="Statecharts" disposableProviderFactory="true" ecorePackage="statecharts.ecore#/">
+    <genClasses ecoreClass="statecharts.ecore#//StateMachine">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statecharts.ecore#//StateMachine/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statecharts.ecore#//StateMachine/states"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statecharts.ecore#//StateMachine/textboxes"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statecharts.ecore#//StateMachine/contains"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="statecharts.ecore#//State"/>
+    <genClasses ecoreClass="statecharts.ecore#//InitialState">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//InitialState/name"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//FinalState">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//FinalState/name"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//NormalState">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//NormalState/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//NormalState/entryAction"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//NormalState/exitAction"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//NormalState/duringAction"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//OrthogonalState">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//OrthogonalState/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statecharts.ecore#//OrthogonalState/regions"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//Region">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//Region/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statecharts.ecore#//Region/containedstates"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//Transition">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statecharts.ecore#//Transition/source"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statecharts.ecore#//Transition/destination"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//Transition/trigger"/>
+    </genClasses>
+    <genClasses ecoreClass="statecharts.ecore#//TextArea">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//TextArea/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//TextArea/include"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//TextArea/function"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statecharts.ecore#//TextArea/variable"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

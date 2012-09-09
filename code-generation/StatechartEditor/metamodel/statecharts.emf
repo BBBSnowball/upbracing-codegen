@@ -1,0 +1,74 @@
+@namespace(uri="http://statechart", prefix="Statecharts")
+package Statecharts;
+
+@gmf.diagram(foo="bar")
+class StateMachine {
+  val Transition[*] transitions;
+  val State[*] states;
+  val TextArea[*] textboxes;
+  ref OrthogonalState[1] contains;
+}
+
+abstract class State {
+}
+
+@gmf.node(label="name", label.icon="false", figure="ellipse", color="0,0,0", label.placement="outer", border.color="0,0,0", size="1,1")
+class InitialState extends State {
+  attr String[1] name = "start";
+}
+
+@gmf.node(label=" name ", label.icon="false", figure="ellipse", color="255,255,255", label.placement="outer", border.color="0,0,0", size="1,1")
+class FinalState extends State {
+  attr String name = "end";
+}
+
+@gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0")
+class NormalState extends State {
+  attr String name;
+
+  @gmf.label(foo="bar")
+  attr String[*] entryAction;
+
+  @gmf.label(foo="bar")
+  attr String[*] exitAction;
+
+  @gmf.label(foo="bar")
+  attr String[*] duringAction;
+}
+
+@gmf.node(label="name", label.icon="false", figure="polygon", polygon.x="0 40 40 0 0", polygon.y="0 0 20 20 0", color="255,240,245", border.color="0,0,0")
+class OrthogonalState extends State {
+  attr String name;
+
+  @gmf.compartment(collapsible="true")
+  val Region[0..2] regions;
+}
+
+@gmf.node(label="name", label.icon="false", figure="polygon", polygon.x="0 40 40 0 0", polygon.y="0 0 10 10 0", border.color="0,0,0")
+class Region {
+  attr String name;
+
+  @gmf.compartment(collapsible="true")
+  val State[*] containedstates;
+}
+
+@gmf.link(label="name", source="source", target="destination", target.decoration="arrow", color="0,0,0")
+class Transition {
+  ref State[1] source;
+  ref State[1] destination;
+  attr String[1] trigger;
+}
+
+@gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0")
+class TextArea {
+  attr String[1] name;
+  
+  @gmf.label(foo="bar")
+  attr String[*] include;
+  
+  @gmf.label(foo="bar")
+  attr String[*] function;
+  
+  @gmf.label(foo="bar")
+  attr String[*] variable;
+}
