@@ -4,6 +4,9 @@ import org.eclipse.xtend.expression.ExecutionContext;
 import org.eclipse.xtend.expression.IExecutionContextAware;
 import org.yakindu.base.types.ITypeSystemAccess;
 import org.yakindu.base.types.Type;
+import org.yakindu.sct.model.sexec.If;
+import org.yakindu.sct.model.sexec.Reaction;
+import org.yakindu.sct.model.sexec.Step;
 import org.yakindu.sct.model.sgraph.Statement;
 import org.yakindu.sct.model.stext.validation.ITypeInferrer;
 
@@ -17,6 +20,8 @@ public class TypeAnalyzerExtensions implements IExecutionContextAware {
 	private ITypeInferrer typeInferrer;
 	@Inject
 	private ITypeSystemAccess access;
+	Step step;
+	
 
 	public void setExecutionContext(ExecutionContext ctx) {
 		Injector injector = null;

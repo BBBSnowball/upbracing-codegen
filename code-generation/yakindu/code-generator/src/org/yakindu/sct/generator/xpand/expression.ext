@@ -177,8 +177,10 @@ Set[EventDefinition] getLocalEvents(InternalScope interface) :
 
 // is this just relevant for events?
 String toCCode(ElementReferenceExpression ref) :
-	ref.reference.toCCode()+ (if (ref.operationCall) then "("+ref.getInterfaceCallComma()+ref.args.toCCode().toString(",")+")" else "");
-
+//	ref.reference.toCCode()+ (if (ref.operationCall) then "("+ref.getInterfaceCallComma()+ref.args.toCCode().toString(",")+")" else "");
+	ref.reference.toCCode();
+	
+	
 String toCCode(EObject ref) :
 	"/* toCode not defined for: "+ref+" */";
 String toCCode(Feature ref) :
@@ -192,12 +194,15 @@ String toCCode(Declaration dec) :
 String toCCode(OperationDefinition dec) :
 	" " +dec.getMethodName();
 
+//String toCCode(TimeEvent time_ev) :
+//    "(eventSet_check( &"+time_ev.statemachineHandleName()+"->base.eventSet, " + time_ev.getEventEnumName() + ") ) ";
+
 String toCCode(TimeEvent time_ev) :
-    "(eventSet_check( &"+time_ev.statemachineHandleName()+"->base.eventSet, " + time_ev.getEventEnumName() + ") ) ";
+    null;
 
 String toCCode(VariableDefinition var) :
 	if(var.getInterface()!="AVR") then
-    var.getName() + " "
+   		 var.getName() + " "
     else 
     	"";
 

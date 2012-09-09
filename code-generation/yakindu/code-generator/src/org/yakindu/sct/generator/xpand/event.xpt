@@ -7,36 +7,42 @@
 «EXTENSION org::yakindu::sct::generator::xpand::expression»
 «EXTENSION org::yakindu::sct::generator::xpand::Name»
 
-
 «DEFINE file FOR ExecutionFlow-»
-«FILE this.name + "_event_.c"-»
+«FILE this.name + "_event.c"-»
 
-«EXPAND ReactMethodsImplement FOREACH this.states»
+«EXPAND ActionCode FOREACH this.states.reactSequence.typeSelect(Step)»
 
-void  «this.name»_event();
+«FOREACH this.states AS state»
+«FOREACH  this.states.reactSequence.steps.typeSelect(Step).typeSelect(If) AS e»
+void «EXPAND ActionCode FOR e.check-»() {
+«IF e.check.condition.toCCode() != null-»
+void «EXPAND ActionCode FOR e.check-»() {
+OS_ENTER_CRITICAL(); 
 {
-	OS_ENTER_CRITICAL();
-	switch(«this.name».state){
-		«FOREACH this.states AS state -»
-	    case «this.name + "_" + state.simpleName-»_state:
-	    	void react_«state.name»();
-			break;	
-		«ENDFOREACH-»
-	}
-	OS_EXIT_CRITICAL();
+switch(«this.name-».state):
+		case «this.name + "_" + state.simpleName-» :
+		«EXPAND ActionCode FOR e.thenStep-»
+				break;
+		default:
+				break;
 }
+OS_EXIT_CRITICAL();
+}
+«ENDIF»
+«IF (e.elseStep != null)»
+«EXPAND ActionCode FOR e.elseStep»
+«ENDIF»
+«ENDFOREACH»
+«ENDFOREACH»
 «ENDFILE»
 «ENDDEFINE»
 
-
-«DEFINE ActionCode FOR Step»
-//metamodel generates sequence according to steps
+«DEFINE ActionCode FOR Step-»
 «ENDDEFINE»
 
-«DEFINE ActionCode FOR Execution»
+«DEFINE ActionCode FOR Execution-»
 	«this.statement.toCCode()»;
 «ENDDEFINE»
-
 
 «DEFINE ActionCode FOR Sequence -»
   «EXPAND ActionCode FOREACH this.steps-»
@@ -50,39 +56,33 @@ void  «this.name»_event();
 «ENDIF -»
 «ENDDEFINE»
 
-
 «REM»conditional part for possible transitions on an event«ENDREM»
 «DEFINE ActionCode FOR If»
-if («EXPAND ActionCode FOR this.check-») { 
-  «EXPAND ActionCode FOR this.thenStep -»
+«IF this.check.condition.toCCode() != null-»
+void «EXPAND ActionCode FOR this.check-»() {
+OS_ENTER_CRITICAL(); 
+{
+switch(«this.thenStep.scName()-».state):
+		case «this.thenStep.getStateName().subString(20, this.thenStep.getStateName().length)-» :
+		«EXPAND ActionCode FOR this.thenStep-»
+				break;
+		default:
+				break;
 }
-«IF (this.elseStep != null)-»
-else {
-  «EXPAND ActionCode FOR this.elseStep -»
+OS_EXIT_CRITICAL();
 }
+«ENDIF»
+«IF (this.elseStep != null)»
+«EXPAND ActionCode FOR this.elseStep»
 «ENDIF»
 «ENDDEFINE»
 
 «REM»For changing state«ENDREM»
 «DEFINE ActionCode FOR EnterState-»
-counter_state=counter_«this.state.simpleName»_state;
+counter_state = counter_«this.state.simpleName»_state;
 «ENDDEFINE»
 
 «REM»State exit code«ENDREM»
 «DEFINE ActionCode FOR ExitState-»
-«ENDDEFINE»
-
-«DEFINE ReactCode FOR Sequence-» 
-«EXPAND ActionCode FOREACH this.steps»
-«ENDDEFINE»
-
-«REM»event function outer structure«ENDREM»
-«DEFINE ReactMethodsImplement FOR ExecutionNode -»
-«IF (ExecutionState.isInstance(this) || this.reactSequence.caller.size > 0) -»
-void «this.reactFunction()-»
-«REM»void «stName()»_react_«this.simpleName»(«StName()»* handle)«ENDREM»
-{«EXPAND ReactCode FOR reactSequence -»
-}
-«ENDIF -»
 «ENDDEFINE»
 
