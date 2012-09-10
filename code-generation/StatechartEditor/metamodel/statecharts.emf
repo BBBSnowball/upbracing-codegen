@@ -22,21 +22,15 @@ class FinalState extends State {
   attr String name = "end";
 }
 
-@gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0")
+@gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0", size="1,1")
 class NormalState extends State {
   attr String name;
 
   @gmf.label(foo="bar")
-  attr String[*] entryAction;
-
-  @gmf.label(foo="bar")
-  attr String[*] exitAction;
-
-  @gmf.label(foo="bar")
-  attr String[*] duringAction;
+  attr String[*] Action;
 }
 
-@gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 20 20 0", color="255,240,245", border.color="0,0,0")
+@gmf.node(label="name", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
 class SuperState extends State {
   attr String name;
 
@@ -44,7 +38,7 @@ class SuperState extends State {
   val Region[*] regions;
 }
 
-@gmf.node(label="name", label.icon="false", figure="rectangle", polygon.x="0 40 40 0 0", polygon.y="0 0 10 10 0", border.color="0,0,0")
+@gmf.node(label="name", label.icon="false", figure="rectangle", border.color="0,0,0")
 class Region {
   attr String name;
 
@@ -62,13 +56,14 @@ class Transition {
 @gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0")
 class TextArea {
   attr String[1] name;
-  
+
   @gmf.label(foo="bar")
   attr String[*] include;
-  
+
   @gmf.label(foo="bar")
   attr String[*] function;
-  
+
   @gmf.label(foo="bar")
   attr String[*] variable;
 }
+

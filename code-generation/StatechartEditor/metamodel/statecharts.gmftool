@@ -38,8 +38,8 @@
       </tools>
       <tools
           xsi:type="gmftool:CreationTool"
-          title="OrthogonalState"
-          description="Create new OrthogonalState">
+          title="Region"
+          description="Create new Region">
         <smallIcon
             xsi:type="gmftool:DefaultImage"/>
         <largeIcon
@@ -47,8 +47,8 @@
       </tools>
       <tools
           xsi:type="gmftool:CreationTool"
-          title="Region"
-          description="Create new Region">
+          title="SuperState"
+          description="Create new SuperState">
         <smallIcon
             xsi:type="gmftool:DefaultImage"/>
         <largeIcon

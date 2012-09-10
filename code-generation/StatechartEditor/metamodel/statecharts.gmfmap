@@ -61,23 +61,9 @@
       <labelMappings
           xsi:type="gmfmap:FeatureLabelMapping">
         <diagramLabel
-            href="statecharts.gmfgraph#NormalStateEntryActionLabel"/>
+            href="statecharts.gmfgraph#NormalStateActionLabel"/>
         <features
-            href="statecharts.ecore#//NormalState/entryAction"/>
-      </labelMappings>
-      <labelMappings
-          xsi:type="gmfmap:FeatureLabelMapping">
-        <diagramLabel
-            href="statecharts.gmfgraph#NormalStateExitActionLabel"/>
-        <features
-            href="statecharts.ecore#//NormalState/exitAction"/>
-      </labelMappings>
-      <labelMappings
-          xsi:type="gmfmap:FeatureLabelMapping">
-        <diagramLabel
-            href="statecharts.gmfgraph#NormalStateDuringActionLabel"/>
-        <features
-            href="statecharts.ecore#//NormalState/duringAction"/>
+            href="statecharts.ecore#//NormalState/Action"/>
       </labelMappings>
       <tool
           xsi:type="gmftool:CreationTool"
@@ -92,23 +78,23 @@
     <ownedChild
         relatedDiagrams="//@diagram">
       <domainMetaElement
-          href="statecharts.ecore#//OrthogonalState"/>
+          href="statecharts.ecore#//SuperState"/>
       <labelMappings
           xsi:type="gmfmap:FeatureLabelMapping">
         <diagramLabel
-            href="statecharts.gmfgraph#OrthogonalStateLabel"/>
+            href="statecharts.gmfgraph#SuperStateLabel"/>
         <features
-            href="statecharts.ecore#//OrthogonalState/name"/>
+            href="statecharts.ecore#//SuperState/name"/>
       </labelMappings>
       <tool
           xsi:type="gmftool:CreationTool"
-          href="statecharts.gmftool#//@palette/@tools.0/@tools.3"/>
+          href="statecharts.gmftool#//@palette/@tools.0/@tools.4"/>
       <diagramNode
-          href="statecharts.gmfgraph#OrthogonalState"/>
+          href="statecharts.gmfgraph#SuperState"/>
       <children
           compartment="//@nodes.3/@ownedChild/@compartments.0">
         <containmentFeature
-            href="statecharts.ecore#//OrthogonalState/regions"/>
+            href="statecharts.ecore#//SuperState/regions"/>
         <ownedChild
             relatedDiagrams="//@diagram">
           <domainMetaElement
@@ -122,7 +108,7 @@
           </labelMappings>
           <tool
               xsi:type="gmftool:CreationTool"
-              href="statecharts.gmftool#//@palette/@tools.0/@tools.4"/>
+              href="statecharts.gmftool#//@palette/@tools.0/@tools.3"/>
           <diagramNode
               href="statecharts.gmfgraph#Region"/>
           <children
@@ -159,7 +145,7 @@
       <compartments
           children="//@nodes.3/@ownedChild/@children.0">
         <compartment
-            href="statecharts.gmfgraph#OrthogonalStateRegionsCompartment"/>
+            href="statecharts.gmfgraph#SuperStateRegionsCompartment"/>
       </compartments>
     </ownedChild>
   </nodes>
