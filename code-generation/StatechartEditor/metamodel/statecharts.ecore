@@ -21,9 +21,9 @@
     <eAnnotations source="gmf.node">
       <details key="label" value="name"/>
       <details key="label.icon" value="false"/>
+      <details key="label.placement" value="outer"/>
       <details key="figure" value="ellipse"/>
       <details key="color" value="0,0,0"/>
-      <details key="label.placement" value="outer"/>
       <details key="border.color" value="0,0,0"/>
       <details key="size" value="1,1"/>
     </eAnnotations>
@@ -34,9 +34,9 @@
     <eAnnotations source="gmf.node">
       <details key="label" value=" name "/>
       <details key="label.icon" value="false"/>
+      <details key="label.placement" value="outer"/>
       <details key="figure" value="ellipse"/>
       <details key="color" value="255,255,255"/>
-      <details key="label.placement" value="outer"/>
       <details key="border.color" value="0,0,0"/>
       <details key="size" value="1,1"/>
     </eAnnotations>
@@ -45,16 +45,17 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NormalState" eSuperTypes="#//State">
     <eAnnotations source="gmf.node">
-      <details key="label" value="name"/>
+      <details key="label" value="name, Action"/>
       <details key="label.icon" value="false"/>
       <details key="figure" value="rounded"/>
       <details key="color" value="230,230,250"/>
       <details key="border.color" value="0,0,0"/>
       <details key="size" value="1,1"/>
+      <details key="label.pattern" value="{0}"/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="Action" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="Action" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="Actions">
       <eAnnotations source="gmf.label">
         <details key="foo" value="bar"/>
       </eAnnotations>
@@ -62,13 +63,20 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SuperState" eSuperTypes="#//State">
     <eAnnotations source="gmf.node">
-      <details key="label" value="name"/>
+      <details key="label" value="name, action"/>
       <details key="label.icon" value="false"/>
       <details key="figure" value="rectangle"/>
       <details key="color" value="255,240,245"/>
       <details key="border.color" value="0,0,0"/>
+      <details key="label.pattern" value="{0}"/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="Action" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="actions">
+      <eAnnotations source="gmf.label">
+        <details key="foo" value="bar"/>
+      </eAnnotations>
+    </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"
         eType="#//Region" containment="true">
       <eAnnotations source="gmf.compartment">
@@ -93,7 +101,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Transition">
     <eAnnotations source="gmf.link">
-      <details key="label" value="name"/>
+      <details key="label" value="name, trigger"/>
       <details key="source" value="source"/>
       <details key="target" value="destination"/>
       <details key="target.decoration" value="arrow"/>
@@ -104,32 +112,34 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="destination" lowerBound="1"
         eType="#//State"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="trigger" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString" defaultValueLiteral="trigger"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TextArea">
     <eAnnotations source="gmf.node">
-      <details key="label" value="name"/>
+      <details key="label" value="name, include, function, variable"/>
       <details key="label.icon" value="false"/>
       <details key="figure" value="rectangle"/>
       <details key="label.placement" value="internal"/>
       <details key="color" value="245,245,245"/>
       <details key="border.color" value="0,0,0"/>
+      <details key="label.pattern" value="{0}"/>
     </eAnnotations>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="include" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="External"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="include" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="includes">
       <eAnnotations source="gmf.label">
         <details key="foo" value="bar"/>
       </eAnnotations>
     </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="function" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="function" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="functions">
       <eAnnotations source="gmf.label">
         <details key="foo" value="bar"/>
       </eAnnotations>
     </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="variable" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="variable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="global variables">
       <eAnnotations source="gmf.label">
         <details key="foo" value="bar"/>
       </eAnnotations>

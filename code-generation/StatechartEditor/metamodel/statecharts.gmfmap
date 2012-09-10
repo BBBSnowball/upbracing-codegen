@@ -52,11 +52,16 @@
       <domainMetaElement
           href="statecharts.ecore#//NormalState"/>
       <labelMappings
-          xsi:type="gmfmap:FeatureLabelMapping">
+          xsi:type="gmfmap:FeatureLabelMapping"
+          viewPattern="{0}"
+          editorPattern="{0}"
+          editPattern="{0}">
         <diagramLabel
             href="statecharts.gmfgraph#NormalStateLabel"/>
         <features
             href="statecharts.ecore#//NormalState/name"/>
+        <features
+            href="statecharts.ecore#//NormalState/Action"/>
       </labelMappings>
       <labelMappings
           xsi:type="gmfmap:FeatureLabelMapping">
@@ -80,11 +85,21 @@
       <domainMetaElement
           href="statecharts.ecore#//SuperState"/>
       <labelMappings
-          xsi:type="gmfmap:FeatureLabelMapping">
+          xsi:type="gmfmap:FeatureLabelMapping"
+          viewPattern="{0}"
+          editorPattern="{0}"
+          editPattern="{0}">
         <diagramLabel
             href="statecharts.gmfgraph#SuperStateLabel"/>
         <features
             href="statecharts.ecore#//SuperState/name"/>
+      </labelMappings>
+      <labelMappings
+          xsi:type="gmfmap:FeatureLabelMapping">
+        <diagramLabel
+            href="statecharts.gmfgraph#SuperStateActionLabel"/>
+        <features
+            href="statecharts.ecore#//SuperState/Action"/>
       </labelMappings>
       <tool
           xsi:type="gmftool:CreationTool"
@@ -156,11 +171,20 @@
       <domainMetaElement
           href="statecharts.ecore#//TextArea"/>
       <labelMappings
-          xsi:type="gmfmap:FeatureLabelMapping">
+          xsi:type="gmfmap:FeatureLabelMapping"
+          viewPattern="{0}"
+          editorPattern="{0}"
+          editPattern="{0}">
         <diagramLabel
             href="statecharts.gmfgraph#TextAreaLabel"/>
         <features
             href="statecharts.ecore#//TextArea/name"/>
+        <features
+            href="statecharts.ecore#//TextArea/include"/>
+        <features
+            href="statecharts.ecore#//TextArea/function"/>
+        <features
+            href="statecharts.ecore#//TextArea/variable"/>
       </labelMappings>
       <labelMappings
           xsi:type="gmfmap:FeatureLabelMapping">
@@ -193,6 +217,13 @@
   <links>
     <domainMetaElement
         href="statecharts.ecore#//Transition"/>
+    <labelMappings
+        xsi:type="gmfmap:FeatureLabelMapping">
+      <diagramLabel
+          href="statecharts.gmfgraph#TransitionLabel"/>
+      <features
+          href="statecharts.ecore#//Transition/trigger"/>
+    </labelMappings>
     <containmentFeature
         href="statecharts.ecore#//StateMachine/transitions"/>
     <tool

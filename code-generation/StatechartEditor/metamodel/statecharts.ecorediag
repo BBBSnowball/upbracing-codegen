@@ -194,18 +194,4 @@
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_DiglovoIEeGqiofmydcLDw" id="(0.504,0.0)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_DihMsPoIEeGqiofmydcLDw" id="(0.37254901960784315,1.0)"/>
   </edges>
-  <edges xmi:type="notation:Edge" xmi:id="_DhkxiPoIEeGqiofmydcLDw" type="3002" source="_DhcOqfoIEeGqiofmydcLDw" target="_Dhc1ufoIEeGqiofmydcLDw">
-    <children xmi:type="notation:Node" xmi:id="_DhlYkPoIEeGqiofmydcLDw" type="4011">
-      <layoutConstraint xmi:type="notation:Location" xmi:id="_DhlYkfoIEeGqiofmydcLDw" x="-10" y="-10"/>
-    </children>
-    <children xmi:type="notation:Node" xmi:id="_DhlYkvoIEeGqiofmydcLDw" type="4012">
-      <layoutConstraint xmi:type="notation:Location" xmi:id="_DhlYk_oIEeGqiofmydcLDw" x="10" y="10"/>
-    </children>
-    <styles xmi:type="notation:ConnectorStyle" xmi:id="_DhkxifoIEeGqiofmydcLDw" lineColor="4210752"/>
-    <styles xmi:type="notation:FontStyle" xmi:id="_DhkxivoIEeGqiofmydcLDw" fontColor="4210752" fontName="Segoe UI" fontHeight="10"/>
-    <element xmi:type="ecore:EReference" href="statecharts.ecore#//StateMachine/textboxes"/>
-    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Dhkxi_oIEeGqiofmydcLDw" points="[0, 0, -752, 60]$[752, -60, 0, 0]"/>
-    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_Dif-kPoIEeGqiofmydcLDw" id="(0.752,0.0)"/>
-    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_Dif-kfoIEeGqiofmydcLDw" id="(0.24475524475524477,1.0)"/>
-  </edges>
 </notation:Diagram>

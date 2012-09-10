@@ -3,8 +3,11 @@ package Statecharts;
 
 @gmf.diagram(foo="bar")
 class StateMachine {
+  
   val Transition[*] transitions;
+  
   val State[*] states;
+  
   val TextArea[*] textboxes;
   ref SuperState[1] contains;
 }
@@ -12,28 +15,31 @@ class StateMachine {
 abstract class State {
 }
 
-@gmf.node(label="name", label.icon="false", figure="ellipse", color="0,0,0", label.placement="outer", border.color="0,0,0", size="1,1")
+@gmf.node(label="name", label.icon="false", label.placement="outer", figure="ellipse", color="0,0,0", border.color="0,0,0", size="1,1")
 class InitialState extends State {
   attr String[1] name = "start";
 }
 
-@gmf.node(label=" name ", label.icon="false", figure="ellipse", color="255,255,255", label.placement="outer", border.color="0,0,0", size="1,1")
+@gmf.node(label=" name ", label.icon="false", label.placement="outer", figure="ellipse", color="255,255,255", border.color="0,0,0", size="1,1")
 class FinalState extends State {
   attr String name = "end";
 }
 
-@gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0", size="1,1")
+@gmf.node(label="name, Action", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0", size="1,1", label.pattern="{0}")
 class NormalState extends State {
   attr String name;
 
   @gmf.label(foo="bar")
-  attr String[*] Action;
+  attr String Action = "Actions";
 }
 
-@gmf.node(label="name", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
+@gmf.node(label="name, action", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
 class SuperState extends State {
   attr String name;
-
+  
+  @gmf.label(foo="bar")
+  attr String Action = "actions";
+  
   @gmf.compartment(collapsible="true")
   val Region[*] regions;
 }
@@ -46,24 +52,24 @@ class Region {
   val State[*] containedstates;
 }
 
-@gmf.link(label="name", source="source", target="destination", target.decoration="arrow", color="0,0,0")
+@gmf.link(label="name, trigger", source="source", target="destination", target.decoration="arrow", color="0,0,0")
 class Transition {
   ref State[1] source;
   ref State[1] destination;
-  attr String[1] trigger;
+  attr String[1] trigger = "trigger";
 }
 
-@gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0")
+@gmf.node(label="name, include, function, variable", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0", label.pattern="{0}")
 class TextArea {
-  attr String[1] name;
+  attr String name = "External";
 
   @gmf.label(foo="bar")
-  attr String[*] include;
+  attr String include = "includes";
 
   @gmf.label(foo="bar")
-  attr String[*] function;
+  attr String function = "functions";
 
   @gmf.label(foo="bar")
-  attr String[*] variable;
+  attr String variable = "global variables";
 }
 
