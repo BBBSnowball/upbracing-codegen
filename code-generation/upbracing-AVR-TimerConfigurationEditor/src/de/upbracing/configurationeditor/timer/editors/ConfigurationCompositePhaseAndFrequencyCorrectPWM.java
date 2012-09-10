@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -131,13 +128,13 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 			}
 			if (!nameProperty.startsWith("ocrA"))
 				o.remove(1);
-			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER | SWT.READ_ONLY);
-			toggleC.setContentProvider(ArrayContentProvider.getInstance());
-			toggleC.setInput(o.toArray());
-			c = new DataBindingContext();
-			c.bindValue(ViewersObservables.observeSingleSelection(toggleC),
-					BeansObservables.observeValue(model, pinModeProperty));
-			toggleC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+			
+			Object validator = model.getValidator();
+			if (!pinModeProperty.endsWith("A"))
+				validator = null;
+			ComboValidationComposite toggleC = new ComboValidationComposite(scComp, SWT.NONE, model, pinModeProperty, validator, o.toArray());
+			
+			toggleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent arg0) {
 					editor.setDirty(true);
