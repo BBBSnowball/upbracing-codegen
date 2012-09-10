@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
+import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
@@ -84,10 +86,22 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return ValidationResult.OK;
 	}
 	public ValidationResult getPhaseCorrectPWMTopError() {
-		return getFastPWMTopError();
+		if (model.getTimer().equals(TimerEnum.TIMER0)
+				|| model.getTimer().equals(TimerEnum.TIMER2)) {
+			if (!model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
+				return ValidationResult.ERROR;
+		}
+		
+		return ValidationResult.OK;
 	}
 	public ValidationResult getPhaseAndFrequencyCorrectPWMTopError() {
-		return getFastPWMTopError();
+		if (model.getTimer().equals(TimerEnum.TIMER0)
+				|| model.getTimer().equals(TimerEnum.TIMER2)) {
+			if (!model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
+				return ValidationResult.ERROR;
+		}
+		
+		return ValidationResult.OK;
 	}
 	public ValidationResult getModeError() {
 		
@@ -103,6 +117,47 @@ public class UseCaseModelValidator extends AValidatorBase {
 		if (!isModeValidForTimer())
 			return ValidationResult.ERROR;
 		
+		return ValidationResult.OK;
+	}
+	public ValidationResult getSingleSlopePWMPinModeAError() {
+		if (model.getSingleSlopePWMPinModeA() != null &&
+				model.getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
+			// 8 Bit Timers are invalid for toggle
+			if (model.getTimer().equals(TimerEnum.TIMER0) || model.getTimer().equals(TimerEnum.TIMER2))
+				return ValidationResult.ERROR;
+			
+			if (model.getMode().equals(TimerOperationModes.PWM_FAST)) {
+				// Only valid, if WGMn3 is set:
+				// -> ICR or OCRnA as Top
+				if (!(model.getFastPWMTop().equals(PWMTopValues.ICR) ||
+						model.getFastPWMTop().equals(PWMTopValues.OCRnA))) 
+					return ValidationResult.ERROR;
+			}
+		}
+		return ValidationResult.OK;
+	}
+	public ValidationResult getDualSlopePWMPinModeAError() {
+		if (model.getDualSlopePWMPinModeA() != null &&
+				model.getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
+			// 8 Bit Timers are invalid for toggle
+			if (model.getTimer().equals(TimerEnum.TIMER0) || model.getTimer().equals(TimerEnum.TIMER2))
+				return ValidationResult.ERROR;
+			
+			if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
+				// Only valid, if WGMn3 is set:
+				// -> ICR or OCRnA as Top
+				if (!(model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR) ||
+						model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))) 
+					return ValidationResult.ERROR;
+			}
+			if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+				// Only valid, if WGMn3 is set:
+				// -> ICR or OCRnA as Top
+				if (!(model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR) ||
+						model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))) 
+					return ValidationResult.ERROR;
+			}
+		}
 		return ValidationResult.OK;
 	}
 	
@@ -189,6 +244,25 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return "";
 	}
 	
+	public String getSingleSlopePWMPinModeAErrorText() {
+		if (getSingleSlopePWMPinModeAError().equals(ValidationResult.ERROR)) {
+			if (model.getTimer().equals(TimerEnum.TIMER0) || model.getTimer().equals(TimerEnum.TIMER2)) {
+				return "Output toggle is only valid for 16 Bit timers.";
+			}
+			return "For output toggle, ICR or OCR" + model.getTimer().ordinal() + "A needs to be top value register.";
+		}
+		return "";
+	}
+	public String getDualSlopePWMPinModeAErrorText() {
+		if (getDualSlopePWMPinModeAError().equals(ValidationResult.ERROR)) {
+			if (model.getTimer().equals(TimerEnum.TIMER0) || model.getTimer().equals(TimerEnum.TIMER2)) {
+				return "Output toggle is only valid for 16 Bit timers.";
+			}
+			return "For output toggle, ICR or OCR" + model.getTimer().ordinal() + "A needs to be top value register.";
+		}
+		return "";
+	}
+	
 	public void updateValidation() {
 		
 		// Very primitive, but will make the Data Binding work...
@@ -214,6 +288,10 @@ public class UseCaseModelValidator extends AValidatorBase {
 		changes.firePropertyChange("modeErrorText", null, null);
 		changes.firePropertyChange("timerError", null, null);
 		changes.firePropertyChange("timerErrorText", null, null);
+		changes.firePropertyChange("singleSlopePWMPinModeAError", null, null);
+		changes.firePropertyChange("singleSlopePWMPinModeAErrorText", null, null);
+		changes.firePropertyChange("dualSlopePWMPinModeAError", null, null);
+		changes.firePropertyChange("dualSlopePWMPinModeAErrorText", null, null);
 	}
 	
 	private boolean validateMaxPeriod(double period) {

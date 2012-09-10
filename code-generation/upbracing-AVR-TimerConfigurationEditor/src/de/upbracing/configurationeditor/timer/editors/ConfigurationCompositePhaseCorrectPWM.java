@@ -113,13 +113,13 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 			}
 			if (!nameProperty.startsWith("ocrA"))
 				o.remove(1);
-			ComboViewer toggleC = new ComboViewer(scComp, SWT.BORDER | SWT.READ_ONLY);
-			toggleC.setContentProvider(ArrayContentProvider.getInstance());
-			toggleC.setInput(o.toArray());
-			c = new DataBindingContext();
-			c.bindValue(ViewersObservables.observeSingleSelection(toggleC),
-					BeansObservables.observeValue(model, pinModeProperty));
-			toggleC.addPostSelectionChangedListener(new ISelectionChangedListener() {
+			
+			Object validator = model.getValidator();
+			if (!pinModeProperty.endsWith("A"))
+				validator = null;
+			ComboValidationComposite toggleC = new ComboValidationComposite(scComp, SWT.NONE, model, pinModeProperty, validator, o.toArray());
+			
+			toggleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent arg0) {
 					editor.setDirty(true);
