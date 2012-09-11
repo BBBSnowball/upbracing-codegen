@@ -50,11 +50,11 @@ class Region {
   val State[*] containedstates;
 }
 
-@gmf.link(label="transition_info", source="source", target="destination", target.decoration="arrow", color="0,0,0")
+@gmf.link(label="transitionInfo", source="source", target="destination", target.decoration="arrow", color="0,0,0")
 class Transition {
   ref State[1] source;
   ref State[1] destination;
-  attr String[1] transition_info = "[true]";
+  attr String[1] transitionInfo = "[true]";
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0", label.pattern="{0}")
