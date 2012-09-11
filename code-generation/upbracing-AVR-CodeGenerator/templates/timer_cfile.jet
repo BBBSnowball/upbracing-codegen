@@ -11,6 +11,10 @@
  * NOTE: This file was generated and should not be altered manually!
  */
 
+<% if (config.getTimer() == null) { %>
+// no timer config present
+<% } else { %>
+
 #include <avr/io.h>
 #include "timer.h"
 
@@ -54,3 +58,5 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 <%
 }
 %>
+
+<% } // config.getTimer() == null %>

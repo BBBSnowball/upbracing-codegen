@@ -18,9 +18,9 @@ public class TimerGenerator extends AbstractGenerator {
 	
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config) {
-		
+		// if we don't have a model, there is nothing to do
 		if (config.getTimer() == null)
-			return false;
+			return true;
 		
 		ConfigurationModelValidator modelValidator = new ConfigurationModelValidator(config.getTimer());
 		

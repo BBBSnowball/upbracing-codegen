@@ -11,6 +11,10 @@
  * NOTE: This file was generated and should not be altered manually!
  */
 	
+<% if (config.getTimer() == null) { %>
+// no timer config present
+<% } else { %>
+
 #ifndef TIMER_H_
 #define TIMER_H_
 
@@ -30,3 +34,5 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 }
 %>
 #endif /* TIMER_H_ */
+
+<% } // config.getTimer() == null %>
