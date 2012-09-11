@@ -4,6 +4,50 @@
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.* java.util.Map java.util.HashMap" %>
 
+<%
+
+// check prerequisites for running the code generator
+
+boolean run_generator = true;
+
+de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
+DBCConfig can_config = config.getCanConfig();
+
+if (can_config == null) {
+	run_generator = false;
+%>// not generating CAN code because DBC file hasn't been provided
+// use $config.can = parse_dbc(dbc_file)
+<%
+} else if (current_ecu == null) {
+	run_generator = false;
+%>// not generating CAN code because no ECU has been selected
+// use $config.selectEcu(name)
+<%
+}
+
+// if we still want to run, check the name
+DBCEcuConfig dbcEcu = null;
+if (run_generator) {
+	// find ecu by its node name (the one meant for lookup in the DBC file)
+	DBCEcu dbcEcu_ = can_config.getEcus().get(current_ecu.getNodeName());
+	
+	// use the normal name as backup
+	if (dbcEcu_ == null)
+		dbcEcu_ = can_config.getEcus().get(current_ecu.getName());
+	
+	// check, whether we have a config
+	if (dbcEcu_ != null) {
+		dbcEcu = (DBCEcuConfig) dbcEcu_;
+	} else {
+		run_generator = false;
+	%>#error The DBC file doesn't have an ECU with name '<%= current_ecu.getNodeName() %>'
+	<%
+	}
+}
+
+
+if (run_generator) { %>
+
 #define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
 
 #ifndef NO_DBC_CAN_DEFS
@@ -20,8 +64,6 @@ typedef enum uint32_t {
 <%
 
 Warnings warnings = new Warnings();
-
-DBCEcuConfig dbcEcu = (DBCEcuConfig) config.getCanConfig().getEcus().get(config.getCurrentEcu().getName());
 
 Table t = new Table(stringBuffer);
 t.start();
@@ -376,9 +418,10 @@ inline static void send_<%=msgconfig.getName()%>_nowait(boolean <%=msgconfig.get
 
 <%
 	
+} // if run_generator
  
     return stringBuffer.toString();
-}
+}	// end of method generate(...)
 
 String messageId(DBCMessage message, boolean suffix) {
 	return "0x" + Integer.toHexString(message.getId()) + ((suffix && message.isExtended()) ? "x" : "");
