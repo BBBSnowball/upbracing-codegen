@@ -1,7 +1,6 @@
 package de.upbracing.code_generation.fsm.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -138,8 +137,8 @@ public class FSMParsers {
 				Parsers.or(
 						Scanners.string("\\\n"),
 						Scanners.notAmong("([{\"" + notAllowedChars),
-						Scanners.DOUBLE_QUOTE_STRING)
-					.source());
+						Scanners.DOUBLE_QUOTE_STRING))
+					.source();
 	}
 	
 	/** skip whitespace after parsing with p, returns result of p */
@@ -154,65 +153,29 @@ public class FSMParsers {
 	 * @param textparser parser that is used outside of parentheses
 	 * @return the parsed string
 	 */
-	private static Parser<String> textWithMatchingParens(Parser<String> textparser) {
-		Parser<String> textparser_without_parens = textparser;
+	private static Parser<?> textWithMatchingParens(Parser<?> textparser) {
+		Parser<?> textparser_without_parens = textparser;
 				/*Parsers.sequence(
 					Scanners.among("([{").not(),
 					textparser).atomic();*/
-		Parser.Reference<String> parens_content = Parser.newReference();
-		Parser<String> text_in_parens = Parsers.or(
+		Parser.Reference<List<Object>> parens_content = Parser.newReference();
+		Parser<?> text_in_parens = Parsers.or(
 				textInParens("(", ")", parens_content.lazy()),
 				textInParens("[", "]", parens_content.lazy()),
 				textInParens("{", "}", parens_content.lazy()));
 		parens_content.set(
-				joinStringList(
 					Parsers.or(
 							text_in_parens,
-							Parsers.or(Scanners.DOUBLE_QUOTE_STRING, Scanners.notAmong("([{}])\"", "open parens")).source())
-						.many()));
-		return joinStringList(Parsers.or(text_in_parens, textparser_without_parens).many1());
+							Parsers.or(Scanners.DOUBLE_QUOTE_STRING, Scanners.notAmong("([{}])\"", "open parens")))
+						.many());
+		return Parsers.or(text_in_parens, textparser_without_parens).many1();
 	}
 	
-	/** like Parser.between(), but it returns the parentheses as well */
-	private static Parser<String> textInParens(final String open, final String close, Parser<String> inner) {
-		return inner.between(Scanners.string(open), Scanners.string(close))
-				.map(new Map<String, String>() {
-					@Override
-					public String map(String inner_string) {
-						return open + inner_string + close;
-					}
-				});
+	/** like Parser.between() */
+	private static Parser<?> textInParens(final String open, final String close, Parser<?> inner) {
+		return inner.between(Scanners.string(open), Scanners.string(close));
 	}
 	
-	/** concatenate a list of strings */
-	private static Parser<String> joinStringList(Parser<List<String>> strings) {
-		return strings.map(new Map<List<String>, String>() {
-			@Override
-			public String map(List<String> strings) {
-				StringBuilder sb = new StringBuilder();
-				for (String s : strings)
-					sb.append(s);
-				return sb.toString();
-			}
-		});
-	}
-
-	@SuppressWarnings("unused")
-	/** concatenate an array of strings */
-	private static Parser<String> joinStrings(Parser<String[]> strings) {
-		return joinStringList(asList(strings));
-	}
-
-	/** convert array to list */
-	private static <T> Parser<List<T>> asList(Parser<T[]> xs) {
-		return xs.map(new Map<T[], List<T>>() {
-			@Override
-			public List<T> map(T[] from) {
-				return Arrays.asList(from);
-			}
-		});
-	}
-
 	
 	/** parse a float (actually it returns a double) */
 	private static Parser<Double> floatParser() {
