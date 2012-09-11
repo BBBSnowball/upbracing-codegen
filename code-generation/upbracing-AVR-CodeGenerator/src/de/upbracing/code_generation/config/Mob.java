@@ -6,17 +6,24 @@ import java.util.List;
 public class Mob {
 
 	private String name;
-	private List<DBCMessageConfig> messages;
+	private List<DBCMessageConfig> rxMessages;
+	private List<DBCMessageConfig> txMessages;
+
 	private int[] id = null;
 	private int[] mask = null;
 	private int[] significantDiffs = null;
 	private boolean extended = false;
-	private boolean tx = false;
+	private boolean disabled = false;
 	
 	public Mob(DBCMessageConfig firstMessage, boolean tx) {
-		messages = new LinkedList<DBCMessageConfig>();
-		messages.add(firstMessage);
-		this.setTx(tx);
+		rxMessages = new LinkedList<DBCMessageConfig>();
+		txMessages = new LinkedList<DBCMessageConfig>();
+
+		if (tx)
+			txMessages.add(firstMessage);
+		else
+			rxMessages.add(firstMessage);
+
 	}
 	
 	public String getName() {
@@ -26,8 +33,12 @@ public class Mob {
 		this.name = name;
 	}
 	
-	public List<DBCMessageConfig> getMessages() {
-		return messages;
+	public List<DBCMessageConfig> getRxMessages() {
+		return rxMessages;
+	}
+	
+	public List<DBCMessageConfig> getTxMessages() {
+		return txMessages;
 	}
 	
 	public int[] getID() {
@@ -53,13 +64,13 @@ public class Mob {
 			calculateValues();
 		return extended;
 	}
-	
-	public boolean isTx() {
-		return tx;
+
+	public boolean isDisabled() {
+		return disabled;
 	}
 
-	public void setTx(boolean tx) {
-		this.tx = tx;
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
 	}
 
 	/**
@@ -75,7 +86,7 @@ public class Mob {
 		
 		boolean allExtended = true, allNotExtended = true;
 		
-		for(DBCMessageConfig msg : messages) {
+		for(DBCMessageConfig msg : rxMessages) {
 			int[] id = msg.canIdForMob();
 			int[] significant1;
 			int[] mask1 = {0xff, 0xff, 0xff, 0xfd};
