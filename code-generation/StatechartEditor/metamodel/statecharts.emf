@@ -3,6 +3,7 @@ package Statecharts;
 
 @gmf.diagram
 class StateMachine {
+  attr String basePeriod;
   
   val Transition[*] transitions;
   
