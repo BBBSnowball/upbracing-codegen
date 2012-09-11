@@ -18,16 +18,19 @@ import Statecharts.Transition;
 
 public class StateMachineForGeneration {
 	private StateMachine inner;
+	
+	private String name;
+	
 	private SortedMap<String, Set<Transition>> events;
 	private Map<State, List<Action>> actions;
 	private Map<Transition, TransitionInfo> transition_infos;
+	private boolean hasHeaderCodeBoxes, hasCFileCodeBoxes;
 
-	public StateMachineForGeneration(StateMachine inner) {
+	public StateMachineForGeneration(String name, StateMachine inner) {
+		this.name = name;
 		this.inner = inner;
 		
-		initActions();
-		initTransitionInfos();
-		initEvents();
+		update();
 	}
 
 	public EList<Transition> getTransitions() {
@@ -55,7 +58,30 @@ public class StateMachineForGeneration {
 		return transition_infos.get(t);
 	}
 
+	public boolean hasHeaderCodeBoxes() {
+		return hasHeaderCodeBoxes;
+	}
+
+	public boolean hasCFileCodeBoxes() {
+		return hasCFileCodeBoxes;
+	}
 	
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	
+	public void update() {
+		initActions();
+		initTransitionInfos();
+		initEvents();
+		initCodeBoxBools();
+	}
 
 	//NOTE Must be called after initTransitionInfos()
 	private void initEvents() {
@@ -95,6 +121,20 @@ public class StateMachineForGeneration {
 			String transition_str = transition.getTransitionInfo();
 			//TODO handle errors
 			transition_infos.put(transition, FSMParsers.parseTransitionInfo(transition_str));
+		}
+	}
+	
+	private void initCodeBoxBools() {
+		hasHeaderCodeBoxes = false;
+		hasCFileCodeBoxes = false;
+		for (GlobalCode box : getGlobalCodeBoxes()) {
+			if (box.getInHeaderFile())
+				hasHeaderCodeBoxes = true;
+			else
+				hasCFileCodeBoxes = true;
+			
+			if (hasHeaderCodeBoxes && hasCFileCodeBoxes)
+				break;
 		}
 	}
 }

@@ -64,4 +64,6 @@ class GlobalCode {
 
   @gmf.label
   attr String code = "";
+  
+  attr Boolean inHeaderFile = false;
 }

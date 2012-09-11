@@ -12,6 +12,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
+
 import Statecharts.StateMachine;
 import Statecharts.StatechartsFactory;
 import Statecharts.StatechartsPackage;
@@ -22,15 +24,15 @@ import Statecharts.StatechartsPackage;
  * @author benny
  *
  */
-public class StatemachinesConfig implements List<StateMachine> {
-	private ArrayList<StateMachine> list = new ArrayList<StateMachine>();
+public class StatemachinesConfig implements List<StateMachineForGeneration> {
+	private ArrayList<StateMachineForGeneration> list = new ArrayList<StateMachineForGeneration>();
 	
 	/** load a statemachine and add it to the list of statemachines to generate code for
 	 * 
 	 * @param filename relative path to statecharts file
 	 * @return the state machine
 	 */
-	public StateMachine load(String filename) {
+	public StateMachineForGeneration load(String name, String filename) {
 		// make absolute path
 		filename = MCUConfiguration.makeAbsolute(filename);
 		
@@ -50,25 +52,28 @@ public class StatemachinesConfig implements List<StateMachine> {
 	    // get first element and hope it has the right type
 	    StateMachine sm = (StateMachine) resource.getContents().get(0);
 	    
-	    // add to this list
-	    this.add(sm);
+	    // wrap it
+	    StateMachineForGeneration smg = new StateMachineForGeneration(name, sm);
 	    
-	    return sm;
+	    // add to this list
+	    this.add(smg);
+	    
+	    return smg;
 	}
 
-	public void add(int index, StateMachine element) {
+	public void add(int index, StateMachineForGeneration element) {
 		list.add(index, element);
 	}
 
-	public boolean add(StateMachine e) {
+	public boolean add(StateMachineForGeneration e) {
 		return list.add(e);
 	}
 
-	public boolean addAll(Collection<? extends StateMachine> c) {
+	public boolean addAll(Collection<? extends StateMachineForGeneration> c) {
 		return list.addAll(c);
 	}
 
-	public boolean addAll(int index, Collection<? extends StateMachine> c) {
+	public boolean addAll(int index, Collection<? extends StateMachineForGeneration> c) {
 		return list.addAll(index, c);
 	}
 
@@ -96,7 +101,7 @@ public class StatemachinesConfig implements List<StateMachine> {
 		return list.equals(arg0);
 	}
 
-	public StateMachine get(int index) {
+	public StateMachineForGeneration get(int index) {
 		return list.get(index);
 	}
 
@@ -112,7 +117,7 @@ public class StatemachinesConfig implements List<StateMachine> {
 		return list.isEmpty();
 	}
 
-	public Iterator<StateMachine> iterator() {
+	public Iterator<StateMachineForGeneration> iterator() {
 		return list.iterator();
 	}
 
@@ -120,15 +125,15 @@ public class StatemachinesConfig implements List<StateMachine> {
 		return list.lastIndexOf(o);
 	}
 
-	public ListIterator<StateMachine> listIterator() {
+	public ListIterator<StateMachineForGeneration> listIterator() {
 		return list.listIterator();
 	}
 
-	public ListIterator<StateMachine> listIterator(int index) {
+	public ListIterator<StateMachineForGeneration> listIterator(int index) {
 		return list.listIterator(index);
 	}
 
-	public StateMachine remove(int index) {
+	public StateMachineForGeneration remove(int index) {
 		return list.remove(index);
 	}
 
@@ -144,7 +149,7 @@ public class StatemachinesConfig implements List<StateMachine> {
 		return list.retainAll(c);
 	}
 
-	public StateMachine set(int index, StateMachine element) {
+	public StateMachineForGeneration set(int index, StateMachineForGeneration element) {
 		return list.set(index, element);
 	}
 
@@ -152,7 +157,7 @@ public class StatemachinesConfig implements List<StateMachine> {
 		return list.size();
 	}
 
-	public List<StateMachine> subList(int fromIndex, int toIndex) {
+	public List<StateMachineForGeneration> subList(int fromIndex, int toIndex) {
 		return list.subList(fromIndex, toIndex);
 	}
 
