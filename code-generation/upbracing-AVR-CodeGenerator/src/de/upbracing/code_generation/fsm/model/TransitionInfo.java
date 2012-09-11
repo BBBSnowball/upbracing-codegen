@@ -2,10 +2,20 @@ package de.upbracing.code_generation.fsm.model;
 
 public class TransitionInfo {
 	private String eventName, condition, action;
+	private double waitTime;
 
 	public TransitionInfo(String eventName, String condition, String action) {
 		super();
 		this.eventName = eventName;
+		this.waitTime = Double.NaN;
+		this.condition = condition;
+		this.action = action;
+	}
+
+	public TransitionInfo(String eventName, double waitTime, String condition, String action) {
+		super();
+		this.eventName = eventName;
+		this.waitTime = waitTime;
 		this.condition = condition;
 		this.action = action;
 	}
@@ -21,11 +31,20 @@ public class TransitionInfo {
 	public String getAction() {
 		return action;
 	}
+	
+	public double getWaitTime() {
+		return waitTime;
+	}
+	
+	public boolean isWaitTransition() {
+		return !Double.isNaN(waitTime);
+	}
 
 	@Override
 	public String toString() {
 		return "TransitionInfo [eventName=" + eventName + ", condition="
-				+ condition + ", action=" + action + "]";
+				+ condition + ", action=" + action + ", waitTime=" + waitTime
+				+ "]";
 	}
 
 	@Override
@@ -37,6 +56,9 @@ public class TransitionInfo {
 				+ ((condition == null) ? 0 : condition.hashCode());
 		result = prime * result
 				+ ((eventName == null) ? 0 : eventName.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(waitTime);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 
@@ -63,6 +85,9 @@ public class TransitionInfo {
 			if (other.eventName != null)
 				return false;
 		} else if (!eventName.equals(other.eventName))
+			return false;
+		if (Double.doubleToLongBits(waitTime) != Double
+				.doubleToLongBits(other.waitTime))
 			return false;
 		return true;
 	}
