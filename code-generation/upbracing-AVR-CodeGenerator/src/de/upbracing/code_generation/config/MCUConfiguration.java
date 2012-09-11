@@ -31,6 +31,7 @@ public class MCUConfiguration {
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
 	private ConfigurationModel timer;
+	private StatemachinesConfig statemachines = new StatemachinesConfig();
 
 	/** current working directory for loading config files */
 	public static String currentDirectory = ".";
@@ -175,7 +176,16 @@ public class MCUConfiguration {
 	public RTOSConfig getRtos() {
 		return rtos;
 	}
-	
+
+	/**
+	 * Get statemachines config
+	 * 
+	 * @return the config object
+	 */
+	public StatemachinesConfig getStatemachines() {
+		return statemachines;
+	}
+
 	/**
 	 * Get timer config
 	 * 
