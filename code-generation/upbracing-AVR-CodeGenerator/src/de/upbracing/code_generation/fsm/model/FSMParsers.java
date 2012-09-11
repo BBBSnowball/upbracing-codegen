@@ -111,6 +111,7 @@ public class FSMParsers {
 		});
 	}
 
+	@SuppressWarnings("unused")
 	private static Parser<String> joinStrings(Parser<String[]> strings) {
 		return joinStringList(asList(strings));
 	}
