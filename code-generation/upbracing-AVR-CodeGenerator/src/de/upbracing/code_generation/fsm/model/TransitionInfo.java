@@ -1,23 +1,26 @@
 package de.upbracing.code_generation.fsm.model;
 
 public class TransitionInfo {
-	private String eventName, condition, action;
+	private String eventName, condition, action, waitType;
 	private double waitTime;
 
 	public TransitionInfo(String eventName, String condition, String action) {
 		super();
 		this.eventName = eventName;
-		this.waitTime = Double.NaN;
 		this.condition = condition;
 		this.action = action;
+		this.waitType = null;
+		this.waitTime = Double.NaN;
 	}
 
-	public TransitionInfo(String eventName, double waitTime, String condition, String action) {
+	public TransitionInfo(String eventName, String condition, String action,
+			String waitType, double waitTime) {
 		super();
 		this.eventName = eventName;
-		this.waitTime = waitTime;
 		this.condition = condition;
 		this.action = action;
+		this.waitType = waitType;
+		this.waitTime = waitTime;
 	}
 
 	public String getEventName() {
@@ -32,19 +35,24 @@ public class TransitionInfo {
 		return action;
 	}
 	
+	public String getWaitType() {
+		return waitType;
+	}
+	
 	public double getWaitTime() {
 		return waitTime;
 	}
 	
 	public boolean isWaitTransition() {
-		return !Double.isNaN(waitTime);
+		return waitType != null && !Double.isNaN(waitTime);
 	}
 
+	
 	@Override
 	public String toString() {
 		return "TransitionInfo [eventName=" + eventName + ", condition="
-				+ condition + ", action=" + action + ", waitTime=" + waitTime
-				+ "]";
+				+ condition + ", action=" + action + ", waitType=" + waitType
+				+ ", waitTime=" + waitTime + "]";
 	}
 
 	@Override
@@ -59,6 +67,8 @@ public class TransitionInfo {
 		long temp;
 		temp = Double.doubleToLongBits(waitTime);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ ((waitType == null) ? 0 : waitType.hashCode());
 		return result;
 	}
 
@@ -88,6 +98,11 @@ public class TransitionInfo {
 			return false;
 		if (Double.doubleToLongBits(waitTime) != Double
 				.doubleToLongBits(other.waitTime))
+			return false;
+		if (waitType == null) {
+			if (other.waitType != null)
+				return false;
+		} else if (!waitType.equals(other.waitType))
 			return false;
 		return true;
 	}

@@ -45,23 +45,38 @@ public class FSMParsers {
 	public static TransitionInfo parseTransitionInfo(String text) {
 		Parser<String> event_name = Scanners.IDENTIFIER.source();
 		Parser<String> condition = getActionParser("]").between(Scanners.string("["), Scanners.string("]"));
+		
+		Parser<Pair<String, Pair<String, Double>>> event_and_wait =
+				Parsers.or(
+						asSecondOfStringPair(waitEventParser()),
+						Parsers.pair(
+								withWhitespace(event_name).optional(),
+								Parsers.sequence(
+										withWhitespace(Scanners.string(":")),
+										waitEventParser()).optional()));
+		
 		Parser<TransitionInfo> parser = Parsers.sequence(
-				withWhitespace(
-					Parsers.or(
-							waitEventParser(),
-							Parsers.pair(event_name, Parsers.constant(Double.NaN)))
-						.optional()),
+				withWhitespace(event_and_wait),
 				withWhitespace(condition.optional()),
 				Parsers.sequence(
 						withWhitespace(Scanners.string("/")),
 						getActionParser(""))
 					.optional(),
-				new Map3<Pair<String, Double>, String, String, TransitionInfo>() {
+				new Map3<Pair<String, Pair<String, Double>>, String, String, TransitionInfo>() {
 					@Override
-					public TransitionInfo map(Pair<String, Double> event, String condition, String action) {
-						String event_name = (event != null ? event.a : null);
-						double wait_time = (event != null ? event.b : Double.NaN);
-						return new TransitionInfo(event_name, wait_time, condition, action);
+					public TransitionInfo map(Pair<String, Pair<String, Double>> event_wait,
+							String condition, String action) {
+						String event_name = null;
+						String wait_type = null;
+						double wait_time = Double.NaN;
+						if (event_wait != null) {
+							event_name = event_wait.a;
+							if (event_wait.b != null) {
+								wait_type = event_wait.b.a;
+								wait_time = event_wait.b.b;
+							}
+						}
+						return new TransitionInfo(event_name, condition, action, wait_type, wait_time);
 					}
 				});
 
@@ -69,6 +84,18 @@ public class FSMParsers {
 				.parse(text);
 	}
 	
+	private static <T, U> Parser<Pair<T, U>> asSecondOfPair(Parser<U> p) {
+		return p.map(new Map<U, Pair<T, U>>() {
+			public Pair<T, U> map(U from) {
+				return new Pair<T, U>(null, from);
+			}
+		});
+	}
+
+	private static <U> Parser<Pair<String, U>> asSecondOfStringPair(Parser<U> p) {
+		return asSecondOfPair(p);
+	}
+
 	private static Parser<String> getActionParser(String notAllowedChars) {
 		return textWithMatchingParens(
 				Parsers.or(
