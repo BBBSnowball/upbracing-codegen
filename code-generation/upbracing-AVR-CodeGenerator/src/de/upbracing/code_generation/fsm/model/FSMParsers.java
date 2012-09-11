@@ -31,6 +31,9 @@ public class FSMParsers {
 	 * @return a list of action objects
 	 */
 	public static List<Action> parseStateActions(String text) {
+		// we cannot use newlines in the editor, so we use '###' to simulate it
+		text = text.replace("###", "\n");
+		
 		@SuppressWarnings("unchecked")
 		Parser<ActionType> action_names[] = new Parser[ActionType.values().length];
 		for (int i=0;i<ActionType.values().length;i++) {
@@ -75,6 +78,9 @@ public class FSMParsers {
 	 * @return a list of action objects
 	 */
 	public static TransitionInfo parseTransitionInfo(String text) {
+		// we cannot use newlines in the editor, so we use '###' to simulate it
+		text = text.replace("###", "\n");
+		
 		Parser<String> event_name = Scanners.IDENTIFIER.source();
 		Parser<String> condition = getActionParser("]").between(Scanners.string("["), Scanners.string("]"));
 		
