@@ -226,7 +226,8 @@ public class Main {
 		MCUConfiguration config = Helpers.loadConfig(config_file);
 		
 		// generate the files
-		runGenerators(config, target_directory);
+		if (!runGenerators(config, target_directory))
+			System.exit(1);
 	}
 
 	/** Find all files in a directory
@@ -363,14 +364,14 @@ public class Main {
 	 * @param config the configuration object
 	 * @param target_directory directory for the generated files
 	 */
-	private static void runGenerators(MCUConfiguration config,
+	private static boolean runGenerators(MCUConfiguration config,
 			String target_directory) {
 		Iterable<IGenerator> generators = sortGenerators(findGenerators());
 		
 		HashSet<IGenerator> failed_generators = new HashSet<IGenerator>();
 		
 		if (!validate(generators, config, false, failed_generators))
-			return;
+			return false;
 		
 		for (IGenerator gen : generators) {
 			if (!failed_generators.contains(gen))
@@ -378,7 +379,7 @@ public class Main {
 		}
 
 		if (!validate(generators, config, true, failed_generators))
-			return;
+			return false;
 		
 		for (IGenerator gen : generators) {
 			if (failed_generators.contains(gen))
@@ -415,8 +416,11 @@ public class Main {
 			}
 		}
 		
-		if (!failed_generators.isEmpty())
+		if (!failed_generators.isEmpty()) {
 			System.err.println("\n\n!!! Parts of the code have not been generated (see above) !!!\n");
+			return false;
+		} else
+			return true;
 	}
 	
 	/** escape a string (e.g. a file name) for use in a Makefile
