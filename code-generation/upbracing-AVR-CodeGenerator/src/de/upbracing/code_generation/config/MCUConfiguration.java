@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.config;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +31,41 @@ public class MCUConfiguration {
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
 	private ConfigurationModel timer;
+	private StatemachinesConfig statemachines = new StatemachinesConfig();
+
+	/** current working directory for loading config files */
+	public static String currentDirectory = ".";
+	
+	/** get current working directory for loading config files */
+	public static String getCurrentDirectory() { return currentDirectory; }
+
+	/** set current working directory for loading config files */
+	public static void setCurrentDirectory(String cwd) { currentDirectory = cwd; }
+
+	/** make absolute path
+	 * 
+	 * If the path is not absolute, use {@link #getCurrentDirectory()} as the parent. 
+	 * 
+	 * @param path the path
+	 * @return absolute path
+	 */
+	public static File makeAbsolute(File path) {
+		if (path.isAbsolute())
+			return path;
+		else
+			return new File(getCurrentDirectory(), path.toString());
+	}
+	
+	/** make absolute path
+	 * 
+	 * If the path is not absolute, use {@link #getCurrentDirectory()} as the parent. 
+	 * 
+	 * @param path the path
+	 * @return absolute path
+	 */
+	public static String makeAbsolute(String path) {
+		return makeAbsolute(new File(path)).getAbsolutePath();
+	}
 
 	/**
 	 * Get the list of electronic control units (ECUs)
@@ -140,7 +176,16 @@ public class MCUConfiguration {
 	public RTOSConfig getRtos() {
 		return rtos;
 	}
-	
+
+	/**
+	 * Get statemachines config
+	 * 
+	 * @return the config object
+	 */
+	public StatemachinesConfig getStatemachines() {
+		return statemachines;
+	}
+
 	/**
 	 * Get timer config
 	 * 

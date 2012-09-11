@@ -1,0 +1,5 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="StatemachinesCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="" %>

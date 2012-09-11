@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="GlobalVariableTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* java.security.MessageDigest java.util.*" %>
+	imports="de.upbracing.code_generation.config.* java.util.*" %>
 
 //////////////////////////
 ///  global variables  ///
@@ -35,8 +35,8 @@ extern <%= var.getType() %>&&&<%= varname %>;
 for (GlobalVariable var : config.getGlobalVariables()) {
 	String name = var.getName();
 	String varname = varnames.get(name);
-	String Name = TemplateHelpers.capitalize(name);
-	String NAME= name.toUpperCase();
+	//String Name = TemplateHelpers.capitalize(name);
+	//String NAME= name.toUpperCase();
 	int size = var.getSize();
 	if (size < 0) {
 		size = CType.getSizeOf(var.getType());

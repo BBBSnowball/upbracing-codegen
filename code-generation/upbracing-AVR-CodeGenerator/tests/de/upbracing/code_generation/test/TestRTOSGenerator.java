@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import de.upbracing.code_generation.IGenerator;
-import de.upbracing.code_generation.PinTemplate;
 import de.upbracing.code_generation.RTOSApplicationCFileTemplate;
 import de.upbracing.code_generation.RTOSApplicationHeaderTemplate;
 import de.upbracing.code_generation.RTOSFeaturesTemplate;
@@ -24,6 +23,7 @@ public class TestRTOSGenerator {
 		config.getRtos().setTickFrequency(5);
 		config.getRtos().setConformanceClass("BCC1");
 
+		@SuppressWarnings("unused")
 		RTOSTask idle_task = config.getRtos().addTask("Idle", TaskState.READY);
 		config.getRtos().addTask("Update", TaskState.SUSPENDED, 1);
 		config.getRtos().addTask("Increment", TaskState.SUSPENDED, 5);

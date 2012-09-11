@@ -47,6 +47,7 @@ public class Helpers {
 			old_pwd = engine.eval("Dir.pwd").toString();
 			engine.put("directory", directory);
 			engine.eval("Dir.chdir($directory)");
+			MCUConfiguration.setCurrentDirectory(directory);
 		}
 		
 		// execute the script

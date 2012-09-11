@@ -58,6 +58,12 @@ public class TestParsers {
 				
 				new Action(ActionType.EXIT, "blub(a,b/2); \\\n blork(42); {\nabc(\\x);\n}"),
 				new Action(ActionType.ENTER, "b"));
+
+		assertListEquals(
+				FSMParsers.parseStateActions("EXIT / blub(\"a)\",b/2,\"[c\"); \\\n blork(42); {\nabc(\\x, \"}\");\n}\nENTER / b"),
+				
+				new Action(ActionType.EXIT, "blub(\"a)\",b/2,\"[c\"); \\\n blork(42); {\nabc(\\x, \"}\");\n}"),
+				new Action(ActionType.ENTER, "b"));
 	}
 
 	@Test
@@ -98,6 +104,96 @@ public class TestParsers {
 		assertEquals(
 				new TransitionInfo(null, null, "blub(a,\nb/2)"),
 				FSMParsers.parseTransitionInfo("/ blub(a,\nb/2)"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub(\"a)\", b)"),
+				FSMParsers.parseTransitionInfo("/ blub(\"a)\", b)"));
+		
+
+		assertEquals(
+				new TransitionInfo(null, null, "blub(\"a)\", b)", "wait", 100e-3),
+				FSMParsers.parseTransitionInfo("wait(100ms) / blub(\"a)\", b)"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub(\"a)\", b)", "at", 3.2e-7),
+				FSMParsers.parseTransitionInfo("at(3.2e2ns) / blub(\"a)\", b)"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "wait(100ms)", "before", 1e2*1e-9),
+				FSMParsers.parseTransitionInfo("before(1e2ns) / wait(100ms)"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub", "after", 100),
+				FSMParsers.parseTransitionInfo("after(1e2s) / blub"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub", "wait", 100),
+				FSMParsers.parseTransitionInfo("wait (1e2s) / blub"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600*24),
+				FSMParsers.parseTransitionInfo("wait ( 1 day )  "));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600*24*2),
+				FSMParsers.parseTransitionInfo("wait 2 days"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600*3.2),
+				FSMParsers.parseTransitionInfo("wait 3.2h"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600),
+				FSMParsers.parseTransitionInfo("wait 1.0hour"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600*.2),
+				FSMParsers.parseTransitionInfo("wait .2hours"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", .3e-5),
+				FSMParsers.parseTransitionInfo("wait .3e1us"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 42e-6),
+				FSMParsers.parseTransitionInfo("wait 42.e6 ps"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, null, "wait", 3600/4.0),
+				FSMParsers.parseTransitionInfo("wait 1/4h"));
+		
+		assertEquals(
+				new TransitionInfo("blub", null, null, "wait", 3600/4.0),
+				FSMParsers.parseTransitionInfo("blub:wait 1/4h"));
+		
+		assertEquals(
+				new TransitionInfo("foo", null, null, "wait", 3600*24/3.0),
+				FSMParsers.parseTransitionInfo("foo:wait(1/3day)"));
+		
+		assertEquals(
+				new TransitionInfo("bar", null, "x()", "at", 3600*24/3.0),
+				FSMParsers.parseTransitionInfo("bar : at(1/3 day) / x()"));
+		
+		assertEquals(
+				new TransitionInfo("bar", null, "x()", "at", 3600*24/3.0),
+				FSMParsers.parseTransitionInfo(" bar : at(1/3 day) / x()"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "x()", "at", 3600*24/3.0),
+				FSMParsers.parseTransitionInfo(" : at(1/3 day) / x()"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "x()", "at", 3600*24/3.0),
+				FSMParsers.parseTransitionInfo(":at(1/3 day) / x()"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "x()", "at", 60+13),
+				FSMParsers.parseTransitionInfo("at 1:13 / x()"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "x()", "at", 3600+2*60+13.7),
+				FSMParsers.parseTransitionInfo("at 1:02:13.7 / x()"));
+		//NOTE: 1:02:.7 would not work
 	}
 	
 	private static void assertListEquals(Collection<?> expected, Collection<?> actual) {

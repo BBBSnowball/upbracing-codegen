@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="RTOSApplicationHeaderTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* java.util.*" %>
+	imports="de.upbracing.code_generation.config.*" %>
 <% RTOSConfig rtos = config.getRtos(); %>
 /*
  * Os_cfg_application.h

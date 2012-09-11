@@ -1,0 +1,133 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="StatemachinesHeaderTemplate"
+	skeleton="generator.skeleton"
+	imports="java.util.* de.upbracing.code_generation.config.* de.upbracing.code_generation.fsm.model.* Statecharts.*" %>
+/*
+ * statemachines.h
+ *
+ * This file declares the public interface for all statemachines.
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#ifndef STATEMACHINES_H_
+#define STATEMACHINES_H_
+
+<%
+if (config.getStatemachines().isEmpty()) {
+%>// no statemachines loaded
+// use $config.statemachines.load(statechart_file)
+<%
+} else {
+
+StatemachinesConfig statemachines = config.getStatemachines();
+
+%>
+
+////////////////////////////////
+///  code for statemachines  ///
+////////////////////////////////
+<%
+
+for (StateMachineForGeneration smg : statemachines) {
+	String sm_name = smg.getName();
+	
+	if (smg.hasHeaderCodeBoxes()) {
+%>
+
+// code from global code boxes in statemachine <%= sm_name %>
+
+<%
+		for (GlobalCode box : smg.getGlobalCodeBoxes()) {
+			if (box.getInHeaderFile())
+				stringBuffer.append(box.getCode());
+		}
+	}
+}
+
+%>
+
+////////////////////////////////
+///  statemachine functions  ///
+////////////////////////////////
+<%
+for (StateMachineForGeneration smg : statemachines) {
+	String sm_name = smg.getName();
+%>
+
+void <%= sm_name %>_init();
+void <%= sm_name %>_tick();
+
+<%
+}
+%>
+
+////////////////////////////////
+///     event functions      ///
+////////////////////////////////
+
+<%
+for (StateMachineForGeneration sm : statemachines) {
+	String sm_name = sm.getName();
+%>
+
+// statemachine <%= sm.getName() %>
+
+<%
+	for (String event_name : sm.getEvents().keySet()) {
+%>
+void <%=sm_name%>_event_<%=event_name%>(void);
+<%
+	}	// for each event
+}	// for each statemachine
+
+%>
+
+// accumulated event functions
+
+<%
+
+Map<String, Set<StateMachineForGeneration>> events = new TreeMap<String, Set<StateMachineForGeneration>>();
+
+for (StateMachineForGeneration smg : statemachines) {
+	for (String event_name : smg.getEvents().keySet()) {
+		Set<StateMachineForGeneration> smgs = events.get(event_name);
+		if (smgs == null) {
+			smgs = new HashSet<StateMachineForGeneration>();
+			events.put(event_name, smgs);
+		}
+		
+		smgs.add(smg);
+	}
+}
+
+for (Map.Entry<String, Set<StateMachineForGeneration>> event : events.entrySet()) {
+	String event_name = event.getKey();
+	Set<StateMachineForGeneration> smgs = event.getValue();
+%>
+inline static void event_<%=event_name%>() {
+<%
+	List<String> sm_names = new ArrayList<String>(smgs.size());
+	for (StateMachineForGeneration smg : smgs) {
+		sm_names.add(smg.getName());
+	}
+	Collections.sort(sm_names);
+	
+	for (String sm_name : sm_names) {
+%>
+	<%=sm_name%>_event_<%=event_name%>();
+<%
+	}
+%>
+	}	// for each statemachine name
+
+<%
+}	// for each event
+
+
+}	// list of statemachines not empty
+
+%>
+
+#endif	// STATEMACHINES_H_

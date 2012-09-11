@@ -24,6 +24,7 @@ public abstract class AbstractGenerator implements IGenerator {
 	 * 
 	 * @param filespecs used generators (Class<IGenerator>) and pairs of file name (String) and template (ITemplate)
 	 */
+	@SuppressWarnings("unchecked")
 	public AbstractGenerator(Object... filespecs) {
 		//if ((filespecs.length%2) != 0)
 		//	throw new IllegalArgumentException("expecting pairs of file name and template, but got an odd number of arguments");
