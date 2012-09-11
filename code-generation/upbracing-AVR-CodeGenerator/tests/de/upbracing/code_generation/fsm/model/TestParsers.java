@@ -58,6 +58,12 @@ public class TestParsers {
 				
 				new Action(ActionType.EXIT, "blub(a,b/2); \\\n blork(42); {\nabc(\\x);\n}"),
 				new Action(ActionType.ENTER, "b"));
+
+		assertListEquals(
+				FSMParsers.parseStateActions("EXIT / blub(\"a)\",b/2,\"[c\"); \\\n blork(42); {\nabc(\\x, \"}\");\n}\nENTER / b"),
+				
+				new Action(ActionType.EXIT, "blub(\"a)\",b/2,\"[c\"); \\\n blork(42); {\nabc(\\x, \"}\");\n}"),
+				new Action(ActionType.ENTER, "b"));
 	}
 
 	@Test
@@ -98,6 +104,10 @@ public class TestParsers {
 		assertEquals(
 				new TransitionInfo(null, null, "blub(a,\nb/2)"),
 				FSMParsers.parseTransitionInfo("/ blub(a,\nb/2)"));
+		
+		assertEquals(
+				new TransitionInfo(null, null, "blub(\"a)\", b)"),
+				FSMParsers.parseTransitionInfo("/ blub(\"a)\", b)"));
 	}
 	
 	private static void assertListEquals(Collection<?> expected, Collection<?> actual) {

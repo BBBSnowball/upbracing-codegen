@@ -62,7 +62,8 @@ public class FSMParsers {
 		return textWithMatchingParens(
 				Parsers.or(
 						Scanners.string("\\\n"),
-						Scanners.notAmong("([{" + notAllowedChars))
+						Scanners.notAmong("([{\"" + notAllowedChars),
+						Scanners.DOUBLE_QUOTE_STRING)
 					.source());
 	}
 	
@@ -84,7 +85,7 @@ public class FSMParsers {
 				joinStringList(
 					Parsers.or(
 							text_in_parens,
-							Scanners.notAmong("([{}])", "open parens").source())
+							Parsers.or(Scanners.DOUBLE_QUOTE_STRING, Scanners.notAmong("([{}])\"", "open parens")).source())
 						.many()));
 		return joinStringList(Parsers.or(text_in_parens, textparser_without_parens).many1());
 	}
