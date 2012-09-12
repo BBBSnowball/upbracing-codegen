@@ -1,6 +1,7 @@
 package de.upbracing.code_generation.generators;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.config.*;
@@ -56,7 +57,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 				if (smg.hasCFileCodeBoxes()) {
 
-					stringBuffer.append("\n\n// code from global code boxes in statemachine ");
+					stringBuffer.append("\n// code from global code boxes in statemachine ");
 					stringBuffer.append(sm_name);
 					stringBuffer.append("\n");
 
@@ -86,7 +87,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 									return -nameA.compareTo(nameB);
 							}
 						};
-				final Comparator<Transition> cmpTransitions =
+				cmpTransitions =
 						new Comparator<Transition>() {
 							@Override
 							public int compare(Transition t1, Transition t2) {
@@ -190,63 +191,35 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 				banner("tick function");
 				stringBuffer.append('\n');
+				
+				// generate tick function
+				// null means no event -> tick function
+				// We have to use "" instead of null for the map of events, because
+				// Java/JRuby chokes on a null value.
+				generateEventFunction(null, states, smg.getEvents().get(""));
 
-				stringBuffer.append("void " + sm_name + "_tick() {\n");
-				stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
+				stringBuffer.append('\n');
+				banner("event functions");
 				stringBuffer.append('\n');
 				
-				for (StateWithActions state : states) {
-					stringBuffer.append("\tcase " + stateName(state) + ":\n");
+				for (Entry<String, Set<Transition>> entry : smg.getEvents().entrySet()) {
+					String event = entry.getKey();
+					Set<Transition> transitions = entry.getValue();
 					
-					if (executeDuringState("\t\t", state))
-						stringBuffer.append('\n');
+					if (event == null || event.equals(""))
+						// skip transitions which are handled by the tick function
+						continue;
 					
-					SortedSet<Transition> ts = new TreeSet<Transition>(cmpTransitions);
-					for (Transition t : smg.getTransitions()) {
-						if (t.getSource() == state && smg.getTransitionInfo(t).getEventName() == null)
-							ts.add(t);
-					}
-					
-					boolean first = true;
-					for (Transition t : ts) {
-						TransitionInfo tinfo = smg.getTransitionInfo(t);
-						
-						stringBuffer.append("\t\t");
-						if (first)
-							first = false;
-						else
-							stringBuffer.append("} else ");
-						
-						stringBuffer.append("if (");
-						String condition = tinfo.getCondition();
-						if (condition == null || condition.trim().equals(""))
-							condition = "1";
-						printCode("\t\t\t\t\t", condition, true);
-						stringBuffer.append(") {");
-						if (tinfo.isWaitTransition()) {
-							// print some documentation
-							stringBuffer.append("  // " + tinfo.getWaitType() + "(" + formatTime(tinfo.getWaitTime()) + ")");
-							if (tinfo.getCondition() != null && !condition.trim().equals(""))
-								stringBuffer.append(" [" + tinfo.getCondition() + "]");
-						}
-						stringBuffer.append('\n');
-						executeTransition("\t\t\t", t);
-					}
-					if (!first)
-						stringBuffer.append("\t\t}\n");
-					
-					stringBuffer.append("\t\tbreak;\n");
+					generateEventFunction(event, states, transitions);
 					stringBuffer.append('\n');
 				}
-
-				stringBuffer.append("\t}\n");
-				stringBuffer.append("}\n");
 			}
 		} // for each statemachine
 
 		this.stringBuffer = null;
 		this.smg = null;
 		this.existing_action_methods = null;
+		this.cmpTransitions = null;
 
 		return stringBuffer.toString();
 	} // end of method generate(...)
@@ -254,7 +227,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	private StringBuffer stringBuffer;
 	private StateMachineForGeneration smg;
 	private Set<String> existing_action_methods;
+	private Comparator<Transition> cmpTransitions;
 
+	@SuppressWarnings("unused")
 	private void times(int n, String s) {
 		for (int i = 0; i < n; i++)
 			stringBuffer.append(s);
@@ -329,7 +304,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 	}
 
-	private String getName(Object state) {
+	public static String getName(Object state) {
 		if (state instanceof State) {
 			if (state instanceof StateWithActions) {
 				if (state instanceof NormalState)
@@ -370,6 +345,16 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return smg.getName() + "_" + getName(state) + "_state";
 	}
 
+	public static String timeVariableForState(StateMachineForGeneration smg,
+			StateWithActions state) {
+		return smg.getName() + ".state_time";
+	}
+
+	@SuppressWarnings("unused")
+	private String timeVariableForState(StateWithActions state) {
+		return timeVariableForState(smg, state);
+	}
+
 	private boolean printActions(String indent, List<Action> actions) {
 		boolean printedSomething = false;
 		int i = 0;
@@ -381,6 +366,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return printedSomething;
 	}
 
+	@SuppressWarnings("unused")
 	private boolean printActions(String indent, Action action) {
 		return printActions(indent, Arrays.asList(action));
 	}
@@ -450,10 +436,12 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			if (type.shouldExecuteFor(trans, self) && existing_action_methods.contains(actionMethodName))
 				printCode(indent, actionMethodName + "();\n");
 
-			self = trans.getDestination();
-			actionMethodName = actionMethod(getName(self), type);
-			if (type.shouldExecuteFor(trans, self) && existing_action_methods.contains(actionMethodName))
-				printCode(indent, actionMethodName + "();\n");
+			if (trans.getSource() != trans.getDestination()) {
+				self = trans.getDestination();
+				actionMethodName = actionMethod(getName(self), type);
+				if (type.shouldExecuteFor(trans, self) && existing_action_methods.contains(actionMethodName))
+					printCode(indent, actionMethodName + "();\n");
+			}
 		}
 	}
 
@@ -523,5 +511,78 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 	private String formatTime(double time) {
 		return FSMParsers.formatTime(time);
+	}
+
+	private void generateEventFunction(String event, SortedSet<StateWithActions> states, Iterable<Transition> transitions) {
+		String sm_name = smg.getName();
+		if (transitions == null)
+			transitions = smg.getTransitions();
+		
+		stringBuffer.append("void " + sm_name + "_" + (event != null ? event : "tick") + "() {\n");
+		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
+		stringBuffer.append('\n');
+		
+		for (StateWithActions state : states) {
+			stringBuffer.append("\tcase " + stateName(state) + ":\n");
+			
+			if (event == null) {
+				// If we are generating the tick function, print actions
+				// that should be executed for the state.
+				if (executeDuringState("\t\t", state))
+					stringBuffer.append('\n');
+			}
+			
+			SortedSet<Transition> ts = new TreeSet<Transition>(cmpTransitions);
+			for (Transition t : transitions) {
+				if (t.getSource() == state) {
+					boolean isForThisEvent;
+					
+					// equals fails for the null value, the '==' operator doesn't work for objects
+					// -> use the appropiate one depending on the value of event
+					if (event != null)
+						isForThisEvent = smg.getTransitionInfo(t).getEventName().equals(event);
+					else
+						isForThisEvent = smg.getTransitionInfo(t).getEventName() == null;
+					
+					if (isForThisEvent)
+						ts.add(t);
+				}
+			}
+			
+			boolean first = true;
+			for (Transition t : ts) {
+				TransitionInfo tinfo = smg.getTransitionInfo(t);
+				
+				stringBuffer.append("\t\t");
+				if (first)
+					first = false;
+				else
+					stringBuffer.append("} else ");
+				
+				stringBuffer.append("if (");
+				String condition = tinfo.getCondition();
+				if (condition == null || condition.trim().equals(""))
+					condition = "1";
+				printCode("\t\t\t\t\t", condition, true);
+				stringBuffer.append(") {");
+				if (tinfo.isWaitTransition()) {
+					// print some documentation
+					stringBuffer.append("  // " + tinfo.getWaitType() + "(" + formatTime(tinfo.getWaitTime()) + ")");
+					/*if (tinfo.getCondition() != null && !condition.trim().equals(""))
+						// not so useful because it contains the rewritten wait condition
+						stringBuffer.append(" [" + tinfo.getCondition() + "]");*/
+				}
+				stringBuffer.append('\n');
+				executeTransition("\t\t\t", t);
+			}
+			if (!first)
+				stringBuffer.append("\t\t}\n\n");
+			
+			stringBuffer.append("\t\tbreak;\n");
+			stringBuffer.append('\n');
+		}
+
+		stringBuffer.append("\t}\n");
+		stringBuffer.append("}\n");
 	}
 }

@@ -48,6 +48,28 @@ public class TransitionInfo {
 	}
 
 	
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
+	}
+
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	public void setWait(String waitType, double waitTime) {
+		this.waitType = waitType;
+		this.waitTime = waitTime;
+	}
+	
+	public void removeWait() {
+		setWait(null, Double.NaN);
+	}
+	
+
 	@Override
 	public String toString() {
 		return "TransitionInfo [eventName=" + eventName + ", condition="

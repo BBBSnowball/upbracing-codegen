@@ -44,8 +44,21 @@ public class StateMachineForGeneration {
 	public EList<GlobalCode> getGlobalCodeBoxes() {
 		return inner.getGlobalCodeBoxes();
 	}
-
 	
+	public String getBasePeriodAsString() {
+		return inner.getBasePeriod();
+	}
+
+	public void setBasePeriod(String value) {
+		inner.setBasePeriod(value);
+	}
+	
+	
+	public double getBasePeriod() {
+		return FSMParsers.parseTime(getBasePeriodAsString());
+	}
+	
+
 	public SortedMap<String, Set<Transition>> getEvents() {
 		return events;
 	}
@@ -90,15 +103,21 @@ public class StateMachineForGeneration {
 		for (Transition transition : getTransitions()) {
 			TransitionInfo ti = getTransitionInfo(transition);
 			String eventName = ti.getEventName();
-			if (eventName != null) {
-				Set<Transition> transitions = events.get(eventName);
-				if (transitions == null) {
-					transitions = new HashSet<Transition>();
-					events.put(eventName, transitions);
-				}
-				
-				transitions.add(transition);
+			
+			// If eventName is null, it will be put into the
+			// map nonetheless. Those transitions are used
+			// for the tick function. However, the map wouldn't
+			// accept null keys, so we use the empty string instead.
+			if (eventName == null)
+				eventName = "";
+			
+			Set<Transition> transitions = events.get(eventName);
+			if (transitions == null) {
+				transitions = new HashSet<Transition>();
+				events.put(eventName, transitions);
 			}
+			
+			transitions.add(transition);
 		}
 	}
 

@@ -4,7 +4,7 @@ import Statecharts.State;
 import Statecharts.Transition;
 
 public enum ActionType {
-	EXIT, EXIT_NOT_TO_SELF, ALWAYS, DURING, ENTER_NOT_FROM_SELF, ENTER;
+	EXIT, EXIT_NOT_TO_SELF, DURING, ALWAYS, ENTER_NOT_FROM_SELF, ENTER;
 	
 	public boolean shouldExecuteFor(Transition trans, State self) {
 		if (trans != null)

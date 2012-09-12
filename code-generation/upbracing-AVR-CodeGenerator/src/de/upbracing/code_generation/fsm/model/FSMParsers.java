@@ -390,4 +390,8 @@ public class FSMParsers {
 							withWhitespace(Scanners.string(")"))),
 					withWhitespace(timeParser())));
 	}
+
+	public static double parseTime(String time) {
+		return timeParser().parse(time);
+	}
 }
