@@ -41,7 +41,7 @@ for (StateMachineForGeneration smg : statemachines) {
 <%
 		for (GlobalCode box : smg.getGlobalCodeBoxes()) {
 			if (box.getInHeaderFile())
-				stringBuffer.append(box.getCode());
+				stringBuffer.append(box.getCode().replace("###", "\n"));
 		}
 	}
 }
@@ -118,9 +118,9 @@ inline static void event_<%=event_name%>() {
 %>
 	<%=sm_name%>_event_<%=event_name%>();
 <%
-	}
-%>
 	}	// for each statemachine name
+%>
+}
 
 <%
 }	// for each event

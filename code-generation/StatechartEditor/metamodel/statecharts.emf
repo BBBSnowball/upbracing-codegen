@@ -56,6 +56,7 @@ class Transition {
   ref State[1] source;
   ref State[1] destination;
   attr String[1] transitionInfo = "[true]";
+  attr int priority = 0;
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0", label.pattern="{0}")

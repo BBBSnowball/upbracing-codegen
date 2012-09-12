@@ -1,6 +1,5 @@
 package de.upbracing.code_generation.generators;
 
-import de.upbracing.code_generation.StatemachinesCFileTemplate;
 import de.upbracing.code_generation.StatemachinesHeaderTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
@@ -50,6 +49,13 @@ public class StatemachineGenerator extends AbstractGenerator {
 			//TODO for Rishab: Assign a name to each state and region that doesn't have a
 			//                 name, yet. You can generate unique names like this:
 			//                 ("state" + (++runningCounter))
+			
+			//TODO for Rishab: Make sure that there is at most one final state in each region
+			//                 and top-level of a statemachine. If there is more than one final
+			//                 state, remove it and update the transitions accordingly. There
+			//                 can be more than one final state in a statemachine (e.g. one is
+			//                 in a region and the other one on the top-level), so be careful
+			//                 to set each transition to the right one.
 		}
 	}
 }

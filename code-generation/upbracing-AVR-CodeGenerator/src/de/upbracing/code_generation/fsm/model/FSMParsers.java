@@ -243,6 +243,7 @@ public class FSMParsers {
 		factors.put("h",       60*60.0);
 		factors.put("min",        60.0);
 		factors.put("m",          60.0);
+		factors.put("sec",         1.0);
 		factors.put("s",           1.0);
 		factors.put("ms", 1e-3);
 		factors.put("us", 1e-6);
@@ -268,6 +269,107 @@ public class FSMParsers {
 						});
 		
 		return Parsers.or(timeWithSuffix, clockTimeParser());
+	}
+
+	public static String formatTime(double time) {
+		final java.util.Map<String, Double> factors = new HashMap<String, Double>();
+		factors.put("ms", 1e-3);
+		factors.put("us", 1e-6);
+		factors.put("ns", 1e-9);
+		factors.put("ps", 1e-12);
+		factors.put("fs", 1e-15);
+		
+		String sign = "";
+		if (time < 0) {
+			sign = "-";
+			time = -time;
+		}
+		
+		// big numbers are handled specially because for times the factors are quite weird...
+		if (time > 60) {
+			if (time < 60*60*24 * 5) {
+				int mins = ((int)time) / 60 % 60;
+				int hours = ((int)time) / 60 / 60;
+				double secs = time - mins*60 - hours*60*60;
+				return String.format("%s%02d:%02d:%06.3f", sign, hours, mins, secs);
+			} else {
+				return String.format("%4.2f days", time / (60*60*24));
+			}
+		}
+		
+		// shift it in the range 1 to 10
+		int e = 0;
+		double t = time;
+		while (t >= 10) {
+			t /= 10;
+			e += 1;
+		}
+		while (t < 1) {
+			t *= 10;
+			e -= 1;
+		}
+		
+		// now: time == t*10^e
+		
+		// find out how many digits we need, so we won't ignore a non-zero one
+		int significant_digits = 1;
+		int factor = 10;
+		for (int i=2;i<6;i++) {
+			if (Math.round(t * factor) % 10 != 0)
+				significant_digits = i;
+			factor *= 10;
+		}
+		
+		// for more than 5s we always write it in seconds, but with adjusted precision
+		if (time > 5 || e > 0) {
+			// significant digits without the ones before the point (e+1)
+			int precision = significant_digits - (e+1);
+			
+			return String.format("%2." + precision + "f sec", time);
+		}
+		
+		// we have two possibilities: use the suffix that makes the number short or the one below
+		e = -e;	// make it positive
+		int unit = (e+2) / 3;
+		int digitsBeforePoint = e % 3 + 1;
+		int digitsAfterPoint = significant_digits - digitsBeforePoint;
+		
+		if (digitsAfterPoint > 2 && unit < 5) {
+			unit++;
+			digitsBeforePoint += 3;
+			digitsAfterPoint -= 3;
+		}
+		
+		if (digitsAfterPoint < 0)
+			digitsAfterPoint = 0;
+		
+		if (unit > 5)
+			// I won't implement anything smaller than femto-seconds. No ato-seconds... sorry ;-)
+			// Don't adjust digitsAfterPoint because it is quite already too much.
+			unit = 5;
+		
+		for (int i=0;i<unit;i++)
+			time *= 1e3;
+		
+		String number = String.format("%s%2." + digitsAfterPoint + "f", sign, time);
+		
+		switch (unit) {
+		case 0:
+			return number + " sec";
+		case 1:
+			return number + " ms";
+		case 2:
+			return number + " us";
+		case 3:
+			return number + " ns";
+		case 4:
+			return number + " ps";
+		case 5:
+			return number + " fs";
+		default:
+			throw new RuntimeException("Should never get here!");
+		}
+		
 	}
 	
 	/** parse a wait term like "wait(1ms)" or "after 1/3 hour" */

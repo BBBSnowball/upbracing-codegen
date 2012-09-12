@@ -109,6 +109,10 @@ public class TestParsers {
 				new TransitionInfo(null, null, "blub(\"a)\", b)"),
 				FSMParsers.parseTransitionInfo("/ blub(\"a)\", b)"));
 		
+		assertEquals(
+				new TransitionInfo("event", "a[i\n]\n>\n0", "blub(\"a)\", b)"),
+				FSMParsers.parseTransitionInfo("event [a[i\n]\n>\n0] / blub(\"a)\", b)"));
+		
 
 		assertEquals(
 				new TransitionInfo(null, null, "blub(\"a)\", b)", "wait", 100e-3),
