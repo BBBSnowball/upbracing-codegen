@@ -36,6 +36,15 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 		// make absolute path
 		filename = MCUConfiguration.makeAbsolute(filename);
 		
+		return load(name, URI.createURI(filename));
+	}
+	
+	/** load a statemachine and add it to the list of statemachines to generate code for
+	 * 
+	 * @param filename relative path to statecharts file
+	 * @return the state machine
+	 */
+	public StateMachineForGeneration load(String name, URI statechart_file) {
 	    // initialize the model
 	    StatechartsPackage.eINSTANCE.eClass();
 	    StatechartsFactory.eINSTANCE.eClass();
@@ -47,7 +56,7 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 
 	    // load resource
 	    Resource resource = new ResourceSetImpl().getResource(
-	    		URI.createURI(filename), true);
+	    		statechart_file, true);
 	    
 	    // get first element and hope it has the right type
 	    StateMachine sm = (StateMachine) resource.getContents().get(0);

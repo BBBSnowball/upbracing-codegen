@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Statecharts:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Statecharts="http://statechart" basePeriod="1ms">
+  <transitions source="//@states.2" destination="//@states.2" transitionInfo="wait(100ms) / PORTA++"/>
+  <transitions source="//@states.2" destination="//@states.1" transitionInfo="startstop_pressed"/>
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo="startstop_pressed"/>
+  <transitions source="//@states.1" destination="//@states.1" transitionInfo="reset / PORTA = 0"/>
+  <transitions source="//@states.2" destination="//@states.1" transitionInfo="[PORTA >= 128]"/>
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo="/ PORTA = 0"/>
+  <states xsi:type="Statecharts:InitialState"/>
+  <states xsi:type="Statecharts:NormalState" actions="ENTER/DDRB = 0xff ### ENTER/PORTB++ ### ALWAYS/wdt_reset()" name="stopped"/>
+  <states xsi:type="Statecharts:NormalState" actions="ALWAYS/wdt_reset() ### ENTER/DDRA = 0xff ### EXIT/DDRA = 0x00" name="running"/>
+  <globalCodeBoxes name="includes" code="#include &lt;avr/io.h>####include &lt;avr/wdt.h>"/>
+</Statecharts:StateMachine>

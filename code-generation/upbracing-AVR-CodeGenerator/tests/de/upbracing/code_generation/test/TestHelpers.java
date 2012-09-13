@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 public class TestHelpers {
@@ -22,9 +23,18 @@ public class TestHelpers {
 			sb.append(buf, 0, len);
 		return sb.toString();
 	}
+
+	private static String getRessourcePath(String name) {
+		return TestHelpers.class.getPackage().getName().replace('.', '/') + "/" + name;
+	}
+	
+	public static URL getRessourceURL(String name) {
+		String path = getRessourcePath(name);
+		return TestHelpers.class.getClassLoader().getResource(path);
+	}
 	
 	public static String loadRessource(String name) {
-		String path = TestHelpers.class.getPackage().getName().replace('.', '/') + "/" + name;
+		String path = getRessourcePath(name);
 		InputStream stream = TestHelpers.class.getClassLoader().getResourceAsStream(path);
 		if (stream == null)
 			throw new IllegalArgumentException("invalid ressource name: " + name + " -> " + path);
