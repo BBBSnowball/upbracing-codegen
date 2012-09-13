@@ -468,16 +468,14 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig
 	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 
 <%
-		for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
-			DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
-			
-			globVars.add(signal.getName(), signal.getCType());
-			
+		for(DBCSignal sig : msg.getSignalOrder()) { 
+			DBCSignalConfig signal = (DBCSignalConfig) sig;
+						
 %>
 			// writing signal <%=signal.getName()%>
 			{
 				<%=signal.getCType()%> value;
-				value = <%= globVars.get(signal.getName()).getGetterName() %>();
+				value = <%= globVars.get(signal.getGlobalVarName()).getGetterName() %>();
 				CANMSG =<%= signal.getCType().equals("uint8_t") ? "" : " (uint8_t)" %> value;
 			}
 <%
@@ -525,9 +523,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 		for(DBCSignal sig : msg.getSignalOrder()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;
 			if (signal.getRxEcus().contains(currentEcu)) {
-					
-				globVars.add(signal.getName(), signal.getCType());
-			
+								
 				int start = signal.getStart();
 				int len = signal.getLength();
 				String name = signal.getName();
@@ -642,7 +638,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 						
 					var = value;  */
 %>
-<%=indent%>	<%= globVars.get(signal.getName()).getSetterName() %>(value);
+<%=indent%>	<%= globVars.get(signal.getGlobalVarName()).getSetterName() %>(value);
 <%
 				}
 				printCode(stringBuffer, signal.getImmAfterRx(), indent + "\t");
