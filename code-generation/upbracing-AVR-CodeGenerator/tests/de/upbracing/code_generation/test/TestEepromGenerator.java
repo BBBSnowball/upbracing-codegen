@@ -7,6 +7,7 @@ import org.junit.Test;
 import de.upbracing.code_generation.EepromTemplate;
 import de.upbracing.code_generation.config.EEPROMVariable;
 import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
 
 import static de.upbracing.code_generation.test.TestHelpers.*;
 
@@ -22,10 +23,11 @@ public class TestEepromGenerator {
 		config.getEeprom().add(1, new EEPROMVariable("xyz", "float", 1.75));
 		config.getEeprom().add("abc", "struct PointD", 16);
 		config.getEeprom().add("def", "struct PointD", 16, "{1,2}");
+
+		GeneratorTester gen = new GeneratorTester(new EEPROMAccessorGenerator(), config);
 		
-		String expected = loadResource("TestEepromGenerator.testGenerate.result1.txt");
-		String result = new EepromTemplate().generate(config);
-		assertEquals(expected, result);
+		gen.testTemplate(new EepromTemplate(),
+				"TestEepromGenerator.testGenerate.result1.txt");
 	}
 
 }

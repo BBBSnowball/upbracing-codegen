@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import de.upbracing.code_generation.CanTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
 import de.upbracing.dbc.DBCMessage;
@@ -145,10 +146,11 @@ public class TestCanGenerator {
 		//Message without send method
 		//config.getCanConfig().getMessage("CockpitBrightness").setNoSendMessage(true);
 		
+
+		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		
-		String expected = loadResource("TestCanGenerator.testGenerate.result1.txt");
-		String result = new CanTemplate().generate(config);
-		assertEquals(expected, result);	
+		gen.testTemplate(new CanTemplate(),
+				"TestCanGenerator.testGenerate.result1.txt");
 		
 	}
 

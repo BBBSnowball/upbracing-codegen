@@ -4,9 +4,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import de.upbracing.code_generation.EepromTemplate;
 import de.upbracing.code_generation.GlobalVariableTemplate;
 import de.upbracing.code_generation.config.GlobalVariable;
 import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
+import de.upbracing.code_generation.generators.GlobalVariableGenerator;
 
 import static de.upbracing.code_generation.test.TestHelpers.*;
 
@@ -22,10 +25,12 @@ public class TestGlobalVariableGenerator {
 		config.getGlobalVariables().add(1, new GlobalVariable("xyz", "float", 1.75));
 		config.getGlobalVariables().add("abc", "struct PointD", 16);
 		config.getGlobalVariables().add("def", "struct PointD", 16, "{1,2}");
+
+
+		GeneratorTester gen = new GeneratorTester(new GlobalVariableGenerator(), config);
 		
-		String expected = loadResource("TestGlobalVariableGenerator.testGenerate.result1.txt");
-		String result = new GlobalVariableTemplate().generate(config);
-		assertEquals(expected, result);
+		gen.testTemplate(new GlobalVariableTemplate(),
+				"TestGlobalVariableGenerator.testGenerate.result1.txt");
 	}
 
 }

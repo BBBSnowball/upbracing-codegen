@@ -29,7 +29,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config) {
+	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
 		boolean valid = true;
 		
 		if (!after_update_config) {
@@ -56,9 +56,11 @@ public class StatemachineGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public void updateConfig(MCUConfiguration config) {
+	public Object updateConfig(MCUConfiguration config) {
 		assignNames(config);
 		convertWaitToActionsAndConditions(config);
+
+		return super.updateConfig(config);
 	}
 
 	private void assignNames(MCUConfiguration config) {

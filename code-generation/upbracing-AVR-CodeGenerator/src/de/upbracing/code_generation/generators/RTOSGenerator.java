@@ -26,7 +26,7 @@ public class RTOSGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config) {
+	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
 		boolean valid = true;
 		RTOSConfig rtos = config.getRtos();
 		
@@ -97,7 +97,9 @@ public class RTOSGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public void updateConfig(MCUConfiguration config) {
+	public Object updateConfig(MCUConfiguration config) {
 		config.getRtos().updateTaskIDs();
+		
+		return super.updateConfig(config);
 	}
 }
