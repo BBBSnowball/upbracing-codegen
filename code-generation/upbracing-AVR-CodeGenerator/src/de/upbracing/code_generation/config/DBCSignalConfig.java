@@ -12,6 +12,8 @@ public class DBCSignalConfig extends DBCSignal {
 	private String immBeforeRx = null;
 	private String immAfterRx = null;
 	private String putValue = null;
+	private boolean noGlobalVar = false;
+	private String globalVarName = null;
 
 	public DBCSignalConfig(DBCSignal signal, List<DBCEcu> newrxecus, DBCMessageConfig newMessage) {
 		//unfortunately the creation of the new rxEcu List has to be done before the constructor is called
@@ -84,6 +86,31 @@ public class DBCSignalConfig extends DBCSignal {
 
 	public void setPutValue(String putValue) {
 		this.putValue = putValue;
+	}
+
+	public boolean isNoGlobalVar() {
+		return noGlobalVar;
+	}
+
+	public void setNoGlobalVar(boolean noGlobalVar) {
+		this.noGlobalVar = noGlobalVar;
+	}
+
+	/**
+	 * Returns the name of the global variable associated to this signal.
+	 * If no custom name is set the name is equal to getName().
+	 * 
+	 * @return name of the global variable
+	 */
+	public String getGlobalVarName() {
+		if (globalVarName == null) {
+			return getName();
+		}
+		return globalVarName;
+	}
+
+	public void setGlobalVarName(String globalVarName) {
+		this.globalVarName = globalVarName;
 	}
 	
 }
