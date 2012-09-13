@@ -146,7 +146,7 @@ public class TestCanGenerator {
 		//config.getCanConfig().getMessage("CockpitBrightness").setNoSendMessage(true);
 		
 		
-		String expected = loadRessource("TestCanGenerator.testGenerate.result1.txt");
+		String expected = loadResource("TestCanGenerator.testGenerate.result1.txt");
 		String result = new CanTemplate().generate(config);
 		assertEquals(expected, result);	
 		

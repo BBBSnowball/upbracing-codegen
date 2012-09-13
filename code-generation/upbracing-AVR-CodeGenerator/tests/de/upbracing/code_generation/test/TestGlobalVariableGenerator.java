@@ -23,7 +23,7 @@ public class TestGlobalVariableGenerator {
 		config.getGlobalVariables().add("abc", "struct PointD", 16);
 		config.getGlobalVariables().add("def", "struct PointD", 16, "{1,2}");
 		
-		String expected = loadRessource("TestGlobalVariableGenerator.testGenerate.result1.txt");
+		String expected = loadResource("TestGlobalVariableGenerator.testGenerate.result1.txt");
 		String result = new GlobalVariableTemplate().generate(config);
 		assertEquals(expected, result);
 	}

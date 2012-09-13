@@ -24,17 +24,17 @@ public class TestHelpers {
 		return sb.toString();
 	}
 
-	private static String getRessourcePath(String name) {
+	private static String getResourcePath(String name) {
 		return TestHelpers.class.getPackage().getName().replace('.', '/') + "/" + name;
 	}
 	
-	public static URL getRessourceURL(String name) {
-		String path = getRessourcePath(name);
+	public static URL getResourceURL(String name) {
+		String path = getResourcePath(name);
 		return TestHelpers.class.getClassLoader().getResource(path);
 	}
 	
-	public static String loadRessource(String name) {
-		String path = getRessourcePath(name);
+	public static String loadResource(String name) {
+		String path = getResourcePath(name);
 		InputStream stream = TestHelpers.class.getClassLoader().getResourceAsStream(path);
 		if (stream == null)
 			throw new IllegalArgumentException("invalid ressource name: " + name + " -> " + path);

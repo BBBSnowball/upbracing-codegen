@@ -20,7 +20,7 @@ public class TestPinGenerator {
 		config.getPins().addRange("PB2", "X", "Y", "Z");
 		config.getPins().addPort("RPM", 'D');
 		
-		String expected = loadRessource("TestPinGenerator.testGenerate.result1.txt");
+		String expected = loadResource("TestPinGenerator.testGenerate.result1.txt");
 		String result = new PinTemplate().generate(config);
 		assertEquals(expected, result);
 	}

@@ -23,7 +23,7 @@ public class TestEepromGenerator {
 		config.getEeprom().add("abc", "struct PointD", 16);
 		config.getEeprom().add("def", "struct PointD", 16, "{1,2}");
 		
-		String expected = loadRessource("TestEepromGenerator.testGenerate.result1.txt");
+		String expected = loadResource("TestEepromGenerator.testGenerate.result1.txt");
 		String result = new EepromTemplate().generate(config);
 		assertEquals(expected, result);
 	}

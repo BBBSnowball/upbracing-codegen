@@ -1,6 +1,6 @@
 package de.upbracing.code_generation.test;
 
-import static de.upbracing.code_generation.test.TestHelpers.loadRessource;
+import static de.upbracing.code_generation.test.TestHelpers.loadResource;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -37,15 +37,15 @@ public class TestRTOSGenerator {
 		
 
 		String expected, result;
-		expected = loadRessource("expected_results/rtos/Os_cfg_application.c");
+		expected = loadResource("expected_results/rtos/Os_cfg_application.c");
 		result = new RTOSApplicationCFileTemplate().generate(config);
 		assertEquals(expected, result);
 
-		expected = loadRessource("expected_results/rtos/Os_cfg_application.h");
+		expected = loadResource("expected_results/rtos/Os_cfg_application.h");
 		result = new RTOSApplicationHeaderTemplate().generate(config);
 		assertEquals(expected, result);
 
-		expected = loadRessource("expected_results/rtos/Os_cfg_features.h");
+		expected = loadResource("expected_results/rtos/Os_cfg_features.h");
 		result = new RTOSFeaturesTemplate().generate(config);
 		assertEquals(expected, result);
 	}

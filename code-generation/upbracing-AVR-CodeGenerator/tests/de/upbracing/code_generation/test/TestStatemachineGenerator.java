@@ -1,6 +1,6 @@
 package de.upbracing.code_generation.test;
 
-import static de.upbracing.code_generation.test.TestHelpers.loadRessource;
+import static de.upbracing.code_generation.test.TestHelpers.loadResource;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.emf.common.util.URI;
@@ -18,7 +18,7 @@ public class TestStatemachineGenerator {
 		MCUConfiguration config = new MCUConfiguration();
 		
 		config.getStatemachines().load("counter",
-				URI.createURI(TestHelpers.getRessourceURL("files/counter.statecharts").toString()));
+				URI.createURI(TestHelpers.getResourceURL("files/counter.statecharts").toString()));
 		
 		IGenerator gen = new StatemachineGenerator();
 		assertEquals(true, gen.validate(config, false));
@@ -27,11 +27,11 @@ public class TestStatemachineGenerator {
 		
 
 		String expected, result;
-		expected = loadRessource("expected_results/statemachines/statemachines.h");
+		expected = loadResource("expected_results/statemachines/statemachines.h");
 		result = new StatemachinesHeaderTemplate().generate(config);
 		assertEquals(expected, result);
 
-		expected = loadRessource("expected_results/statemachines/statemachines.c");
+		expected = loadResource("expected_results/statemachines/statemachines.c");
 		result = new StatemachinesCFileTemplate().generate(config);
 		assertEquals(expected, result);
 	}
