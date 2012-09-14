@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public final class RangeMatcher implements Matcher
+public final class RangeMatcher extends CharacterMatcher
 {
 	private final char to;
 	private final char from;
@@ -19,15 +19,7 @@ public final class RangeMatcher implements Matcher
 	}
 	
 	@Override
-	public List<ResultTree> match(final String input)
-	{
-		if (input.isEmpty()) return Collections.<ResultTree> emptyList();
-		
-		for (char ch = this.from; ch <= this.to; ch++)
-		{
-			if (input.charAt(0) == ch) return Arrays.asList(new ResultTree(new StringNode("" + ch), 1));
-		}
-		
-		return Collections.<ResultTree> emptyList();
+	public boolean predicate(char c) {
+		return from <= c && c <= to;
 	}
 }

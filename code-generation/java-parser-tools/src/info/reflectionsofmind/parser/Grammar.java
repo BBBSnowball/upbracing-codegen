@@ -12,12 +12,15 @@ import static info.reflectionsofmind.parser.Matchers.repc;
 import static info.reflectionsofmind.parser.Matchers.reps;
 import static info.reflectionsofmind.parser.Matchers.seq;
 import static info.reflectionsofmind.parser.Matchers.str;
+import static info.reflectionsofmind.parser.matcher.CharacterMatcher.notIn;
 import info.reflectionsofmind.parser.exception.AmbiguousGrammarException;
 import info.reflectionsofmind.parser.exception.GrammarParsingException;
 import info.reflectionsofmind.parser.exception.InvalidGrammarException;
 import info.reflectionsofmind.parser.exception.UndefinedSymbolException;
+import info.reflectionsofmind.parser.matcher.CharacterMatcher;
 import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.NamedMatcher;
+import info.reflectionsofmind.parser.matcher.RegexMatcher;
 import info.reflectionsofmind.parser.node.AbstractNode;
 import info.reflectionsofmind.parser.node.NamedNode;
 import info.reflectionsofmind.parser.node.Navigation;
@@ -98,13 +101,105 @@ public class Grammar
 		return matcher;
 	}
 
-	private static Matcher createMatcher(final NamedNode expression, final Map<String, NamedMatcher> definitions)
+	/**
+	 * @param grammarCode
+	 *            A {@link String} containing the definition of grammar in EBNF. See <a
+	 *            href="http://en.wikipedia.org/wiki/Ebnf">wiki article</a> for generic description and <a
+	 *            href="http://code.google.com/p/java-parser-tools/wiki/GrammarFormat">project page</a> for detailed
+	 *            format specification.
+	 * 
+	 * @return A map of all {@link Matcher} objects corresponding to this grammar.
+	 * 
+	 * @throws InvalidGrammarException
+	 *             If the grammar definition string is invalid.
+	 * 
+	 * @throws UndefinedSymbolException
+	 *             If grammar references a symbol that is not defined in it.
+	 * 
+	 * @throws AmbiguousGrammarException
+	 *             If the grammar definition string is ambiguous - can be parsed as two different grammars. In theory,
+	 *             this can not happen. Please contact the author if it did because he would very much grateful to know
+	 *             how you did it.
+	 */
+	public static Map<String, Matcher> generateDefinitions(final String grammarCode) throws GrammarParsingException
 	{
+		return generateDefinitions(grammarCode, Collections.<String, Matcher> emptyMap());
+	}
+
+
+	/**
+	 * @param grammarCode
+	 *            A {@link String} containing the definition of grammar in EBNF. See <a
+	 *            href="http://en.wikipedia.org/wiki/Ebnf">wiki article</a> for generic description and <a
+	 *            href="http://code.google.com/p/java-parser-tools/wiki/GrammarFormat">project page</a> for detailed
+	 *            format specification.
+	 * 
+	 * @return A map of all {@link Matcher} objects corresponding to this grammar.
+	 * 
+	 * @throws InvalidGrammarException
+	 *             If the grammar definition string is invalid.
+	 * 
+	 * @throws UndefinedSymbolException
+	 *             If grammar references a symbol that is not defined in it.
+	 * 
+	 * @throws AmbiguousGrammarException
+	 *             If the grammar definition string is ambiguous - can be parsed as two different grammars. In theory,
+	 *             this can not happen. Please contact the author if it did because he would very much grateful to know
+	 *             how you did it.
+	 */
+	public static Map<String, Matcher> generateDefinitions(final String grammarCode,
+			Map<String, ? extends Matcher> used_definitions) throws GrammarParsingException
+	{
+		final List<ResultTree> results = Matchers.fullMatch(GRAMMAR, grammarCode);
+
+		if (results.size() > 1)
+			throw new AmbiguousGrammarException(results);
+
+		if (results.isEmpty())
+			throw new InvalidGrammarException(GRAMMAR.match(grammarCode));
+
+		final NamedNode grammar = (NamedNode) results.get(0).root;
+		final Map<String, Matcher> all_definitions = new HashMap<String, Matcher>(used_definitions);
+
+		for (final NamedNode definition : grammar.getNamedChildren())
+		{
+			final String identifier = definition.getNamedChildren().get(0).getText();
+			NamedMatcher matcher = new NamedMatcher(identifier);
+			all_definitions.put(identifier, matcher);
+		}
+
+		for (final NamedNode definition : grammar.getNamedChildren())
+		{
+			final String identifier = definition.getNamedChildren().get(0).getText();
+			final NamedNode expression = definition.getNamedChildren().get(1);
+			NamedMatcher matcher = (NamedMatcher) all_definitions.get(identifier);
+			matcher.define(createMatcher(expression, all_definitions));
+		}
+
+		// check for undefined identifiers
+		List<AbstractNode> identifierNodes = Navigation.findAllDecendentsById(grammar, "identifier");
+		for (AbstractNode identifierNode : identifierNodes)
+		{
+			String identifier = identifierNode.getText();
+			if (all_definitions.get(identifier) == null)
+				throw new UndefinedSymbolException(identifier);
+		}
+
+		return all_definitions;
+	}
+
+	private static Matcher createMatcher(final NamedNode expression, final Map<String, ? extends Matcher> all_definitions)
+	{
+		if ("notin".equals(expression.id))
+			return notIn(getTextContent(expression).toCharArray());
+		else if ("regex".equals(expression.id))
+			return new RegexMatcher(getTextContent(expression));
+		
 		final List<Matcher> matchersList = new ArrayList<Matcher>();
 
 		for (final NamedNode subExpression : expression.getNamedChildren())
 		{
-			matchersList.add(createMatcher(subExpression, definitions));
+			matchersList.add(createMatcher(subExpression, all_definitions));
 		}
 
 		final Matcher[] matchers = matchersList.toArray(new Matcher[] {});
@@ -115,14 +210,14 @@ public class Grammar
 			return cho(matchers);
 
 		if ("rep".equals(expression.id))
-			return rep(createMatcher(expression.getNamedChildren().get(0), definitions));
+			return rep(createMatcher(expression.getNamedChildren().get(0), all_definitions));
 		if ("reps".equals(expression.id))
 			return reps(matchers);
 		if ("repc".equals(expression.id))
 			return repc(matchers);
 
 		if ("opt".equals(expression.id))
-			return opt(createMatcher(expression.getNamedChildren().get(0), definitions));
+			return opt(createMatcher(expression.getNamedChildren().get(0), all_definitions));
 		if ("opts".equals(expression.id))
 			return opts(matchers);
 		if ("optc".equals(expression.id))
@@ -131,9 +226,9 @@ public class Grammar
 		if ("string".equals(expression.id))
 			return str(expression.getText());
 		if ("identifier".equals(expression.id))
-			return definitions.get(expression.getText());
+			return all_definitions.get(expression.getText());
 		if ("expression".equals(expression.id))
-			return createMatcher(expression.getNamedChildren().get(0), definitions);
+			return createMatcher(expression.getNamedChildren().get(0), all_definitions);
 
 		if ("anyLower".equals(expression.id))
 			return range('a', 'z');
@@ -149,11 +244,29 @@ public class Grammar
 		throw new RuntimeException("Cannot parse expresion [" + expression.id + "]:\n" + Nodes.toStringFull(expression));
 	}
 
+	private static String getTextContent(NamedNode expression) {
+		AbstractNode chars_node = Navigation.findDecendentById(expression, "chars");
+		String chars = chars_node.getText()
+				.replace("\\r", "\r")
+				.replace("\\n", "\n")
+				.replace("\\t", "\t")
+				.replace("\\\"", "\"")
+				.replace("\\\'", "\'")
+				.replace("\\>", ">");
+		return chars;
+	}
+
 	static
 	{
 		// Creating the GRAMMAR Matcher for parsing grammar strings.
+		
+		final Matcher comment = cho(
+				seq(str("/*"), repc(cho(notIn('*'), seq(str("*"), notIn('/')))), str("*/")),
+				seq(str("//"), repc(notIn('\n')), str("\n"))
+				//seq(str("#"), repc(notIn('\n')), str("\n"))
+				);
 
-		final Matcher whitespace = minc(1, str(" "), str("\t"), str("\n"), str("\r"));
+		final Matcher whitespace = minc(1, str(" "), str("\t"), str("\n"), str("\r"), comment);
 		final Matcher optwh = opt(whitespace);
 
 		final Matcher lower = range('a', 'z');
@@ -197,6 +310,22 @@ public class Grammar
 
 		final NamedMatcher optc = new NamedMatcher("optc").define( //
 				seq(str("["), optwh, expression, mins(1, optwh, str("|"), optwh, expression), optwh, str("]")));
+		
+		final NamedMatcher notIn = new NamedMatcher("notin").define(
+				seq(str("~<"),
+						new NamedMatcher("chars").define(
+							repc(cho(
+									notIn('>', '\\'),
+									seq(str("\\"), CharacterMatcher.any())))),
+						str(">")));
+		
+		final NamedMatcher regex = new NamedMatcher("regex").define(
+				seq(str("r<"),
+						new NamedMatcher("chars").define(
+								repc(cho(
+										notIn('>', '\\'),
+										seq(str("\\"), CharacterMatcher.any())))),
+							str(">")));
 
 		string.define(new Matcher()
 		{
@@ -222,7 +351,7 @@ public class Grammar
 		definition.define(seq(identifier, optwh, str("::="), optwh, expression));
 
 		expression.define(cho( //
-				seq, rep, reps, repc, opt, opts, optc, cho, // 
+				seq, rep, reps, repc, opt, opts, optc, cho, notIn, regex, // 
 				identifier, seq(str("\""), string, str("\"")), //
 				anyLower, anyUpper, anyAlpha, anyDigit, anyWhitespace));
 

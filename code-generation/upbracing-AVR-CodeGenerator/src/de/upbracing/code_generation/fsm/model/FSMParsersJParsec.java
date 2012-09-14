@@ -1,28 +1,8 @@
 package de.upbracing.code_generation.fsm.model;
 
-import info.reflectionsofmind.parser.Grammar;
-import info.reflectionsofmind.parser.Matchers;
-import info.reflectionsofmind.parser.ResultTree;
-import info.reflectionsofmind.parser.exception.GrammarParsingException;
-import info.reflectionsofmind.parser.matcher.Matcher;
-import info.reflectionsofmind.parser.matcher.NamedMatcher;
-import info.reflectionsofmind.parser.node.AbstractNode;
-import info.reflectionsofmind.parser.node.NamedNode;
-import info.reflectionsofmind.parser.node.Navigation;
-import info.reflectionsofmind.parser.node.Nodes;
-import info.reflectionsofmind.parser.transform.AbstractTransformer;
-import info.reflectionsofmind.parser.transform.ITransform;
-import info.reflectionsofmind.parser.transform.NodePredicate;
-import info.reflectionsofmind.parser.transform.NodePredicates;
-import info.reflectionsofmind.parser.transform.Transform;
-import info.reflectionsofmind.parser.transform.Transformer;
-
-import java.awt.Choice;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -33,15 +13,12 @@ import org.codehaus.jparsec.functors.Map3;
 import org.codehaus.jparsec.functors.Pair;
 import org.codehaus.jparsec.pattern.Patterns;
 
-import de.upbracing.code_generation.utils.Util;
-import static info.reflectionsofmind.parser.Matchers.*;
-
 /** parsers for parts of the statemachine model: transition text and state actions
  * 
  * @author benny
  *
  */
-public class FSMParsers {
+public class FSMParsersJParsec {
 	/** parse state actions
 	 * 
 	 * Each line starts with an action type (e.g. ENTER or EXIT) and a slash. After that,
@@ -208,20 +185,56 @@ public class FSMParsers {
 	
 	/** parse a float (actually it returns a double) */
 	private static Parser<Double> floatParser() {
-		return null;
+		return Scanners.pattern(
+				Patterns.regex("[+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]+)?"),
+				"float")
+			.source()
+			.map(new Map<String, Double>() {
+				@Override
+				public Double map(String from) {
+					return Double.parseDouble(from);
+				}
+			});
 	}
 	
 	/** parse a ratio, e.g. 1/4 */
 	private static Parser<Double> ratioParser() {
-		return null;
+		return Scanners.pattern(
+				Patterns.regex("[0-9]+/[0-9]+([eE][+-]?[0-9]+)?"),
+				"ratio")
+			.source()
+			.map(new Map<String, Double>() {
+				@Override
+				public Double map(String from) {
+					String parts[] = from.split("/", 2);
+					return Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]);
+				}
+			});
 	}
 	
 	/** parse a clock time like 1:30:02.7 */
 	private static Parser<Double> clockTimeParser() {
-		return null;
+		return Scanners.pattern(
+				Patterns.regex("[0-9]+(:[0-9]+)*(\\.[0-9]+)?"),
+				"clock time")
+			.source()
+			.map(new Map<String, Double>() {
+				@Override
+				public Double map(String from) {
+					String parts[] = from.split(":");
+					double time = 0;
+					double factor = 1;
+					for (int i=0;i<parts.length;i++) {
+						time += factor * Double.parseDouble(parts[parts.length-i-1]);
+						factor *= 60;
+					}
+					return time;
+				}
+			});
 	}
-
-	private static java.util.Map<String, Double> getTimeFactors() {
+	
+	/** parse a time which can be "1.7ms", "1:30:02.7" or even "1/3 day" */
+	private static Parser<Double> timeParser() {
 		final java.util.Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("days", 24*60*60.0);
 		factors.put("day",  24*60*60.0);
@@ -237,23 +250,6 @@ public class FSMParsers {
 		factors.put("ns", 1e-9);
 		factors.put("ps", 1e-12);
 		factors.put("fs", 1e-15);
-		return factors;
-	}
-	
-	private static Matcher getTimeSuffixMatcher() {
-		Set<String> suffixes = getTimeFactors().keySet();
-		
-		Matcher options[] = new Matcher[suffixes.size()];
-		int i = 0;
-		for (String suffix : suffixes)
-			options[i++] = str(suffix);
-		
-		return new NamedMatcher("time-suffix").define(cho(options));
-	}
-	
-	/** parse a time which can be "1.7ms", "1:30:02.7" or even "1/3 day" */
-	private static Parser<Double> timeParser() {
-		final java.util.Map<String, Double> factors = getTimeFactors();
 		
 		List<Parser<Void>> suffixes = new ArrayList<Parser<Void>>(factors.size());
 		for (String suffix : factors.keySet())
@@ -397,121 +393,5 @@ public class FSMParsers {
 
 	public static double parseTime(String time) {
 		return timeParser().parse(time);
-	}
-
-	private static void transformChoice(Transform transform, String... ids) {
-		transform.add(new AbstractTransformer(ids) {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				transform.transform(node.children);
-				
-				List<NamedNode> children = Navigation.getNamedChildren(node);
-				assert children.size() == 1;
-				
-				node.value = children.get(0).value;
-			}
-		});
-	}
-	
-	public static void main(String args[]) throws Exception {
-		java.util.Map<String, Matcher> previous_defs = new HashMap<String, Matcher>();
-		previous_defs.put("time-suffix", getTimeSuffixMatcher());
-		
-		java.util.Map<String, Matcher> matchers = Grammar.generateDefinitions(
-				Util.loadResource(FSMParsers.class, "fsm-grammar.g"), previous_defs);
-		
-		String parserName, text;
-		
-		parserName = "clock-time"; text = "1:30";
-		parserName = "time"; text = "100ms";
-		
-		Matcher clock_time = matchers.get(parserName);
-		List<ResultTree> result = Matchers.fullMatch(clock_time, text);
-		
-		System.out.println("We have " + result.size() + " trees.");
-		if (!result.isEmpty()) {
-			System.out.println("Longest tree:");
-			ResultTree longest = result.get(0);
-			for (ResultTree tree : result) {
-				if (tree.rest > longest.rest)
-					longest = tree;
-			}
-			System.out.println(Nodes.toStringFull(longest.root));
-			System.out.println("Used " + longest.rest + " of " + text.length() + " chars");
-			System.out.println();
-			
-			Transform transform = new Transform();
-			
-			transform.add(new AbstractTransformer("positive-number") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					node.value = Integer.parseInt(node.getText());
-				}
-			});
-			
-			transform.add(new AbstractTransformer("float-number", "simple-unsigned-float-number") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					node.value = Double.parseDouble(node.getText());
-				}
-			});
-			
-			transform.add(new AbstractTransformer("ratio-number") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					transform.transform(node.children);
-					
-					List<NamedNode> children = Navigation.getNamedChildren(node);
-					
-					node.value = (Integer)children.get(0).value / (Double)children.get(1).value;
-				}
-			});
-			
-			transform.add(new AbstractTransformer("clock-time") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					transform.transform(node.children);
-					
-					List<AbstractNode> xs = node.findNamedChildren();
-					System.out.println("clock-time:");
-					for (AbstractNode child : xs) {
-						System.out.println("  " + child);
-					}
-					
-					Collections.reverse(xs);
-
-					double time = 0;
-					double factor = 1;
-					for (AbstractNode node2 : xs) {
-						double x;
-						if (node2.value instanceof Integer)
-							x = (Integer)node2.value;
-						else
-							x = (Double)node2.value;
-						
-						time += factor * x;
-						factor *= 60;
-					}
-					
-					node.value = time;
-				}
-			});
-			
-			transform.add(new AbstractTransformer("time-with-suffix") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					transform.transform(node.children);
-					
-					List<NamedNode> children = Navigation.getNamedChildren(node);
-					
-					node.value = (Double)children.get(0).value * getTimeFactors().get(children.get(2).getText());
-				}
-			});
-			
-			transformChoice(transform, "time");
-			
-			transform.transform(longest.root);
-			System.out.println(Nodes.toStringWithValue(longest.root));
-		}
 	}
 }
