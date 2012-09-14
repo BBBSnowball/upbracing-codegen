@@ -333,16 +333,27 @@ public class Grammar
 			public List<ResultTree> match(String input)
 			{
 				// Firstly, find the closing double-quote skipping all escaped double-quotes.
-				int pos = input.indexOf('"');
-				while (pos > 0 && input.charAt(pos - 1) == '\'')
-					pos = input.indexOf('"', pos + 1);
+				// We cannot simply check whether there is a backslash before a quote because
+				// this would fail for "\\", which has an escaped backslash in that position.
+				int pos;
+				for (pos=0;pos<input.length();pos++) {
+					if (input.charAt(pos) == '\\')
+						// skip next char
+						pos++;
+					else if (input.charAt(pos) == '"')
+						break;
+				}
 
 				// If it is not found, then what we are matching is not a string
-				if (pos == -1)
+				if (pos >= input.length())
 					return Collections.<ResultTree> emptyList();
 
 				// If it is found, extract the string between quotes
-				String text = input.substring(0, pos).replaceAll("\'\"", "\"");
+				String text = input.substring(0, pos)
+						.replace("\\r", "\r")
+						.replace("\\n", "\n")
+						.replace("\\t", "\t")
+						.replaceAll("\\\\(.)", "$1");
 				return Arrays.asList(new ResultTree(new NamedNode("string", text), pos));
 			}
 		});

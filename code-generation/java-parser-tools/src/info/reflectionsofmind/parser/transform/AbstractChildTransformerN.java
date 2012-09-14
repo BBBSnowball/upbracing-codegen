@@ -38,10 +38,10 @@ public abstract class AbstractChildTransformerN implements Transformer {
 				
 				if (arg.startsWith("~"))
 					not_children_with_id.add(arg.substring(1));
-				else if (arg.startsWith(">") || arg.equals("*") || arg.startsWith("?>")) {
+				else if (arg.startsWith(">") || arg.startsWith("*") || arg.startsWith("?") || arg.equals("#text")) {
 					if (child_i >= n)
 						throw new IllegalArgumentException("too many child IDs");
-					child_ids[child_i++] = arg.substring(1);
+					child_ids[child_i++] = arg;
 				} else
 					at_nodes_with_id.add(arg);
 			} else if (arg_ instanceof Class) {
@@ -114,6 +114,10 @@ public abstract class AbstractChildTransformerN implements Transformer {
 	public final NodePredicate getPredicate() {
 		return predicate;
 	}
+	
+	private interface FnNode1 {
+		Object apply(AbstractNode node);
+	}
 
 	@Override
 	public void transform(AbstractNode root, ITransform transform) {
@@ -135,13 +139,47 @@ public abstract class AbstractChildTransformerN implements Transformer {
 			List<AbstractNode> nodes = null;
 			boolean list = false;
 			boolean optional = false;
+			FnNode1 op = null;
 			
 			if (spec.startsWith("?")) {
 				optional = true;
 				spec = spec.substring(1);
 			}
 			
-			if (spec.equals("*") || spec.equals(">*")) {
+			if (spec.endsWith("#text")) {
+				if (value_classes != null && value_classes[i] != null && !value_classes[i].isAssignableFrom(String.class))
+					throw new RuntimeException("wrong type for this argument");
+				
+				op = new FnNode1() {
+					@Override
+					public Object apply(AbstractNode node) {
+						if (node != null)
+							return node.getText();
+						else
+							return null;
+					}
+				};
+				spec = spec.substring(0, spec.length()-"#text".length());
+			} else if (AbstractNode.class.isAssignableFrom(value_classes[i])) {
+				op = new FnNode1() {
+					@Override
+					public Object apply(AbstractNode node) {
+						return node;
+					}
+				};
+			} else {
+				op = new FnNode1() {
+					@Override
+					public Object apply(AbstractNode node) {
+						if (node != null)
+							return node.value;
+						else
+							return null;
+					}
+				};
+			}
+			
+			if (spec.equals("*") || spec.equals(">*") || spec.equals("")) {
 				node = named.get(0);
 				named.remove(0);
 			} else if (spec.startsWith(">>>")) {
@@ -149,7 +187,7 @@ public abstract class AbstractChildTransformerN implements Transformer {
 				nodes = Navigation.findAllDecendentsById(root, spec.substring(3));
 				node = null;
 			} else if (spec.startsWith(">>")) {
-				node = Navigation.findDecendentById(root, spec.substring(3));
+				node = Navigation.findDecendentById(root, spec.substring(2));
 			} else if (spec.startsWith(">")) {
 				spec = spec.substring(1);
 				Iterator<? extends AbstractNode> it = named.iterator();
@@ -162,53 +200,39 @@ public abstract class AbstractChildTransformerN implements Transformer {
 					}
 				}
 			} else
-				throw new RuntimeException("should never get here");
+				throw new RuntimeException("illegal child specification: " + spec);
 			
 			if (!optional && node == null && nodes == null)
 				throw new IllegalStateException("couldn't find child #" + (i+1) + ": " + child_ids[i]);
 			
 			Object value;
-			if (value_classes != null && AbstractNode.class.isAssignableFrom(value_classes[i])) {
-				if (list) {
-					value = nodes;
-					
-					if (nodes != null) {
-						for (Object obj : nodes) {
-							if (!value_classes[i].isAssignableFrom(obj.getClass()))
-								throw new IllegalStateException("element has wrong type " + obj.getClass().getName());
-						}
-					}
-				} else {
-					value = node;
-
-					if (node != null && !value_classes[i].isAssignableFrom(value.getClass()))
-						throw new IllegalStateException("object has wrong type " + value.getClass().getName());
-				}
-			} else if (list && nodes != null) {
+			if (list && nodes != null) {
 				List<Object> objs = new ArrayList<Object>(nodes.size());
 				value = objs;
 				
 				for (AbstractNode node2 : nodes) {
-					if (!optional && node2.value == null)
+					Object v = op.apply(node2);
+					
+					if (!optional && v == null)
 						throw new IllegalStateException("element in list is null");
 
-					if (node2.value != null && !value_classes[i].isAssignableFrom(node2.value.getClass()))
-						throw new IllegalStateException("element has wrong type " + node2.value.getClass().getName());
+					if (v != null && !value_classes[i].isAssignableFrom(v.getClass()))
+						throw new IllegalStateException("element has wrong type " + v.getClass().getName());
 					
-					objs.add(node2.value);
+					objs.add(v);
 				}
 			} else {
-				value = node;
+				value = op.apply(node);
 
-				if (node != null && !value_classes[i].isAssignableFrom(value.getClass()))
+				if (value != null && !value_classes[i].isAssignableFrom(value.getClass()))
 					throw new IllegalStateException("object has wrong type " + value.getClass().getName());
 			}
 			
 			values[i] = value;
 		}
 		
-		transform(root, transform, values);
+		root.value = transform(root, transform, values);
 	}
 
-	protected abstract void transform(AbstractNode node, ITransform transform, Object values[]);
+	protected abstract Object transform(AbstractNode node, ITransform transform, Object values[]);
 }

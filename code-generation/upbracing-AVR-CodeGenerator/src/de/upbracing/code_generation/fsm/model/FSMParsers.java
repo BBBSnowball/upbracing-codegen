@@ -1,9 +1,10 @@
 package de.upbracing.code_generation.fsm.model;
 
+import static info.reflectionsofmind.parser.Matchers.cho;
+import static info.reflectionsofmind.parser.Matchers.str;
 import info.reflectionsofmind.parser.Grammar;
 import info.reflectionsofmind.parser.Matchers;
 import info.reflectionsofmind.parser.ResultTree;
-import info.reflectionsofmind.parser.exception.GrammarParsingException;
 import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.NamedMatcher;
 import info.reflectionsofmind.parser.node.AbstractNode;
@@ -11,13 +12,11 @@ import info.reflectionsofmind.parser.node.NamedNode;
 import info.reflectionsofmind.parser.node.Navigation;
 import info.reflectionsofmind.parser.node.Nodes;
 import info.reflectionsofmind.parser.transform.AbstractTransformer;
+import info.reflectionsofmind.parser.transform.ChildTransformer2;
+import info.reflectionsofmind.parser.transform.ChildTransformer5;
 import info.reflectionsofmind.parser.transform.ITransform;
-import info.reflectionsofmind.parser.transform.NodePredicate;
-import info.reflectionsofmind.parser.transform.NodePredicates;
 import info.reflectionsofmind.parser.transform.Transform;
-import info.reflectionsofmind.parser.transform.Transformer;
 
-import java.awt.Choice;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,10 +30,8 @@ import org.codehaus.jparsec.functors.Map;
 import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.functors.Map3;
 import org.codehaus.jparsec.functors.Pair;
-import org.codehaus.jparsec.pattern.Patterns;
 
 import de.upbracing.code_generation.utils.Util;
-import static info.reflectionsofmind.parser.Matchers.*;
 
 /** parsers for parts of the statemachine model: transition text and state actions
  * 
@@ -162,12 +159,7 @@ public class FSMParsers {
 	/** parse an action (or a condition) which doesn't have notAllowedChars except
 	 * within strings or parentheses */
 	private static Parser<String> getActionParser(String notAllowedChars) {
-		return textWithMatchingParens(
-				Parsers.or(
-						Scanners.string("\\\n"),
-						Scanners.notAmong("([{\"" + notAllowedChars),
-						Scanners.DOUBLE_QUOTE_STRING))
-					.source();
+		return null;
 	}
 	
 	/** skip whitespace after parsing with p, returns result of p */
@@ -183,26 +175,7 @@ public class FSMParsers {
 	 * @return the parsed string
 	 */
 	private static Parser<?> textWithMatchingParens(Parser<?> textparser) {
-		Parser<?> textparser_without_parens = textparser;
-				/*Parsers.sequence(
-					Scanners.among("([{").not(),
-					textparser).atomic();*/
-		Parser.Reference<List<Object>> parens_content = Parser.newReference();
-		Parser<?> text_in_parens = Parsers.or(
-				textInParens("(", ")", parens_content.lazy()),
-				textInParens("[", "]", parens_content.lazy()),
-				textInParens("{", "}", parens_content.lazy()));
-		parens_content.set(
-					Parsers.or(
-							text_in_parens,
-							Parsers.or(Scanners.DOUBLE_QUOTE_STRING, Scanners.notAmong("([{}])\"", "open parens")))
-						.many());
-		return Parsers.or(text_in_parens, textparser_without_parens).many1();
-	}
-	
-	/** like Parser.between() */
-	private static Parser<?> textInParens(final String open, final String close, Parser<?> inner) {
-		return inner.between(Scanners.string(open), Scanners.string(close));
+		return null;
 	}
 	
 	
@@ -378,21 +351,7 @@ public class FSMParsers {
 	
 	/** parse a wait term like "wait(1ms)" or "after 1/3 hour" */
 	private static Parser<Pair<String, Double>> waitEventParser() {
-		return
-			Parsers.pair(
-				withWhitespace(
-					Parsers.or(
-							Scanners.string("wait"),
-							Scanners.string("at"),
-							Scanners.string("before"),
-							Scanners.string("after"))
-						.source()),
-				Parsers.or(
-					withWhitespace(timeParser())
-						.between(
-							withWhitespace(Scanners.string("(")),
-							withWhitespace(Scanners.string(")"))),
-					withWhitespace(timeParser())));
+		return null;
 	}
 
 	public static double parseTime(String time) {
@@ -424,9 +383,13 @@ public class FSMParsers {
 		
 		parserName = "clock-time"; text = "1:30";
 		parserName = "time"; text = "100ms";
+		parserName = "wait-event"; text = "wait(1ms)";
+		parserName = "wait-event"; text = "after 1/3 hour";
+		parserName = "transition-info"; text = "blub:wait(10min) [a>7] / blub();";
+		parserName = "transition-info"; text = "blub:wait(10min) [a[0]>7] / blub();";
 		
-		Matcher clock_time = matchers.get(parserName);
-		List<ResultTree> result = Matchers.fullMatch(clock_time, text);
+		Matcher matcher = matchers.get(parserName);
+		List<ResultTree> result = Matchers.fullMatch(matcher, text);
 		
 		System.out.println("We have " + result.size() + " trees.");
 		if (!result.isEmpty()) {
@@ -456,14 +419,9 @@ public class FSMParsers {
 				}
 			});
 			
-			transform.add(new AbstractTransformer("ratio-number") {
-				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					transform.transform(node.children);
-					
-					List<NamedNode> children = Navigation.getNamedChildren(node);
-					
-					node.value = (Integer)children.get(0).value / (Double)children.get(1).value;
+			transform.add(new ChildTransformer2<Integer, Double>(Integer.class, Double.class, "ratio-number") {
+				protected Object transform(Integer num, Double denom) {
+					return num / denom;
 				}
 			});
 			
@@ -497,21 +455,50 @@ public class FSMParsers {
 				}
 			});
 			
-			transform.add(new AbstractTransformer("time-with-suffix") {
+			transform.add(new ChildTransformer2<Double, String>(Double.class, String.class, "time-with-suffix", "~ws", "*", "#text") {
 				@Override
-				public void transform(AbstractNode node, ITransform transform) {
-					transform.transform(node.children);
-					
-					List<NamedNode> children = Navigation.getNamedChildren(node);
-					
-					node.value = (Double)children.get(0).value * getTimeFactors().get(children.get(2).getText());
+				protected Object transform(Double time, String factor_name) {
+					return time * getTimeFactors().get(factor_name);
 				}
 			});
 			
 			transformChoice(transform, "time");
 			
+			transformUseTextAsValue(transform, "wait-event-type");
+			
+			transform.add(new ChildTransformer5<String, String, Double, String, String>(
+					String.class, String.class, Double.class, String.class, String.class,
+					"transition-info", "~ws", 
+					"?>>event-name#text", "?>>wait-event-type#text", "?>>time",
+					"?>condition#text", "?>transition-action#text") {
+				@Override
+				protected Object transform(String event_name, String wait_type, Double wait_time,
+						String condition, String action) {
+					// most things can be null and we don't care
+					// However, for the Double value this would cause a NullPointerException,
+					// when it is cast into a double. Therefore, we replace it.
+					if (wait_time == null)
+						wait_time = Double.NaN;
+					
+					return new TransitionInfo(event_name, condition, action, wait_type, wait_time);
+				}
+			});
+			
 			transform.transform(longest.root);
 			System.out.println(Nodes.toStringWithValue(longest.root));
+
+			System.out.println("We have " + result.size() + " trees.");
+			System.out.println("We were using parser " + parserName + " on:\n  " + text);
+			System.out.println("The tree has been transformed into this value:\n  " + longest.root.value);
 		}
+	}
+
+	private static void transformUseTextAsValue(Transform transform, String... ids) {
+		transform.add(new AbstractTransformer(ids) {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				node.value = node.getText();
+			}
+		});
 	}
 }

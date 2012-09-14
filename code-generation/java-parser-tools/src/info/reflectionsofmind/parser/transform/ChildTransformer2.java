@@ -14,9 +14,9 @@ public abstract class ChildTransformer2<T1,T2> extends AbstractChildTransformerN
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void transform(AbstractNode node, ITransform transform, Object values[]) {
-		transform((T1)values[0], (T2)values[1]);
+	protected Object transform(AbstractNode node, ITransform transform, Object values[]) {
+		return transform((T1)values[0], (T2)values[1]);
 	}
 	
-	protected abstract void transform(T1 arg1, T2 arg2);
+	protected abstract Object transform(T1 arg1, T2 arg2);
 }
