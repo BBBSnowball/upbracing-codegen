@@ -9,6 +9,7 @@ import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.RangeMatcher;
 import info.reflectionsofmind.parser.matcher.RepetitionMatcher;
 import info.reflectionsofmind.parser.matcher.SequenceMatcher;
+import info.reflectionsofmind.parser.matcher.StringCaseInsensitiveMatcher;
 import info.reflectionsofmind.parser.matcher.StringMatcher;
 import info.reflectionsofmind.parser.node.NamedNode;
 import info.reflectionsofmind.parser.node.Nodes;
@@ -32,6 +33,11 @@ public final class Matchers
 	public static Matcher str(final String string)
 	{
 		return new StringMatcher(string);
+	}
+
+	public static Matcher strI(final String string)
+	{
+		return new StringCaseInsensitiveMatcher(string);
 	}
 
 	public static Matcher range(final char from, final char to)
