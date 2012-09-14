@@ -1,48 +1,15 @@
 package de.upbracing.code_generation.test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
+
+import de.upbracing.code_generation.utils.Util;
 
 public class TestHelpers {
-	public static final Charset UTF8 = Charset.forName("utf-8");
-	
-	public static String loadStream(InputStream stream, Charset charset) throws IOException {
-		Reader reader = new InputStreamReader(stream, charset);
-		return loadFromReader(reader);
-	}
-	
-	public static String loadFromReader(Reader reader) throws IOException {
-		StringBuffer sb = new StringBuffer();
-		char buf[] = new char[256];
-		int len;
-		while ((len = reader.read(buf)) > 0)
-			sb.append(buf, 0, len);
-		return sb.toString();
-	}
-
-	private static String getResourcePath(String name) {
-		return TestHelpers.class.getPackage().getName().replace('.', '/') + "/" + name;
-	}
-	
 	public static URL getResourceURL(String name) {
-		String path = getResourcePath(name);
-		return TestHelpers.class.getClassLoader().getResource(path);
+		return Util.getResourceURL(TestHelpers.class, name);
 	}
 	
 	public static String loadResource(String name) {
-		String path = getResourcePath(name);
-		InputStream stream = TestHelpers.class.getClassLoader().getResourceAsStream(path);
-		if (stream == null)
-			throw new IllegalArgumentException("invalid ressource name: " + name + " -> " + path);
-		
-		try {
-			return loadStream(stream, UTF8);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return Util.loadResource(TestHelpers.class, name);
 	}
 }
