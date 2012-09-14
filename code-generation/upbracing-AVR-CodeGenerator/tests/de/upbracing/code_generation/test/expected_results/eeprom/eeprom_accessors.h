@@ -1,5 +1,5 @@
 /*
- * eeprom.h
+ * eeprom_accessors.h
  *
  * This file declares accessors for values in non-volatile memory (EEPROM).
  *
@@ -15,7 +15,6 @@
 
 // only define EEPROM stuff, if avr/eeprom.h has been included
 #ifdef EEMEM
-#ifndef DEFS_MAIN_FILE
 
 //#pragma pack(push, 1)
 typedef struct {
@@ -29,23 +28,8 @@ typedef struct {
 } EEPROMDATA;
 //#pragma pack(pop)
 
-#endif	// not defined DEFS_MAIN_FILE
+extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
 
-#ifdef DEFS_MAIN_FILE
-	EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
-		17,                          // wdt_reset_count
-		1.75,                        // xyz
-		0x4242,                      // foo
-		(unsigned char)(uint64_t)-1, // bar
-		(signed long)(uint64_t)-1,   // foobar
-		(struct PointD)(uint64_t)-1, // abc
-		{1,2},                       // def
-	};
-#else
-	extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
-#endif
-
-#ifndef DEFS_MAIN_FILE
 
 #undef  EEPROM_POINTER
 #define EEPROM_POINTER(name) &eeprom_data.name
@@ -65,7 +49,6 @@ typedef struct {
 #define READ_DEF(dst) (struct PointD)eeprom_read_block(dst, EEPROM_POINTER(def), 16)
 #define WRITE_DEF(value) eeprom_write_block(EEPROM_POINTER(def), value, 16)
 
-#endif	// not defined DEFS_MAIN_FILE
 #endif	// defined EEMEM
 
 #endif	// not defined EEPROM_DATA_H_

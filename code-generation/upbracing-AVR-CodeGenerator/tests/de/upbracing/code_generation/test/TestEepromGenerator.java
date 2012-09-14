@@ -2,7 +2,6 @@ package de.upbracing.code_generation.test;
 
 import org.junit.Test;
 
-import de.upbracing.code_generation.EepromTemplate;
 import de.upbracing.code_generation.config.EEPROMVariable;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
@@ -21,9 +20,7 @@ public class TestEepromGenerator {
 		config.getEeprom().add("def", "struct PointD", 16, "{1,2}");
 
 		GeneratorTester gen = new GeneratorTester(new EEPROMAccessorGenerator(), config);
-		
-		gen.testTemplate(new EepromTemplate(),
-				"TestEepromGenerator.testGenerate.result1.txt");
+		gen.testTemplates("expected_results/eeprom");
 	}
 
 }

@@ -1,10 +1,10 @@
 <%@ jet
 	package="de.upbracing.code_generation"
-	class="EepromTemplate"
+	class="EepromHeaderTemplate"
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.config.*" %>
 /*
- * eeprom.h
+ * eeprom_accessors.h
  *
  * This file declares accessors for values in non-volatile memory (EEPROM).
  *
@@ -20,7 +20,6 @@
 
 // only define EEPROM stuff, if avr/eeprom.h has been included
 #ifdef EEMEM
-#ifndef DEFS_MAIN_FILE
 
 //#pragma pack(push, 1)
 typedef struct {
@@ -36,28 +35,8 @@ t.finish(" ");
 } EEPROMDATA;
 //#pragma pack(pop)
 
-#endif	// not defined DEFS_MAIN_FILE
+extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
 
-#ifdef DEFS_MAIN_FILE
-	EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
-<%
-t.start();
-for (EEPROMVariable var : config.getEeprom()) {
-	Object defaultValue = var.getDefaultValue();
-	if (defaultValue == null)
-		defaultValue = "(" + var.getType() + ")(uint64_t)-1";
-%>
-		<%=defaultValue%>, &&&// <%=var.getName()%>
-<%
-}
-t.finish();
-%>
-	};
-#else
-	extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
-#endif
-
-#ifndef DEFS_MAIN_FILE
 
 #undef  EEPROM_POINTER
 #define EEPROM_POINTER(name) &eeprom_data.name
@@ -100,7 +79,6 @@ for (EEPROMVariable var : config.getEeprom()) {
 }
 %>
 
-#endif	// not defined DEFS_MAIN_FILE
 #endif	// defined EEMEM
 
 #endif	// not defined EEPROM_DATA_H_

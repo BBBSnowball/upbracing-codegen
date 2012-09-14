@@ -1,6 +1,7 @@
 package de.upbracing.code_generation.generators;
 
-import de.upbracing.code_generation.EepromTemplate;
+import de.upbracing.code_generation.EepromCFileTemplate;
+import de.upbracing.code_generation.EepromHeaderTemplate;
 
 /**
  * Generator for EEPROM accessors
@@ -9,6 +10,7 @@ import de.upbracing.code_generation.EepromTemplate;
  */
 public class EEPROMAccessorGenerator extends AbstractGenerator {
 	public EEPROMAccessorGenerator() {
-		super("eeprom_accessors.h", new EepromTemplate());
+		super("eeprom_accessors.h", new EepromHeaderTemplate(),
+				"eeprom_accessors.c", new EepromCFileTemplate());
 	}
 }
