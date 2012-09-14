@@ -11,9 +11,11 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -344,13 +346,15 @@ public class Main {
 	 * @return
 	 */
 	private static boolean validate(Iterable<IGenerator> generators,
-			MCUConfiguration config, boolean after_update_config, HashSet<IGenerator> failed_generators) {
+			MCUConfiguration config, boolean after_update_config, HashSet<IGenerator> failed_generators,
+			Map<IGenerator, Object> generator_data) {
 		boolean validation_passed = true;
 		for (IGenerator gen : generators) {
 			if (failed_generators.contains(gen))
 				continue;
 			
-			if (!gen.validate(config, after_update_config)) {
+			if (!gen.validate(config, after_update_config,
+					(generator_data != null ? generator_data.get(gen) : null))) {
 				System.err.println("ERROR: Validation failed for " + gen.getName());
 				validation_passed = false;
 				failed_generators.add(gen);
@@ -370,15 +374,16 @@ public class Main {
 		
 		HashSet<IGenerator> failed_generators = new HashSet<IGenerator>();
 		
-		if (!validate(generators, config, false, failed_generators))
+		if (!validate(generators, config, false, failed_generators, null))
 			return false;
 		
+		Map<IGenerator, Object> generator_data = new HashMap<IGenerator, Object>();
 		for (IGenerator gen : generators) {
 			if (!failed_generators.contains(gen))
-				gen.updateConfig(config);
+				generator_data.put(gen, gen.updateConfig(config));
 		}
 
-		if (!validate(generators, config, true, failed_generators))
+		if (!validate(generators, config, true, failed_generators, generator_data))
 			return false;
 		
 		for (IGenerator gen : generators) {
@@ -395,7 +400,7 @@ public class Main {
 				
 				// run the generator
 				System.out.println("Generating " + file);
-				String contents = generator.generate(config);
+				String contents = generator.generate(config, generator_data.get(generator));
 				//TODO track errors and warnings and display a summary;
 				//      return a non-zero value with System.exit, if there are errors
 				

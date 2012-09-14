@@ -1,11 +1,11 @@
 /*
- * Os_cfg_generated.c
+ * Os_cfg_application.c
  *
  * This file defines application specific stuff, e.g. the task
  * control blocks.
  *
  * Generated automatically. DO NOT MODIFY! Change config.rb instead.
- */ 
+ */
 
 #include "Os_cfg_application.h"
 

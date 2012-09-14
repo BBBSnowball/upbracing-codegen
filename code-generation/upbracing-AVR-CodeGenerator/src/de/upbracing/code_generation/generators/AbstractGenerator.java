@@ -66,12 +66,13 @@ public abstract class AbstractGenerator implements IGenerator {
 	}
 	
 	@Override
-	public void updateConfig(MCUConfiguration config) {
+	public Object updateConfig(MCUConfiguration config) {
+		return null;
 	}
 	
 	@Override
 	public boolean validate(MCUConfiguration config,
-			boolean after_update_config) {
+			boolean after_update_config, Object generator_data) {
 		return true;
 	}
 	

@@ -6,7 +6,6 @@ import de.upbracing.code_generation.CanTemplate;
 import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
-import de.upbracing.code_generation.config.GlobalVariableConfig;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
@@ -23,7 +22,7 @@ public class CanGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public void updateConfig(MCUConfiguration config) {
+	public Object updateConfig(MCUConfiguration config) {
 				
 		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCanConfig().getEcu(config.getCurrentEcu().getName());
 		
@@ -50,6 +49,7 @@ public class CanGenerator extends AbstractGenerator {
 			}
 		}
 		
+		return null;
 	}
 	
 	private void addGlobalVariable(MCUConfiguration config, DBCSignalConfig signal) {

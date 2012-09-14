@@ -1,14 +1,11 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import de.upbracing.code_generation.PinTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.config.Pin;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
+import de.upbracing.code_generation.generators.PinNameGenerator;
 
 public class TestPinGenerator {
 	@Test
@@ -19,9 +16,10 @@ public class TestPinGenerator {
 		config.getPins().add("ABC", new Pin('A', 2));
 		config.getPins().addRange("PB2", "X", "Y", "Z");
 		config.getPins().addPort("RPM", 'D');
+
+		GeneratorTester gen = new GeneratorTester(new PinNameGenerator(), config);
 		
-		String expected = loadResource("TestPinGenerator.testGenerate.result1.txt");
-		String result = new PinTemplate().generate(config);
-		assertEquals(expected, result);
+		gen.testTemplate(new PinTemplate(),
+				"TestPinGenerator.testGenerate.result1.txt");
 	}
 }

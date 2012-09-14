@@ -1,7 +1,5 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,8 +15,6 @@ import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
 import de.upbracing.dbc.DBCValueTable;
 import de.upbracing.eculist.ECUDefinition;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
 
 public class TestCanGenerator {
 
@@ -146,14 +142,11 @@ public class TestCanGenerator {
 		//Message without send method
 		//config.getCanConfig().getMessage("CockpitBrightness").setNoSendMessage(true);
 		
+
+		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		
-		//Call the updateCOnfig method of the CAN generator to generate the global variables
-		CanGenerator gen = new CanGenerator();
-		gen.updateConfig(config);
-		
-		String expected = loadResource("TestCanGenerator.testGenerate.result1.txt");
-		String result = new CanTemplate().generate(config);
-		assertEquals(expected, result);	
+		gen.testTemplate(new CanTemplate(),
+				"TestCanGenerator.testGenerate.result1.txt");
 		
 	}
 

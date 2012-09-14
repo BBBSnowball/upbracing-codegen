@@ -9,7 +9,7 @@ public class CLASS implements ITemplate {
   /* (non-javadoc)
     * @see IGenerator#generate(Object)
     */
-  public String generate(de.upbracing.code_generation.config.MCUConfiguration config) {
+  public String generate(de.upbracing.code_generation.config.MCUConfiguration config, Object generator_data) {
     return "";
   }
 }

@@ -33,9 +33,10 @@ public interface IGenerator {
 	 * 
 	 * @param config the configuration
 	 * @param after_update_config true, if validate should assume that updateConfig has been run
+	 * @param generator_data data returned by updateConfig or null
 	 * @return whether the configuration is valid
 	 */
-	boolean validate(MCUConfiguration config, boolean after_update_config);
+	boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data);
 	
 	/**
 	 * Get all generators that are used by this generator
@@ -51,6 +52,7 @@ public interface IGenerator {
 	/**
 	 * Prepare the configuration for code generation
 	 * @param config the configuration
+	 * @return data that will be passed into the template (generator_data)
 	 */
-	void updateConfig(MCUConfiguration config);
+	Object updateConfig(MCUConfiguration config);
 }

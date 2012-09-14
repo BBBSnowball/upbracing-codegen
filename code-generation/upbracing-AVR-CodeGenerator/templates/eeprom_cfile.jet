@@ -1,0 +1,30 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="EepromCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.*" %>
+/*
+ * eeprom_accessors.c
+ *
+ * This file declares accessors for values in non-volatile memory (EEPROM).
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#include "eeprom_accessors.h"
+
+EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
+<%
+Table t = new Table(stringBuffer);
+t.start();
+for (EEPROMVariable var : config.getEeprom()) {
+	Object defaultValue = var.getDefaultValue();
+	if (defaultValue == null)
+		defaultValue = "(" + var.getType() + ")(uint64_t)-1";
+%>
+	<%=defaultValue%>, &&&// <%=var.getName()%>
+<%
+}
+t.finish();
+%>
+};

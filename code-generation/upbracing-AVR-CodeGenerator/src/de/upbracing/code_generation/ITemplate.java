@@ -9,7 +9,8 @@ public interface ITemplate {
 	/**
 	 * Execute the template
 	 * @param config the configuration object
+	 * @param data that has been returned by the corresponding IGenerator.updateConfig method
 	 * @return the generated code
 	 */
-	String generate(de.upbracing.code_generation.config.MCUConfiguration config);
+	String generate(de.upbracing.code_generation.config.MCUConfiguration config, Object generator_data);
 }

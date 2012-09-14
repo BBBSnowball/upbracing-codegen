@@ -1,0 +1,25 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="GlobalVariableCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* java.util.*" %>
+/*
+ * global_variables.c
+ *
+ * This file defines thread-safe accessors for global variables.
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#include "global_variables.h"
+
+<%
+@SuppressWarnings("unchecked")
+HashMap<String, String> varnames = (HashMap<String, String>) generator_data;
+Table t = new Table(stringBuffer);
+t.start();
+for (GlobalVariable var : config.getGlobalVariables()) {
+	String varname = varnames.get(var.getName());
+%>
+<%= var.getType() %>&&&<%= varname %><% if (var.getInitialValue() != null) { %>&&&= <%= var.getInitialValue() %><% } %>;
+<% } t.finish(" "); %>
