@@ -1,15 +1,11 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import de.upbracing.code_generation.EepromTemplate;
 import de.upbracing.code_generation.config.EEPROMVariable;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
 
 public class TestEepromGenerator {
 

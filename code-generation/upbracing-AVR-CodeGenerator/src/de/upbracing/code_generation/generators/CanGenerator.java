@@ -6,7 +6,6 @@ import de.upbracing.code_generation.CanTemplate;
 import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
-import de.upbracing.code_generation.config.GlobalVariableConfig;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;

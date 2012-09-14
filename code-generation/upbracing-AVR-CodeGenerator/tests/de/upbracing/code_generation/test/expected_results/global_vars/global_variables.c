@@ -6,6 +6,8 @@
  * Generated automatically. DO NOT MODIFY! Change config.rb instead.
  */
 
+#include "global_variables.h"
+
 uint8_t       h_2510C39011C5BE704182423E3A695E91       = 17;
 float         xyz_D16FB36F0911F878998C136191AF705E     = 1.75;
 s16           foo_ACBD18DB4CC2F85CEDEF654FCCC4A4D8     = 0x4242;

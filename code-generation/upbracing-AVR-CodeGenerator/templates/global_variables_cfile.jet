@@ -11,7 +11,10 @@
  * Generated automatically. DO NOT MODIFY! Change config.rb instead.
  */
 
+#include "global_variables.h"
+
 <%
+@SuppressWarnings("unchecked")
 HashMap<String, String> varnames = (HashMap<String, String>) generator_data;
 Table t = new Table(stringBuffer);
 t.start();

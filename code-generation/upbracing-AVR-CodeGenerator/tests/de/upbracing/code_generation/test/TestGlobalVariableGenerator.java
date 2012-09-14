@@ -1,18 +1,10 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
-import de.upbracing.code_generation.EepromTemplate;
-import de.upbracing.code_generation.GlobalVariableCFileTemplate;
-import de.upbracing.code_generation.GlobalVariableHeaderTemplate;
 import de.upbracing.code_generation.config.GlobalVariable;
 import de.upbracing.code_generation.config.MCUConfiguration;
-import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
 import de.upbracing.code_generation.generators.GlobalVariableGenerator;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
 
 public class TestGlobalVariableGenerator {
 
@@ -29,12 +21,7 @@ public class TestGlobalVariableGenerator {
 
 
 		GeneratorTester gen = new GeneratorTester(new GlobalVariableGenerator(), config);
-		
-		gen.testTemplate(new GlobalVariableHeaderTemplate(),
-				"expected_results/global_vars/global_variables.h");
-		
-		gen.testTemplate(new GlobalVariableCFileTemplate(),
-				"expected_results/global_vars/global_variables.c");
+		gen.testTemplates("expected_results/global_vars");
 	}
 
 }

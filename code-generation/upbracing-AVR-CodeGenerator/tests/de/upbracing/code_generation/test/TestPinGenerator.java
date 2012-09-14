@@ -1,16 +1,11 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import de.upbracing.code_generation.PinTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.config.Pin;
-import de.upbracing.code_generation.generators.GlobalVariableGenerator;
 import de.upbracing.code_generation.generators.PinNameGenerator;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
 
 public class TestPinGenerator {
 	@Test

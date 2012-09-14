@@ -19,6 +19,7 @@
 //////////////////////////
 
 <%
+@SuppressWarnings("unchecked")
 HashMap<String, String> varnames = (HashMap<String, String>) generator_data;
 Table t = new Table(stringBuffer);
 t.start();

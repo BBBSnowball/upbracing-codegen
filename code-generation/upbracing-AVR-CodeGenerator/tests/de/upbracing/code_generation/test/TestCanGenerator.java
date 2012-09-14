@@ -1,7 +1,5 @@
 package de.upbracing.code_generation.test;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,8 +15,6 @@ import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
 import de.upbracing.dbc.DBCValueTable;
 import de.upbracing.eculist.ECUDefinition;
-
-import static de.upbracing.code_generation.test.TestHelpers.*;
 
 public class TestCanGenerator {
 

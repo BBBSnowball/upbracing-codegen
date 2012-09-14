@@ -2,6 +2,9 @@ package de.upbracing.code_generation.test;
 
 import static de.upbracing.code_generation.test.TestHelpers.loadResource;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Map.Entry;
+
 import de.upbracing.code_generation.IGenerator;
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -48,6 +51,13 @@ public class GeneratorTester {
 		String expected, result;
 		expected = loadResource(expectedResultFilename);
 		result = runTemplate(template);
-		assertEquals(expected, result);
+		String msg = String.format("Template '%s' generates wrong text", template.getClass().getSimpleName());
+		assertEquals(msg, expected, result);
+	}
+	
+	public void testTemplates(String expectedResultFolder) {
+		for (Entry<String, ITemplate> entry : gen.getFiles().entrySet()) {
+			testTemplate(entry.getValue(), expectedResultFolder + "/" + entry.getKey());
+		}
 	}
 }
