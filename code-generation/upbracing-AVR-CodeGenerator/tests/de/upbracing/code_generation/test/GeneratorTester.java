@@ -46,7 +46,7 @@ public class GeneratorTester {
 	
 	public void testTemplate(ITemplate template, String expectedResultFilename) {
 		String expected, result;
-		expected = loadResource("expected_results/rtos/Os_cfg_application.c");
+		expected = loadResource(expectedResultFilename);
 		result = runTemplate(template);
 		assertEquals(expected, result);
 	}
