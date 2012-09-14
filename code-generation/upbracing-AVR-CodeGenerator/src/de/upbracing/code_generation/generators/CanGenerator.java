@@ -23,7 +23,7 @@ public class CanGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public void updateConfig(MCUConfiguration config) {
+	public Object updateConfig(MCUConfiguration config) {
 				
 		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCanConfig().getEcu(config.getCurrentEcu().getName());
 		
@@ -50,6 +50,7 @@ public class CanGenerator extends AbstractGenerator {
 			}
 		}
 		
+		return null;
 	}
 	
 	private void addGlobalVariable(MCUConfiguration config, DBCSignalConfig signal) {
