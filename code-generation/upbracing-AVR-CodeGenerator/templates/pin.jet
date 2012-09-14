@@ -3,6 +3,16 @@
 	class="PinTemplate"
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.config.*" %>
+/*
+ * pins.h
+ *
+ * This file defines names for processor pins.
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#ifndef PIN_NAMES_H_
+#define PIN_NAMES_H_
 
 /////////////////////////
 ///  Pin definitions  ///
@@ -35,3 +45,5 @@ for (java.util.Map.Entry<String, Character> e : config.getPins().getPorts().entr
 #define GET_<%=name%>()                  (PIN<%=port%>)
 
 <% } %>
+
+#endif	// not defined PIN_NAMES_H_

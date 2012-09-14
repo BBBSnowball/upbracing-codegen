@@ -3,6 +3,16 @@
 	class="EepromTemplate"
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.config.*" %>
+/*
+ * eeprom.h
+ *
+ * This file declares accessors for values in non-volatile memory (EEPROM).
+ *
+ * Generated automatically. DO NOT MODIFY! Change config.rb instead.
+ */
+
+#ifndef EEPROM_DATA_H_
+#define EEPROM_DATA_H_
 
 /////////////////////////
 ///    EEPROM data    ///
@@ -92,3 +102,5 @@ for (EEPROMVariable var : config.getEeprom()) {
 
 #endif	// not defined DEFS_MAIN_FILE
 #endif	// defined EEMEM
+
+#endif	// not defined EEPROM_DATA_H_

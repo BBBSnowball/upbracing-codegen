@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import de.upbracing.code_generation.GlobalVariableTemplate;
 import de.upbracing.code_generation.PinTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.config.Pin;
