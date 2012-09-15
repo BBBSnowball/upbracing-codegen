@@ -23,6 +23,8 @@ public class CanGenerator extends AbstractGenerator {
 	
 	@Override
 	public Object updateConfig(MCUConfiguration config) {
+		if (config.getCan() == null)
+			return null;
 				
 		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCanConfig().getEcu(config.getCurrentEcu().getName());
 		
