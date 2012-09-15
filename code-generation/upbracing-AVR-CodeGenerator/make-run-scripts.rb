@@ -57,7 +57,8 @@ end
 dir = File.dirname(__FILE__)
 filename = File.join(dir, ".classpath")
 classpath = read_classpath(filename,
-  "statemachine" => File.join(dir, "../StatechartEditor"))
+  "statemachine" => File.join(dir, "../StatechartEditor"),
+  "Parser" => File.join(dir, "../java-parser-tools"))
 
 unix_classpath = classpath.map {|x| '$DIR/' + x}.join ":"
 win_classpath = classpath.map {|x| '%~dp0\\' + x}.join ";"
