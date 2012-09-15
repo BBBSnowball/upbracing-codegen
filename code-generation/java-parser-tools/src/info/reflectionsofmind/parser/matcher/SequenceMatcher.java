@@ -15,31 +15,45 @@ import java.util.List;
 public final class SequenceMatcher implements Matcher
 {
 	private final Matcher[] matchers;
+	private final int match_index;
+	private final Matcher tail_matcher;
 
 	public SequenceMatcher(Matcher[] matchers)
 	{
 		this.matchers = matchers;
+		this.match_index = 0;
+		this.tail_matcher = createTailMatcher();
 	}
 
-	public static Matcher[] tail(final Matcher[] array)
+	private SequenceMatcher(Matcher[] matchers, int match_index)
 	{
-		return Arrays.asList(array).subList(1, array.length).toArray(new Matcher[] {});
+		this.matchers = matchers;
+		this.match_index = match_index;
+		this.tail_matcher = createTailMatcher();
+	}
+
+	private Matcher createTailMatcher() {
+		if (match_index < matchers.length)
+			//return Matchers.seq(Matchers.tail(matchers));
+			return new SequenceMatcher(matchers, match_index+1);
+		else
+			return null;
 	}
 
 	@Override
 	public List<ResultTree> match(final String input)
 	{
-		if (matchers.length == 0)
+		if (matchers.length <= match_index)
 			return Arrays.asList(new ResultTree(new SequenceNode(), 0));
 
-		final List<ResultTree> results = matchers[0].match(input);
+		final List<ResultTree> results = matchers[match_index].match(input);
 		final List<ResultTree> combinedResults = new ArrayList<ResultTree>();
 
 		for (final ResultTree result : results)
 		{
 			if (result.root != null)
 			{
-				List<ResultTree> subResults = Matchers.seq(Matchers.tail(matchers)).match(input.substring(result.rest));
+				List<ResultTree> subResults = tail_matcher.match(input.substring(result.rest));
 				for (final ResultTree subResult : subResults)
 				{
 					final AbstractNode node = new SequenceNode();
