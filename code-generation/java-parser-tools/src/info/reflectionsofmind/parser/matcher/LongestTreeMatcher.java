@@ -19,7 +19,9 @@ public final class LongestTreeMatcher implements Matcher
 	{
 		List<ResultTree> results = matcher.match(input);
 		
-		if (results.size() > 0) {
+		if (results.size() == 1) {
+			return results;
+		} else if (results.size() > 0) {
 			ResultTree longest = results.get(0);
 			for (ResultTree result : results)
 				if (result.rest > longest.rest)
