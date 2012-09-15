@@ -1,0 +1,7 @@
+# Tracing options for the statemachine.diagram plug-in
+
+# Common issues
+statemachine.diagram/debug=false
+
+# Visual IDs
+statemachine.diagram/debug/visualID=false
