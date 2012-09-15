@@ -2,6 +2,7 @@ package de.upbracing.code_generation.fsm.model;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -218,4 +219,10 @@ public class TestParsers {
 		assertListEquals(Arrays.asList(expected), actual);
 	}
 
+	public static void main(String args[]) throws IOException {
+		System.in.read();
+		TestParsers test = new TestParsers();
+		test.testParseStateActions();
+		test.testParseTransitionInfo();
+	}
 }
