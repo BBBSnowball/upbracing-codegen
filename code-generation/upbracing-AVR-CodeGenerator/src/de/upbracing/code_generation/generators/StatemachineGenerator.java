@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.eclipse.emf.common.util.BasicEList;
-import org.eclipse.emf.common.util.EList;
-
 import Statecharts.State;
 import Statecharts.StateWithActions;
 import Statecharts.Transition;
@@ -67,7 +64,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 				
 				
 				//state validation
-				BasicEList<State> states = (BasicEList<State>) smg.getStates();
+				List<State> states = smg.getStates();
 				
 				
 				for(State v: states){

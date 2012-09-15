@@ -3,7 +3,6 @@
  */
 package info.reflectionsofmind.parser.matcher;
 
-import info.reflectionsofmind.parser.Matchers;
 import info.reflectionsofmind.parser.ResultTree;
 import info.reflectionsofmind.parser.node.AbstractNode;
 import info.reflectionsofmind.parser.node.SequenceNode;

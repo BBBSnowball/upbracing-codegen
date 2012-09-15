@@ -1,11 +1,5 @@
 package info.reflectionsofmind.parser.matcher;
 
-import info.reflectionsofmind.parser.ResultTree;
-import info.reflectionsofmind.parser.node.StringNode;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public final class RangeMatcher extends CharacterMatcher
 {

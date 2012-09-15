@@ -5,6 +5,7 @@ import info.reflectionsofmind.parser.ResultTree;
 
 import java.util.List;
  
+@SuppressWarnings("serial")
 public class AmbiguousGrammarException extends GrammarParsingException
 {
 	public AmbiguousGrammarException(List<ResultTree> ambiguousResults)
