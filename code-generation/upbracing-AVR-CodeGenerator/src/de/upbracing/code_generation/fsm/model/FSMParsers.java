@@ -1,24 +1,42 @@
 package de.upbracing.code_generation.fsm.model;
 
+import static info.reflectionsofmind.parser.Matchers.cho;
+import static info.reflectionsofmind.parser.Matchers.str;
+import static info.reflectionsofmind.parser.Matchers.strI;
+import info.reflectionsofmind.parser.Grammar;
+import info.reflectionsofmind.parser.Matchers;
+import info.reflectionsofmind.parser.ResultTree;
+import info.reflectionsofmind.parser.exception.GrammarParsingException;
+import info.reflectionsofmind.parser.matcher.Matcher;
+import info.reflectionsofmind.parser.matcher.NamedMatcher;
+import info.reflectionsofmind.parser.node.AbstractNode;
+import info.reflectionsofmind.parser.node.NamedNode;
+import info.reflectionsofmind.parser.node.Navigation;
+import info.reflectionsofmind.parser.node.Nodes;
+import info.reflectionsofmind.parser.transform.AbstractTransformer;
+import info.reflectionsofmind.parser.transform.ChildTransformer1;
+import info.reflectionsofmind.parser.transform.ChildTransformer2;
+import info.reflectionsofmind.parser.transform.ChildTransformer5;
+import info.reflectionsofmind.parser.transform.ITransform;
+import info.reflectionsofmind.parser.transform.NodePredicate;
+import info.reflectionsofmind.parser.transform.NodePredicates;
+import info.reflectionsofmind.parser.transform.Transform;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Scanners;
-import org.codehaus.jparsec.functors.Map;
-import org.codehaus.jparsec.functors.Map2;
-import org.codehaus.jparsec.functors.Map3;
-import org.codehaus.jparsec.functors.Pair;
-import org.codehaus.jparsec.pattern.Patterns;
+import de.upbracing.code_generation.utils.Util;
 
 /** parsers for parts of the statemachine model: transition text and state actions
  * 
  * @author benny
  *
  */
-public class FSMParsers {
+public final class FSMParsers {
 	/** parse state actions
 	 * 
 	 * Each line starts with an action type (e.g. ENTER or EXIT) and a slash. After that,
@@ -30,34 +48,12 @@ public class FSMParsers {
 	 * @param text action string
 	 * @return a list of action objects
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<Action> parseStateActions(String text) {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
 		
-		@SuppressWarnings("unchecked")
-		Parser<ActionType> action_names[] = new Parser[ActionType.values().length];
-		for (int i=0;i<ActionType.values().length;i++) {
-			ActionType at = ActionType.values()[i];
-			action_names[i] =
-					Parsers.sequence(
-						Scanners.stringCaseInsensitive(at.name()),
-						Parsers.constant(at));
-		}
-		Parser<ActionType> action_name = Parsers.or(action_names);
-		
-		Parser<List<Action>> action_parser = Parsers.sequence(
-				withWhitespace(action_name),
-				withWhitespace(Scanners.string("/")),
-				getActionParser("\n"),
-				new Map3<ActionType, Void, String, Action>() {
-					@Override
-					public Action map(ActionType a, Void b, String c) {
-						return new Action(a, c);
-					}
-				}).endBy(withWhitespace(Scanners.string("\n")));
-		
-		return Parsers.sequence(Scanners.WHITESPACES.optional(), action_parser)
-				.parse(text + "\n");
+		return (List<Action>)parse("state-actions", text + "\n");
 	}
 
 	/** parse transition text
@@ -80,199 +76,31 @@ public class FSMParsers {
 	public static TransitionInfo parseTransitionInfo(String text) {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
-		
-		Parser<String> event_name = Scanners.IDENTIFIER.source();
-		Parser<String> condition = getActionParser("]").between(Scanners.string("["), Scanners.string("]"));
-		
-		Parser<Pair<String, Pair<String, Double>>> event_and_wait =
-				Parsers.or(
-						asSecondOfStringPair(waitEventParser()),
-						Parsers.pair(
-								withWhitespace(event_name).optional(),
-								Parsers.sequence(
-										withWhitespace(Scanners.string(":")),
-										waitEventParser()).optional()));
-		
-		Parser<TransitionInfo> parser = Parsers.sequence(
-				withWhitespace(event_and_wait),
-				withWhitespace(condition.optional()),
-				Parsers.sequence(
-						withWhitespace(Scanners.string("/")),
-						getActionParser(""))
-					.optional(),
-				new Map3<Pair<String, Pair<String, Double>>, String, String, TransitionInfo>() {
-					@Override
-					public TransitionInfo map(Pair<String, Pair<String, Double>> event_wait,
-							String condition, String action) {
-						String event_name = null;
-						String wait_type = null;
-						double wait_time = Double.NaN;
-						if (event_wait != null) {
-							event_name = event_wait.a;
-							if (event_wait.b != null) {
-								wait_type = event_wait.b.a;
-								wait_time = event_wait.b.b;
-							}
-						}
-						return new TransitionInfo(event_name, condition, action, wait_type, wait_time);
-					}
-				});
 
-		return Parsers.sequence(Scanners.WHITESPACES.optional(), parser)
-				.parse(text);
+		return (TransitionInfo)parse("transition-info", text);
 	}
 	
-	/** return a pair with null and the parser result */
-	private static <T, U> Parser<Pair<T, U>> asSecondOfPair(Parser<U> p) {
-		return p.map(new Map<U, Pair<T, U>>() {
-			public Pair<T, U> map(U from) {
-				return new Pair<T, U>(null, from);
-			}
-		});
-	}
-
-	/** return a pair with null and the parser result */
-	private static <U> Parser<Pair<String, U>> asSecondOfStringPair(Parser<U> p) {
-		return asSecondOfPair(p);
-	}
-
-	/** parse an action (or a condition) which doesn't have notAllowedChars except
-	 * within strings or parentheses */
-	private static Parser<String> getActionParser(String notAllowedChars) {
-		return textWithMatchingParens(
-				Parsers.or(
-						Scanners.string("\\\n"),
-						Scanners.notAmong("([{\"" + notAllowedChars),
-						Scanners.DOUBLE_QUOTE_STRING))
-					.source();
-	}
-	
-	/** skip whitespace after parsing with p, returns result of p */
-	private static <T> Parser<T> withWhitespace(Parser<T> p) {
-		return p.followedBy(Scanners.WHITESPACES.optional());
-	}
-
-	/** helper for getActionParser, parse an action (or condition), textparser.many() is used outside parentheses
+	/** parse a time like "1.7ms", "1:30:02.7" or even "1/3 day"
 	 * 
-	 * NOTE: textparser must match things that start with an opening parenthesis/bracket/brace or a double quote
-	 * 
-	 * @param textparser parser that is used outside of parentheses
-	 * @return the parsed string
+	 * @param time text to parse
+	 * @return parsed time in seconds
 	 */
-	private static Parser<?> textWithMatchingParens(Parser<?> textparser) {
-		Parser<?> textparser_without_parens = textparser;
-				/*Parsers.sequence(
-					Scanners.among("([{").not(),
-					textparser).atomic();*/
-		Parser.Reference<List<Object>> parens_content = Parser.newReference();
-		Parser<?> text_in_parens = Parsers.or(
-				textInParens("(", ")", parens_content.lazy()),
-				textInParens("[", "]", parens_content.lazy()),
-				textInParens("{", "}", parens_content.lazy()));
-		parens_content.set(
-					Parsers.or(
-							text_in_parens,
-							Parsers.or(Scanners.DOUBLE_QUOTE_STRING, Scanners.notAmong("([{}])\"", "open parens")))
-						.many());
-		return Parsers.or(text_in_parens, textparser_without_parens).many1();
-	}
-	
-	/** like Parser.between() */
-	private static Parser<?> textInParens(final String open, final String close, Parser<?> inner) {
-		return inner.between(Scanners.string(open), Scanners.string(close));
-	}
-	
-	
-	/** parse a float (actually it returns a double) */
-	private static Parser<Double> floatParser() {
-		return Scanners.pattern(
-				Patterns.regex("[+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]+)?"),
-				"float")
-			.source()
-			.map(new Map<String, Double>() {
-				@Override
-				public Double map(String from) {
-					return Double.parseDouble(from);
-				}
-			});
-	}
-	
-	/** parse a ratio, e.g. 1/4 */
-	private static Parser<Double> ratioParser() {
-		return Scanners.pattern(
-				Patterns.regex("[0-9]+/[0-9]+([eE][+-]?[0-9]+)?"),
-				"ratio")
-			.source()
-			.map(new Map<String, Double>() {
-				@Override
-				public Double map(String from) {
-					String parts[] = from.split("/", 2);
-					return Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]);
-				}
-			});
-	}
-	
-	/** parse a clock time like 1:30:02.7 */
-	private static Parser<Double> clockTimeParser() {
-		return Scanners.pattern(
-				Patterns.regex("[0-9]+(:[0-9]+)*(\\.[0-9]+)?"),
-				"clock time")
-			.source()
-			.map(new Map<String, Double>() {
-				@Override
-				public Double map(String from) {
-					String parts[] = from.split(":");
-					double time = 0;
-					double factor = 1;
-					for (int i=0;i<parts.length;i++) {
-						time += factor * Double.parseDouble(parts[parts.length-i-1]);
-						factor *= 60;
-					}
-					return time;
-				}
-			});
-	}
-	
-	/** parse a time which can be "1.7ms", "1:30:02.7" or even "1/3 day" */
-	private static Parser<Double> timeParser() {
-		final java.util.Map<String, Double> factors = new HashMap<String, Double>();
-		factors.put("days", 24*60*60.0);
-		factors.put("day",  24*60*60.0);
-		factors.put("hours",   60*60.0);
-		factors.put("hour",    60*60.0);
-		factors.put("h",       60*60.0);
-		factors.put("min",        60.0);
-		factors.put("m",          60.0);
-		factors.put("sec",         1.0);
-		factors.put("s",           1.0);
-		factors.put("ms", 1e-3);
-		factors.put("us", 1e-6);
-		factors.put("ns", 1e-9);
-		factors.put("ps", 1e-12);
-		factors.put("fs", 1e-15);
-		
-		List<Parser<Void>> suffixes = new ArrayList<Parser<Void>>(factors.size());
-		for (String suffix : factors.keySet())
-			suffixes.add(Scanners.string(suffix));
-		
-		Parser<Double> numberParser = Parsers.or(ratioParser(), floatParser());
-		
-		Parser<Double> timeWithSuffix =
-				Parsers.sequence(
-						withWhitespace(numberParser),
-						Parsers.or(suffixes).source(),
-						new Map2<Double, String, Double>() {
-							@Override
-							public Double map(Double time, String factor) {
-								return time * factors.get(factor);
-							}
-						});
-		
-		return Parsers.or(timeWithSuffix, clockTimeParser());
+	public static double parseTime(String time) {
+		return (Double)parse("time", time.trim());
 	}
 
+	/** format a time value
+	 * 
+	 * The value is meaningful for a user, e.g. it could be "100ms". The value can also
+	 * be parsed with {@link #parseTime(String)} which yields the almost same value as
+	 * before. There can be a round-off error and the textual representation is less
+	 * exact than the double value.
+	 * 
+	 * @param time time to format for the user
+	 * @return the time as a string
+	 */
 	public static String formatTime(double time) {
-		final java.util.Map<String, Double> factors = new HashMap<String, Double>();
+		final Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("ms", 1e-3);
 		factors.put("us", 1e-6);
 		factors.put("ns", 1e-9);
@@ -372,26 +200,320 @@ public class FSMParsers {
 		
 	}
 	
-	/** parse a wait term like "wait(1ms)" or "after 1/3 hour" */
-	private static Parser<Pair<String, Double>> waitEventParser() {
-		return
-			Parsers.pair(
-				withWhitespace(
-					Parsers.or(
-							Scanners.string("wait"),
-							Scanners.string("at"),
-							Scanners.string("before"),
-							Scanners.string("after"))
-						.source()),
-				Parsers.or(
-					withWhitespace(timeParser())
-						.between(
-							withWhitespace(Scanners.string("(")),
-							withWhitespace(Scanners.string(")"))),
-					withWhitespace(timeParser())));
+	private static Map<String, Double> getTimeFactors() {
+		final Map<String, Double> factors = new HashMap<String, Double>();
+		factors.put("days", 24*60*60.0);
+		factors.put("day",  24*60*60.0);
+		factors.put("hours",   60*60.0);
+		factors.put("hour",    60*60.0);
+		factors.put("h",       60*60.0);
+		factors.put("min",        60.0);
+		factors.put("m",          60.0);
+		factors.put("sec",         1.0);
+		factors.put("s",           1.0);
+		factors.put("ms", 1e-3);
+		factors.put("us", 1e-6);
+		factors.put("ns", 1e-9);
+		factors.put("ps", 1e-12);
+		factors.put("fs", 1e-15);
+		return factors;
 	}
 
-	public static double parseTime(String time) {
-		return timeParser().parse(time);
+	private static Matcher getTimeSuffixMatcher() {
+		Set<String> suffixes = getTimeFactors().keySet();
+		
+		Matcher options[] = new Matcher[suffixes.size()];
+		int i = 0;
+		for (String suffix : suffixes)
+			options[i++] = str(suffix);
+		
+		return new NamedMatcher("time-suffix").define(cho(options));
+	}
+	
+	private static Matcher getStateActionTypeMatcher() {
+		ActionType[] values = ActionType.values();
+		
+		Matcher options[] = new Matcher[values.length];
+		int i = 0;
+		for (ActionType value : values)
+			//TODO make it case-insensitive
+			options[i++] = strI(value.name());
+		
+		return new NamedMatcher("state-action-type").define(cho(options));
+	}
+
+	private static Map<String, Matcher> createGrammarDefinition()
+			throws GrammarParsingException {
+		Map<String, Matcher> previous_defs = new HashMap<String, Matcher>();
+		previous_defs.put("time-suffix", getTimeSuffixMatcher());
+		previous_defs.put("state-action-type", getStateActionTypeMatcher());
+		
+		Map<String, Matcher> matchers = Grammar.generateDefinitions(
+				Util.loadResource(FSMParsers.class, "fsm-grammar.g"), previous_defs);
+		return matchers;
+	}
+
+	private static Map<String, Matcher> cached_grammar_definition;
+	private static Map<String, Matcher> getGrammarDefinition() {
+		if (cached_grammar_definition == null) {
+			try {
+				cached_grammar_definition = createGrammarDefinition();
+			} catch (GrammarParsingException e) {
+				throw new ParserException(e);
+			}
+		}
+		return cached_grammar_definition;
+	}
+
+	private static void transformChoice(Transform transform, String... ids) {
+		transform.add(new AbstractTransformer(ids) {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				transform.transform(node.children);
+				
+				List<NamedNode> children = Navigation.getNamedChildren(node);
+				assert children.size() == 1;
+				
+				node.value = children.get(0).value;
+			}
+		});
+	}
+
+	private static void transformUseTextAsValue(Transform transform, String... ids) {
+		transform.add(new AbstractTransformer(ids) {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				node.value = node.getText();
+			}
+		});
+	}
+
+	private static void transformToList(Transform transform, String node_id,
+			String... children_ids) {
+		final NodePredicate predicate = NodePredicates.withID(children_ids);
+		transform.add(new AbstractTransformer(node_id) {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				transform.transform(node.children);
+				
+				List<AbstractNode> children = node.findChildren(predicate);
+				ArrayList<Object> values = new ArrayList<Object>();
+				for (AbstractNode child : children)
+					values.add(child.value);
+				
+				node.value = values;
+			}
+		});
+	}
+
+	private static void transformCopyValueFromChild(Transform transform, String... node_and_child_ids) {
+		transform.add(new ChildTransformer1<Object>(Object.class, (Object[])node_and_child_ids) {
+			@Override
+			protected Object transform(Object child_value) {
+				return child_value;
+			}
+		});
+	}
+
+	private static Transform createTransform() {
+		Transform transform = new Transform();
+		
+		transform.add(new AbstractTransformer("positive-number") {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				node.value = Integer.parseInt(node.getText());
+			}
+		});
+		
+		transform.add(new AbstractTransformer("float-number", "simple-unsigned-float-number") {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				node.value = Double.parseDouble(node.getText());
+			}
+		});
+		
+		transform.add(new ChildTransformer2<Integer, Double>(Integer.class, Double.class, "ratio-number") {
+			protected Object transform(Integer num, Double denom) {
+				return num / denom;
+			}
+		});
+		
+		transform.add(new AbstractTransformer("clock-time") {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				transform.transform(node.children);
+				
+				List<AbstractNode> xs = node.findNamedChildren();
+				Collections.reverse(xs);
+
+				double time = 0;
+				double factor = 1;
+				for (AbstractNode node2 : xs) {
+					double x;
+					if (node2.value instanceof Integer)
+						x = (Integer)node2.value;
+					else
+						x = (Double)node2.value;
+					
+					time += factor * x;
+					factor *= 60;
+				}
+				
+				node.value = time;
+			}
+		});
+		
+		transform.add(new ChildTransformer2<Double, String>(Double.class, String.class, "time-with-suffix", "~ws", "*", "#text") {
+			@Override
+			protected Object transform(Double time, String factor_name) {
+				return time * getTimeFactors().get(factor_name);
+			}
+		});
+		
+		transformChoice(transform, "time");
+		
+		transformUseTextAsValue(transform, "wait-event-type");
+		
+		transformUseTextAsValue(transform, "condition-text");
+		
+		transformCopyValueFromChild(transform, "condition", ">condition-text");
+		
+		transform.add(new ChildTransformer5<String, String, Double, String, String>(
+				String.class, String.class, Double.class, String.class, String.class,
+				"transition-info", "~ws", 
+				"?>>event-name#text", "?>>wait-event-type#text", "?>>time",
+				"?>condition", "?>transition-action#text") {
+			@Override
+			protected Object transform(String event_name, String wait_type, Double wait_time,
+					String condition, String action) {
+				// most things can be null and we don't care
+				// However, for the Double value this would cause a NullPointerException,
+				// when it is cast into a double. Therefore, we replace it.
+				if (wait_time == null)
+					wait_time = Double.NaN;
+				
+				if (condition != null)
+					condition = condition.trim();
+				
+				if (action != null)
+					action = action.trim();
+				
+				return new TransitionInfo(event_name, condition, action, wait_type, wait_time);
+			}
+		});
+		
+		transform.add(new AbstractTransformer("state-action-type") {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				node.value = ActionType.valueOf(node.getText().toUpperCase());
+			}
+		});
+		transform.add(new ChildTransformer2<ActionType, String>(
+				ActionType.class, String.class,
+				"state-action", "~ws",
+				">state-action-type", ">state-action-text#text") {
+			@Override
+			protected Object transform(ActionType type, String action) {
+				action = action.trim();
+				
+				return new Action(type, action);
+			}
+		});
+		
+		transformToList(transform, "state-actions", "state-action");
+		
+		return transform;
+	}
+
+	private static Transform cached_transform;
+	private static Transform getTransform() {
+		if (cached_transform == null)
+			cached_transform = createTransform();
+		return cached_transform;
+	}
+	
+	private static Object parse(String parserName, String text) {
+		ResultTree result = parseToTree(parserName, text);
+		
+		return result.root.value;
+	}
+
+	private static ResultTree parseToTree(String parserName, String text) {
+		List<ResultTree> results = parseToTrees(parserName, text);
+		
+		if (results.size() < 1)
+			//TODO include some helpful information, see the parser in Grammar
+			throw new ParserException("no result");
+		
+		ResultTree result;
+		boolean accept_ambiguous = false;
+		if (accept_ambiguous) {
+			if (results.size() > 1)
+				System.err.println("WARN: We got " + results.size() + " trees instead of one.");
+			
+			result = results.get(0);
+			for (ResultTree tree : results) {
+				if (tree.rest > result.rest)
+					result = tree;
+			}
+		} else {
+			if (results.size() > 1)
+				//TODO include some helpful information, see the parser in Grammar
+				throw new ParserException(results);
+			
+			result = results.get(0);
+		}
+
+		Transform transform = getTransform();
+		transform.transform(result.root);
+		return result;
+	}
+
+	private static List<ResultTree> parseToTrees(String parserName, String text) {
+		Map<String, Matcher> matchers = getGrammarDefinition();
+		
+		Matcher matcher = matchers.get(parserName);
+		if (matcher == null)
+			throw new IllegalArgumentException("parser definition not found: " + parserName);
+		List<ResultTree> results = Matchers.fullMatch(matcher, text);
+		return results;
+	}
+
+	public static void main(String args[]) throws Exception {
+		String parserName, text;
+		
+		parserName = "clock-time"; text = "1:30";
+		parserName = "time"; text = "100ms";
+		parserName = "wait-event"; text = "wait(1ms)";
+		parserName = "wait-event"; text = "after 1/3 hour";
+		parserName = "transition-info"; text = "blub:wait(10min) [a>7] / blub();";
+		parserName = "transition-info"; text = "blub:wait(10min) [a[0]>7] / blub();";
+		parserName = "transition-info"; text = "blub [a>7] / blub();";
+		parserName = "state-action"; text = "EXIT / blub(a,b/2)";
+		parserName = "state-action"; text = "\n\nEXIT / blub(a,b/2)\n\nENTER/abc\n\n\n";
+		
+		List<ResultTree> result = parseToTrees(parserName, text);
+		
+		System.out.println("We have " + result.size() + " trees.");
+		if (!result.isEmpty()) {
+			System.out.println("Longest tree:");
+			ResultTree longest = result.get(0);
+			for (ResultTree tree : result) {
+				if (tree.rest > longest.rest)
+					longest = tree;
+			}
+			System.out.println(Nodes.toStringFull(longest.root));
+			System.out.println("Used " + longest.rest + " of " + text.length() + " chars");
+			System.out.println();
+			
+			Transform transform = getTransform();
+			
+			transform.transform(longest.root);
+			System.out.println(Nodes.toStringWithValue(longest.root));
+
+			System.out.println("We have " + result.size() + " trees.");
+			System.out.println("We were using parser " + parserName + " on:\n  " + text);
+			System.out.println("The tree has been transformed into this value:\n  " + longest.root.value);
+		}
 	}
 }
