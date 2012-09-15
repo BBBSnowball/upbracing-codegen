@@ -47,8 +47,7 @@ public final class RepetitionMatcher implements Matcher
 		this.matcher = matcher;
 	}
 
-	@Override
-	public List<ResultTree> match(final String input)
+	public List<ResultTree> match_original(final String input)
 	{
 		final List<ResultTree> combinedResults = new ArrayList<ResultTree>();
 
@@ -96,5 +95,38 @@ public final class RepetitionMatcher implements Matcher
 		}
 
 		return combinedResults;
+	}
+
+	@Override
+	public List<ResultTree> match(final String input)
+	{
+		final List<ResultTree> combinedResults = new ArrayList<ResultTree>();
+		final List<AbstractNode> currentResult = new ArrayList<AbstractNode>(Math.min(max, 5));
+		
+		match(input, min, max, 0, currentResult, combinedResults);
+
+		return combinedResults;
+	}
+
+	private void match(String input, int min, int max, int pos_in_input, List<AbstractNode> currentResult,
+			List<ResultTree> combinedResults) {
+		if (min <= 0)
+			// add empty result
+			combinedResults.add(buildResult(currentResult, pos_in_input));
+		
+		if (max <= 0)
+			return;
+		
+		for (ResultTree result : matcher.match(input)) {
+			currentResult.add(result.root);
+			match(input.substring(result.rest), min-1, max-1, pos_in_input + result.rest, currentResult, combinedResults);
+			currentResult.remove(currentResult.size()-1);
+		}
+	}
+
+	private ResultTree buildResult(List<AbstractNode> currentResult, int pos_in_input) {
+		final AbstractNode node = new RepetitionNode();
+		node.children.addAll(currentResult);
+		return new ResultTree(node, pos_in_input);
 	}
 }

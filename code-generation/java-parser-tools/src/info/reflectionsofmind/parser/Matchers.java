@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import info.reflectionsofmind.parser.matcher.ChoiceMatcher;
+import info.reflectionsofmind.parser.matcher.LongestTreeMatcher;
 import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.RangeMatcher;
 import info.reflectionsofmind.parser.matcher.RepetitionMatcher;
@@ -53,6 +54,11 @@ public final class Matchers
 	public static Matcher cho(final Matcher... matchers)
 	{
 		return new ChoiceMatcher(matchers);
+	}
+	
+	public static Matcher one(final Matcher matcher)
+	{
+		return new LongestTreeMatcher(matcher);
 	}
 
 	// ============================================================================================
