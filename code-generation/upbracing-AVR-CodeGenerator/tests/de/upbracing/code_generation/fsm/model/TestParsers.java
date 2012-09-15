@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.codehaus.jparsec.error.ParserException;
 import org.junit.Test;
 
 public class TestParsers {

@@ -14,11 +14,15 @@ import info.reflectionsofmind.parser.node.NamedNode;
 import info.reflectionsofmind.parser.node.Navigation;
 import info.reflectionsofmind.parser.node.Nodes;
 import info.reflectionsofmind.parser.transform.AbstractTransformer;
+import info.reflectionsofmind.parser.transform.ChildTransformer1;
 import info.reflectionsofmind.parser.transform.ChildTransformer2;
 import info.reflectionsofmind.parser.transform.ChildTransformer5;
 import info.reflectionsofmind.parser.transform.ITransform;
+import info.reflectionsofmind.parser.transform.NodePredicate;
+import info.reflectionsofmind.parser.transform.NodePredicates;
 import info.reflectionsofmind.parser.transform.Transform;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -235,7 +239,7 @@ public final class FSMParsers {
 			//TODO make it case-insensitive
 			options[i++] = strI(value.name());
 		
-		return new NamedMatcher("state-event-name").define(cho(options));
+		return new NamedMatcher("state-action-type").define(cho(options));
 	}
 
 	private static Map<String, Matcher> createGrammarDefinition()
@@ -255,7 +259,7 @@ public final class FSMParsers {
 			try {
 				cached_grammar_definition = createGrammarDefinition();
 			} catch (GrammarParsingException e) {
-				throw new RuntimeException(e);
+				throw new ParserException(e);
 			}
 		}
 		return cached_grammar_definition;
@@ -280,6 +284,33 @@ public final class FSMParsers {
 			@Override
 			public void transform(AbstractNode node, ITransform transform) {
 				node.value = node.getText();
+			}
+		});
+	}
+
+	private static void transformToList(Transform transform, String node_id,
+			String... children_ids) {
+		final NodePredicate predicate = NodePredicates.withID(children_ids);
+		transform.add(new AbstractTransformer(node_id) {
+			@Override
+			public void transform(AbstractNode node, ITransform transform) {
+				transform.transform(node.children);
+				
+				List<AbstractNode> children = node.findChildren(predicate);
+				ArrayList<Object> values = new ArrayList<Object>();
+				for (AbstractNode child : children)
+					values.add(child.value);
+				
+				node.value = values;
+			}
+		});
+	}
+
+	private static void transformCopyValueFromChild(Transform transform, String... node_and_child_ids) {
+		transform.add(new ChildTransformer1<Object>(Object.class, (Object[])node_and_child_ids) {
+			@Override
+			protected Object transform(Object child_value) {
+				return child_value;
 			}
 		});
 	}
@@ -348,11 +379,15 @@ public final class FSMParsers {
 		
 		transformUseTextAsValue(transform, "wait-event-type");
 		
+		transformUseTextAsValue(transform, "condition-text");
+		
+		transformCopyValueFromChild(transform, "condition", ">condition-text");
+		
 		transform.add(new ChildTransformer5<String, String, Double, String, String>(
 				String.class, String.class, Double.class, String.class, String.class,
 				"transition-info", "~ws", 
 				"?>>event-name#text", "?>>wait-event-type#text", "?>>time",
-				"?>condition#text", "?>transition-action#text") {
+				"?>condition", "?>transition-action#text") {
 			@Override
 			protected Object transform(String event_name, String wait_type, Double wait_time,
 					String condition, String action) {
@@ -372,7 +407,7 @@ public final class FSMParsers {
 			}
 		});
 		
-		transform.add(new AbstractTransformer("state-event-type") {
+		transform.add(new AbstractTransformer("state-action-type") {
 			@Override
 			public void transform(AbstractNode node, ITransform transform) {
 				node.value = ActionType.valueOf(node.getText().toUpperCase());
@@ -381,7 +416,7 @@ public final class FSMParsers {
 		transform.add(new ChildTransformer2<ActionType, String>(
 				ActionType.class, String.class,
 				"state-action", "~ws",
-				">state-action-type", ">state-action-text") {
+				">state-action-type", ">state-action-text#text") {
 			@Override
 			protected Object transform(ActionType type, String action) {
 				action = action.trim();
@@ -389,6 +424,8 @@ public final class FSMParsers {
 				return new Action(type, action);
 			}
 		});
+		
+		transformToList(transform, "state-actions", "state-action");
 		
 		return transform;
 	}
@@ -410,8 +447,8 @@ public final class FSMParsers {
 		List<ResultTree> results = parseToTrees(parserName, text);
 		
 		if (results.size() < 1)
-			//TODO should not be a RuntimeException
-			throw new RuntimeException("no result");
+			//TODO include some helpful information, see the parser in Grammar
+			throw new ParserException("no result");
 		
 		ResultTree result;
 		boolean accept_ambiguous = true;
@@ -423,8 +460,8 @@ public final class FSMParsers {
 			}
 		} else {
 			if (results.size() > 1)
-				//TODO should not be a RuntimeException
-				throw new RuntimeException("ambiguous result");
+				//TODO include some helpful information, see the parser in Grammar
+				throw new ParserException(results);
 			
 			result = results.get(0);
 		}
@@ -453,7 +490,8 @@ public final class FSMParsers {
 		parserName = "wait-event"; text = "after 1/3 hour";
 		parserName = "transition-info"; text = "blub:wait(10min) [a>7] / blub();";
 		parserName = "transition-info"; text = "blub:wait(10min) [a[0]>7] / blub();";
-		//parserName = "transition-info"; text = "blub [a>7] / blub();";
+		parserName = "transition-info"; text = "blub [a>7] / blub();";
+		parserName = "state-action" ; text = "EXIT / blub(a,b/2)";
 		
 		List<ResultTree> result = parseToTrees(parserName, text);
 		

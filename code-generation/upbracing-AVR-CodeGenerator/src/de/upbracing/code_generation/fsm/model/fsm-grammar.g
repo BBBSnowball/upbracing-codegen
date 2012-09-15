@@ -37,9 +37,10 @@ parenthesised-text ::= (("(" parenthesised-text-inner ")") | ("[" parenthesised-
 	 | ("{" parenthesised-text-inner "}") | double-quoted-string | single-quoted-char)
 parenthesised-text-inner ::= { parenthesised-text | ~<{[()]}"'> }
 
-condition-text         ::= { parenthesised-text | ~<{[(]>  }
-action-text-without-nl ::= { parenthesised-text | ~<{[(\n> }
-action-text-with-nl    ::= { parenthesised-text | ~<{[(>   }
+condition-text         ::= { parenthesised-text | ~<{[(]\\>  | quoted-nl | ("\\" ~<>) }
+action-text-without-nl ::= { parenthesised-text | ~<{[(\n\\> | quoted-nl | ("\\" ~<>) }
+action-text-with-nl    ::= { parenthesised-text | ~<{[(\\>   | quoted-nl | ("\\" ~<>) }
+quoted-nl ::= "\\\n"
 
 
 // parser for transition information
@@ -51,6 +52,6 @@ transition-action ::= action-text-with-nl
 
 // parser for state actions
 // state-action-type is defined externally
-state-actions ::= {ws state-action "\n"}
+state-actions ::= {ws [state-action] "\n"}
 state-action ::= (state-action-type ws "/" state-action-text)
 state-action-text ::= action-text-without-nl
