@@ -64,6 +64,13 @@ public class TestParsers {
 				
 				new Action(ActionType.EXIT, "blub(\"a)\",b/2,\"[c\"); \\\n blork(42); {\nabc(\\x, \"}\");\n}"),
 				new Action(ActionType.ENTER, "b"));
+		
+		assertListEquals(
+				FSMParsers.parseStateActions("ENTER/DDRB = 0xff \n ENTER/PORTB++ \n ALWAYS/wdt_reset()"),
+				
+				new Action(ActionType.ENTER, "DDRB = 0xff"),
+				new Action(ActionType.ENTER, "PORTB++"),
+				new Action(ActionType.ALWAYS, "wdt_reset()"));
 	}
 
 	@Test

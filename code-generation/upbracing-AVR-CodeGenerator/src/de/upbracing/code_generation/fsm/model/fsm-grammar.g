@@ -52,6 +52,6 @@ transition-action ::= action-text-with-nl
 
 // parser for state actions
 // state-action-type is defined externally
-state-actions ::= (ws {[state-action] "\n"})
+state-actions ::= (ws {[state-action] "\n" ws})
 state-action ::= (state-action-type ws "/" state-action-text)
 state-action-text ::= action-text-without-nl

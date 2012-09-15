@@ -490,7 +490,9 @@ public final class FSMParsers {
 		parserName = "transition-info"; text = "blub:wait(10min) [a[0]>7] / blub();";
 		parserName = "transition-info"; text = "blub [a>7] / blub();";
 		parserName = "state-action"; text = "EXIT / blub(a,b/2)";
-		parserName = "state-action"; text = "\n\nEXIT / blub(a,b/2)\n\nENTER/abc\n\n\n";
+		parserName = "state-actions"; text = "\n\nEXIT / blub(a,b/2)\n\nENTER/abc\n\n\n";
+		parserName = "state-actions"; text = "ENTER/DDRB = 0xff \n ENTER/PORTB++ \n ALWAYS/wdt_reset()\n";
+		//parserName = "state-actions"; text = "ENTER/DDRB = 0xff \n \n"; //ENTER/PORTB++ \n ALWAYS/wdt_reset()\n";
 		
 		List<ResultTree> result = parseToTrees(parserName, text);
 		
