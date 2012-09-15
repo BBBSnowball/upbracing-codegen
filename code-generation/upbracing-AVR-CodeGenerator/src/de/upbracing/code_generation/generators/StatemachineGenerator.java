@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.generators;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -8,9 +9,15 @@ import java.util.TreeMap;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
+import Statecharts.InitialState;
+import Statecharts.FinalState;
+import Statecharts.Region;
+import Statecharts.SuperState;
 import Statecharts.State;
 import Statecharts.StateWithActions;
 import Statecharts.Transition;
+import Statecharts.NormalState;
+import Statecharts.impl.*;
 
 import de.upbracing.code_generation.StatemachinesHeaderTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -63,42 +70,95 @@ public class StatemachineGenerator extends AbstractGenerator {
 				else if(Character.isDigit(statemachine_name.charAt(0)))
 					System.err.println(statemachine_name + " : Name cannot start with a digit.");
 				else
-					System.out.println("Validation successful for all statemachine names.");
+					System.out.println(statemachine_name+ " Validation successful for all statemachine names.");
+				
 				
 				
 				//state validation
 				BasicEList<State> states = (BasicEList<State>) smg.getStates();
 				
+				BasicEList<FinalState> finalstate;
+				BasicEList<InitialState> initialstate;
+				BasicEList<StateWithActions> statewithactions;
+				BasicEList<NormalState> normalstate;
+				BasicEList<SuperState> superstate;
 				
-				for(State v: states){
-					if(v.toString().startsWith("$"))
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with $.");
-					else if(Character.isDigit(v.toString().charAt(0)))
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with a digit.");
-					else if(v.toString().isEmpty())
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot be empty");
+				initialstate = new BasicEList<InitialState>((Collection<? extends InitialState>) states);
+				finalstate = new BasicEList<FinalState>((Collection<? extends FinalState>) states);
+				normalstate = new BasicEList<NormalState>((Collection<? extends NormalState>) states);
+				superstate = new BasicEList<SuperState>((Collection<? extends SuperState>) states);
+				
+				for(InitialState v: initialstate){
+					if(v.getName().startsWith("$"))
+						System.err.println("Statemachine -> "+ statemachine_name+ " | State" + " -> "+ v.getName() + " | State name cannot start with $.");
+					else if(Character.isDigit(v.getName().charAt(0)))
+						System.err.println("Statemachine -> "+ statemachine_name+ " | State" + " -> "+ v.getName() + " | State name cannot start with a digit.");
+					else if(v.getName().isEmpty())
+						System.err.println("Statemachine -> "+ statemachine_name+ " | State" + " -> "+ v.getName() + " | State name cannot be empty");
 					else
-						System.out.println("Validation successful for State names.");
+						System.out.println("Statemachine -> "+ statemachine_name+ " | State" + " -> "+ v.getName() + " | Validation successful for State names.");
+				}
+				
+			   for(FinalState v: finalstate){
+				   	if(v.getName().startsWith("$"))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with $.");
+					else if(Character.isDigit(v.getName().charAt(0)))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with a digit.");
+					else if(v.getName().isEmpty())
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot be empty");
+					else
+						System.out.println(statemachine_name+ " -> "+ v.getName() + " : Validation successful for State names.");
+			   }
+				
+			   for(NormalState v: normalstate){
+				   if(v.getName().startsWith("$"))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with $.");
+					else if(Character.isDigit(v.getName().charAt(0)))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with a digit.");
+					else if(v.getName().isEmpty())
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot be empty");
+					else
+						System.out.println(statemachine_name+ " -> "+ v.getName() + " : Validation successful for State names.");
+			   }
+				
+			  for(SuperState v : superstate){
+				  if(v.getName().startsWith("$"))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with $.");
+					else if(Character.isDigit(v.getName().charAt(0)))
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot start with a digit.");
+					else if(v.getName().isEmpty())
+						System.err.println(statemachine_name+ " -> "+ v.getName() + " : State name cannot be empty");
+					else
+						System.out.println(statemachine_name+ " -> "+ v.getName() + " : Validation successful for State names.");
+			  }
+	
+				//no edges going to initial state
+				
+				for(InitialState v: initialstate){
+					if(!v.getIncomingTransitions().isEmpty())
+						System.err.println(statemachine_name + " -> " + v.getName() + " : Initial State cannot have incoming transitions.");
+					else if(v.getOutgoingTransitions().size() > 1)
+						System.err.println(statemachine_name + " -> " + v.getName() + " : Initial State cannot have more than one outgoing transitions.");
+					else
+						System.out.println(statemachine_name + " -> " + v.getName() + " : Validation successful. No initial state has incoming transitions.");
 				}
 				
 				
+				
+				//no edges coming from final state
+				
+				for(FinalState v: finalstate){
+					if(!v.getOutgoingTransitions().isEmpty())
+						System.err.println(statemachine_name + " -> " + v.getName() + " : Final State cannot have outgoing transitions.");
+					else
+						System.out.println(statemachine_name + " -> " + v.getName() +  " : Validation successful. No final state has outgoing transitions.");
+				}
+				
+					
 				
 				//event validation
 				
-				TreeMap<String, Set<Transition>> events = (TreeMap<String, Set<Transition>>) smg.getEvents();
-				Set<String> keys = events.keySet();
-				
-				for(String v : keys){
-					if(Character.isDigit(v.charAt(0)))
-						System.err.println("Event name cannot start with a digit.");
-					else if(v.startsWith("$"))
-						System.err.println("Event name cannot start with $.");
-					else if(v.isEmpty())
-						System.out.println("Event name cannot be empty");
-					else
-						System.out.println("Validation successful for events");
-				}
-				
+	
 				
 				
 				
