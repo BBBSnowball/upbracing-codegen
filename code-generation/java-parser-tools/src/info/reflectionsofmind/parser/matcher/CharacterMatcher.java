@@ -22,7 +22,7 @@ public abstract class CharacterMatcher implements Matcher
 		
 		char ch = input.charAt(0);
 		if (predicate(ch))
-			return Arrays.asList(new ResultTree(new StringNode("" + ch), 1));
+			return Arrays.asList(new ResultTree(new StringNode(Character.toString(ch)), 1));
 		
 		return Collections.<ResultTree> emptyList();
 	}
