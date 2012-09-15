@@ -3,11 +3,19 @@ package de.upbracing.code_generation.generators;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.SortedMap;
 
+import org.eclipse.emf.common.util.EList;
+
+import Statecharts.InitialState;
+import Statecharts.FinalState;
+import Statecharts.Region;
+import Statecharts.SuperState;
 import Statecharts.State;
 import Statecharts.StateWithActions;
 import Statecharts.Transition;
+import Statecharts.NormalState;
+import Statecharts.impl.*;
 
 import de.upbracing.code_generation.StatemachinesHeaderTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -38,9 +46,9 @@ public class StatemachineGenerator extends AbstractGenerator {
 				//TODO for Rishab: validate state machines
 				// - statemachine names, regions and event names are valid C identifiers; however, all
 				//   of them except the statemachine name can be empty
-				// - no edges going to initial states or starting at final states
-				// - initial states have exactly one transition
-				// - edges from initial states cannot have events, wait conditions or conditions
+//done				// - no edges going to initial states or starting at final states
+//done				// - initial states have exactly one transition 
+//done				// - edges from initial states cannot have events, wait conditions or conditions
 				// - if an edge has a condition or an event, the waitType cannot be "wait" ("after" and all the others are ok)
 				// - if an edge has waitType=="before", it must have a condition or an event (or both)
 				// Probably, you will find some more things to check.
@@ -60,48 +68,124 @@ public class StatemachineGenerator extends AbstractGenerator {
 				else if(Character.isDigit(statemachine_name.charAt(0)))
 					System.err.println(statemachine_name + " : Name cannot start with a digit.");
 				else
-					System.out.println("Validation successful for all statemachine names.");
+					System.out.println(statemachine_name+ " Validation successful for all statemachine names.");
+				
 				
 				
 				//state validation
 				List<State> states = smg.getStates();
 				
+				for(int i=0; i<states.size(); i++){
+					State state = states.get(i);
+					
+					//initial state validity
+					if(state instanceof InitialState) {
+					    InitialState initial_state = (InitialState) state;
+					    EList<Transition> out_transitions = initial_state.getOutgoingTransitions();
+					    
+					    for(Transition t : out_transitions){
+					    	if(smg.getTransitionInfo(t).isWaitTransition())
+					    		System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + "Source : " + 
+					    				t.getSource() + " Destination : " + t.getDestination() + " : Start state cannot have waiting transition!");
+					    	
+					    	else if(!smg.getTransitionInfo(t).getEventName().isEmpty())
+					    		System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + "Source : " + 
+					    				t.getSource() + " Destination : " + t.getDestination() + " : Start state cannot have events!");
+					    	
+					    	else if(!smg.getTransitionInfo(t).getCondition().isEmpty())
+					    		System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + "Source : " +
+					    				t.getSource() + " Destination : " + t.getDestination() + " : Start state cannot have conditions !");
+					    	
+					    	else if(initial_state.getOutgoingTransitions().size()>1){
+						    	System.err.println("Statemachine " + " -> " + statemachine_name + " | State " + " -> " + initial_state.getName()
+						    			+ " : Validation failed.");
+						    }
+					    }
+					   
+					    if(!initial_state.getIncomingTransitions().isEmpty()){
+					    	System.err.println("Statemachine "+ " -> " + statemachine_name + " | State " + " -> " + initial_state.getName()
+					    			+ " : Validation failed.");
+					    }
+					    
+					    //TODO add initial_state name validation 
+					    
+					}
+					
+					//final state validity
+					else if (state instanceof FinalState){
+						FinalState final_state = (FinalState) state;
+						EList<Transition> in_transitions = final_state.getIncomingTransitions();
+						// - if an edge has waitType=="before", it must have a condition or an event (or both)
+			
+						 for(Transition t : in_transitions){
+							 	if(!smg.getTransitionInfo(t).getCondition().isEmpty() || !smg.getTransitionInfo(t).getEventName().isEmpty()){
+							 		//check wait type is "wait"?
+							 		if(smg.getTransitionInfo(t).getWaitType() == "wait")
+							 			System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + " Source : " +
+							 					t.getSource() + " Destination : " + t.getDestination() + " Transition having condition or event cannot have wait type wait!");
+							 	}	
+							 	// ensure that when wait type is "before" either getcondition is true or event is true
+							 	else if(smg.getTransitionInfo(t).getWaitType() == "before"){
+							 		if(smg.getTransitionInfo(t).getCondition().isEmpty() && smg.getTransitionInfo(t).getEventName().isEmpty()){
+							 			System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + " Source : " +
+							 					t.getSource() + " Destination : " + t.getDestination() + " Transition must either have a condition or an event!");
+							 		}
+							 	}
+							 	//check whether there are any outgoing transitions
+							 	else if(!final_state.getOutgoingTransitions().isEmpty()){
+							 			System.err.println("Statemachine " + " -> " + statemachine_name + " | State " + " -> " + final_state.getName()
+							 					+ " : Validation failed.");
+							 	}
+						 }
+						 
+						//TODO add final_state name validation
+					}
+					
+					//normal state validity
+					else if (state instanceof NormalState){
+						NormalState normal_state = (NormalState) state;
+						EList<Transition> in_transitions = normal_state.getIncomingTransitions();
+						EList<Transition> out_transitions = normal_state.getIncomingTransitions();
+						
+						for(Transition t : in_transitions){
+						 	if(!smg.getTransitionInfo(t).getCondition().isEmpty() || !smg.getTransitionInfo(t).getEventName().isEmpty()){
+						 		if(smg.getTransitionInfo(t).getWaitType() == "wait")
+						 			System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + " Source : " +
+						 					t.getSource() + " Destination : " + t.getDestination() + " Transition having condition or event cannot have wait type wait!");
+						 	}
+						 	else if(smg.getTransitionInfo(t).getWaitType() == "before"){
+						 		if(smg.getTransitionInfo(t).getCondition().isEmpty() && smg.getTransitionInfo(t).getEventName().isEmpty()){
+						 			System.err.println("Statemachine " + " -> " + statemachine_name + " | Transition " + " -> " + " Source : " +
+						 					t.getSource() + " Destination : " + t.getDestination() + " Transition must either have a condition or an event!");
+						 		}
+						 	}
+						}
+						
+						//TODO add normal_state name validation
+					}
+					
+					//Superstates, regions, and contained states validation
+					else if (state instanceof SuperState){
+						SuperState super_state = (SuperState) state;
+						EList<Region> super_regions = super_state.getRegions();
+						
+						//TODO Superstate and region name validation
+						for(Region r : super_regions){
+							EList<State> region_states = r.getContainedstates();
+							for(State s : region_states){
+								{
+								
+								}
+							}
+						}
+						
+
+				}	
 				
-				for(State v: states){
-					if(v.toString().startsWith("$"))
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with $.");
-					else if(Character.isDigit(v.toString().charAt(0)))
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with a digit.");
-					else if(v.toString().isEmpty())
-						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot be empty");
-					else
-						System.out.println("Validation successful for State names.");
-				}
-				
-				
-				
-				//event validation
-				
-				TreeMap<String, Set<Transition>> events = (TreeMap<String, Set<Transition>>) smg.getEvents();
-				Set<String> keys = events.keySet();
-				
-				for(String v : keys){
-					if(Character.isDigit(v.charAt(0)))
-						System.err.println("Event name cannot start with a digit.");
-					else if(v.startsWith("$"))
-						System.err.println("Event name cannot start with $.");
-					else if(v.isEmpty())
-						System.out.println("Event name cannot be empty");
-					else
-						System.out.println("Validation successful for events");
-				}
-				
-				
-				
-				
+				//TODO event validation
 			}
 		}
-		
+		}
 		return valid;
 	}
 	
