@@ -18,6 +18,7 @@ import info.reflectionsofmind.parser.exception.GrammarParsingException;
 import info.reflectionsofmind.parser.exception.InvalidGrammarException;
 import info.reflectionsofmind.parser.exception.UndefinedSymbolException;
 import info.reflectionsofmind.parser.matcher.CharacterMatcher;
+import info.reflectionsofmind.parser.matcher.LongestTreeMatcher;
 import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.NamedMatcher;
 import info.reflectionsofmind.parser.matcher.RegexMatcher;
@@ -240,6 +241,9 @@ public class Grammar
 			return range('0', '9');
 		if ("anyWhitespace".equals(expression.id))
 			return minc(1, str(" "), str("\t"), str("\n"), str("\r"));
+		
+		if ("only-one".equals(expression.id))
+				return new LongestTreeMatcher(createMatcher(expression.getNamedChildren().get(0), all_definitions));
 
 		throw new RuntimeException("Cannot parse expresion [" + expression.id + "]:\n" + Nodes.toStringFull(expression));
 	}
@@ -310,6 +314,9 @@ public class Grammar
 
 		final NamedMatcher optc = new NamedMatcher("optc").define( //
 				seq(str("["), optwh, expression, mins(1, optwh, str("|"), optwh, expression), optwh, str("]")));
+
+		final NamedMatcher only_one = new NamedMatcher("only-one").define( //
+				seq(str("<"), optwh, expression, optwh, str(">")));
 		
 		final NamedMatcher notIn = new NamedMatcher("notin").define(
 				seq(str("~<"),
@@ -362,7 +369,7 @@ public class Grammar
 		definition.define(seq(identifier, optwh, str("::="), optwh, expression));
 
 		expression.define(cho( //
-				seq, rep, reps, repc, opt, opts, optc, cho, notIn, regex, // 
+				seq, rep, reps, repc, opt, opts, optc, cho, notIn, regex, only_one, // 
 				identifier, seq(str("\""), string, str("\"")), //
 				anyLower, anyUpper, anyAlpha, anyDigit, anyWhitespace));
 

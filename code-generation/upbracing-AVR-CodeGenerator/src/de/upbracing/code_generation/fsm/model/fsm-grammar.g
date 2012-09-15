@@ -1,6 +1,6 @@
 
-ws ::= {%whitespace%}
-ws-no-nl ::= {" " | "\t"}
+ws ::= <{%whitespace%}>
+ws-no-nl ::= <{" " | "\t"}>
 
 positive-number ::= (%digit% { %digit% })
 sign ::= ("+" | "-")
@@ -37,14 +37,14 @@ parenthesised-text ::= (("(" parenthesised-text-inner ")") | ("[" parenthesised-
 	 | ("{" parenthesised-text-inner "}") | double-quoted-string | single-quoted-char)
 parenthesised-text-inner ::= { parenthesised-text | ~<{[()]}"'> }
 
-condition-text         ::= { parenthesised-text | ~<{[(]\\>  | quoted-nl | ("\\" ~<>) }
-action-text-without-nl ::= { parenthesised-text | ~<{[(\n\\> | quoted-nl | ("\\" ~<>) }
-action-text-with-nl    ::= { parenthesised-text | ~<{[(\\>   | quoted-nl | ("\\" ~<>) }
+condition-text         ::= { parenthesised-text | ~<{[(]\\>  | quoted-nl | ("\\" ~<\n>) }
+action-text-without-nl ::= { parenthesised-text | ~<{[(\n\\> | quoted-nl | ("\\" ~<\n>) }
+action-text-with-nl    ::= { parenthesised-text | ~<{[(\\>   | quoted-nl | ("\\" ~<\n>) }
 quoted-nl ::= "\\\n"
 
 
 // parser for transition information
-transition-info ::= (ws [event-name-and-wait ws] [condition ws] ["/" ws transition-action])
+transition-info ::= (ws [<event-name-and-wait> ws] [condition ws] ["/" ws transition-action])
 event-name ::= identifier
 event-name-and-wait ::= ((event-name ws [":" ws wait-event]) | ([":" ws] wait-event))
 condition ::= ("[" condition-text "]")
@@ -52,6 +52,6 @@ transition-action ::= action-text-with-nl
 
 // parser for state actions
 // state-action-type is defined externally
-state-actions ::= {ws [state-action] "\n"}
+state-actions ::= (ws {[state-action] "\n"})
 state-action ::= (state-action-type ws "/" state-action-text)
 state-action-text ::= action-text-without-nl

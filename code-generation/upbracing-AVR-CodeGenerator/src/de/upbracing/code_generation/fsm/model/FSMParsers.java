@@ -344,11 +344,6 @@ public final class FSMParsers {
 				transform.transform(node.children);
 				
 				List<AbstractNode> xs = node.findNamedChildren();
-				System.out.println("clock-time:");
-				for (AbstractNode child : xs) {
-					System.out.println("  " + child);
-				}
-				
 				Collections.reverse(xs);
 
 				double time = 0;
@@ -451,8 +446,11 @@ public final class FSMParsers {
 			throw new ParserException("no result");
 		
 		ResultTree result;
-		boolean accept_ambiguous = true;
+		boolean accept_ambiguous = false;
 		if (accept_ambiguous) {
+			if (results.size() > 1)
+				System.err.println("WARN: We got " + results.size() + " trees instead of one.");
+			
 			result = results.get(0);
 			for (ResultTree tree : results) {
 				if (tree.rest > result.rest)
@@ -491,7 +489,8 @@ public final class FSMParsers {
 		parserName = "transition-info"; text = "blub:wait(10min) [a>7] / blub();";
 		parserName = "transition-info"; text = "blub:wait(10min) [a[0]>7] / blub();";
 		parserName = "transition-info"; text = "blub [a>7] / blub();";
-		parserName = "state-action" ; text = "EXIT / blub(a,b/2)";
+		parserName = "state-action"; text = "EXIT / blub(a,b/2)";
+		parserName = "state-action"; text = "\n\nEXIT / blub(a,b/2)\n\nENTER/abc\n\n\n";
 		
 		List<ResultTree> result = parseToTrees(parserName, text);
 		
