@@ -163,21 +163,29 @@ public class StatemachineGenerator extends AbstractGenerator {
 						
 						//TODO add normal_state name validation
 					}
+					
+					//Superstates, regions, and contained states validation
 					else if (state instanceof SuperState){
 						SuperState super_state = (SuperState) state;
+						EList<Region> super_regions = super_state.getRegions();
 						
-						if(super_state instanceof Region){
-							Region regions = (Region) super_state;
+						//TODO Superstate and region name validation
+						for(Region r : super_regions){
+							EList<State> region_states = r.getContainedstates();
+							for(State s : region_states){
+								{
+								
+								}
+							}
 						}
 						
-					}
 
 				}	
 				
 				//TODO event validation
 			}
 		}
-		
+		}
 		return valid;
 	}
 	
