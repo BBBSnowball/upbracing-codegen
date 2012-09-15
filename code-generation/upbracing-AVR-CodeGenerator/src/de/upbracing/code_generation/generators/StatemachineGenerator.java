@@ -3,6 +3,10 @@ package de.upbracing.code_generation.generators;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
+
+import org.eclipse.emf.common.util.BasicEList;
+import org.eclipse.emf.common.util.EList;
 
 import Statecharts.State;
 import Statecharts.StateWithActions;
@@ -49,6 +53,55 @@ public class StatemachineGenerator extends AbstractGenerator {
 				
 				// For each error, print a meaningful message and the location. The location could
 				// look like this: "SuperState abc -> Region x -> State foo"
+				
+				//statemachine validation
+				
+				String statemachine_name = smg.getName();
+				
+				if(statemachine_name.startsWith("$"))
+					System.err.println(statemachine_name + ": Name cannot start with $.");
+				else if(Character.isDigit(statemachine_name.charAt(0)))
+					System.err.println(statemachine_name + " : Name cannot start with a digit.");
+				else
+					System.out.println("Validation successful for all statemachine names.");
+				
+				
+				//state validation
+				BasicEList<State> states = (BasicEList<State>) smg.getStates();
+				
+				
+				for(State v: states){
+					if(v.toString().startsWith("$"))
+						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with $.");
+					else if(Character.isDigit(v.toString().charAt(0)))
+						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot start with a digit.");
+					else if(v.toString().isEmpty())
+						System.err.println(statemachine_name+ " -> "+ v.toString() + " : State name cannot be empty");
+					else
+						System.out.println("Validation successful for State names.");
+				}
+				
+				
+				
+				//event validation
+				
+				TreeMap<String, Set<Transition>> events = (TreeMap<String, Set<Transition>>) smg.getEvents();
+				Set<String> keys = events.keySet();
+				
+				for(String v : keys){
+					if(Character.isDigit(v.charAt(0)))
+						System.err.println("Event name cannot start with a digit.");
+					else if(v.startsWith("$"))
+						System.err.println("Event name cannot start with $.");
+					else if(v.isEmpty())
+						System.out.println("Event name cannot be empty");
+					else
+						System.out.println("Validation successful for events");
+				}
+				
+				
+				
+				
 			}
 		}
 		
@@ -76,6 +129,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 			//                 can be more than one final state in a statemachine (e.g. one is
 			//                 in a region and the other one on the top-level), so be careful
 			//                 to set each transition to the right one.
+			
 		}
 	}
 
