@@ -6,6 +6,7 @@ package Statecharts.diagram.edit.parts;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.draw2d.ConnectionLocator;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
@@ -21,9 +22,9 @@ import org.eclipse.gmf.runtime.common.ui.services.parser.IParser;
 import org.eclipse.gmf.runtime.common.ui.services.parser.IParserEditStatus;
 import org.eclipse.gmf.runtime.common.ui.services.parser.ParserEditStatus;
 import org.eclipse.gmf.runtime.common.ui.services.parser.ParserOptions;
-import org.eclipse.gmf.runtime.diagram.ui.editparts.CompartmentEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.ITextAwareEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.LabelEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editpolicies.LabelDirectEditPolicy;
 import org.eclipse.gmf.runtime.diagram.ui.l10n.DiagramColorRegistry;
 import org.eclipse.gmf.runtime.diagram.ui.label.ILabelDelegate;
@@ -50,13 +51,13 @@ import org.eclipse.swt.graphics.Image;
 /**
  * @generated
  */
-public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
+public class TransitionTransitionInfoEditPart extends LabelEditPart implements
 		ITextAwareEditPart {
 
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5011;
+	public static final int VISUAL_ID = 6001;
 
 	/**
 	 * @generated
@@ -86,7 +87,17 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public GlobalCodeCodeEditPart(View view) {
+	static {
+		registerSnapBackPosition(
+				Statecharts.diagram.part.StatechartsVisualIDRegistry
+						.getType(Statecharts.diagram.edit.parts.TransitionTransitionInfoEditPart.VISUAL_ID),
+				new Point(0, 40));
+	}
+
+	/**
+	 * @generated
+	 */
+	public TransitionTransitionInfoEditPart(View view) {
 		super(view);
 	}
 
@@ -95,14 +106,21 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	 */
 	protected void createDefaultEditPolicies() {
 		super.createDefaultEditPolicies();
-		installEditPolicy(
-				EditPolicy.SELECTION_FEEDBACK_ROLE,
-				new Statecharts.diagram.edit.policies.StatechartsTextSelectionEditPolicy());
 		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE,
 				new LabelDirectEditPolicy());
 		installEditPolicy(
+				EditPolicy.SELECTION_FEEDBACK_ROLE,
+				new Statecharts.diagram.edit.policies.StatechartsTextSelectionEditPolicy());
+		installEditPolicy(
 				EditPolicy.PRIMARY_DRAG_ROLE,
-				new Statecharts.diagram.edit.parts.StateMachineEditPart.NodeLabelDragPolicy());
+				new Statecharts.diagram.edit.parts.StateMachineEditPart.LinkLabelDragPolicy());
+	}
+
+	/**
+	 * @generated
+	 */
+	public int getKeyPoint() {
+		return ConnectionLocator.MIDDLE;
 	}
 
 	/**
@@ -159,11 +177,17 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 		}
 	}
 
-	
-	public void setLabel(WrappingLabel figure) {
+	/**
+	 * @not-generated
+	 */
+	public void setLabel(IFigure figure) {
 		unregisterVisuals();
 		setFigure(figure);
-		figure.setTextWrap(true);
+		if (figure instanceof WrappingLabel)
+			((WrappingLabel) figure).setTextWrap(true);
+		else
+			System.err
+					.println("WARN: Transition has a label that doesn't support wrapping. I cannot make that a multi-line label.");
 		defaultText = getLabelTextHelper(figure);
 		registerVisuals();
 		refreshVisuals();
@@ -303,10 +327,10 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 		if (parser == null) {
 			parser = Statecharts.diagram.providers.StatechartsParserProvider
 					.getParser(
-							Statecharts.diagram.providers.StatechartsElementTypes.GlobalCode_2005,
+							Statecharts.diagram.providers.StatechartsElementTypes.Transition_4001,
 							getParserElement(),
 							Statecharts.diagram.part.StatechartsVisualIDRegistry
-									.getType(Statecharts.diagram.edit.parts.GlobalCodeCodeEditPart.VISUAL_ID));
+									.getType(Statecharts.diagram.edit.parts.TransitionTransitionInfoEditPart.VISUAL_ID));
 		}
 		return parser;
 	}
@@ -559,22 +583,6 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	protected void addNotationalListeners() {
-		super.addNotationalListeners();
-		addListenerFilter("PrimaryView", this, getPrimaryView()); //$NON-NLS-1$
-	}
-
-	/**
-	 * @generated
-	 */
-	protected void removeNotationalListeners() {
-		super.removeNotationalListeners();
-		removeListenerFilter("PrimaryView"); //$NON-NLS-1$
-	}
-
-	/**
-	 * @generated
-	 */
 	protected void handleNotificationEvent(Notification event) {
 		Object feature = event.getFeature();
 		if (NotationPackage.eINSTANCE.getFontStyle_FontColor().equals(feature)) {
@@ -619,8 +627,31 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	 * @generated
 	 */
 	protected IFigure createFigure() {
-		// Parent should assign one using setLabel() method
-		return null;
+		IFigure label = createFigurePrim();
+		defaultText = getLabelTextHelper(label);
+		return label;
+	}
+
+	/**
+	 * @generated
+	 */
+	protected IFigure createFigurePrim() {
+		return new TransitionLabelFigure();
+	}
+
+	/**
+	 * @generated
+	 */
+	public class TransitionLabelFigure extends WrappingLabel {
+
+		/**
+		 * @not-generated
+		 */
+		public TransitionLabelFigure() {
+			this.setText("Transition");
+			this.setTextWrap(true);
+		}
+
 	}
 
 }

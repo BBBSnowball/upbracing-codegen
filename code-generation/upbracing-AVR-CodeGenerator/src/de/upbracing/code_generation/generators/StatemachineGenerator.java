@@ -3,20 +3,17 @@ package de.upbracing.code_generation.generators;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.eclipse.emf.common.util.EList;
 
-import Statecharts.InitialState;
 import Statecharts.FinalState;
+import Statecharts.InitialState;
+import Statecharts.NormalState;
 import Statecharts.Region;
-import Statecharts.SuperState;
 import Statecharts.State;
 import Statecharts.StateWithActions;
+import Statecharts.SuperState;
 import Statecharts.Transition;
-import Statecharts.NormalState;
-import Statecharts.impl.*;
-
 import de.upbracing.code_generation.StatemachinesHeaderTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.Action;
@@ -171,7 +168,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 						
 						//TODO Superstate and region name validation
 						for(Region r : super_regions){
-							EList<State> region_states = r.getContainedstates();
+							EList<State> region_states = r.getStates();
 							for(State s : region_states){
 								{
 								

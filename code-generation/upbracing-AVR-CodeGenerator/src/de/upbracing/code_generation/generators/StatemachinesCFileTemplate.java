@@ -304,26 +304,18 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	public static String getName(Object state) {
-		if (state instanceof State) {
-			if (state instanceof StateWithActions) {
-				if (state instanceof NormalState)
-					return ((NormalState) state).getName();
-				else
-					return ((SuperState) state).getName();
-			} else if (state instanceof InitialState) {
-				return ((InitialState) state).getName();
-			} else {
-				return ((FinalState) state).getName();
-			}
-		} else if (state instanceof GlobalCode) {
-			return ((GlobalCode) state).getName();
-		} else if (state instanceof Transition) {
+		if (state instanceof NamedItem)
+			return ((NamedItem) state).getName();
+		else if (state instanceof StateMachine)
+			return "#diagram";
+		else if (state instanceof Transition) {
 			Transition t = (Transition) state;
 			return "transition(" + getName(t.getSource()) + " -> "
 					+ getName(t.getDestination()) + ")";
-		} else {
-			return ((Region) state).getName();
-		}
+		} else if (state == null)
+			return "(null)";
+		else
+			throw new RuntimeException("should not get here, unexpected object is " + state);
 	}
 
 	private List<Action> filterActionsByType(List<Action> actions,

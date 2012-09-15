@@ -2,46 +2,55 @@
 @namespace(uri="http://statechart", prefix="Statecharts")
 package Statecharts;
 
+abstract class StateParent {
+	op State[*] getStates();
+}
+
+abstract class NamedItem {
+   op String getName();
+}
+
 @gmf.diagram
-class StateMachine {
+class StateMachine extends StateParent {
   attr String basePeriod;
-  val Transition[*] transitions;
-  val State[*] states;
-  val GlobalCode[*] globalCodeBoxes;
+  !ordered val Transition[*] transitions;
+  !ordered val State[*] states;
+  !ordered val GlobalCode[*] globalCodeBoxes;
 }
 
 abstract class State {
-  ref Transition[*]#destination incomingTransitions;
-  ref Transition[*]#source outgoingTransitions;
+  !ordered ref Transition[*]#destination incomingTransitions;
+  !ordered ref Transition[*]#source outgoingTransitions;
+  
+  ref StateParent[1]#states parent;
 }
 
 @Ecore(constraints="no_incoming")
 @gmf.node(label="name", label.icon="false", label.placement="none", figure="ellipse", color="0,0,0", border.color="0,0,0", size="30,30")
 @"http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot"(no_incoming="self.incomingTransitions->isEmpty()")
-class InitialState extends State {
+class InitialState extends State, NamedItem {
   attr String name = "start";
 }
 
 @Ecore(constraints="no_outgoing")
 @gmf.node(label="name", label.icon="false", label.placement="none", figure="rectangle", color="0,0,0", border.color="0,0,0", size="30,30")
 @"http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot"(no_outgoing="self.outgoingTransitions->isEmpty()")
-class FinalState extends State {
+class FinalState extends State, NamedItem {
   attr String name = "end";
 }
 
 abstract class StateWithActions extends State {
-
   @gmf.label
   attr String actions = "";
 }
 
 @gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0", size="1,1", label.pattern="{0}")
-class NormalState extends StateWithActions {
+class NormalState extends StateWithActions, NamedItem {
   attr String name;
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
-class SuperState extends StateWithActions {
+class SuperState extends StateWithActions, NamedItem {
   attr String name;
 
   @gmf.compartment(collapsible="true")
@@ -49,11 +58,11 @@ class SuperState extends StateWithActions {
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", border.color="0,0,0")
-class Region {
+class Region extends StateParent, NamedItem {
   attr String name;
-
+  
   @gmf.compartment(collapsible="true")
-  val State[*] containedstates;
+  !ordered val State[*] states;
 }
 
 @gmf.link(label="transitionInfo", source="source", target="destination", target.decoration="arrow", color="0,0,0")
@@ -65,7 +74,7 @@ class Transition {
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", label.placement="internal", color="245,245,245", border.color="0,0,0", label.pattern="{0}")
-class GlobalCode {
+class GlobalCode extends NamedItem {
   attr String name = "global code";
 
   @gmf.label
