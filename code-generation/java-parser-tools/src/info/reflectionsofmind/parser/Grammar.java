@@ -12,7 +12,6 @@ import static info.reflectionsofmind.parser.Matchers.repc;
 import static info.reflectionsofmind.parser.Matchers.reps;
 import static info.reflectionsofmind.parser.Matchers.seq;
 import static info.reflectionsofmind.parser.Matchers.str;
-import static info.reflectionsofmind.parser.Matchers.one;
 import static info.reflectionsofmind.parser.matcher.CharacterMatcher.notIn;
 import info.reflectionsofmind.parser.exception.AmbiguousGrammarException;
 import info.reflectionsofmind.parser.exception.GrammarParsingException;
@@ -280,11 +279,11 @@ public class Grammar
 		final Matcher digit = range('0', '9');
 
 		final Matcher normalWord = seq(alpha, repc(digit, alpha));
-		final NamedMatcher anyLower = new NamedMatcher("anyLower").define(one(str("%lower%")));
-		final NamedMatcher anyUpper = new NamedMatcher("anyUpper").define(one(str("%upper%")));
-		final NamedMatcher anyAlpha = new NamedMatcher("anyAlpha").define(one(str("%alpha%")));
-		final NamedMatcher anyDigit = new NamedMatcher("anyDigit").define(one(str("%digit%")));
-		final NamedMatcher anyWhitespace = new NamedMatcher("anyWhitespace").define(one(str("%whitespace%")));
+		final NamedMatcher anyLower = new NamedMatcher("anyLower").define(str("%lower%"));
+		final NamedMatcher anyUpper = new NamedMatcher("anyUpper").define(str("%upper%"));
+		final NamedMatcher anyAlpha = new NamedMatcher("anyAlpha").define(str("%alpha%"));
+		final NamedMatcher anyDigit = new NamedMatcher("anyDigit").define(str("%digit%"));
+		final NamedMatcher anyWhitespace = new NamedMatcher("anyWhitespace").define(str("%whitespace%"));
 
 		final NamedMatcher expression = new NamedMatcher("expression");
 		final NamedMatcher definition = new NamedMatcher("definition");
@@ -366,13 +365,13 @@ public class Grammar
 			}
 		});
 
-		identifier.define(one(seq(normalWord, reps(str("-"), normalWord))));
-		definition.define(one(seq(identifier, optwh, str("::="), optwh, expression)));
+		identifier.define(seq(normalWord, reps(str("-"), normalWord)));
+		definition.define(seq(identifier, optwh, str("::="), optwh, expression));
 
-		expression.define(one(cho( //
+		expression.define(cho( //
 				seq, rep, reps, repc, opt, opts, optc, cho, notIn, regex, only_one, // 
 				identifier, seq(str("\""), string, str("\"")), //
-				anyLower, anyUpper, anyAlpha, anyDigit, anyWhitespace)));
+				anyLower, anyUpper, anyAlpha, anyDigit, anyWhitespace));
 
 		grammar.define(seq(optwh, reps(definition, whitespace), opt(definition)));
 
