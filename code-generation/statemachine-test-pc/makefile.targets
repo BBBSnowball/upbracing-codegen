@@ -1,0 +1,2 @@
+# the new code generator for config.rb
+include $(CODE_GENERATOR_DIR)/makefile.targets-inc

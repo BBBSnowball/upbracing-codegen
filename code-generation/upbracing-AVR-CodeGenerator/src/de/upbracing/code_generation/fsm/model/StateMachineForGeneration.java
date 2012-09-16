@@ -19,7 +19,20 @@ import Statecharts.Transition;
 public class StateMachineForGeneration {
 	private StateMachine inner;
 	
+	// configuration values
+	
+	// name of the state machine
+	// This could be set in the model, but I think the name should
+	// be set by the program that is using the statemachine. That
+	// way, we can have more than one option for a statemachine or
+	// several instances of the same statemachine.
 	private String name;
+	
+	// allow access to certain values that would otherwise be private
+	// e.g. the state
+	private boolean test;
+	
+	// values computed for the inner statemachine
 	
 	private SortedMap<String, Set<Transition>> events;
 	private Map<State, List<Action>> actions;
@@ -87,8 +100,16 @@ public class StateMachineForGeneration {
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	
+	public boolean isForTest() {
+		return test;
+	}
+
+	public void setForTest(boolean test) {
+		this.test = test;
+	}
+	
+
 	public void update() {
 		initActions();
 		initTransitionInfos();

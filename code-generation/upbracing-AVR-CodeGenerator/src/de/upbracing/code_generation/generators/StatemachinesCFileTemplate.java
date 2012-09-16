@@ -131,11 +131,14 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append("} " + sm_name + "_state_t;\n");
 
 				stringBuffer.append('\n');
-				stringBuffer.append("struct {\n"
+				stringBuffer.append("typedef struct {\n"
 						+ "\tcounter_state_t state;\n"
 						+ "\t//TODO only include time variable, if we need it\n"
 						+ "\tuint8_t state_time;\n"
-						+ "} counter;");
+						+ "} " + sm_name + "_state_var_t;\n");
+				if (!smg.isForTest())
+					stringBuffer.append("static ");
+				stringBuffer.append(sm_name + "_state_var_t " + sm_name + ";");
 				stringBuffer.append('\n');
 
 				stringBuffer.append('\n');
@@ -509,7 +512,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		if (transitions == null)
 			transitions = smg.getTransitions();
 		
-		stringBuffer.append("void " + sm_name + "_" + (event != null ? event : "tick") + "() {\n");
+		stringBuffer.append("void " + sm_name + "_" + (event != null ? "event_" + event : "tick") + "() {\n");
 		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
 		stringBuffer.append('\n');
 		
