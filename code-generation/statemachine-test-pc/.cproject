@@ -59,7 +59,7 @@
 		<cconfiguration id="cdt.managedbuild.config.gnu.exe.release.477193364">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.release.477193364" moduleId="org.eclipse.cdt.core.settings" name="Release">
 				<macros>
-					<stringMacro name="CODE_GENERATOR_DIR_VARIABLE" type="VALUE_TEXT" value=""/>
+					<stringMacro name="CODE_GENERATOR_DIR_VARIABLE" type="VALUE_PATH_ANY" value="${workspace_loc:/upbracing-AVR-CodeGenerator}"/>
 				</macros>
 				<externalSettings/>
 				<extensions>
