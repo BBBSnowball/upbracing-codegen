@@ -40,8 +40,11 @@ for (StateMachineForGeneration smg : statemachines) {
 
 <%
 		for (GlobalCode box : smg.getGlobalCodeBoxes()) {
-			if (box.getInHeaderFile())
-				stringBuffer.append(box.getCode().replace("###", "\n"));
+			if (box.getInHeaderFile()) {
+				stringBuffer.append('\n');
+				stringBuffer.append(box.getCode().replace("###", "\n").trim());
+				stringBuffer.append('\n');
+			}
 		}
 	}
 }

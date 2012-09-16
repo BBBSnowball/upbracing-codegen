@@ -32,6 +32,10 @@ public class StateMachineForGeneration {
 	// e.g. the state
 	private boolean test;
 	
+	// print debug information while the statemachine is executed
+	private int trace_level;
+	private String trace_printer;
+	
 	// values computed for the inner statemachine
 	
 	private SortedMap<String, Set<Transition>> events;
@@ -107,6 +111,27 @@ public class StateMachineForGeneration {
 
 	public void setForTest(boolean test) {
 		this.test = test;
+	}
+	public int getTraceLevel() {
+		return trace_level;
+	}
+
+	public String getTracePrinter() {
+		return trace_printer;
+	}
+	
+	public void enableTracing(int level, String printer) {
+		this.trace_level = level;
+		this.trace_printer = printer;
+	}
+	
+	public void disableTracing() {
+		this.trace_level = 0;
+		this.trace_printer = null;
+	}
+	
+	public boolean shouldPrintTraceForLevel(int level) {
+		return trace_printer != null && level <= this.trace_level;
 	}
 	
 

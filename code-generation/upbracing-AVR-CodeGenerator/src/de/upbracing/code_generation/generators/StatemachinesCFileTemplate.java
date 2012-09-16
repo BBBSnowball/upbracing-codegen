@@ -61,8 +61,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 					stringBuffer.append("\n");
 
 					for (GlobalCode box : smg.getGlobalCodeBoxes()) {
-						if (!box.getInHeaderFile())
-							stringBuffer.append(box.getCode().replace("###", "\n"));
+						if (!box.getInHeaderFile()) {
+							stringBuffer.append('\n');
+							stringBuffer.append(box.getCode().replace("###", "\n").trim());
+							stringBuffer.append('\n');
+						}
 					}
 				}
 			} // has code boxes for C file
@@ -160,6 +163,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 							stringBuffer.append('\n');
 							stringBuffer.append("static void " + method_name
 									+ "() {\n");
+							genTrace(70, "\t", method_name + "()");
 							printActions("\t", actions);
 							stringBuffer.append("}\n");
 						}
@@ -176,6 +180,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 					stringBuffer
 							.append("#error Cannot find a first state. Please add an InitialState which has exactly one edge to a normal state.\n");
 				} else {
+					genTrace(10,  "\t","$name_init()");
+					
+					genTrace(30,  "\t","$name: state <- " + stateName(firstState));
 					stringBuffer.append("\t" + sm_name + ".state = "
 							+ stateName(firstState) + ";\n");
 					printActionsFor("\t", null, firstState, firstState);
@@ -418,6 +425,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				// this is a good place to execute transition actions
 				
 				// set state variable
+				genTrace(30, indent, "$name: state <- " + stateName(trans.getDestination()));
 				stringBuffer.append(indent + smg.getName() + ".state = "
 						+ stateName(trans.getDestination()) + ";\n");
 				
@@ -513,6 +521,12 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			transitions = smg.getTransitions();
 		
 		stringBuffer.append("void " + sm_name + "_" + (event != null ? "event_" + event : "tick") + "() {\n");
+		
+		if (event == null)
+			genTrace(100, "\t", "$name_tick()");
+		else
+			genTrace(50, "\t", "$name_event_" + event);
+		
 		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
 		stringBuffer.append('\n');
 		
@@ -578,5 +592,26 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 		stringBuffer.append("\t}\n");
 		stringBuffer.append("}\n");
+	}
+
+	private void genTrace(int level, String indent, String message) {
+		if (!smg.shouldPrintTraceForLevel(level))
+			return;
+		
+		message += "\n";
+		
+		message = message.replace("$name", smg.getName());
+		
+		message = message
+				.replace("\\", "\\\\")
+				.replace("\r", "\\r")
+				.replace("\n", "\\n")
+				.replace("\t", "\\t")
+				.replace("\'", "\\\'")
+				.replace("\"", "\\\"");
+		
+		stringBuffer.append(indent + 
+				smg.getTracePrinter() + "_P(PSTR(\""
+				+ message + "\"));\n");
 	}
 }

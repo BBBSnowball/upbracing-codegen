@@ -1,0 +1,12 @@
+eclipse.preferences.version=1
+inEditor=false
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1270289868/CODE_GENERATOR_DIR/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1270289868/CODE_GENERATOR_DIR/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1270289868/CODE_GENERATOR_DIR/value=${CODE_GENERATOR_DIR_VARIABLE}
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1270289868/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1270289868/appendContributed=true
+environment/project/cdt.managedbuild.config.gnu.exe.release.921954722/CODE_GENERATOR_DIR/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.release.921954722/CODE_GENERATOR_DIR/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.release.921954722/CODE_GENERATOR_DIR/value=${CODE_GENERATOR_DIR_VARIABLE}
+environment/project/cdt.managedbuild.config.gnu.exe.release.921954722/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.release.921954722/appendContributed=true
