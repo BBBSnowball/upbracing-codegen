@@ -645,7 +645,7 @@ public class TransitionTransitionInfoEditPart extends LabelEditPart implements
 	public class TransitionLabelFigure extends WrappingLabel {
 
 		/**
-		 * @not-generated
+		 * @generated NOT
 		 */
 		public TransitionLabelFigure() {
 			this.setText("Transition");

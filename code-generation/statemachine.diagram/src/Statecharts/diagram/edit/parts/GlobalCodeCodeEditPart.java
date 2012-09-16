@@ -159,6 +159,9 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 		}
 	}
 
+	/**
+	 * @generated NOT
+	 */
 	public void setLabel(WrappingLabel figure) {
 		unregisterVisuals();
 		setFigure(figure);

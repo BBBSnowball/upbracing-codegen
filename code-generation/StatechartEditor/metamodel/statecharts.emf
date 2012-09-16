@@ -2,7 +2,11 @@
 @namespace(uri="http://statechart", prefix="Statecharts")
 package Statecharts;
 
-abstract class StateParent {
+abstract class StateScope {
+	op StateParent getParent();
+}
+
+abstract class StateParent extends StateScope {
 	op State[*] getStates();
 }
 
@@ -18,7 +22,7 @@ class StateMachine extends StateParent {
   !ordered val GlobalCode[*] globalCodeBoxes;
 }
 
-abstract class State {
+abstract class State extends StateScope {
   !ordered ref Transition[*]#destination incomingTransitions;
   !ordered ref Transition[*]#source outgoingTransitions;
   

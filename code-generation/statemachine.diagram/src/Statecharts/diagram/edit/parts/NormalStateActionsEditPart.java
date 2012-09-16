@@ -159,6 +159,9 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 		}
 	}
 
+	/**
+	 * @generated NOT
+	 */
 	public void setLabel(WrappingLabel figure) {
 		unregisterVisuals();
 		setFigure(figure);
