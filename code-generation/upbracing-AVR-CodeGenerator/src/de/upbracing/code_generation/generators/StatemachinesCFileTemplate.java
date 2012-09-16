@@ -68,7 +68,60 @@ public class StatemachinesCFileTemplate implements ITemplate {
 						}
 					}
 				}
-			} // has code boxes for C file
+			}
+
+			stringBuffer.append('\n');
+			banner("lock definitions");
+			stringBuffer.append('\n');
+
+			for (StateMachineForGeneration smg : statemachines) {
+				String sm_name = smg.getName();
+				String enter = sm_name + "_enter_critical";
+				String exit = sm_name + "_exit_critical";
+				String semaphore_name = sm_name + "_lock";
+				// must be so long and complex that it cannot collide with another variable
+				String interrupt_state_variable = "__" + sm_name + "_saved_interrupt_state__";
+				switch (smg.getLockMethod()) {
+				case NO_LOCK:
+					stringBuffer.append("\n// " + smg.getName() + ": no locking\n"
+							+ "// Use locks, if you call any method of this statemachine; or make \n"
+							+ "// sure they are only called from one thread (no interrupts!).\n"
+							+ "#define " + enter + "() /* empty */\n"
+							+ "#define " + exit + "() /* empty */\n");
+					break;
+				case OS:
+					stringBuffer.append("\n// " + smg.getName() + ": use OS locks\n"
+							+ "#include <OSEK.h>\n"
+							+ "#define " + enter + "() OS_ENTER_CRITICAL()\n"
+							+ "#define " + exit + "()  OS_EXIT_CRITICAL()\n");
+					break;
+				case SEMAPHORE:
+					stringBuffer.append("\n// " + smg.getName() + ": use a semaphore\n"
+							+ "#include <semaphores/semaphores.h>\n"
+							+ "// You can adjust the queue length by defining this macro in a global\n"
+							+ "// code box. Please note, that you cannot define it in another source file.\n"
+							+ "#ifndef " + sm_name + "_SEMAPHORE_QUEUE_LENGTH\n"
+							+ "#  define " + sm_name + "_SEMAPHORE_QUEUE_LENGTH 5\n"
+							+ "#endif\n"
+							+ "SEMAPHORE(" + semaphore_name + ", 1, " + sm_name + "_SEMAPHORE_QUEUE_LENGTH);\n"
+							+ "#define " + enter + "() sem_wait(" + semaphore_name + ")\n"
+							+ "#define " + exit + "()  sem_signal(" + semaphore_name + ")\n");
+					break;
+				case INTERRUPT:
+					stringBuffer.append("\n// " + smg.getName() + ": disable interrupts\n"
+							+ "#include <avr/interrupt.h>\n"
+							+ "#include <avr/io.h>\n"
+							+ "#define " + enter + "() " + interrupt_state_variable + " = SREG; cli()\n"
+							+ "#define " + exit + "()  SREG = " + interrupt_state_variable + "\n");
+					break;
+				case CUSTOM:
+					stringBuffer.append("\n// " + smg.getName() + ": custom locking\n"
+							+ "// Please provide the functions or macros " + enter + " and\n"
+							+ "// " + exit + ". They must be available in this file, so you have to\n"
+							+ "// use a global code box to declare them.\n");
+					break;
+				}
+			}
 
 			for (StateMachineForGeneration smg : statemachines) {
 				this.smg = smg;
@@ -175,6 +228,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 
 				stringBuffer.append("void " + sm_name + "_init() {\n");
+				
+				stringBuffer.append("\t" + sm_name + "_enter_critical();\n\n");
 
 				if (firstState == null) {
 					stringBuffer
@@ -194,6 +249,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 									.getAction());
 					}
 				}
+
+				
+				stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
 
 				stringBuffer.append("}\n");
 
@@ -521,11 +579,16 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			transitions = smg.getTransitions();
 		
 		stringBuffer.append("void " + sm_name + "_" + (event != null ? "event_" + event : "tick") + "() {\n");
+
+		stringBuffer.append("\t" + sm_name + "_enter_critical();\n\n");
 		
-		if (event == null)
-			genTrace(100, "\t", "$name_tick()");
-		else
-			genTrace(50, "\t", "$name_event_" + event);
+		if (event == null) {
+			if (genTrace(100, "\t", "$name_tick()"))
+				stringBuffer.append('\n');
+		} else {
+			if (genTrace(50, "\t", "$name_event_" + event))
+				stringBuffer.append('\n');
+		}
 		
 		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
 		stringBuffer.append('\n');
@@ -591,12 +654,13 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 
 		stringBuffer.append("\t}\n");
+		stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
 		stringBuffer.append("}\n");
 	}
 
-	private void genTrace(int level, String indent, String message) {
+	private boolean genTrace(int level, String indent, String message) {
 		if (!smg.shouldPrintTraceForLevel(level))
-			return;
+			return false;
 		
 		message += "\n";
 		
@@ -613,5 +677,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append(indent + 
 				smg.getTracePrinter() + "_P(PSTR(\""
 				+ message + "\"));\n");
+		
+		return true;
 	}
 }

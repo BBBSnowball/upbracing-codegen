@@ -36,6 +36,14 @@ public class StateMachineForGeneration {
 	private int trace_level;
 	private String trace_printer;
 	
+	// the kind of lock that should be used by the statemachine
+	// This is the global lock all around statemachine_tick. You can
+	// still use semaphores within the statemachine, if you use
+	// a different lock here.
+	//NOTE This must be INTERRUPT, if any part of the statemachine
+	//     could be called from an interrupt.
+	private StatemachineLockMethod lock_method = StatemachineLockMethod.NO_LOCK;
+	
 	// values computed for the inner statemachine
 	
 	private SortedMap<String, Set<Transition>> events;
@@ -132,6 +140,14 @@ public class StateMachineForGeneration {
 	
 	public boolean shouldPrintTraceForLevel(int level) {
 		return trace_printer != null && level <= this.trace_level;
+	}
+
+	public StatemachineLockMethod getLockMethod() {
+		return lock_method;
+	}
+
+	public void setLockMethod(StatemachineLockMethod lock_method) {
+		this.lock_method = lock_method;
 	}
 	
 
