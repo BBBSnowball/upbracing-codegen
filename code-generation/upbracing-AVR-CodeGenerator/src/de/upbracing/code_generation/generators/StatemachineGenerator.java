@@ -135,7 +135,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 				}
 				else
 				{	
-					assignNames(config);
+					
 					states = smg.getStates();
 					
 				for (int i = 0; i < states.size(); i++) {
