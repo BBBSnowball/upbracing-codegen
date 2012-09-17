@@ -7,7 +7,7 @@ Bundle-ClassPath: .
 Bundle-Activator: Statecharts.diagram.part.StatechartsDiagramEditorPlugin
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
-Export-Package: Statecharts.diagram.edit.parts, 
+Export-Package: Statecharts.diagram.edit.parts,
  Statecharts.diagram.part,
  Statecharts.diagram.providers
 Require-Bundle: org.eclipse.core.runtime,

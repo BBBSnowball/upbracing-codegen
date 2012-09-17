@@ -22,7 +22,7 @@ class StateMachine extends StateParent {
   !ordered val GlobalCode[*] globalCodeBoxes;
 }
 
-abstract class State extends StateScope {
+abstract class State extends StateScope, NamedItem {
   !ordered ref Transition[*]#destination incomingTransitions;
   !ordered ref Transition[*]#source outgoingTransitions;
   
@@ -32,14 +32,14 @@ abstract class State extends StateScope {
 @Ecore(constraints="no_incoming")
 @gmf.node(label="name", label.icon="false", label.placement="none", figure="ellipse", color="0,0,0", border.color="0,0,0", size="30,30")
 @"http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot"(no_incoming="self.incomingTransitions->isEmpty()")
-class InitialState extends State, NamedItem {
+class InitialState extends State {
   attr String name = "start";
 }
 
 @Ecore(constraints="no_outgoing")
 @gmf.node(label="name", label.icon="false", label.placement="none", figure="rectangle", color="0,0,0", border.color="0,0,0", size="30,30")
 @"http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot"(no_outgoing="self.outgoingTransitions->isEmpty()")
-class FinalState extends State, NamedItem {
+class FinalState extends State {
   attr String name = "end";
 }
 
@@ -49,12 +49,12 @@ abstract class StateWithActions extends State {
 }
 
 @gmf.node(label="name", label.icon="false", figure="rounded", color="230,230,250", border.color="0,0,0", size="1,1", label.pattern="{0}")
-class NormalState extends StateWithActions, NamedItem {
+class NormalState extends StateWithActions {
   attr String name;
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
-class SuperState extends StateWithActions, NamedItem, StateParent {
+class SuperState extends StateWithActions, StateParent {
   attr String name;
 
   @gmf.compartment(collapsible="true")
