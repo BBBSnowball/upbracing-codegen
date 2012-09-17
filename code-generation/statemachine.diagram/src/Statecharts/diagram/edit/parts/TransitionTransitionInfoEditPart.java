@@ -178,16 +178,11 @@ public class TransitionTransitionInfoEditPart extends LabelEditPart implements
 	}
 
 	/**
-	 * @not-generated
+	 * @generated
 	 */
 	public void setLabel(IFigure figure) {
 		unregisterVisuals();
 		setFigure(figure);
-		if (figure instanceof WrappingLabel)
-			((WrappingLabel) figure).setTextWrap(true);
-		else
-			System.err
-					.println("WARN: Transition has a label that doesn't support wrapping. I cannot make that a multi-line label.");
 		defaultText = getLabelTextHelper(figure);
 		registerVisuals();
 		refreshVisuals();
@@ -645,11 +640,10 @@ public class TransitionTransitionInfoEditPart extends LabelEditPart implements
 	public class TransitionLabelFigure extends WrappingLabel {
 
 		/**
-		 * @not-generated
+		 * @generated
 		 */
 		public TransitionLabelFigure() {
 			this.setText("Transition");
-			this.setTextWrap(true);
 		}
 
 	}

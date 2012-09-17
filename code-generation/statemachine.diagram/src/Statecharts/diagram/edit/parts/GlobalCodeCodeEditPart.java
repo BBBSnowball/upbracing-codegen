@@ -56,7 +56,7 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5015;
+	public static final int VISUAL_ID = 5011;
 
 	/**
 	 * @generated
@@ -159,10 +159,12 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 		}
 	}
 
+	/**
+	 * @generated
+	 */
 	public void setLabel(WrappingLabel figure) {
 		unregisterVisuals();
 		setFigure(figure);
-		figure.setTextWrap(true);
 		defaultText = getLabelTextHelper(figure);
 		registerVisuals();
 		refreshVisuals();

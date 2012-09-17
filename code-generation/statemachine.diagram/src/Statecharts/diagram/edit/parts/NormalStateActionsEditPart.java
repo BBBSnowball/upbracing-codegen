@@ -56,7 +56,7 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5035;
+	public static final int VISUAL_ID = 5002;
 
 	/**
 	 * @generated
@@ -159,10 +159,12 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 		}
 	}
 
+	/**
+	 * @generated
+	 */
 	public void setLabel(WrappingLabel figure) {
 		unregisterVisuals();
 		setFigure(figure);
-		figure.setTextWrap(true);
 		defaultText = getLabelTextHelper(figure);
 		registerVisuals();
 		refreshVisuals();
@@ -302,7 +304,7 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 		if (parser == null) {
 			parser = Statecharts.diagram.providers.StatechartsParserProvider
 					.getParser(
-							Statecharts.diagram.providers.StatechartsElementTypes.NormalState_2010,
+							Statecharts.diagram.providers.StatechartsElementTypes.NormalState_2001,
 							getParserElement(),
 							Statecharts.diagram.part.StatechartsVisualIDRegistry
 									.getType(Statecharts.diagram.edit.parts.NormalStateActionsEditPart.VISUAL_ID));
