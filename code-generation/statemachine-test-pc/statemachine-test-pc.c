@@ -40,14 +40,16 @@ int clean_suite1(void) {
 typedef enum {
 	counter_stopped_state,
 	counter_running_state,
-} counter_state_t;
+} counter_state__state_t;
 
-typedef struct {
-	counter_state_t state;
-	//TODO only include time variable, if we need it
-	uint8_t state_time;
+typedef struct counter_state {
+	counter_state__state_t state;
+	uint8_t states_running_wait_time;
 } counter_state_var_t;
-extern counter_state_var_t counter;
+
+counter_state_var_t counter_state;
+
+#define STATE counter_state.state
 
 
 void counter_test1(void) {
@@ -61,7 +63,7 @@ void counter_test1(void) {
 	CU_ASSERT(wdt_reset_token1 == wdt_reset_token2);
 	CU_ASSERT(wdt_reset_counter == 1);
 	CU_ASSERT(PORTB == 1);
-	CU_ASSERT(counter.state == counter_stopped_state);
+	CU_ASSERT(STATE == counter_stopped_state);
 
 
 	wdt_reset_token1++;
@@ -70,7 +72,7 @@ void counter_test1(void) {
 	CU_ASSERT(wdt_reset_token1 == wdt_reset_token2);
 	CU_ASSERT(wdt_reset_counter == 2);
 	CU_ASSERT(PORTB == 1);
-	CU_ASSERT(counter.state == counter_stopped_state);
+	CU_ASSERT(STATE == counter_stopped_state);
 
 	wdt_reset_token1++;
 	counter_tick();
@@ -78,7 +80,7 @@ void counter_test1(void) {
 	CU_ASSERT(wdt_reset_token1 == wdt_reset_token2);
 	CU_ASSERT(wdt_reset_counter == 3);
 	CU_ASSERT(PORTB == 1);
-	CU_ASSERT(counter.state == counter_stopped_state);
+	CU_ASSERT(STATE == counter_stopped_state);
 
 	wdt_reset_token1++;
 	event_startstop_pressed();
@@ -87,24 +89,24 @@ void counter_test1(void) {
 	CU_ASSERT(wdt_reset_counter == 4);
 	CU_ASSERT(PORTB == 1);
 	CU_ASSERT(DDRA == 0xff);
-	CU_ASSERT(counter.state == counter_running_state);
+	CU_ASSERT(STATE == counter_running_state);
 
 	PORTA = 42;
 	event_reset();	// no effect because we are in state running
 	CU_ASSERT(PORTA == 42);
-	CU_ASSERT(counter.state == counter_running_state);
+	CU_ASSERT(STATE == counter_running_state);
 
 	wdt_reset_token1++;
 	event_startstop_pressed();
 	CU_ASSERT(wdt_reset_token1 == wdt_reset_token2);
 	CU_ASSERT(PORTB == 2);
 	CU_ASSERT(DDRA == 0x00);
-	CU_ASSERT(counter.state == counter_stopped_state);
+	CU_ASSERT(STATE == counter_stopped_state);
 
 	PORTA = 42;
 	event_reset();	// now reset works because we are in state stopped
 	CU_ASSERT(PORTA == 0);
-	CU_ASSERT(counter.state == counter_stopped_state);
+	CU_ASSERT(STATE == counter_stopped_state);
 	CU_ASSERT(PORTB == 3);
 
 	wdt_reset_token1++;
@@ -113,7 +115,7 @@ void counter_test1(void) {
 	CU_ASSERT(wdt_reset_token1 == wdt_reset_token2);
 	CU_ASSERT(PORTB == 3);
 	CU_ASSERT(DDRA == 0xff);
-	CU_ASSERT(counter.state == counter_running_state);
+	CU_ASSERT(STATE == counter_running_state);
 
 	// we have just entered the running state
 	// After 100ms (this is 100 ticks) a transition should fire and increment PORTA.

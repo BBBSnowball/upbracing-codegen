@@ -27,7 +27,6 @@ import de.upbracing.code_generation.fsm.model.FSMParsers;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.StateVariable;
 import de.upbracing.code_generation.fsm.model.StateVariablePurposes;
-import de.upbracing.code_generation.fsm.model.StateVariables;
 import de.upbracing.code_generation.fsm.model.TransitionInfo;
 
 /**
@@ -1413,7 +1412,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 	private void addStateVariable(StateMachineForGeneration smg, StateParent parent) {
 		StringBuilder declaration = new StringBuilder();
 		declaration.append("enum {\n");
-		for (State state : smg.sortStates(parent.getStates())) {
+		for (State state : smg.sortStatesForEnum(parent.getStates())) {
 			if (state instanceof InitialState)
 				continue;
 			declaration.append("\t");
@@ -1449,11 +1448,18 @@ public class StatemachineGenerator extends AbstractGenerator {
 					StateWithActions source = (StateWithActions) source_;
 
 					statesWithWait.add(source);
+					
+					StateVariable timerVar = smg.getStateVariables().getVariable(source, StateVariablePurposes.WAIT);
+					if (timerVar == null) {
+						//TODO use appropiate type
+						timerVar = new StateVariable("wait_time", "uint8_t", null, source);
+						smg.getStateVariables().add(timerVar, StateVariablePurposes.WAIT, source);
+					}
 
-					String timerVar = timerVariableForState(smg, source);
+					//String timerVar = timerVariableForState(smg, source);
 					addCondition(
 							tinfo,
-							waitConditionFor(timerVar, tinfo,
+							waitConditionFor(timerVar.getRealName(), tinfo,
 									smg.getBasePeriod()));
 				} else {
 					// TODO use Sven's Warnings class
@@ -1466,7 +1472,11 @@ public class StatemachineGenerator extends AbstractGenerator {
 			for (StateWithActions state : statesWithWait) {
 				List<Action> actions = smg.getActions(state);
 
-				String timerVar = timerVariableForState(smg, state);
+				//TODO
+				//String timerVar = timerVariableForState(smg, state);
+				String timerVar = smg.getStateVariables()
+						.getVariable(state, StateVariablePurposes.WAIT)
+						.getRealName();
 
 				// reset timer, when the state is entered
 				actions.add(new Action(ActionType.ENTER,
@@ -1525,10 +1535,5 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 
 		return timerVar + " " + operator + " " + ticks;
-	}
-
-	private String timerVariableForState(StateMachineForGeneration smg,
-			StateWithActions state) {
-		return StatemachinesCFileTemplate.timeVariableForState(smg, state);
 	}
 }

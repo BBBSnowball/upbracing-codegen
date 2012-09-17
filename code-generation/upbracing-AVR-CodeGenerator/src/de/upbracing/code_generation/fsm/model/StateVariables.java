@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -110,6 +112,8 @@ public class StateVariables {
 		public Set<StateVariable> variables = new HashSet<StateVariable>();
 		public Set<VariableContainer> children = new HashSet<StateVariables.VariableContainer>();
 		public VariableContainer parent;
+		// only contains a value, if the variable doesn't have its default value
+		public Map<StateVariable, String> variable_names;
 		
 		@Override
 		public int compareTo(VariableContainer other) {
@@ -175,14 +179,20 @@ public class StateVariables {
 			return vars;
 		}
 		
-		public VariableContainer plan() {
+		public VariableContainer plan(String root_name) {
 			addVariables();
 			collapseEmptyContainers();
 			makeNamesUnique();
 			sortVariablesByName();
+			
+			VariableContainer root = variableCs.get(StateVariable.findCommonParent(variableCs.keySet()));
+			root.name = root_name;
+			
 			setVariableRealNames();
 			
-			return variableCs.get(StateVariable.findCommonParent(variableCs.keySet()));
+			putNamesMapIntoContainers();
+			
+			return root;
 		}
 
 		private void addVariables() {
@@ -204,7 +214,10 @@ public class StateVariables {
 		}
 
 		private void collapseEmptyContainers(Map<StateScope, VariableContainer> containers) {
-			for (VariableContainer container : containers.values()) {
+			Iterator<VariableContainer> it = containers.values().iterator();
+			while (it.hasNext()) {
+				VariableContainer container = it.next();
+				
 				if (container.parent == null)
 					continue;
 
@@ -220,6 +233,10 @@ public class StateVariables {
 						addPrefix(var, container.name + "_");
 						parent.variables.add(var);
 					}
+					
+					System.out.println("removing container: " + container + ", " + container.name);
+					it.remove();
+					container.parent.children.remove(container);
 				}
 			}
 		}
@@ -302,6 +319,8 @@ public class StateVariables {
 					if (var.getType() == StateVariable.TYPE_AUTONAME)
 						var.setType(var.getRealName().replace(".", "__") + "_t");
 				}
+				
+				setVariableRealNames(container.children);
 			}
 		}
 		
@@ -327,9 +346,22 @@ public class StateVariables {
 				name = var.getName();
 			return name;
 		}
+
+		private void putNamesMapIntoContainers() {
+			putNamesMapIntoContainers(variableCs.values());
+			putNamesMapIntoContainers(stateCs.values());
+		}
+
+		private void putNamesMapIntoContainers(Collection<VariableContainer> containers) {
+			for (VariableContainer container : containers) {
+				container.variable_names = names;
+				
+				putNamesMapIntoContainers(container.children);
+			}
+		}
 	}
 	
-	public VariableContainer planStructure() {
-		return new PlanStructure().plan();
+	public VariableContainer planStructure(String root_name) {
+		return new PlanStructure().plan(root_name);
 	}
 }

@@ -3,17 +3,55 @@ package de.upbracing.code_generation.fsm.model;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import Statecharts.StateParent;
 import Statecharts.StateScope;
 
 public class StateVariable implements Comparable<StateVariable> {
 	public static final String TYPE_AUTONAME = "--- new type with automatic name ---";
+	
+	private static int next_unique_id = 1;
+	private static final Map<String, StateVariable> variables_with_temporary_name = new HashMap<String, StateVariable>();
+	private synchronized String getUniqueTemporaryName() {
+		String name = "$<temp" + next_unique_id + ">";
+		next_unique_id++;
+		variables_with_temporary_name.put(name, this);
+		return name;
+	}
+	
+	public static StateVariable getVariableByTemporaryID(String id) {
+		return variables_with_temporary_name.get(id);
+	}
+	
+	public static String replaceTemporaryVariables(String text) {
+		Matcher m = Pattern.compile("\\$<temp[0-9]+>").matcher(text);
+		 StringBuffer sb = new StringBuffer();
+		 int append_pos = 0;
+		 while (m.find()) {
+		     //m.appendReplacement(sb, "...");
+			 sb.append(text, append_pos, m.start());
+			 append_pos = m.end();
+			 
+			 String matched_text = m.group(0);
+			 StateVariable var = getVariableByTemporaryID(matched_text);
+			 if (var != null)
+				 sb.append(var.getRealName());
+			 else
+				 sb.append(matched_text);
+		 }
+		 //m.appendTail(sb);
+		 sb.append(text, append_pos, text.length());
+		 return sb.toString();
+	}
 
 	/** the name */
 	private String name;
@@ -84,6 +122,9 @@ public class StateVariable implements Comparable<StateVariable> {
 	}
 
 	public String getRealName() {
+		if (real_name == null)
+			real_name = getUniqueTemporaryName();
+		
 		return real_name;
 	}
 

@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.config.*;
 import de.upbracing.code_generation.fsm.model.*;
+import de.upbracing.code_generation.fsm.model.StateVariables.AllOf;
+import de.upbracing.code_generation.fsm.model.StateVariables.VariableContainer;
 import Statecharts.*;
 
 //NOTE This used to be a JET template, but I was using stringBuffer.append(...) anyway and with code completion it's MUCH easier :-)
@@ -47,85 +49,12 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 			stringBuffer.append("#include \"statemachines.h\"\n");
 
-			stringBuffer.append('\n');
-			banner("code for statemachines");
-			stringBuffer.append('\n');
+			generateCodeForGlobalCodeBoxes(stringBuffer, statemachines);
 
-			for (StateMachineForGeneration smg : statemachines) {
-				String sm_name = smg.getName();
-
-				if (smg.hasCFileCodeBoxes()) {
-
-					stringBuffer.append("\n// code from global code boxes in statemachine ");
-					stringBuffer.append(sm_name);
-					stringBuffer.append("\n");
-
-					for (GlobalCode box : smg.getGlobalCodeBoxes()) {
-						if (!box.getInHeaderFile()) {
-							stringBuffer.append('\n');
-							stringBuffer.append(box.getCode().replace("###", "\n").trim());
-							stringBuffer.append('\n');
-						}
-					}
-				}
-			}
-
-			stringBuffer.append('\n');
-			banner("lock definitions");
-			stringBuffer.append('\n');
-
-			for (StateMachineForGeneration smg : statemachines) {
-				String sm_name = smg.getName();
-				String enter = sm_name + "_enter_critical";
-				String exit = sm_name + "_exit_critical";
-				String semaphore_name = sm_name + "_lock";
-				// must be so long and complex that it cannot collide with another variable
-				String interrupt_state_variable = "__" + sm_name + "_saved_interrupt_state__";
-				switch (smg.getLockMethod()) {
-				case NO_LOCK:
-					stringBuffer.append("\n// " + smg.getName() + ": no locking\n"
-							+ "// Use locks, if you call any method of this statemachine; or make\n"
-							+ "// sure they are only called from one thread (no interrupts!).\n"
-							+ "#define " + enter + "() /* empty */\n"
-							+ "#define " + exit + "() /* empty */\n");
-					break;
-				case OS:
-					stringBuffer.append("\n// " + smg.getName() + ": use OS locks\n"
-							+ "#include <OSEK.h>\n"
-							+ "#define " + enter + "() OS_ENTER_CRITICAL()\n"
-							+ "#define " + exit + "()  OS_EXIT_CRITICAL()\n");
-					break;
-				case SEMAPHORE:
-					stringBuffer.append("\n// " + smg.getName() + ": use a semaphore\n"
-							+ "#include <semaphores/semaphores.h>\n"
-							+ "// You can adjust the queue length by defining this macro in a global\n"
-							+ "// code box. Please note, that you cannot define it in another source file.\n"
-							+ "#ifndef " + sm_name + "_SEMAPHORE_QUEUE_LENGTH\n"
-							+ "#  define " + sm_name + "_SEMAPHORE_QUEUE_LENGTH 5\n"
-							+ "#endif\n"
-							+ "SEMAPHORE(" + semaphore_name + ", 1, " + sm_name + "_SEMAPHORE_QUEUE_LENGTH);\n"
-							+ "#define " + enter + "() sem_wait(" + semaphore_name + ")\n"
-							+ "#define " + exit + "()  sem_signal(" + semaphore_name + ")\n");
-					break;
-				case INTERRUPT:
-					stringBuffer.append("\n// " + smg.getName() + ": disable interrupts\n"
-							+ "#include <avr/interrupt.h>\n"
-							+ "#include <avr/io.h>\n"
-							+ "#define " + enter + "() " + interrupt_state_variable + " = SREG; cli()\n"
-							+ "#define " + exit + "()  SREG = " + interrupt_state_variable + "\n");
-					break;
-				case CUSTOM:
-					stringBuffer.append("\n// " + smg.getName() + ": custom locking\n"
-							+ "// Please provide the functions or macros " + enter + " and\n"
-							+ "// " + exit + ". They must be available in this file, so you have to\n"
-							+ "// use a global code box to declare them.\n");
-					break;
-				}
-			}
+			generateLockMacros(stringBuffer, statemachines);
 
 			for (StateMachineForGeneration smg : statemachines) {
 				this.smg = smg;
-				String sm_name = smg.getName();
 				
 				Collection<State> sorted_states = smg.sortStates(smg.getStates());
 				Collection<StateWithActions> states_with_actions
@@ -133,115 +62,18 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 				stringBuffer.append('\n');
 				stringBuffer.append('\n');
-				hugeBanner(sm_name);
+				hugeBanner(smg.getName());
 				stringBuffer.append('\n');
 
-				stringBuffer.append('\n');
-				banner("data");
-				stringBuffer.append('\n');
+				generateStatemachineData(stringBuffer, smg, sorted_states);
 
-				stringBuffer.append("typedef enum {\n");
-				for (State state : smg.sortStatesForEnum(sorted_states)) {
-					if (!(state instanceof InitialState))
-						stringBuffer.append("\t" + stateName(state) + ",\n");
-				}
-				stringBuffer.append("} " + sm_name + "_state_t;\n");
+				generateActionFunctions(stringBuffer, smg, states_with_actions);
 
-				stringBuffer.append('\n');
-				stringBuffer.append("typedef struct {\n"
-						+ "\tcounter_state_t state;\n"
-						+ "\t//TODO only include time variable, if we need it\n"
-						+ "\tuint8_t state_time;\n"
-						+ "} " + sm_name + "_state_var_t;\n");
-				if (!smg.isForTest())
-					stringBuffer.append("static ");
-				stringBuffer.append(sm_name + "_state_var_t " + sm_name + ";");
-				stringBuffer.append('\n');
+				generateInitFunction(stringBuffer, smg);
 
-				stringBuffer.append('\n');
-				banner("action functions");
-				stringBuffer.append('\n');
-				
-				State firstState = findFirstState(smg.getStates());
+				generateTickFunction(stringBuffer, smg, states_with_actions);
 
-				this.existing_action_methods = new HashSet<String>();
-				for (StateWithActions state : states_with_actions) {
-					String name = getName(state);
-
-					for (ActionType actionType : ActionType.values()) {
-						List<Action> actions = filterActionsByType(
-								smg.getActions(state), actionType);
-
-						if (actions != null && !actions.isEmpty()) {
-							String method_name = actionMethod(name, actionType);
-							existing_action_methods.add(method_name);
-
-							stringBuffer.append('\n');
-							stringBuffer.append("static void " + method_name
-									+ "() {\n");
-							genTrace(70, "\t", method_name + "()");
-							printActions("\t", actions);
-							stringBuffer.append("}\n");
-						}
-					}
-				}
-
-				stringBuffer.append('\n');
-				banner("init function");
-				stringBuffer.append('\n');
-
-				stringBuffer.append("void " + sm_name + "_init() {\n");
-				
-				stringBuffer.append("\t" + sm_name + "_enter_critical();\n\n");
-
-				if (firstState == null) {
-					stringBuffer
-							.append("#error Cannot find a first state. Please add an InitialState which has exactly one edge to a normal state.\n");
-				} else {
-					genTrace(10,  "\t","$name_init()");
-					
-					genTrace(30,  "\t","$name: state <- " + stateName(firstState));
-					stringBuffer.append("\t" + sm_name + ".state = "
-							+ stateName(firstState) + ";\n");
-					printActionsFor("\t", null, firstState, firstState);
-
-					for (Transition t : smg.getTransitions()) {
-						if (t.getSource() instanceof InitialState
-								&& t.getDestination() == firstState)
-							printCode("\t", smg.getTransitionInfo(t)
-									.getAction());
-					}
-				}
-
-				
-				stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
-
-				stringBuffer.append("}\n");
-
-				stringBuffer.append('\n');
-				banner("tick function");
-				stringBuffer.append('\n');
-				
-				// generate tick function
-				// null means no event -> tick function
-				// We have to use "" instead of null for the map of events, because
-				// Java/JRuby chokes on a null value.
-				generateEventFunction(null, states_with_actions, smg.getEvents().get(""));
-
-				stringBuffer.append('\n');
-				banner("event functions");
-				
-				for (Entry<String, Set<Transition>> entry : smg.getEvents().entrySet()) {
-					String event = entry.getKey();
-					Set<Transition> transitions = entry.getValue();
-					
-					if (event == null || event.equals(""))
-						// skip transitions which are handled by the tick function
-						continue;
-
-					stringBuffer.append('\n');
-					generateEventFunction(event, states_with_actions, transitions);
-				}
+				generateEventFunctions(stringBuffer, smg, states_with_actions);
 			}
 		} // for each statemachine
 
@@ -251,6 +83,290 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 		return stringBuffer.toString();
 	} // end of method generate(...)
+
+	private void generateCodeForGlobalCodeBoxes(
+			final StringBuffer stringBuffer, StatemachinesConfig statemachines) {
+		stringBuffer.append('\n');
+		banner("code for statemachines");
+		stringBuffer.append('\n');
+
+		for (StateMachineForGeneration smg : statemachines) {
+			String sm_name = smg.getName();
+
+			if (smg.hasCFileCodeBoxes()) {
+
+				stringBuffer.append("\n// code from global code boxes in statemachine ");
+				stringBuffer.append(sm_name);
+				stringBuffer.append("\n");
+
+				for (GlobalCode box : smg.getGlobalCodeBoxes()) {
+					if (!box.getInHeaderFile()) {
+						stringBuffer.append('\n');
+						stringBuffer.append(box.getCode().replace("###", "\n").trim());
+						stringBuffer.append('\n');
+					}
+				}
+			}
+		}
+	}
+
+	private void generateLockMacros(final StringBuffer stringBuffer,
+			StatemachinesConfig statemachines) {
+		stringBuffer.append('\n');
+		banner("lock definitions");
+		stringBuffer.append('\n');
+
+		for (StateMachineForGeneration smg : statemachines) {
+			String sm_name = smg.getName();
+			String enter = sm_name + "_enter_critical";
+			String exit = sm_name + "_exit_critical";
+			String semaphore_name = sm_name + "_lock";
+			// must be so long and complex that it cannot collide with another variable
+			String interrupt_state_variable = "__" + sm_name + "_saved_interrupt_state__";
+			switch (smg.getLockMethod()) {
+			case NO_LOCK:
+				stringBuffer.append("\n// " + smg.getName() + ": no locking\n"
+						+ "// Use locks, if you call any method of this statemachine; or make\n"
+						+ "// sure they are only called from one thread (no interrupts!).\n"
+						+ "#define " + enter + "() /* empty */\n"
+						+ "#define " + exit + "() /* empty */\n");
+				break;
+			case OS:
+				stringBuffer.append("\n// " + smg.getName() + ": use OS locks\n"
+						+ "#include <OSEK.h>\n"
+						+ "#define " + enter + "() OS_ENTER_CRITICAL()\n"
+						+ "#define " + exit + "()  OS_EXIT_CRITICAL()\n");
+				break;
+			case SEMAPHORE:
+				stringBuffer.append("\n// " + smg.getName() + ": use a semaphore\n"
+						+ "#include <semaphores/semaphores.h>\n"
+						+ "// You can adjust the queue length by defining this macro in a global\n"
+						+ "// code box. Please note, that you cannot define it in another source file.\n"
+						+ "#ifndef " + sm_name + "_SEMAPHORE_QUEUE_LENGTH\n"
+						+ "#  define " + sm_name + "_SEMAPHORE_QUEUE_LENGTH 5\n"
+						+ "#endif\n"
+						+ "SEMAPHORE(" + semaphore_name + ", 1, " + sm_name + "_SEMAPHORE_QUEUE_LENGTH);\n"
+						+ "#define " + enter + "() sem_wait(" + semaphore_name + ")\n"
+						+ "#define " + exit + "()  sem_signal(" + semaphore_name + ")\n");
+				break;
+			case INTERRUPT:
+				stringBuffer.append("\n// " + smg.getName() + ": disable interrupts\n"
+						+ "#include <avr/interrupt.h>\n"
+						+ "#include <avr/io.h>\n"
+						+ "#define " + enter + "() " + interrupt_state_variable + " = SREG; cli()\n"
+						+ "#define " + exit + "()  SREG = " + interrupt_state_variable + "\n");
+				break;
+			case CUSTOM:
+				stringBuffer.append("\n// " + smg.getName() + ": custom locking\n"
+						+ "// Please provide the functions or macros " + enter + " and\n"
+						+ "// " + exit + ". They must be available in this file, so you have to\n"
+						+ "// use a global code box to declare them.\n");
+				break;
+			}
+		}
+	}
+
+	private void generateStatemachineData(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg, Collection<State> sorted_states) {
+		stringBuffer.append('\n');
+		banner("data");
+		stringBuffer.append('\n');
+
+		String sm_name = smg.getName();
+
+		/*stringBuffer.append("typedef enum {\n");
+		for (State state : smg.sortStatesForEnum(sorted_states)) {
+			if (!(state instanceof InitialState))
+				stringBuffer.append("\t" + stateName(state) + ",\n");
+		}
+		stringBuffer.append("} " + sm_name + "_state_t;\n");
+
+		stringBuffer.append('\n');
+		stringBuffer.append("typedef struct {\n"
+				+ "\tcounter_state_t state;\n"
+				+ "\t//TODO only include time variable, if we need it\n"
+				+ "\tuint8_t state_time;\n"
+				+ "} " + sm_name + "_state_var_t;\n");
+		if (!smg.isForTest())
+			stringBuffer.append("static ");
+		stringBuffer.append(sm_name + "_state_var_t " + sm_name + ";");
+		stringBuffer.append('\n');*/
+		
+		VariableContainer container = smg.getStateVariables().planStructure(sm_name + "_state");
+		generateCodeForNamedTypesInConatiner(container);
+
+		String statemachine_root_data_type = sm_name + "_state_var_t";
+		stringBuffer.append("\ntypedef ");
+		generateCodeForVariableContainer("", container);
+		stringBuffer.append(" " + statemachine_root_data_type + ";\n");
+		
+		stringBuffer.append('\n');
+		if (!smg.isForTest())
+			stringBuffer.append("static ");
+		stringBuffer.append(statemachine_root_data_type + " " + container.name + ";\n");
+	}
+
+	private void generateCodeForNamedTypesInConatiner(
+			VariableContainer container) {
+		
+		for (StateVariable var : container.variables) {
+			if (var.getType() != null && !var.getType().isEmpty() && var.getDeclaration() != null && !var.getDeclaration().isEmpty()) {
+				stringBuffer.append("typedef ");
+				stringBuffer.append(var.getDeclaration());
+				stringBuffer.append(" ");
+				stringBuffer.append(var.getType());
+				stringBuffer.append(";\n");
+			}
+		}
+		
+		for (VariableContainer child : container.children) {
+			generateCodeForNamedTypesInConatiner(child);
+		}
+	}
+
+	private void generateCodeForVariableContainer(String indent, VariableContainer container) {
+		if (container instanceof AllOf)
+			stringBuffer.append("struct");
+		else
+			stringBuffer.append("union");
+		
+		if (container.name != null && !container.name.isEmpty())
+			stringBuffer.append(" " + container.name);
+		
+		stringBuffer.append(" {\n");
+		
+		for (StateVariable var : container.variables) {
+			stringBuffer.append(indent + "\t");
+			
+			if (var.getType() != null && !var.getType().isEmpty())
+				stringBuffer.append(var.getType());
+			else
+				stringBuffer.append(var.getDeclaration().replace("\n", "\n" + indent));
+			
+			String name = container.variable_names.get(var);
+			if (name == null)
+				name = var.getName();
+			stringBuffer.append(' ');
+			//TODO This is not the right name. We must use the one from the names map inside PlanStructures.
+			stringBuffer.append(name);
+			stringBuffer.append(";\n");
+		}
+		
+		for (VariableContainer child : container.children) {
+			stringBuffer.append(indent + "\t");
+			generateCodeForVariableContainer(indent + "\t", child);
+			stringBuffer.append(' ');
+			stringBuffer.append(child.name);
+			stringBuffer.append(";\n");
+		}
+		
+		stringBuffer.append(indent + "}");
+	}
+
+	private void generateActionFunctions(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg,
+			Collection<StateWithActions> states_with_actions) {
+		stringBuffer.append('\n');
+		banner("action functions");
+		stringBuffer.append('\n');
+
+		this.existing_action_methods = new HashSet<String>();
+		for (StateWithActions state : states_with_actions) {
+			String name = getName(state);
+
+			for (ActionType actionType : ActionType.values()) {
+				List<Action> actions = filterActionsByType(
+						smg.getActions(state), actionType);
+
+				if (actions != null && !actions.isEmpty()) {
+					String method_name = actionMethod(name, actionType);
+					existing_action_methods.add(method_name);
+
+					stringBuffer.append('\n');
+					stringBuffer.append("static void " + method_name
+							+ "() {\n");
+					genTrace(70, "\t", method_name + "()");
+					printActions("\t", actions);
+					stringBuffer.append("}\n");
+				}
+			}
+		}
+	}
+
+	private void generateInitFunction(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg) {
+		stringBuffer.append('\n');
+		banner("init function");
+		stringBuffer.append('\n');
+		
+		String sm_name = smg.getName();
+		State firstState = findFirstState(smg.getStates());
+
+		stringBuffer.append("void " + sm_name + "_init() {\n");
+		
+		stringBuffer.append("\t" + sm_name + "_enter_critical();\n\n");
+
+		if (firstState == null) {
+			stringBuffer
+					.append("#error Cannot find a first state. Please add an InitialState which has exactly one edge to a normal state.\n");
+		} else {
+			genTrace(10,  "\t","$name_init()");
+			
+			genTrace(30,  "\t","$name: state <- " + stateName(firstState));
+			stringBuffer.append("\t" + getStateVariableName(firstState.getParent()) + " = "
+					+ stateName(firstState) + ";\n");
+			printActionsFor("\t", null, firstState, firstState);
+
+			for (Transition t : smg.getTransitions()) {
+				if (t.getSource() instanceof InitialState
+						&& t.getDestination() == firstState)
+					printCode("\t", smg.getTransitionInfo(t)
+							.getAction());
+			}
+		}
+
+		
+		stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
+
+		stringBuffer.append("}\n");
+	}
+
+	private String getStateVariableName(StateParent containing_state) {
+		return smg.getStateVariables().getVariable(containing_state, StateVariablePurposes.STATE).getRealName();
+	}
+
+	private void generateTickFunction(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg,
+			Collection<StateWithActions> states_with_actions) {
+		stringBuffer.append('\n');
+		banner("tick function");
+		stringBuffer.append('\n');
+		
+		// generate tick function
+		// null means no event -> tick function
+		// We have to use "" instead of null for the map of events, because
+		// Java/JRuby chokes on a null value.
+		generateEventFunction(null, states_with_actions, smg.getEvents().get(""));
+	}
+
+	private void generateEventFunctions(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg,
+			Collection<StateWithActions> states_with_actions) {
+		stringBuffer.append('\n');
+		banner("event functions");
+		
+		for (Entry<String, Set<Transition>> entry : smg.getEvents().entrySet()) {
+			String event = entry.getKey();
+			Set<Transition> transitions = entry.getValue();
+			
+			if (event == null || event.equals(""))
+				// skip transitions which are handled by the tick function
+				continue;
+
+			stringBuffer.append('\n');
+			generateEventFunction(event, states_with_actions, transitions);
+		}
+	}
 
 	private StringBuffer stringBuffer;
 	private StateMachineForGeneration smg;
@@ -433,7 +549,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				
 				// set state variable
 				genTrace(30, indent, "$name: state <- " + stateName(trans.getDestination()));
-				stringBuffer.append(indent + smg.getName() + ".state = "
+				//TODO We have to do some more things, if source and destination don't have the same parent.
+				stringBuffer.append(indent + getStateVariableName(trans.getSource().getParent()) + " = "
 						+ stateName(trans.getDestination()) + ";\n");
 				
 				// execute transition action
@@ -457,6 +574,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	private boolean printCode(String indent, String code, boolean inline) {
 		if (code == null)
 			return false;
+		
+		code = StateVariable.replaceTemporaryVariables(code);
 		
 		String lines[] = code.trim().split("\n+");
 
@@ -519,7 +638,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 		}
 		
-		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
+		stringBuffer.append("\tswitch (" + getStateVariableName(smg.getStateMachine()) + ") {\n");
 		stringBuffer.append('\n');
 		
 		for (StateWithActions state : states_with_actions) {
