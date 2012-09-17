@@ -13,14 +13,14 @@
 #define UBRR_VALUE 51
 
 void usart_init(void) {
-	UBRR0H = (UBRR_VALUE >> 8);
-	UBRR0L = (UBRR_VALUE & 0xff);
+	UBRRxH = (UBRR_VALUE >> 8);
+	UBRRxL = (UBRR_VALUE & 0xff);
 	// normal mode
-	UCSR0A = 0;
+	UCSRxA = 0;
 	// set frame format 8N1
-	UCSR0C = (3<<UCSZ0);
+	UCSRxC = (3<<UCSZx);
 	// enable RX and TX
-	UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+	UCSRxB = (1<<RXENx) | (1<<TXENx);
 }
 
 void usart_send_str(const char* s) {
