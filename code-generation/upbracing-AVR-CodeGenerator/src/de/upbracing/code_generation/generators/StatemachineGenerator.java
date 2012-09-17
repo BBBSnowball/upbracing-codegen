@@ -95,62 +95,28 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 				// statemachine validation
 
-				String statemachine_name = smg.getName();
+	String statemachine_name = smg.getName();
 				
 				if(statemachine_name == null){
 					System.err
 							.println("There is no statemachine!");
 				}
 
-				Pattern digit = Pattern.compile("\\d");
-				Pattern word = Pattern.compile("\\w*");
-				
-				//statemachine name validation
-				if(digit.matcher(statemachine_name.subSequence(0, 1)).matches()){
-		        	 System.out.println("Statemachine name -> " + statemachine_name + " is not a valid C identifier!");
-		        }
-		        else if(!word.matcher(statemachine_name).matches()){
-		        	 System.out.println("Statemachine name -> " + statemachine_name + " is not a valid C identifier!");
-		        }
-		        else{
-		        	System.out.println("Statemachine name -> " + statemachine_name + " is a valid C identifier!");
-		        }
-				
+				//validate statemachine name
+				nameValidator(statemachine_name);
 				
 				//event validation
 				SortedMap<String, Set<Transition>> events;
 				
-				if(smg.getEvents().keySet().size() == 0)
-					System.out.println("Statemachine -> "
-										+ statemachine_name
-										+ " does not have any events!");
-				else
+				if (smg.getEvents().keySet().size()> 0)
 					{	
 					events = smg.getEvents();
 					Iterator<String> event_names = events.keySet().iterator();
 					
-					while(event_names.hasNext()){
-						
-						String event = event_names.next();
-							
-						if(emptyOrNull(event))
-					        	 System.err.println("Statemachine name -> " + statemachine_name + "| Event name -> " + event  
-					        			 + " is empty or null!");
-						
-						else if(digit.matcher(event.subSequence(0, 1)).matches())
-				        	 System.err.println("Statemachine name -> " + statemachine_name + "| Event name -> " + event 
-				        			 + " is not a valid C identifier!");
-				        
-				        else if(!word.matcher(event).matches())
-				        	 System.err.println("Statemachine name -> " + statemachine_name + "| Event name -> " + event
-				        			 + " is not a valid C identifier!");
-				        
-				        else
-				        	System.out.println("Statemachine name -> " + statemachine_name + "| Event name -> " + event
-				        			+ " is a valid C identifier");
-				     			
-				}
-//				
+					while(event_names.hasNext())
+						eventNameValidator(statemachine_name, event_names.next());
+					}
+				
 				// state validation
 				List<State> states;
 				
@@ -191,103 +157,22 @@ public class StatemachineGenerator extends AbstractGenerator {
 						    			}
 						
 						 //initialstate name validation ??
-						    if(digit.matcher(initial_state.getName().subSequence(0, 1)).find(0))
-					    	 		System.err
-					        	 			.println("Statemachine -> " 
-					        	 					+ statemachine_name 
-					        	 					+ "| State name -> " 
-					        	 					+ initial_state.getName()  
-					        	 					+ " : state name cannot start with a digit!");
-					        			 
-					        
-					        else if(!word.matcher(initial_state.getName()).matches())
-					        		System.err
-					        				.println("Statemachine -> " 
-					        						+ statemachine_name 
-					        						+ "| State name -> "
-					        						+ initial_state.getName() 
-					        						+ " is not a valid C identifier!");
-					        			 
-					        else
-					        		System.out
-					        				.println("Statemachine -> "
-					        						+ statemachine_name 
-					        						+ "| State name -> " 
-					        						+ initial_state.getName()  
-					        						+ " is a valid C identifier!");
-					     
-						  
-						 // no incoming transitions
-						 if(!initial_state.getIncomingTransitions().isEmpty())
-							 System.err
-							 		.println("Statemachine -> " 
-				        	 				+ statemachine_name 
-				        	 				+ " | State name -> " 
-				        	 				+ initial_state.getName() 
-				        	 				+ " Initial state does not have any incoming transitions! ");
-						 
-						    
-						// validation for outgoing transitions
-						 
-						//check whether outgoing transitions exist
-						if(initial_state.getOutgoingTransitions().isEmpty())
-							 System.err
-							 		.println("Statemachine -> " 
-					        						+ statemachine_name 
-					        						+ "| State name -> "
-					        						+ initial_state.getName()
-					        						+ " does not have any outgoing transitions!");
-						else {
-						
-							out_transitions = initial_state.
-						    		getOutgoingTransitions();
-						
-									  				    
-						for (Transition t : out_transitions) {
-							TransitionInfo transitionInfo = smg.getTransitionInfo(t);
-							if (transitionInfo.isWaitTransition())
-								System.err
-										.println("Statemachine "
-												+ " -> "
-												+ statemachine_name
-												+ " | Transition "
-												+ " -> "
-												+ "Source : "
-												+ t.getSource()
-												+ " Destination : "
-												+ t.getDestination()
-												+ " : Start state cannot have waiting transition!");
-
-							else if (!emptyOrNull(transitionInfo.getEventName()))
-								System.err.println("Statemachine " + " -> "
-										+ statemachine_name + " | Transition "
-										+ " -> " + "Source : " + t.getSource()
-										+ " Destination : "
-										+ t.getDestination()
-										+ " : Start state cannot have events!");
-
-							else if (!emptyOrNull(transitionInfo.getCondition()))
-								System.err
-										.println("Statemachine "
-												+ " -> "
-												+ statemachine_name
-												+ " | Transition "
-												+ " -> "
-												+ "Source : "
-												+ t.getSource()
-												+ " Destination : "
-												+ t.getDestination()
-												+ " : Start state cannot have conditions !");
-
-							else if (initial_state.getOutgoingTransitions().size() > 1) {
-								System.err.println("Statemachine " + " -> "
-										+ statemachine_name + " | State "
-										+ " -> " + initial_state.getName()
-										+ " : Validation failed.");
+						 //initialstate name validation ??
+							nameValidator(statemachine_name, initial_state.getName());
+							  
+							 // no incoming transitions
+							incomingTransitionCounter(initial_state, statemachine_name);
+							 
+							//check whether outgoing transitions exist
+							if(outgoingTransitionCounter(initial_state, statemachine_name)){
+								out_transitions = initial_state.getOutgoingTransitions();
+																  				    
+							for (Transition t : out_transitions) 
+								
+								//validate outgoing transitions
+								initialTransitionValidator(smg.getTransitionInfo(t), statemachine_name, t.getSource().toString(), t.getDestination().toString());		
 							}
 						}
-					}
-					}
 					
 					// final state validity
 					else if (state instanceof FinalState) {
@@ -295,56 +180,20 @@ public class StatemachineGenerator extends AbstractGenerator {
 						final_states.add(final_state);
 												
 						//name validation
-					    if(digit.matcher(final_state.getName().subSequence(0, 1)).find(0))
-	    		        	 System.err
-	    		        	 		.println("Statemachine -> " 
-	    		        	 				+ statemachine_name
-	    		        	 				+ "| State name -> " 
-	    		        	 				+ final_state.getName()  
-	    		        	 				+ " : state name cannot start with a digit!");
+					    nameValidator(statemachine_name, final_state.getName());
 					        			 
-					        
-					    else if(!word.matcher(final_state.getName()).matches())
-					        	 System.err
-					        	 		.println("Statemachine -> " 
-					        	 				+ statemachine_name
-					        	 				+ "| State name -> " 
-					        					+ final_state.getName()  
-					       	 					+ " is not a valid C identifier!");
-					   
-					    else
-					        	System.out
-					        			.println("Statemachine -> " 
-					        					+ statemachine_name 
-					        					+ "| State name -> " 
-					        					+ final_state.getName()  
-					        					+ " is a valid C identifier!");
-					        			
-					       
 						//check whether final state has incoming transitions
-						if(final_state.getIncomingTransitions().isEmpty())
-							System.err
-									.println("Statemachine -> " 
-	    		        	 				+ statemachine_name
-	    		        	 				+ "| State name -> " 
-	    		        	 				+ final_state.getName()
-	    		        	 				+ " | Final state does not have any incoming transitions!");
+					    incomingTransitionCounter(final_state, statemachine_name);
+					    outgoingTransitionCounter(final_state, statemachine_name);
+					    
 						
-						//check whether final state has outgoing transitions
-						else if(!final_state.getOutgoingTransitions()
-									.isEmpty()) 
-								System.err.println("Statemachine " + " -> "
-										+ statemachine_name + " | State "
-										+ " -> " + final_state.getName()
-										+ " : Validation failed.");
-					
 						// removing the previous final state and setting its incoming transitions to the current 
 						// final state. Then finally removing the previous final state from the list
 						
 						//if incoming and outgoing transitions exist but number of states greater than 1
 						if(final_states.size() > 1 
-								&& final_state.getIncomingTransitions().isEmpty()
-									&& (!final_state.getOutgoingTransitions().isEmpty())){
+								&& incomingTransitionCounter(final_state, statemachine_name)
+									&& outgoingTransitionCounter(final_state, statemachine_name)){
 									
 								EList<Transition> previous_final_transitions = final_states.get(0).getIncomingTransitions();
 							
@@ -357,63 +206,20 @@ public class StatemachineGenerator extends AbstractGenerator {
 							}
 						
 						//transition validity 
-						//if incoming and outgoing transitions exist but number of states greater than 1
-						if(emptyOrNull(final_state.getIncomingTransitions().toString())
-								&&!final_state.getOutgoingTransitions()
-								.isEmpty()){
+						if(incomingTransitionCounter(final_state, statemachine_name)){
 						
-						in_transitions = final_state
-								.getIncomingTransitions();
+						in_transitions = final_state.getIncomingTransitions();
 						
-						    
 						for (Transition t : in_transitions) {
 							TransitionInfo ti = smg.getTransitionInfo(t);
-						
-							
+													
 							//check whether the incoming transition is from initial state
-							if(!(t.getSource() instanceof InitialState)){
+							if(!(t.getSource() instanceof InitialState))
 								
-							if (!emptyOrNull(ti.getCondition())
-									|| !emptyOrNull(ti.getEventName())) {
-								// check wait type is "wait"?
-								if (ti.getWaitType().equals("wait"))
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
-							}
-							// ensure that when wait type is "before" either
-							// getcondition is true or event is true
-							else if (ti.getWaitType().equals("before")) {
-								if (ti.getCondition()
-										.isEmpty()
-										&& ti
-												.getEventName().isEmpty()) {
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition must either have a condition or an event!");
-								}
-							}						
-						}									
-					}
+								normalTransitionValidator(ti, statemachine_name, t.getSource().toString(), t.getDestination().toString());
 						}
-					
 					}
+				}
 			
 
 					// normal state validity
@@ -422,198 +228,57 @@ public class StatemachineGenerator extends AbstractGenerator {
 						
 						//check normal state name
 						//check for normal states having same name?
-						if (digit.matcher(normal_state.getName().subSequence(0, 1)).find(0))
-							System.err
-									.println("Statemachine -> " 
-											+ statemachine_name 
-											+ "| State name -> " 
-											+ normal_state.getName()  
-											+ " : state name cannot start with a digit!");
-										      
-				        else if (!word.matcher(normal_state.getName()).matches())
-				        	 System.err
-				        	 		.println("Statemachine -> " 
-				        	 				+ statemachine_name 
-				        	 				+ "| State name -> " 
-				        	 				+ normal_state.getName() 
-				        	 				+ " is not a valid C identifier!");
-				        			
-				        else
-				        	System.out
-				        			.println("Statemachine -> " 
-				        					+ statemachine_name 
-				        					+ "| State name -> " 
-				        					+ normal_state.getName()  
-				        					+ " is a valid C identifier!");
-						
+						nameValidator(statemachine_name, normal_state.getName());
 						
 						//check whether normal state has incoming transitions
-						if(normal_state.getIncomingTransitions().isEmpty())
-							System.err
-									.println("Statemachine -> " 
-					        	 			+ statemachine_name 
-					        	 			+ "| State name -> " 
-					        	 			+ normal_state.getName()
-					        	 			+ " | Doesn't have any incoming transitions!");
+						incomingTransitionCounter(normal_state, statemachine_name);
+						outgoingTransitionCounter(normal_state, statemachine_name);
 						
-						//check whether normal state has outgoing transitions
-						else if (normal_state.getOutgoingTransitions().isEmpty())
-							System.err
-									.println("Statemachine -> " 
-											+ statemachine_name 
-											+ "| State name -> " 
-											+ normal_state.getName()
-											+ " | Doesn't have any outgoing transitions!");
-						
-						
+		
 						//perform validation of specific inncoming transitions if they exist
-						if(!normal_state.getIncomingTransitions().isEmpty()){
+						if(incomingTransitionCounter(normal_state, statemachine_name)){
 							
-							in_transitions = normal_state
-												.getIncomingTransitions();	        		        			
-						//validation of incoming transitions
+							in_transitions = normal_state.getIncomingTransitions();	        		        			
+						
+							//validation of incoming transitions
 						for (Transition t : in_transitions) {
 							TransitionInfo transitionInfo = smg.getTransitionInfo(t);
 														
 							//ensure that incoming transition is not from initial state
-							if(!(t.getSource() instanceof InitialState)){
+							if(!(t.getSource() instanceof InitialState))
 								
 							//transition type validation
-							if (!emptyOrNull(transitionInfo.getCondition())
-									|| !emptyOrNull(transitionInfo.getEventName())) {
-								if (transitionInfo.getWaitType() == "wait")
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
-							} else if (transitionInfo.getWaitType() == "before") {
-								if (transitionInfo.getCondition()
-										.isEmpty()
-										&& transitionInfo
-												.getEventName().isEmpty()) {
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition must either have a condition or an event!");
-								}
-							}
-						}
+							normalTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString(), t.getDestination().toString());
 					}
-						}
+				}
 						
 					//check rules for outgoing transitions if they fo exist	
-					if(!normal_state.getOutgoingTransitions().isEmpty()){
-						out_transitions = normal_state
-								.getIncomingTransitions();
+					if(outgoingTransitionCounter(normal_state, statemachine_name)){
+						out_transitions = normal_state.getIncomingTransitions();
 		
 						//validation of outgoing transitions
 						for(Transition t : out_transitions){
 							TransitionInfo transitionInfo = smg.getTransitionInfo(t);
 							
-							
-							if (!emptyOrNull(transitionInfo.getCondition())
-									|| !emptyOrNull(transitionInfo.getEventName())) {
-								if (transitionInfo.getWaitType()=="wait")
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
-							} else if (transitionInfo.getWaitType() == "before") {
-								if (transitionInfo.getCondition()
-										.isEmpty()
-										&& transitionInfo
-												.getEventName().isEmpty()) {
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition must either have a condition or an event!");
-								}
-							}							    			 	
+							normalTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString(), t.getDestination().toString());				    			 	
 						}
-						
 					}
-					}
+				}
 					
-					// Superstates, regions, and contained states validation
 					else if (state instanceof SuperState) {
 						SuperState super_state = (SuperState) state;
 						
 						// Superstate name validity check
-						if(digit.matcher(super_state.getName().subSequence(0, 1)).find(0))
-				        	 System.err
-				        	 	.println("Statemachine -> " 
-				        	 			+ statemachine_name 
-				        	 			+ "| State name -> " 
-				        	 			+ super_state.getName()  
-				        	 			+ " : state name cannot start with a digit!");
-				        				        
-				        else if(!word.matcher(super_state.getName()).matches())
-				        	 System.err
-				        	 	.println("Statemachine -> " 
-				        	 			+ statemachine_name 
-				        	 			+ "| State name -> " 
-				        	 			+ super_state.getName()  
-				        	 			+  " is not a valid C identifier!");
-					    
-				        else
-				        	System.err
-				        		.println("Statemachine -> " 
-				        				+ statemachine_name 
-				        				+ "| State name -> " 
-				        				+ super_state.getName()  
-				        				+ " is a valid C identifier!");
-				        
-						//check whether the superstate has incoming transitions
-						if(emptyOrNull(super_state.getIncomingTransitions().toString()))
-							System.err
-									.println("Statemachine -> " 
-					        	 			+ statemachine_name 
-					        	 			+ "| State name -> " 
-					        	 			+ super_state.getName()
-					        	 			+ " | Doesn't have any incoming transitions!");
+						nameValidator(statemachine_name, super_state.getName());
 						
 						//check whether the superstate has outgoing transitions
-						else if (emptyOrNull(super_state.getOutgoingTransitions().toString()))
-							System.err
-									.println("Statemachine -> " 
-											+ statemachine_name 
-											+ "| State name -> " 
-											+ super_state.getName()
-											+ " | Doesn't have any outgoing transitions!");
+						outgoingTransitionCounter(super_state, statemachine_name);
 						
+						//check whether the superstate has incoming transitions
+						incomingTransitionCounter(super_state, statemachine_name);
 						
-					
-						
-					 	//check specific rules of incoming transitions of superstate if they do exist
-						if(super_state.getIncomingTransitions().isEmpty()){
+						//check specific rules of incoming transitions of superstate if they do exist
+						if(incomingTransitionCounter(super_state, statemachine_name)){
 						
 							in_transitions = super_state.getIncomingTransitions();
 					    // incoming transition validation
@@ -621,85 +286,21 @@ public class StatemachineGenerator extends AbstractGenerator {
 							TransitionInfo transitionInfo = smg.getTransitionInfo(t);
 							
 							//check whether incoming transition is from start state
-							if(!(t.getSource() instanceof InitialState)){
-																												
-							if (!emptyOrNull(transitionInfo.getCondition())
-									|| !emptyOrNull(transitionInfo.getEventName())) {
-								if (transitionInfo.getWaitType().equals("wait"))
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
-							} else if (transitionInfo.getWaitType().equals("before")) {
-								if (transitionInfo.getCondition()
-										.isEmpty()
-										&& transitionInfo
-												.getEventName().isEmpty()) {
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition must either have a condition or an event!");
-								}
-							}
-						}
-					}		
-					}	
+							if(!(t.getSource() instanceof InitialState))
+															
+								normalTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString(), t.getDestination().toString());
+							}		
+						}	
 						//check specific rules of outgoing transitions of superstate if they do exist
-						if(!super_state.getOutgoingTransitions().isEmpty()){
+						if(outgoingTransitionCounter(super_state, statemachine_name)){
 						
 						out_transitions = super_state.getIncomingTransitions();
 					    //validation for outgoing transitions
 						for(Transition t : out_transitions){
 							
 							TransitionInfo transitionInfo = smg.getTransitionInfo(t);
-							
-							if (!emptyOrNull(transitionInfo.getCondition())
-									|| !emptyOrNull(transitionInfo.getEventName())) {
-								if (transitionInfo.getWaitType().equals("wait"))
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
-							} else if (transitionInfo.getWaitType().equals("before")) {
-								if (transitionInfo.getCondition()
-										.isEmpty()
-										&& transitionInfo
-												.getEventName().isEmpty()) {
-									System.err
-											.println("Statemachine "
-													+ " -> "
-													+ statemachine_name
-													+ " | Transition "
-													+ " -> "
-													+ " Source : "
-													+ t.getSource()
-													+ " Destination : "
-													+ t.getDestination()
-													+ " Transition must either have a condition or an event!");
-								}
-							}				 							 	
-						}
+							normalTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString(), t.getDestination().toString());					 	
+							}
 						}
 						
 						//check whether the superstate has any regions
@@ -711,61 +312,16 @@ public class StatemachineGenerator extends AbstractGenerator {
 						//get regions of the superstate
 						EList<Region> super_regions = super_state.getRegions();
 
-						
 						for (Region r : super_regions) {
 							
 							//validity of region name
-							 if (digit.matcher(r.getName().subSequence(0, 1)).find(0))
-					        	 System.err
-					        	 		.println("Statemachine -> " 
-					        	 				+ statemachine_name 
-					        	 				+ "| State name -> " 
-					        	 				+ super_state.getName() 
-					        	 				+ " | Region name -> " 
-					        	 				+ r.getName() 
-					        	 				+ " : State name cannot start with a digit!");
-					        
-					        else if (!word.matcher(r.getName()).matches())
-					        	 System.err
-					        	 		.println("Statemachine -> "
-					        	 				+ statemachine_name 
-					        	 				+ "| State name -> " 
-					        	 				+ super_state.getName() 
-					        	 				+ " | Region name -> " 
-					        	 				+  r.getName()
-					        	 				+ " is not a valid C identifier!");
-					        
-					        else if(emptyOrNull(r.getName())){
-					        	System.err
-					        			.println("Statemachine -> " 
-					        					+ statemachine_name 
-					        					+ "| State name -> " 
-					        					+ super_state.getName() 
-					        					+ " | Region name -> " 
-					        					+ r.getName()
-					        					+ " region must have a name!");
-					        	
-					        }
-							 
-					        else
-					        	System.err
-					        			.println("Statemachine -> "
-					        					+ statemachine_name 
-					        					+ "| State name -> "  
-					        					+ super_state.getName() 
-					        					+ " | Region name -> " 
-					        					+ r.getName()
-					        					+ " is a valid C identifier!");
-					        
+							nameValidator(statemachine_name, super_state.getName(), r.getName());
+			
 							//check whether the region has states
 							if(r.getStates().isEmpty())
-								System.err
-										.println("Statemachine -> "
-					        					+ statemachine_name 
-					        					+ "| State name -> "  
-					        					+ super_state.getName() 
-					        					+ " | Region name -> " 
-					        					+ r.getName()
+								System.err.println("Statemachine -> " + statemachine_name 
+					        					+ " | State name -> "  + super_state.getName() 
+					        					+ " | Region name -> " + r.getName()
 					        					+ " | Does not have any states.");
 							
 							//if the region has states perform validity for each of the contained states
@@ -783,56 +339,13 @@ public class StatemachineGenerator extends AbstractGenerator {
 										initial_state_region = (InitialState) s;
 										
 										//validation of name
-										 if (digit.matcher(initial_state_region.getName().subSequence(0, 1)).find(0))
-								        	 System.err
-								        	 		.println("Statemachine -> " 
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+ r.getName() 
-								        	 				+ " State -> "
-								        	 				+ initial_state_region.getName()
-								        	 				+ " : State name cannot start with a digit!");
-								        
-								        else if (!word.matcher(initial_state_region.getName()).matches())
-								        	 System.err
-								        	 		.println("Statemachine -> "
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+  r.getName()
-								        	 				+ " State -> "
-								        	 				+ initial_state_region.getName()
-								        	 				+ " is not a valid C identifier!");
-			
-								        else
-								        	System.err
-								        			.println("Statemachine -> "
-								        					+ statemachine_name 
-								        					+ "| State name -> "  
-								        					+ super_state.getName() 
-								        					+ " | Region name -> " 
-								        					+ r.getName()
-								        						+ " State -> "
-								        	 				+ initial_state_region.getName()
-								        					+ " is a valid C identifier!");
+										nameValidator(statemachine_name, super_state.getName(), r.getName(), 
+												initial_state_region.getName());
 										
+								       
 										//check whether any outgoing transitions exist
-										if(initial_state_region.getOutgoingTransitions().isEmpty()){
-											System.err
-													.println("Statemachine -> " 
-								    						+ statemachine_name 
-								    						+ " | SuperState -> "
-								    						+ super_state.getName() 
-								    						+ " | Region -> " 
-								    						+ r.getName() 
-								    						+ " | Initial State -> "
-								    						+ initial_state_region.getName()
-								    						+ " | State does not have any outgoing transitions ! ");
-										}
-									
+										incomingTransitionCounter(initial_state_region, statemachine_name);
+																			
 									    region_inital_count++;
 									    
 									    //number of inital states in the region
@@ -842,71 +355,24 @@ public class StatemachineGenerator extends AbstractGenerator {
 									    }
 									    
 									    //if the initial state has outgoing transitions perform checks
-										if(!initial_state_region.getOutgoingTransitions().isEmpty()){
+										if(outgoingTransitionCounter(initial_state_region, statemachine_name)){
 										
-											out_transitions = initial_state_region.getOutgoingTransitions();
-									    
+											out_transitions = initial_state_region.getOutgoingTransitions();    
+										
 									    for(Transition t : out_transitions){
 									    	TransitionInfo transitionInfo = smg.getTransitionInfo(t);
+									    	
+									    	initialTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString()
+									    			, t.getDestination().toString(), super_state.getName(), r.getName());
+									    	
 									    
-									    	if(transitionInfo.isWaitTransition())
-									    		System.err
-									    				.println("Statemachine -> " 
-									    						+ statemachine_name 
-									    						+ " | SuperState -> "
-									    						+ super_state.getName() 
-									    						+ " | Region -> " 
-									    						+ r.getName() 
-									    						+ " | Transition -> " 
-									    						+ "Source : "  
-									    						+ t.getSource() 
-									    						+ " Destination : " 
-									    						+ t.getDestination() 
-									    						+ " : Start state cannot have waiting transition!");
-									    	
-									    	else if(!emptyOrNull(transitionInfo.getEventName()))
-									    		System.err
-									    			.println("Statemachine -> " 
-									    					+ statemachine_name 
-									    					+ " | SuperState -> "
-									    					+ super_state.getName() 
-									    					+ " | Region -> " 
-									    					+ r.getName() 
-									    					+ " | Transition -> " 
-									    					+ "Source : "  
-									    					+ t.getSource() 
-									    					+ " Destination : " 
-									    					+ t.getDestination() 
-									    					+ " : Start state cannot have events!");
-									    	
-									    	else if(!emptyOrNull(transitionInfo.getCondition()))
-									    		System.err
-									    			.println("Statemachine -> " 
-									    					+ statemachine_name 
-									    					+ " | SuperState -> "
-									    					+ super_state.getName() 
-									    					+ " | Region -> " 
-									    					+ r.getName() 
-									    					+ " | Transition -> " 
-									    					+ "Source : " 
-									    					+ t.getSource() 
-									    					+ " Destination : " 
-									    					+ t.getDestination() 
-									    					+ " : Start state cannot have conditions !");
-									    	
-									    	else if(initial_state_region.getOutgoingTransitions().size()>1)
-										    	System.err
-										    			.println("Statemachine -> " 
-										    					+ statemachine_name 
-										    					+ " | SuperState -> "
-										    					+ super_state.getName() 
-										    					+ " | Region -> " 
-										    					+ r.getName() 
-										    					+ " | State  -> " 
-										    					+ initial_state_region.getName()
+									    	if(initial_state_region.getOutgoingTransitions().size()>1)
+										    	System.err.println("Statemachine -> " + statemachine_name 
+										    					+ " | SuperState -> " + super_state.getName() 
+										    					+ " | Region -> " + r.getName() 
+										    					+ " | State  -> " + initial_state_region.getName()
 										    					+ " : Initial state cannot have more than one outgoing transitions!");
-										    							    	
-									    }
+										}
 									}
 								}
 									
@@ -915,73 +381,19 @@ public class StatemachineGenerator extends AbstractGenerator {
 										super_final_states.add(final_state_region);
 										
 										//validation of name
-										 if (digit.matcher(final_state_region.getName().subSequence(0, 1)).find(0))
-								        	 System.err
-								        	 		.println("Statemachine -> " 
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+ r.getName() 
-								        	 				+ " State -> "
-								        	 				+ final_state_region.getName()
-								        	 				+ " : State name cannot start with a digit!");
-								        
-								        else if (!word.matcher(final_state_region.getName()).matches())
-								        	 System.err
-								        	 		.println("Statemachine -> "
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+  r.getName()
-								        	 				+ " State -> "
-								        	 				+ final_state_region.getName()
-								        	 				+ " is not a valid C identifier!");
-			
-								        else
-								        	System.err
-								        			.println("Statemachine -> "
-								        					+ statemachine_name 
-								        					+ "| State name -> "  
-								        					+ super_state.getName() 
-								        					+ " | Region name -> " 
-								        					+ r.getName()
-								        					+ " State -> "
-								        					+ final_state_region.getName()
-								        					+ " is a valid C identifier!");
+										nameValidator(statemachine_name, super_state.getName(), r.getName(),
+												final_state_region.getName());
 										
-										
-										if(final_state_region.getIncomingTransitions().isEmpty()){
-											 System.err
-										 		.println("Statemachine -> "
-										 				+ statemachine_name
-										 				+ " | State -> "
-										 				+ super_state.getName()
-										 				+ " | Region -> "
-										 				+ r.getName()
-										 				+ " | Final State -> "
-										 				+ final_state_region.getName()
-										 				+ " | There must be at be atleast one incoming transition to the final state!");
-										}
+									 	//check whether there are any incoming transitions
+										incomingTransitionCounter(final_state_region, statemachine_name);
 										
 									 	//check whether there are any outgoing transitions
-										else if(!final_state_region.getOutgoingTransitions().isEmpty())
-									 			System.err
-									 					.println("Statemachine -> " 
-									 							+ statemachine_name 
-									 							+ " | SuperState -> " 
-									 							+ super_state.getName()  
-									 							+ " | Region -> "
-									 							+ r.getName() 
-									 							+ " | State -> " 
-									 							+ final_state_region.getName()
-									 							+ " : Validation failed.");		
+										outgoingTransitionCounter(final_state_region, statemachine_name);
 										
 										//check whether there are more than one final states
 										if(super_final_states.size() > 1
-												&& final_state_region.getIncomingTransitions().isEmpty()
-												&& !final_state_region.getOutgoingTransitions().isEmpty()){
+												&& incomingTransitionCounter(final_state_region, statemachine_name)
+												&& (!outgoingTransitionCounter(final_state_region, statemachine_name))){
 											
 											EList<Transition> transition = super_final_states.get(0).getIncomingTransitions();
 											
@@ -994,58 +406,22 @@ public class StatemachineGenerator extends AbstractGenerator {
 										}
 										
 										//if incoming transitions exist then perform checks
-										if(!final_state_region.getIncomingTransitions().isEmpty()
-												&& final_state_region.getOutgoingTransitions().isEmpty()){
+										if(incomingTransitionCounter(final_state_region, statemachine_name)){
 									    
 										in_transitions = final_state_region.getIncomingTransitions();
-									    
 									    
 										 for(Transition t : in_transitions){
 											 TransitionInfo transitionInfo = smg.getTransitionInfo(t);
 											 
+											
 											 //test whether the source is an initial state
-											 if(!(t.getSource() instanceof InitialState)){		
-												if(!transitionInfo.getCondition().isEmpty() || !transitionInfo.getEventName().isEmpty())
-											 		
-											 		//check wait type is "wait"?
-											 		if(transitionInfo.getWaitType().equals("wait"))
-											 			System.err
-											 					.println("Statemachine -> " 
-											 							+ statemachine_name 
-											 							+ " | SuperState -> " 
-											 							+ super_state.getName() 
-											 							+ " | Region -> "
-											 							+ r.getName() 
-											 							+ " | Transition -> " 
-											 							+ " Source : " 
-											 							+ t.getSource() 
-											 							+ " Destination : " 
-											 							+ t.getDestination() 
-											 							+ " Transition having condition or event cannot have wait type wait!");
-											 	
-											 	
-											 	// ensure that when wait type is "before" either getcondition is true or event is true
-											 	else if(transitionInfo.getWaitType().equals("before")){
-											 		if(transitionInfo.getCondition().isEmpty() && transitionInfo.getEventName().isEmpty()){
-											 			System.err
-											 					.println("Statemachine -> " 
-											 							+ statemachine_name 
-											 							+ " | SuperState -> " 
-											 							+ super_state.getName()  
-											 							+ " | Region -> "
-											 							+ r.getName() 
-											 							+ " | Transition -> " 
-											 							+ " Source : " 
-											 							+ t.getSource() 
-											 							+ " Destination : " 
-											 							+ t.getDestination() 
-											 							+ " Transition must either have a condition or an event!");
-											 		}
-											 	}
+											 if(!(t.getSource() instanceof InitialState))	
+												
+												 normalTransitionValidator(transitionInfo, statemachine_name, t.getSource().toString(),
+														 t.getDestination().toString(), super_state.getName(), r.getName());
+												 	 	
 										 }
-											 	
-										 }
-										 }
+										}
 									}
 											 
 									else if(s instanceof NormalState){
@@ -1053,69 +429,12 @@ public class StatemachineGenerator extends AbstractGenerator {
 										NormalState normal_state_region = (NormalState) s;
 										
 										//check validity of normal state name
-										if (digit.matcher(normal_state_region.getName().subSequence(0, 1)).find(0))
-								        	 System.err
-								        	 		.println("Statemachine -> " 
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+ r.getName() 
-								        	 				+ " State -> "
-								        	 				+ normal_state_region.getName()
-								        	 				+ " : State name cannot start with a digit!");
-								        
-								        else if (!word.matcher(normal_state_region.getName()).matches())
-								        	 System.err
-								        	 		.println("Statemachine -> "
-								        	 				+ statemachine_name 
-								        	 				+ "| State name -> " 
-								        	 				+ super_state.getName() 
-								        	 				+ " | Region name -> " 
-								        	 				+  r.getName()
-								        	 				+ " State -> "
-								        	 				+ normal_state_region.getName()
-								        	 				+ " is not a valid C identifier!");
-			
-								        else
-								        	System.err
-								        			.println("Statemachine -> "
-								        					+ statemachine_name 
-								        					+ "| State name -> "  
-								        					+ super_state.getName() 
-								        					+ " | Region name -> " 
-								        					+ r.getName()
-								        					+ " State -> "
-								        					+ normal_state_region.getName()
-								        					+ " is a valid C identifier!");
+										nameValidator(statemachine_name, super_state.getName(), r.getName(),
+												normal_state_region.getName());
 										
 										//check whether the state has incoming or outgoing transitions
-										
-										if(emptyOrNull(normal_state_region.getOutgoingTransitions().toString()))
-											System.err
-													.println("Statemachine -> " 
-								        	 				+ statemachine_name 
-								        	 				+ "| SuperState name -> " 
-								        	 				+ super_state.getName()  
-								        	 				+ " | Region name -> " 
-								        	 				+ r.getName() 
-								        	 				+ " | State name" 
-								        	 				+ normal_state_region.getName()
-								        	 				+ " | Does not have any incoming transitions!");
-										
-										else if(emptyOrNull(normal_state_region.getIncomingTransitions().toString())){
-											System.err
-													.println("Statemachine -> " 
-															+ statemachine_name 
-															+ "| SuperState name -> " 
-															+ super_state.getName()  
-															+ " | Region name -> " 
-															+ r.getName() 
-															+ " | State name" 
-															+ normal_state_region.getName()
-															+ " | Does not have any outgoing transitions!");
-										}
-										
+										incomingTransitionCounter(normal_state_region, statemachine_name);
+										outgoingTransitionCounter(normal_state_region, statemachine_name);
 										
 										//perform checks on incoming transitions if they exist
 										if(!emptyOrNull(normal_state_region.getIncomingTransitions().toString())){
@@ -1126,92 +445,26 @@ public class StatemachineGenerator extends AbstractGenerator {
 											TransitionInfo transitioninfo = smg.getTransitionInfo(t);
 											
 											if(!(t.getSource() instanceof InitialState)){
-									
-										
-										 	if(!transitioninfo.getCondition().isEmpty() || !transitioninfo.getEventName().isEmpty()){
-										 		if(transitioninfo.getWaitType().equals("wait"))
-										 			System.err
-										 				.println("Statemachine -> " 
-										 						+ statemachine_name 
-										 						+ " | SuperState -> " 
-										 						+ super_state.getName()  
-										 						+ " | Region -> "
-										 						+ r.getName() 
-										 						+ " | Transition -> " 
-										 						+ " Source : " 
-										 						+ t.getSource() 
-										 						+ " Destination : " 
-										 						+ t.getDestination() 
-										 						+ " Transition having condition or event cannot have wait type wait!");
-										 	}
+												
+												normalTransitionValidator(transitioninfo, statemachine_name, t.getSource().toString(),
+														t.getDestination().toString(), super_state.getName(), r.getName());
 										 	
-										 	else if(transitioninfo.getWaitType().equals("before")){
-										 		if(transitioninfo.getCondition().isEmpty() && transitioninfo.getEventName().isEmpty()){
-										 			System.err
-										 				.println("Statemachine -> " 
-										 						+ statemachine_name 
-										 						+ " | SuperState -> " 
-										 						+ super_state.getName()  
-										 						+ " | Region -> "
-										 						+ r.getName() 
-										 						+ " | Transition -> " 
-										 						+ " Source : " 
-										 						+ t.getSource() 
-										 						+ " Destination : " 
-										 						+ t.getDestination() 
-										 						+ " Transition must either have a condition or an event!");
-										 		}
-										 	}
+											}
 										}
-										}
-										}
+									}
 										
 										//perform checks on outgoing transitions if they exist
-										if(emptyOrNull(normal_state_region.getOutgoingTransitions().toString())){
+										if(outgoingTransitionCounter(normal_state_region, statemachine_name)){
 											
 											out_transitions = normal_state_region.getOutgoingTransitions();
 										for(Transition t : out_transitions){
 											TransitionInfo transitioninfo = smg.getTransitionInfo(t);
 											
-											
 											if(!(t.getDestination() instanceof InitialState))
-											{
-												if(!transitioninfo.getCondition().isEmpty() || !transitioninfo.getEventName().isEmpty()){
-											 		if(transitioninfo.getWaitType().equals("wait"))
-											 			System.err
-											 				.println("Statemachine -> " 
-											 						+ statemachine_name 
-											 						+ " | SuperState -> " 
-											 						+ super_state.getName()  
-											 						+ " | Region -> "
-											 						+ r.getName() 
-											 						+ " | Transition -> " 
-											 						+ " Source : " 
-											 						+ t.getSource() 
-											 						+ " Destination : " 
-											 						+ t.getDestination() 
-											 						+ " Transition having condition or event cannot have wait type wait!");
-											 	}
-											 	
-											 	else if(transitioninfo.getWaitType().equals("before")){
-											 		if(transitioninfo.getCondition().isEmpty() && transitioninfo.getEventName().isEmpty()){
-											 			System.err
-											 				.println("Statemachine -> " 
-											 						+ statemachine_name 
-											 						+ " | SuperState -> " 
-											 						+ super_state.getName()  
-											 						+ " | Region -> "
-											 						+ r.getName() 
-											 						+ " | Transition -> " 
-											 						+ " Source : " 
-											 						+ t.getSource() 
-											 						+ " Destination : " 
-											 						+ t.getDestination() 
-											 						+ " Transition must either have a condition or an event!");
-											 		}
-											 	}
-												}   
-										}									
+												normalTransitionValidator(transitioninfo, statemachine_name, t.getSource().toString(),
+														t.getDestination().toString(), super_state.getName(), r.getName());
+										
+												}									
 										}
 						}
 								}
@@ -1224,10 +477,9 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 					}
 		}
-		}
-		return valid;
+	return valid;
 	}
-
+	
 	private boolean validateStatesNotNull(Iterable<State> states) {
 		for (State state : states) {
 			validateNotNull(state.getIncomingTransitions(), "incoming transitions of " + state);
@@ -1298,6 +550,240 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 		}
 	}
+
+private void nameValidator(String nametobevalidated, String...names){
+	Pattern digit = Pattern.compile("\\D\\w*");
+	String[] name = names;
+	
+	if(!(digit.matcher(nametobevalidated).matches())
+				|| emptyOrNull(nametobevalidated)){
+		switch(name.length){
+			case 0:
+				System.err.println("Statemachine name-> " + nametobevalidated + " is not a valid C identifier!");
+				break;
+			case 1:
+				System.err.println("Statemachine -> " + name[0] + " | State name -> " + nametobevalidated + " is not a valid C identifier!");
+				break;
+			case 2:
+				System.err.println("Statemachine -> " + name[0] + " | SuperState -> " + name[1] 
+					+ " | Region name " + nametobevalidated + " is not a valid C identfier");
+				break;
+			case 3:
+				System.err.println("Statemachine -> " + name[0] + " | SuperState -> " + name[1] 
+					+ " | Region -> " + name[2] + " | State name " + nametobevalidated + " is not a valid C identfier");
+			}
+		}
+}
+
+//event name validator
+private void eventNameValidator(String statemachine, String event){
+	Pattern digit = Pattern.compile("\\D\\w*");
+	
+	if(!(digit.matcher(event).matches()) &&
+			(!event.isEmpty())){
+		System.err.println("Statemachine -> " + statemachine + " | Event name -> "+ 
+				event + " is not a valid C identifier!");
+	}
+}
+
+
+private void initialTransitionValidator(TransitionInfo transitionInfo, String statemachine_name, String source,
+		String destination, String...names){
+	
+	String[] name = names;
+	
+	switch(name.length){
+	case 0:
+		if (transitionInfo.isWaitTransition())
+			System.err.println("Statemachine -> " + statemachine_name
+								+ " | Transition -> " + "Source : " + source + " Destination : " + destination
+								+ " : Start state cannot have waiting transition!");
+
+		else if (!emptyOrNull(transitionInfo.getEventName()))
+			System.err.println("Statemachine -> " + statemachine_name
+								+ " | Transition -> " + "Source : " + source + " Destination : " + destination
+								+ " : Start state cannot have events!");
+
+		else if (!emptyOrNull(transitionInfo.getCondition()))
+			System.err.println("Statemachine -> " + statemachine_name
+								+ " | Transition -> " + "Source : " + source + " Destination : " + destination
+								+ " : Start state cannot have conditions !");
+		break;
+	
+	case 1:
+		break;
+		
+	case 2:
+		
+		if(transitionInfo.isWaitTransition())
+    		System.err.println("Statemachine -> " + statemachine_name 
+    						+ " | SuperState -> " + name[0] 
+    						+ " | Region -> "  + name[1] 
+    						+ " | Transition -> Source : "  + source + " Destination : " + destination 
+    						+ " : Start state cannot have waiting transition!");
+    	
+    	else if(!emptyOrNull(transitionInfo.getEventName()))
+    		System.err.println("Statemachine -> " + statemachine_name 
+							+ " | SuperState -> " + name[0] 
+							+ " | Region -> "  + name[1] 
+							+ " | Transition -> Source : "  + source + " Destination : " + destination 
+							+ " : Start state cannot have events!");
+    	
+    	else if(!emptyOrNull(transitionInfo.getCondition()))
+    		System.err.println("Statemachine -> " + statemachine_name 
+							+ " | SuperState -> " + name[0] 
+							+ " | Region -> "  + name[1] 
+							+ " | Transition -> Source : "  + source + " Destination : " + destination 
+							+ " : Start state cannot have conditions !");
+    	
+		
+	}	
+}
+
+private void normalTransitionValidator(TransitionInfo ti, String statemachine_name, String source,
+		String destination, String...names){
+	
+	String[] name = names;
+	
+	switch(name.length){
+	case 0:
+		if (!emptyOrNull(ti.getCondition()) || !emptyOrNull(ti.getEventName())) {
+			// check wait type is "wait"?
+			if (ti.getWaitType() == "wait")
+				System.err.println("Statemachine -> " + statemachine_name
+								+ " | Transition -> Source : " + source + " Destination : " + destination
+								+ " Transition having condition or event cannot have wait type wait!");
+		}
+		
+		// ensure that when wait type is "before" either
+		// getcondition is true or event is true
+		else if (ti.getWaitType() == "before") {
+			if (ti.getCondition().isEmpty() && ti.getEventName().isEmpty()) {
+				System.err.println("Statemachine -> " + statemachine_name
+								+ " | Transition -> Source : " + source + " Destination : " + destination
+								+ " Transition must either have a condition or an event!");
+			}
+		}
+		
+		break;
+		
+	case 1:
+		break;
+		
+	case 2:
+			if(!ti.getCondition().isEmpty() || !ti.getEventName().isEmpty())
+		 		
+		 		//check wait type is "wait"?
+		 		if(ti.getWaitType().equals("wait"))
+		 			System.err.println("Statemachine -> " + statemachine_name 
+		 							+ " | SuperState -> " + name[0] 
+		 							+ " | Region -> " + name[1] 
+		 							+ " | Transition -> Source : " + source + " Destination : " + destination 
+		 							+ " Transition having condition or event cannot have wait type wait!");
+		 	
+		 	
+		 	// ensure that when wait type is "before" either getcondition is true or event is true
+		 	else if(ti.getWaitType().equals("before")){
+		 		if(ti.getCondition().isEmpty() && ti.getEventName().isEmpty()){
+		 			System.err.println("Statemachine -> " + statemachine_name 
+ 									+ " | SuperState -> " + name[0] 
+ 									+ " | Region -> " + name[1] 
+ 									+ " | Transition -> Source : " + source + " Destination : " + destination 
+		 							+ " Transition must either have a condition or an event!");
+		 		}
+		 	}
+			break;
+		}
+}
+
+
+private boolean incomingTransitionCounter(State state, String statemachine_name){
+	
+	boolean hasicoming = false;
+	
+	if(state instanceof InitialState){
+		 if(!((InitialState) state).getIncomingTransitions().isEmpty())
+			 System.err.println("Statemachine -> " + statemachine_name 
+        	 				+ " | State name -> " + ((InitialState) state).getName() 
+        	 				+ " Initial state does not have any incoming transitions! ");
+		 else
+			 hasicoming = true;
+	}
+	else if(state instanceof FinalState){
+		if(((FinalState) state).getIncomingTransitions().isEmpty())
+			System.err.println("Statemachine -> " 
+        	 				+ statemachine_name
+        	 				+ " | State name -> " + ((FinalState) state).getName()
+        	 				+ " | Final state does not have any incoming transitions!");
+		else
+			hasicoming = true;
+	}
+	else if(state instanceof NormalState){
+		if(((NormalState) state).getIncomingTransitions().isEmpty())
+			System.err.println("Statemachine -> " 
+	        	 			+ statemachine_name 
+	        	 			+ "| State name -> " 
+	        	 			+ ((NormalState) state).getName()
+	        	 			+ " | Doesn't have any incoming transitions!");
+		else 
+			hasicoming = true;
+	}
+	else if (state instanceof SuperState){
+		if (emptyOrNull(((SuperState) state).getIncomingTransitions().toString()))
+			System.err.println("Statemachine -> " + statemachine_name 
+							+ "| State name -> " + ((SuperState) state).getName()
+							+ " | Doesn't have any incoming transitions!");
+		else
+			hasicoming = true;
+	}
+	return hasicoming;
+}
+
+private boolean outgoingTransitionCounter(State state, String statemachine_name){
+	boolean hasoutgoing = false;
+	
+	if(state instanceof InitialState){
+		if(((InitialState) state).getOutgoingTransitions().isEmpty())
+			 System.err.println("Statemachine -> " + statemachine_name 
+	        					+ "| State name -> "+ ((InitialState) state).getName()
+	        					+ " does not have any outgoing transitions!");
+		
+		else if (((InitialState) state).getOutgoingTransitions().size() > 1) {
+				System.err.println("Statemachine " + " -> " + statemachine_name 
+								+ " | State " + " -> " + ((InitialState) state).getName()
+								+ " : Initial state has more than one outgoing transitions!");
+		hasoutgoing = true;
+		}
+		else
+			hasoutgoing = true;
+	}
+	else if(state instanceof FinalState){
+		if(!((FinalState) state).getOutgoingTransitions().isEmpty()) 
+			System.err.println("Statemachine -> " + statemachine_name 
+					+ " | State -> " + ((FinalState) state).getName()
+					+ " : Validation failed.");
+		else
+			hasoutgoing = true;
+	}
+	else if (state instanceof NormalState){
+		if (((NormalState) state).getOutgoingTransitions().isEmpty())
+			System.err.println("Statemachine -> " 
+							+ statemachine_name 
+							+ "| State name -> " 
+							+ ((NormalState) state).getName()
+							+ " | Doesn't have any outgoing transitions!");
+		
+		else
+			hasoutgoing = true;
+	}
+	else if(state instanceof SuperState){
+		if (emptyOrNull(((SuperState) state).getOutgoingTransitions().toString()))
+			System.err.println("Statemachine -> " + statemachine_name 
+							+ "| State name -> " + ((SuperState) state).getName()
+							+ " | Doesn't have any outgoing transitions!");
+	}
+	return hasoutgoing;
+}
 
 	private void assignNames(MCUConfiguration config) {
 		int runningCounter = 0;
