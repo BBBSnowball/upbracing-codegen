@@ -54,7 +54,7 @@ class NormalState extends StateWithActions, NamedItem {
 }
 
 @gmf.node(label="name", label.icon="false", figure="rectangle", color="255,240,245", border.color="0,0,0")
-class SuperState extends StateWithActions, NamedItem {
+class SuperState extends StateWithActions, NamedItem, StateParent {
   attr String name;
 
   @gmf.compartment(collapsible="true")
@@ -67,6 +67,8 @@ class Region extends StateParent, NamedItem {
   
   @gmf.compartment(collapsible="true")
   !ordered val State[*] states;
+  
+  ref StateParent[1]#regions parent;
 }
 
 @gmf.link(label="transitionInfo", source="source", target="destination", target.decoration="arrow", color="0,0,0")

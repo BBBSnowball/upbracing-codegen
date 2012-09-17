@@ -1,18 +1,27 @@
 package de.upbracing.code_generation.fsm.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
 
+import Statecharts.FinalState;
 import Statecharts.GlobalCode;
+import Statecharts.InitialState;
+import Statecharts.NamedItem;
 import Statecharts.State;
 import Statecharts.StateMachine;
+import Statecharts.StateParent;
 import Statecharts.StateWithActions;
 import Statecharts.Transition;
 
@@ -50,12 +59,17 @@ public class StateMachineForGeneration {
 	private Map<State, List<Action>> actions;
 	private Map<Transition, TransitionInfo> transition_infos;
 	private boolean hasHeaderCodeBoxes, hasCFileCodeBoxes;
+	private StateVariables state_variables = new StateVariables();
 
 	public StateMachineForGeneration(String name, StateMachine inner) {
 		this.name = name;
 		this.inner = inner;
 		
 		update();
+	}
+
+	public StateParent getStateMachine() {
+		return inner;
 	}
 
 	public EList<Transition> getTransitions() {
@@ -149,6 +163,10 @@ public class StateMachineForGeneration {
 	public void setLockMethod(StatemachineLockMethod lock_method) {
 		this.lock_method = lock_method;
 	}
+
+	public StateVariables getStateVariables() {
+		return state_variables;
+	}
 	
 
 	public void update() {
@@ -156,6 +174,8 @@ public class StateMachineForGeneration {
 		initTransitionInfos();
 		initEvents();
 		initCodeBoxBools();
+		
+		updateParents();
 	}
 
 	//NOTE Must be called after initTransitionInfos()
@@ -217,5 +237,165 @@ public class StateMachineForGeneration {
 			if (hasHeaderCodeBoxes && hasCFileCodeBoxes)
 				break;
 		}
+	}
+	
+	/** set parent for all objects that don't update it automatically */
+	public void updateParents() {
+		updateParents(getStates(), inner);
+	}
+
+	private void updateParents(EList<State> states, StateParent parent) {
+		for (State state : states) {
+			state.setParent(parent);
+			
+			if (state instanceof StateParent) {
+				StateParent parent2 = (StateParent) state;
+				updateParents(parent2.getStates(), parent2);
+			}
+		}
+	}
+
+
+	private final Comparator<State> cmpStates =
+			new Comparator<State>() {
+				@Override
+				public int compare(State a,
+						State b) {
+					if (a == b)
+						return 0;
+					
+					int typeCmp = type(a) - type(b);
+					if (typeCmp != 0)
+						return typeCmp;
+					
+					String nameA = getName(a);
+					String nameB = getName(b);
+
+					int cmp = nameA.compareToIgnoreCase(nameB);
+					if (cmp != 0)
+						return cmp;
+					
+					cmp = -nameA.compareTo(nameB);
+					if (cmp != 0)
+						return cmp;
+					
+					// We don't want any to loose any states, if the
+					// set things they are equal, so we try very hard
+					// to return a non-zero result.
+					return a.hashCode() - b.hashCode();
+				}
+
+				private int type(State a) {
+					if (a instanceof InitialState)
+						// initial states come first
+						return -10;
+					else if (a instanceof FinalState)
+						// final states come last
+						return 10;
+					else
+						return 0;
+				}
+			};
+	
+	private final Comparator<Transition> cmpTransitions =
+			new Comparator<Transition>() {
+				@Override
+				public int compare(Transition t1, Transition t2) {
+					int cmp = t1.getPriority() - t2.getPriority();
+					if (cmp != 0)
+						return cmp;
+					
+					cmp = cmpStates.compare(t1.getDestination(), t2.getDestination());
+					if (cmp != 0)
+						return cmp;
+					
+					cmp = t1.getTransitionInfo().compareTo(t2.getTransitionInfo());
+					return cmp;
+				}
+			};
+	
+	public Collection<State> sortStates(Collection<State> states) {
+		SortedSet<State> sorted = new TreeSet<State>(cmpStates);
+		sorted.addAll(states);
+		return sorted;
+	}
+
+	public Collection<State> sortStatesForEnum(Collection<State> states) {
+		Collection<State> sorted = sortStates(states);
+
+		State firstState = findFirstState(states);
+		if (firstState == null)
+			return sorted;
+		
+		// first state should be the first one
+		sorted.remove(firstState);
+		List<State> result = new ArrayList<State>(states.size());
+		result.add(firstState);
+		result.addAll(sorted);
+		
+		return result;
+	}
+
+
+	public String getName(Object state) {
+		if (state instanceof NamedItem)
+			return ((NamedItem) state).getName();
+		else if (state instanceof StateMachine)
+			return "#diagram";
+		else if (state instanceof Transition) {
+			Transition t = (Transition) state;
+			return "transition(" + getName(t.getSource()) + " -> "
+					+ getName(t.getDestination()) + ")";
+		} else if (state == null)
+			return "(null)";
+		else
+			throw new RuntimeException("should not get here, unexpected object is " + state);
+	}
+
+	public State findFirstState(Collection<State> states) {
+		List<Transition> transitions = getTransitions();
+		State finalStateIsAlsoFirst = null;
+
+		for (State state : states) {
+			if (state instanceof InitialState) {
+				for (Transition t : transitions) {
+					if (t.getSource() == state
+							&& t.getDestination() instanceof StateWithActions)
+						return t.getDestination();
+					else if (t.getSource() == state
+							&& t.getDestination() instanceof FinalState)
+						finalStateIsAlsoFirst = t.getDestination();
+				}
+			}
+		}
+
+		return finalStateIsAlsoFirst;
+	}
+
+	public State findFinalState(List<State> states) {
+		for (State state : states) {
+			if (state instanceof FinalState)
+				return state;
+		}
+
+		return null;
+	}
+
+	public List<StateWithActions> filterStatesWithActions(
+			Collection<State> states) {
+		List<StateWithActions> states_with_actions = new ArrayList<StateWithActions>();
+		for (State state : states) {
+			if (state instanceof StateWithActions)
+				states_with_actions.add((StateWithActions)state);
+		}
+		return states_with_actions;
+	}
+
+	public String stateName(State state) {
+		return getName() + "_" + getName(state) + "_state";
+	}
+
+	public SortedSet<Transition> sortedTransitionSet() {
+		return new TreeSet<Transition>(cmpTransitions);
 	}
 }

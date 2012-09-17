@@ -84,7 +84,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				switch (smg.getLockMethod()) {
 				case NO_LOCK:
 					stringBuffer.append("\n// " + smg.getName() + ": no locking\n"
-							+ "// Use locks, if you call any method of this statemachine; or make \n"
+							+ "// Use locks, if you call any method of this statemachine; or make\n"
 							+ "// sure they are only called from one thread (no interrupts!).\n"
 							+ "#define " + enter + "() /* empty */\n"
 							+ "#define " + exit + "() /* empty */\n");
@@ -126,43 +126,10 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			for (StateMachineForGeneration smg : statemachines) {
 				this.smg = smg;
 				String sm_name = smg.getName();
-
-				final Comparator<State> cmpStates =
-						new Comparator<State>() {
-							@Override
-							public int compare(State a,
-									State b) {
-								String nameA = getName(a);
-								String nameB = getName(b);
-		
-								int cmp = nameA.compareToIgnoreCase(nameB);
-								if (cmp != 0)
-									return cmp;
-								else
-									return -nameA.compareTo(nameB);
-							}
-						};
-				cmpTransitions =
-						new Comparator<Transition>() {
-							@Override
-							public int compare(Transition t1, Transition t2) {
-								int cmp = t1.getPriority() - t2.getPriority();
-								if (cmp != 0)
-									return cmp;
-								
-								cmp = cmpStates.compare(t1.getDestination(), t2.getDestination());
-								if (cmp != 0)
-									return cmp;
-								
-								cmp = t1.getTransitionInfo().compareTo(t2.getTransitionInfo());
-								return cmp;
-							}
-						};
-				SortedSet<StateWithActions> states = new TreeSet<StateWithActions>(cmpStates);
-				for (State state : smg.getStates()) {
-					if (state instanceof StateWithActions)
-						states.add((StateWithActions) state);
-				}
+				
+				Collection<State> sorted_states = smg.sortStates(smg.getStates());
+				Collection<StateWithActions> states_with_actions
+					= smg.filterStatesWithActions(sorted_states);
 
 				stringBuffer.append('\n');
 				stringBuffer.append('\n');
@@ -174,16 +141,10 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 
 				stringBuffer.append("typedef enum {\n");
-				State firstState = findFirstState(smg.getStates());
-				State finalState = findFinalState(smg.getStates());
-				if (firstState != null)
-					stringBuffer.append("\t" + stateName(firstState) + ",\n");
-				for (State state : states) {
-					if (state != firstState && state != finalState)
+				for (State state : smg.sortStatesForEnum(sorted_states)) {
+					if (!(state instanceof InitialState))
 						stringBuffer.append("\t" + stateName(state) + ",\n");
 				}
-				if (finalState != null)
-					stringBuffer.append("\t" + stateName(finalState) + ",\n");
 				stringBuffer.append("} " + sm_name + "_state_t;\n");
 
 				stringBuffer.append('\n');
@@ -200,9 +161,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 				banner("action functions");
 				stringBuffer.append('\n');
+				
+				State firstState = findFirstState(smg.getStates());
 
 				this.existing_action_methods = new HashSet<String>();
-				for (StateWithActions state : states) {
+				for (StateWithActions state : states_with_actions) {
 					String name = getName(state);
 
 					for (ActionType actionType : ActionType.values()) {
@@ -263,11 +226,10 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				// null means no event -> tick function
 				// We have to use "" instead of null for the map of events, because
 				// Java/JRuby chokes on a null value.
-				generateEventFunction(null, states, smg.getEvents().get(""));
+				generateEventFunction(null, states_with_actions, smg.getEvents().get(""));
 
 				stringBuffer.append('\n');
 				banner("event functions");
-				stringBuffer.append('\n');
 				
 				for (Entry<String, Set<Transition>> entry : smg.getEvents().entrySet()) {
 					String event = entry.getKey();
@@ -276,9 +238,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 					if (event == null || event.equals(""))
 						// skip transitions which are handled by the tick function
 						continue;
-					
-					generateEventFunction(event, states, transitions);
+
 					stringBuffer.append('\n');
+					generateEventFunction(event, states_with_actions, transitions);
 				}
 			}
 		} // for each statemachine
@@ -286,7 +248,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		this.stringBuffer = null;
 		this.smg = null;
 		this.existing_action_methods = null;
-		this.cmpTransitions = null;
 
 		return stringBuffer.toString();
 	} // end of method generate(...)
@@ -294,7 +255,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	private StringBuffer stringBuffer;
 	private StateMachineForGeneration smg;
 	private Set<String> existing_action_methods;
-	private Comparator<Transition> cmpTransitions;
 
 	@SuppressWarnings("unused")
 	private void times(int n, String s) {
@@ -371,19 +331,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 	}
 
-	public static String getName(Object state) {
-		if (state instanceof NamedItem)
-			return ((NamedItem) state).getName();
-		else if (state instanceof StateMachine)
-			return "#diagram";
-		else if (state instanceof Transition) {
-			Transition t = (Transition) state;
-			return "transition(" + getName(t.getSource()) + " -> "
-					+ getName(t.getDestination()) + ")";
-		} else if (state == null)
-			return "(null)";
-		else
-			throw new RuntimeException("should not get here, unexpected object is " + state);
+	public String getName(Object state) {
+		return smg.getName(state);
 	}
 
 	private List<Action> filterActionsByType(List<Action> actions,
@@ -401,7 +350,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	private String stateName(State state) {
-		return smg.getName() + "_" + getName(state) + "_state";
+		return smg.stateName(state);
 	}
 
 	public static String timeVariableForState(StateMachineForGeneration smg,
@@ -541,39 +490,19 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	private State findFirstState(List<State> states) {
-		List<Transition> transitions = smg.getTransitions();
-		State finalStateIsAlsoFirst = null;
-
-		for (State state : states) {
-			if (state instanceof InitialState) {
-				for (Transition t : transitions) {
-					if (t.getSource() == state
-							&& t.getDestination() instanceof StateWithActions)
-						return t.getDestination();
-					else if (t.getSource() == state
-							&& t.getDestination() instanceof FinalState)
-						finalStateIsAlsoFirst = t.getDestination();
-				}
-			}
-		}
-
-		return finalStateIsAlsoFirst;
+		return smg.findFirstState(states);
 	}
 
+	@SuppressWarnings("unused")
 	private State findFinalState(List<State> states) {
-		for (State state : states) {
-			if (state instanceof FinalState)
-				return state;
-		}
-
-		return null;
+		return smg.findFinalState(states);
 	}
 
 	private String formatTime(double time) {
 		return FSMParsers.formatTime(time);
 	}
 
-	private void generateEventFunction(String event, SortedSet<StateWithActions> states, Iterable<Transition> transitions) {
+	private void generateEventFunction(String event, Collection<StateWithActions> states_with_actions, Iterable<Transition> transitions) {
 		String sm_name = smg.getName();
 		if (transitions == null)
 			transitions = smg.getTransitions();
@@ -593,7 +522,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append("\tswitch (" + sm_name + ".state) {\n");
 		stringBuffer.append('\n');
 		
-		for (StateWithActions state : states) {
+		for (StateWithActions state : states_with_actions) {
 			stringBuffer.append("\tcase " + stateName(state) + ":\n");
 			
 			if (event == null) {
@@ -603,7 +532,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 					stringBuffer.append('\n');
 			}
 			
-			SortedSet<Transition> ts = new TreeSet<Transition>(cmpTransitions);
+			SortedSet<Transition> ts = smg.sortedTransitionSet();
 			for (Transition t : transitions) {
 				if (t.getSource() == state) {
 					boolean isForThisEvent;

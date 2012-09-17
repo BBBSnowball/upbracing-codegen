@@ -11,6 +11,7 @@ import Statecharts.InitialState;
 import Statecharts.NormalState;
 import Statecharts.Region;
 import Statecharts.State;
+import Statecharts.StateParent;
 import Statecharts.StateWithActions;
 import Statecharts.SuperState;
 import Statecharts.Transition;
@@ -20,6 +21,9 @@ import de.upbracing.code_generation.fsm.model.Action;
 import de.upbracing.code_generation.fsm.model.ActionType;
 import de.upbracing.code_generation.fsm.model.FSMParsers;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
+import de.upbracing.code_generation.fsm.model.StateVariable;
+import de.upbracing.code_generation.fsm.model.StateVariablePurposes;
+import de.upbracing.code_generation.fsm.model.StateVariables;
 import de.upbracing.code_generation.fsm.model.TransitionInfo;
 
 /**
@@ -38,6 +42,28 @@ public class StatemachineGenerator extends AbstractGenerator {
 	public boolean validate(MCUConfiguration config,
 			boolean after_update_config, Object generator_data) {
 		boolean valid = true;
+		
+		// make sure that we don't have any unexpected null values
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			if (!validateNotNull(smg.getGlobalCodeBoxes(), "global code boxes"))
+				return false;
+			
+			if (!validateNotNull(smg.getStates(), "states"))
+				return false;
+			
+			if (!validateNotNull(smg.getTransitions(), "transitions"))
+				return false;
+			
+			if (!validateStatesNotNull(smg.getStates()))
+				return false;
+			
+			for (Transition t : smg.getTransitions()) {
+				if (t.getSource() == null || t.getDestination() == null) {
+					System.err.println("FATAL: Each transition must have a valid source and destination. Invalid transition: " + t);
+					return false;
+				}
+			}
+		}
 
 		if (!after_update_config) {
 			for (StateMachineForGeneration smg : config.getStatemachines()) {
@@ -276,16 +302,75 @@ public class StatemachineGenerator extends AbstractGenerator {
 		return valid;
 	}
 
+	private boolean validateStatesNotNull(Iterable<State> states) {
+		for (State state : states) {
+			validateNotNull(state.getIncomingTransitions(), "incoming transitions of " + state);
+			validateNotNull(state.getOutgoingTransitions(), "outgoing transitions of " + state);
+			
+			if (state instanceof SuperState) {
+				for (Region region : ((SuperState)state).getRegions()) {
+					if (region.getParent() != state) {
+						System.err.println("FATAL: Corrupted hierarchy");
+						return false;
+					}
+					
+					if (!validateStatesNotNull(region.getStates()))
+						return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	private boolean validateNotNull(Iterable<?> xs, String list_name) {
+		for (Object x : xs) {
+			if (x == null) {
+				System.err.println("FATAL: At least one element in the list of " + list_name + " is null");
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
 	private boolean emptyOrNull(String obj) {
 		return obj == null || obj.isEmpty();
 	}
 
 	@Override
 	public Object updateConfig(MCUConfiguration config) {
+		updateParents(config);
 		assignNames(config);
+		addStateVariables(config);
 		convertWaitToActionsAndConditions(config);
 
 		return super.updateConfig(config);
+	}
+
+	private void updateParents(MCUConfiguration config) {
+		// Unfortunately, the parents of most elements are not set
+		// automatically. We correct this here. The information
+		// remains valid because the structure of the statemachine
+		// won't change anymore.
+
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			updateParents(smg.getStates(), smg.getStateMachine());
+		}
+	}
+
+	private void updateParents(Iterable<State> states, StateParent parent) {
+		for (State state : states) {
+			state.setParent(parent);
+
+			if (state instanceof SuperState) {
+				// regions have the right parent without our help
+				for (Region region : ((SuperState)state).getRegions()) {
+					// but the contained states need some help...
+					updateParents(region.getStates(), region);
+				}
+			}
+		}
 	}
 
 	private void assignNames(MCUConfiguration config) {
@@ -305,6 +390,39 @@ public class StatemachineGenerator extends AbstractGenerator {
 			// to set each transition to the right one.
 
 		}
+	}
+
+	private void addStateVariables(MCUConfiguration config) {
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			addStateVariables(smg, smg.getStateMachine());
+		}
+	}
+
+	private void addStateVariables(StateMachineForGeneration smg,
+			StateParent parent) {
+		addStateVariable(smg, parent);
+		
+		for (State state : parent.getStates())
+			if (state instanceof StateParent)
+				addStateVariables(smg, (StateParent)state);
+	}
+
+	private void addStateVariable(StateMachineForGeneration smg, StateParent parent) {
+		StringBuilder declaration = new StringBuilder();
+		declaration.append("enum {\n");
+		for (State state : smg.sortStates(parent.getStates())) {
+			if (state instanceof InitialState)
+				continue;
+			declaration.append("\t");
+			declaration.append(smg.stateName(state));
+			declaration.append(",\n");
+		}
+		declaration.append("}");
+		
+		StateVariable var = new StateVariable("state", StateVariable.TYPE_AUTONAME,
+				declaration.toString(),
+				parent);
+		smg.getStateVariables().add(var, StateVariablePurposes.STATE, parent);
 	}
 
 	/**
@@ -338,7 +456,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 					// TODO use Sven's Warnings class
 					System.err
 							.format("ERROR: Transition with wait condition starts at state '%s', which doesn't support actions\n",
-									StatemachinesCFileTemplate.getName(source_));
+									smg.getName(source_));
 				}
 			}
 

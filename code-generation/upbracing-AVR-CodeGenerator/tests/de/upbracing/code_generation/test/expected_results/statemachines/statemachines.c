@@ -14,8 +14,21 @@
 
 
 // code from global code boxes in statemachine counter
+
 #include <avr/io.h>
 #include <avr/wdt.h>
+
+//////////////////////////////////////////////////
+//               lock definitions               //
+//////////////////////////////////////////////////
+
+
+// counter: no locking
+// Use locks, if you call any method of this statemachine; or make
+// sure they are only called from one thread (no interrupts!).
+#define counter_enter_critical() /* empty */
+#define counter_exit_critical() /* empty */
+
 
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
@@ -35,11 +48,12 @@ typedef enum {
 	counter_running_state,
 } counter_state_t;
 
-struct {
+typedef struct {
 	counter_state_t state;
 	//TODO only include time variable, if we need it
 	uint8_t state_time;
-} counter;
+} counter_state_var_t;
+static counter_state_var_t counter;
 
 //////////////////////////////////////////////////
 //               action functions               //
@@ -81,10 +95,14 @@ static void counter_stopped_enter() {
 //////////////////////////////////////////////////
 
 void counter_init() {
+	counter_enter_critical();
+
 	counter.state = counter_stopped_state;
 	counter_stopped_always();
 	counter_stopped_enter();
 	PORTA = 0;
+
+	counter_exit_critical();
 }
 
 //////////////////////////////////////////////////
@@ -92,6 +110,8 @@ void counter_init() {
 //////////////////////////////////////////////////
 
 void counter_tick() {
+	counter_enter_critical();
+
 	switch (counter.state) {
 
 	case counter_running_state:
@@ -120,13 +140,17 @@ void counter_tick() {
 		break;
 
 	}
+
+	counter_exit_critical();
 }
 
 //////////////////////////////////////////////////
 //               event functions                //
 //////////////////////////////////////////////////
 
-void counter_reset() {
+void counter_event_reset() {
+	counter_enter_critical();
+
 	switch (counter.state) {
 
 	case counter_running_state:
@@ -143,9 +167,13 @@ void counter_reset() {
 		break;
 
 	}
+
+	counter_exit_critical();
 }
 
-void counter_startstop_pressed() {
+void counter_event_startstop_pressed() {
+	counter_enter_critical();
+
 	switch (counter.state) {
 
 	case counter_running_state:
@@ -170,5 +198,6 @@ void counter_startstop_pressed() {
 		break;
 
 	}
-}
 
+	counter_exit_critical();
+}
