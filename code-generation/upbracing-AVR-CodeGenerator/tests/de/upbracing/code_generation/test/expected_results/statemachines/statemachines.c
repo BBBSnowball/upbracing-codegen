@@ -121,7 +121,6 @@ void counter_tick() {
 		if (counter_state.states_running_wait_time >= 100) {  // wait(100 ms)
 			// running -> running
 			counter_running_exit();
-			counter_state.state = counter_running_state;
 			PORTA++;
 			counter_running_enter();
 		} else if (PORTA >= 128) {
@@ -159,7 +158,6 @@ void counter_event_reset() {
 	case counter_stopped_state:
 		if (1) {
 			// stopped -> stopped
-			counter_state.state = counter_stopped_state;
 			PORTA = 0;
 			counter_stopped_enter();
 		}

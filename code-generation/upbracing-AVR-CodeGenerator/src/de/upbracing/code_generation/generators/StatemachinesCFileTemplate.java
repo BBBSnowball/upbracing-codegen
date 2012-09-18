@@ -543,32 +543,71 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 	private void executeTransition(String indent, Transition trans) {
 		stringBuffer.append(indent + "// " + getName(trans.getSource()) + " -> " + getName(trans.getDestination()) + "\n");
+		
+		// If this transition goes across superstates, we may have to run actions for the parents as well. This
+		// can go up to the level below the common parent.
+		StateScope common_parent = StateVariable.findCommonParent(trans.getSource(), trans.getDestination());
+		List<StateWithActions> source_with_parents = getStatesBelow(trans.getSource(), common_parent);
+		List<StateWithActions> destination_with_parents = getStatesBelow(trans.getDestination(), common_parent);
+		// For the source, we start at the bottom (deepest state), but we must enter the destination top-down.
+		// Therefore, we change the order of that list.
+		Collections.reverse(destination_with_parents);
+		
+		// If source and destination is the same state, both lists will be
+		// empty. We don't want to execute actions more than once, so we
+		// add the state to exactly one of the lists.
+		// We add it to the source list because the destination list is also
+		// used for setting the state variables.
+		if (source_with_parents.isEmpty() && destination_with_parents.isEmpty()) {
+			State source = trans.getSource();
+			if (source instanceof StateWithActions) {
+				source_with_parents.add((StateWithActions)trans.getSource());
+			}
+		}
+		
 		for (ActionType type : ActionType.values()) {
 			if (type == ActionType.DURING) {
 				// this is a good place to execute transition actions
 				
 				// set state variable
-				genTrace(30, indent, "$name: state <- " + stateName(trans.getDestination()));
-				//TODO We have to do some more things, if source and destination don't have the same parent.
-				stringBuffer.append(indent + getStateVariableName(trans.getSource().getParent()) + " = "
-						+ stateName(trans.getDestination()) + ";\n");
+				if (!destination_with_parents.isEmpty())
+					genTrace(30, indent, "$name: state <- " + stateName(trans.getDestination()));
+				else
+					genTrace(40, indent, "$name: staying in state " + stateName(trans.getDestination()));
+				for (StateWithActions state : destination_with_parents) {
+					stringBuffer.append(indent + getStateVariableName(state.getParent()) + " = "
+							+ stateName(state) + ";\n");
+				}
 				
 				// execute transition action
 				printCode(indent, smg.getTransitionInfo(trans).getAction());
 			}
 			
-			State self = trans.getSource();
-			String actionMethodName = actionMethod(getName(self), type);
-			if (type.shouldExecuteFor(trans, self) && existing_action_methods.contains(actionMethodName))
-				printCode(indent, actionMethodName + "();\n");
+			for (State self : source_with_parents) {
+				String actionMethodName = actionMethod(getName(self), type);
+				if (type.shouldExecuteFor(self, trans.getDestination(), self) && existing_action_methods.contains(actionMethodName))
+					printCode(indent, actionMethodName + "();\n");
+			}
 
-			if (trans.getSource() != trans.getDestination()) {
-				self = trans.getDestination();
-				actionMethodName = actionMethod(getName(self), type);
-				if (type.shouldExecuteFor(trans, self) && existing_action_methods.contains(actionMethodName))
+			for (State self : destination_with_parents) {
+				String actionMethodName = actionMethod(getName(self), type);
+				if (type.shouldExecuteFor(trans.getSource(), self, self) && existing_action_methods.contains(actionMethodName))
 					printCode(indent, actionMethodName + "();\n");
 			}
 		}
+	}
+
+	private List<StateWithActions> getStatesBelow(State state,
+			StateScope common_parent) {
+		List<StateWithActions> parents = new LinkedList<StateWithActions>();
+		StateScope state2 = state;
+		while (state2 != null && state2 != common_parent) {
+			if (state instanceof StateWithActions)
+				parents.add((StateWithActions)state);
+			
+			state2 = state2.getParent();
+		}
+		return parents;
 	}
 
 	private boolean printCode(String indent, String code, boolean inline) {
