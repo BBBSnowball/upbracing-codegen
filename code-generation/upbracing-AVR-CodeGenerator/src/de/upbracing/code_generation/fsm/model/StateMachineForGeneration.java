@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,6 +105,15 @@ public class StateMachineForGeneration {
 
 	public List<Action> getActions(State state) {
 		return actions.get(state);
+	}
+
+	public List<Action> getOrCreateActions(StateWithActions state) {
+		List<Action> state_actions = this.actions.get(state);
+		if (state_actions == null) {
+			state_actions = new LinkedList<Action>();
+			this.actions.put(state,  state_actions);
+		}
+		return state_actions;
 	}
 
 	public TransitionInfo getTransitionInfo(Transition t) {

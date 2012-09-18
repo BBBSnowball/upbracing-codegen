@@ -17,6 +17,7 @@ public final class StateVariablePurposes {
 			this.name = name;
 		}
 
+		@SuppressWarnings("unused")
 		public String getName() {
 			return name;
 		}

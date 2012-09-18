@@ -24,6 +24,7 @@ import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.Action;
 import de.upbracing.code_generation.fsm.model.ActionType;
 import de.upbracing.code_generation.fsm.model.FSMParsers;
+import de.upbracing.code_generation.fsm.model.ParserException;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.StateVariable;
 import de.upbracing.code_generation.fsm.model.StateVariablePurposes;
@@ -65,6 +66,25 @@ public class StatemachineGenerator extends AbstractGenerator {
 					System.err.println("FATAL: Each transition must have a valid source and destination. Invalid transition: " + t);
 					return false;
 				}
+			}
+		}
+		
+		// make sure that we have the appropiate values on the root object
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			if (smg.getBasePeriodAsString() == null) {
+				System.err.println("ERROR: Statemachine needs a base rate");
+				
+				// set some rate because the program will crash, if it find a null in there
+				smg.setBasePeriod("1s");
+			}
+			
+			try {
+				smg.getBasePeriod();
+			} catch (ParserException e) {
+				System.err.println("Cannot parse time ('" + smg.getBasePeriodAsString()
+						+ "'): " + e.toString());
+				
+				smg.setBasePeriod("1s");
 			}
 		}
 
@@ -669,7 +689,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 							
 							if (!emptyOrNull(transitionInfo.getCondition())
 									|| !emptyOrNull(transitionInfo.getEventName())) {
-								if (transitionInfo.getWaitType().equals("wait"))
+								//TODO for Rishab: Exception in this code
+								/*if (transitionInfo.getWaitType().equals("wait"))
 									System.err
 											.println("Statemachine "
 													+ " -> "
@@ -680,7 +701,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 													+ t.getSource()
 													+ " Destination : "
 													+ t.getDestination()
-													+ " Transition having condition or event cannot have wait type wait!");
+													+ " Transition having condition or event cannot have wait type wait!");*/
 							} else if (transitionInfo.getWaitType().equals("before")) {
 								if (transitionInfo.getCondition()
 										.isEmpty()
@@ -1128,7 +1149,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 											if(!(t.getSource() instanceof InitialState)){
 									
 										
-										 	if(!transitioninfo.getCondition().isEmpty() || !transitioninfo.getEventName().isEmpty()){
+												//TODO for Rishab: Exception in this code
+										 	/*if(!transitioninfo.getCondition().isEmpty() || !transitioninfo.getEventName().isEmpty()){
 										 		if(transitioninfo.getWaitType().equals("wait"))
 										 			System.err
 										 				.println("Statemachine -> " 
@@ -1145,6 +1167,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 										 						+ " Transition having condition or event cannot have wait type wait!");
 										 	}
 										 	
+										 	//TODO for Rishab: Exception in this code
 										 	else if(transitioninfo.getWaitType().equals("before")){
 										 		if(transitioninfo.getCondition().isEmpty() && transitioninfo.getEventName().isEmpty()){
 										 			System.err
@@ -1161,7 +1184,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 										 						+ t.getDestination() 
 										 						+ " Transition must either have a condition or an event!");
 										 		}
-										 	}
+										 	}*/
 										}
 										}
 										}
@@ -1235,11 +1258,6 @@ public class StatemachineGenerator extends AbstractGenerator {
 			
 			if (state instanceof SuperState) {
 				for (Region region : ((SuperState)state).getRegions()) {
-					if (region.getParent() != state) {
-						System.err.println("FATAL: Corrupted hierarchy");
-						return false;
-					}
-					
 					if (!validateStatesNotNull(region.getStates()))
 						return false;
 				}
@@ -1290,9 +1308,10 @@ public class StatemachineGenerator extends AbstractGenerator {
 			state.setParent(parent);
 
 			if (state instanceof SuperState) {
-				// regions have the right parent without our help
-				for (Region region : ((SuperState)state).getRegions()) {
-					// but the contained states need some help...
+				SuperState superstate = (SuperState)state;
+				for (Region region : superstate.getRegions()) {
+					region.setParent(superstate);
+					
 					updateParents(region.getStates(), region);
 				}
 			}
@@ -1379,12 +1398,13 @@ public class StatemachineGenerator extends AbstractGenerator {
 									runningCounter++;
 									}
 									
-									else if((sub instanceof NormalState)
+									//TODO for Rishab: ClassCastException in this code
+									/*else if((sub instanceof NormalState)
 											&& emptyOrNull(((FinalState) sub).getName())){
 									
 									((NormalState) state).setName("normalState_" + runningCounter);
 									runningCounter++;
-									}
+									}*/
 								}
 							}
 						}
@@ -1456,7 +1476,6 @@ public class StatemachineGenerator extends AbstractGenerator {
 						smg.getStateVariables().add(timerVar, StateVariablePurposes.WAIT, source);
 					}
 
-					//String timerVar = timerVariableForState(smg, source);
 					addCondition(
 							tinfo,
 							waitConditionFor(timerVar.getRealName(), tinfo,
@@ -1470,10 +1489,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 
 			for (StateWithActions state : statesWithWait) {
-				List<Action> actions = smg.getActions(state);
+				List<Action> actions = smg.getOrCreateActions(state);
 
-				//TODO
-				//String timerVar = timerVariableForState(smg, state);
 				String timerVar = smg.getStateVariables()
 						.getVariable(state, StateVariablePurposes.WAIT)
 						.getRealName();
@@ -1514,8 +1531,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		if (Math.abs((ticks - ticksD) / ticksD) > 0.1)
 			// TODO use Sven's Warnings class
 			System.err
-					.format("WARN: Actual wait time is off by %0.2%% (%s instead of %s)\n",
-							error, FSMParsers.formatTime(ticks * basePeriod),
+					.format("WARN: Actual wait time is off by %1.2f%% (%s instead of %s)\n",
+							error*100, FSMParsers.formatTime(ticks * basePeriod),
 							FSMParsers.formatTime(waitTime));
 
 		String operator;

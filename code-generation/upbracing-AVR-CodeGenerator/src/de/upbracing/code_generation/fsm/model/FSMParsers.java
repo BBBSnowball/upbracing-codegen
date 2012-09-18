@@ -153,7 +153,7 @@ public final class FSMParsers {
 			// significant digits without the ones before the point (e+1)
 			int precision = significant_digits - (e+1);
 			
-			return String.format("%2." + precision + "f sec", time);
+			return String.format("%1." + precision + "f sec", time);
 		}
 		
 		// we have two possibilities: use the suffix that makes the number short or the one below
@@ -179,7 +179,7 @@ public final class FSMParsers {
 		for (int i=0;i<unit;i++)
 			time *= 1e3;
 		
-		String number = String.format("%s%2." + digitsAfterPoint + "f", sign, time);
+		String number = String.format("%s%1." + digitsAfterPoint + "f", sign, time);
 		
 		switch (unit) {
 		case 0:

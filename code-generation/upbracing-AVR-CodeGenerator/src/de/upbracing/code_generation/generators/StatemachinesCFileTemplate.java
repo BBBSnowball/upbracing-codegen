@@ -173,27 +173,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 
 		String sm_name = smg.getName();
-
-		/*stringBuffer.append("typedef enum {\n");
-		for (State state : smg.sortStatesForEnum(sorted_states)) {
-			if (!(state instanceof InitialState))
-				stringBuffer.append("\t" + stateName(state) + ",\n");
-		}
-		stringBuffer.append("} " + sm_name + "_state_t;\n");
-
-		stringBuffer.append('\n');
-		stringBuffer.append("typedef struct {\n"
-				+ "\tcounter_state_t state;\n"
-				+ "\t//TODO only include time variable, if we need it\n"
-				+ "\tuint8_t state_time;\n"
-				+ "} " + sm_name + "_state_var_t;\n");
-		if (!smg.isForTest())
-			stringBuffer.append("static ");
-		stringBuffer.append(sm_name + "_state_var_t " + sm_name + ";");
-		stringBuffer.append('\n');*/
 		
 		VariableContainer container = smg.getStateVariables().planStructure(sm_name + "_state");
-		generateCodeForNamedTypesInConatiner(container);
+		generateCodeForNamedTypesInContainer(container);
 
 		String statemachine_root_data_type = sm_name + "_state_var_t";
 		stringBuffer.append("\ntypedef ");
@@ -206,7 +188,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append(statemachine_root_data_type + " " + container.name + ";\n");
 	}
 
-	private void generateCodeForNamedTypesInConatiner(
+	private void generateCodeForNamedTypesInContainer(
 			VariableContainer container) {
 		
 		for (StateVariable var : container.variables) {
@@ -220,7 +202,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 		
 		for (VariableContainer child : container.children) {
-			generateCodeForNamedTypesInConatiner(child);
+			generateCodeForNamedTypesInContainer(child);
 		}
 	}
 
@@ -229,9 +211,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			stringBuffer.append("struct");
 		else
 			stringBuffer.append("union");
-		
-		if (container.name != null && !container.name.isEmpty())
-			stringBuffer.append(" " + container.name);
 		
 		stringBuffer.append(" {\n");
 		
@@ -247,7 +226,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			if (name == null)
 				name = var.getName();
 			stringBuffer.append(' ');
-			//TODO This is not the right name. We must use the one from the names map inside PlanStructures.
 			stringBuffer.append(name);
 			stringBuffer.append(";\n");
 		}

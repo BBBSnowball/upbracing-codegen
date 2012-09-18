@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Statecharts:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Statecharts="http://statechart" basePeriod="10ms">
+  <transitions source="//@states.2" destination="//@states.0"/>
+  <transitions source="//@states.1/@regions.1/@states.1" destination="//@states.1/@regions.1/@states.0" transitionInfo="open_tab"/>
+  <transitions source="//@states.1/@regions.1/@states.0" destination="//@states.1/@regions.1/@states.2" transitionInfo="open_search"/>
+  <transitions source="//@states.1/@regions.1/@states.0" destination="//@states.1/@regions.1/@states.1" transitionInfo="home"/>
+  <transitions source="//@states.1/@regions.1/@states.2" destination="//@states.1/@regions.1/@states.1" transitionInfo="home"/>
+  <transitions source="//@states.1/@regions.0/@states.0" destination="//@states.1/@regions.0/@states.1" transitionInfo=""/>
+  <transitions source="//@states.1/@regions.0/@states.1" destination="//@states.1/@regions.0/@states.2" transitionInfo="wait(10s)"/>
+  <transitions source="//@states.1/@regions.0/@states.2" destination="//@states.1/@regions.0/@states.3" transitionInfo="cosmic_ray"/>
+  <transitions source="//@states.1/@regions.2/@states.0" destination="//@states.1/@regions.2/@states.2"/>
+  <transitions source="//@states.1/@regions.2/@states.2" destination="//@states.1/@regions.2/@states.1" transitionInfo="[$:Kernel is running]"/>
+  <transitions source="//@states.1/@regions.2/@states.3/@regions.0/@states.0" destination="//@states.1/@regions.2/@states.3/@regions.0/@states.1" transitionInfo="switch_desktop"/>
+  <transitions source="//@states.1/@regions.2/@states.3/@regions.0/@states.1" destination="//@states.1/@regions.2/@states.3/@regions.0/@states.0" transitionInfo="swich_desktop"/>
+  <transitions source="//@states.1/@regions.1/@states.3" destination="//@states.1/@regions.1/@states.4"/>
+  <transitions source="//@states.1/@regions.1/@states.4" destination="//@states.1/@regions.1/@states.1" transitionInfo="start_browser&#xA;[$:Desktop is running]"/>
+  <transitions source="//@states.1/@regions.2/@states.1" destination="//@states.1/@regions.2/@states.3" transitionInfo="wait(1.5s)"/>
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo="turn_on"/>
+  <transitions source="//@states.1" destination="//@states.0" transitionInfo="turn_off"/>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.0 //@transitions.16" outgoingTransitions="//@transitions.15" name="off"/>
+  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.15" outgoingTransitions="//@transitions.16" name="on">
+    <regions name="Kernel">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.5"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.5" outgoingTransitions="//@transitions.6" name="booting"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.6" outgoingTransitions="//@transitions.7" name="running"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.7" name="oops"/>
+    </regions>
+    <regions name="Browser">
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.2 //@transitions.3" name="empty"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.3 //@transitions.4 //@transitions.13" outgoingTransitions="//@transitions.1" name="home"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.2" outgoingTransitions="//@transitions.4" name="google"/>
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.12"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.12" outgoingTransitions="//@transitions.13" name="not_running"/>
+    </regions>
+    <regions name="Desktop">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.8"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.9" outgoingTransitions="//@transitions.14" name="loading"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.8" outgoingTransitions="//@transitions.9" name="not_running"/>
+      <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.14" name="running">
+        <regions>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.11" outgoingTransitions="//@transitions.10" name="Desktop 1"/>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.10" outgoingTransitions="//@transitions.11" name="Desktop 2"/>
+        </regions>
+      </states>
+    </regions>
+  </states>
+  <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.0"/>
+</Statecharts:StateMachine>

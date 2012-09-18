@@ -6,13 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import Statecharts.NamedItem;
-import Statecharts.Region;
 import Statecharts.StateParent;
 import Statecharts.StateScope;
 import Statecharts.SuperState;
@@ -234,7 +231,7 @@ public class StateVariables {
 						parent.variables.add(var);
 					}
 					
-					System.out.println("removing container: " + container + ", " + container.name);
+					//System.out.println("removing container: " + container + ", " + container.name);
 					it.remove();
 					container.parent.children.remove(container);
 				}
