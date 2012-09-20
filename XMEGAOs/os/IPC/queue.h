@@ -5,14 +5,11 @@
  *  Author: Krishna
  */ 
 #include "OSEK.h"
-#include "semaphore.h"
+#include "semaphores/semaphore.h"
+#include "Platform_Types.h"
 
 #ifndef QUEUE_H_
 #define QUEUE_H_
-
-//NOTE(Benjamin): Doesn't belong in here!
-typedef uint8_t bool;
-
 
 //NOTE(Benjamin): What should this struct do? I don't think that we have to
 //                keep track of the processes owning a queue.
@@ -64,7 +61,7 @@ typedef struct
 //                need for each of the functions. Then you can add them as arguments, as
 //                I have done here for queue_enqueue.
 #define queue_enqueue (sem, data) _queue_enqueue(QUEUE_REF(sem), data, QUEUE_SEM_REF(sem))
-void _queue_enqueue(Queue* sem, uint8_t data, Semaphore* q_sem);
+void _queue_enqueue(Queue* sem, uint8_t data);
 #define queue_enqueue2(sem, bytes, data) _queue_enqueue2(QUEUE_REF(sem), bytes, data)
 void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 

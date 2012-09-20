@@ -45,7 +45,7 @@ uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 //************************************
 void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
-	volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
+	//volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
 	volatile uint16_t taskAddress = 0;
 	volatile StackPointerType *sp = tcb->topOfStack;
 	
@@ -131,7 +131,7 @@ void InitializeStackForTask(volatile Os_Tcb * tcb)
 	tcb->currentBaseOfStack = sp;
 }
 
-void StartFirstTask(void) __attribute__ ( (naked) );
+void StartFirstTask(void);
 void StartFirstTask(void)
 {
 	OS_RESTORE_CONTEXT();
@@ -139,31 +139,27 @@ void StartFirstTask(void)
 	
 	//QUESTION(Benjamin): Do we need this "ret" here? Won't the compiler
 	//                    generate one itself (although the function is naked)?
+	// TODO: FIND OUT WHY THIS IS NEEDED (because of the switch, maybe)
 	asm volatile("ret");
 }
 
-void Os_TimerIncrement(void) __attribute__ ( (naked) );
+void Os_TimerIncrement(void);
 void Os_TimerIncrement(void) 
 {
 	/* Increment os counter */
 	os_counter++;
 	
 	/* Run Os Alarms */
-	for (volatile uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
+	for (uint8_t i = 0; i < OS_NUMBER_OF_ALARMS; i++)
 	{
-		volatile Os_Alarm * base = os_alarms;
-		base += i;
+		Os_Alarm * base = &os_alarms[i];
 		base->tick++;
 		if (base->tick == base->ticksperbase)
 		{
-			base->tick = 0;
 			RunAlarm(base);
+			base->tick = 0;
 		}
 	}
-	
-	Os_Schedule();
-	
-	asm volatile ("ret");
 }
 
 // Interrupt routine for compare match of Timer1
@@ -172,19 +168,21 @@ void TIMER1_COMPA_vect(void)
 {
 	OS_SAVE_CONTEXT();
 	Os_TimerIncrement();	
+	Os_Schedule();
 	OS_RESTORE_CONTEXT();
 	
 	asm volatile("reti");
 }
 
-void Os_Schedule(void) __attribute__ ( (naked) );
+void Os_Schedule(void);
 void Os_Schedule(void)
 {	
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	OS_ENTER_CRITICAL();
-	volatile void * newtcb = NULL;
-	if (os_currentTcb->preempt == PREEMPTABLE) 
+	void * newtcb = &os_tcbs[0];
+	if (os_currentTcb->preempt == PREEMPTABLE
+		|| os_currentTcb->state == SUSPENDED) 
 	{
 		for (uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
 		{
@@ -197,35 +195,26 @@ void Os_Schedule(void)
 		}
 	}
 
-	if (newtcb == NULL)
-	{
-		// Switch to idle then...
-		os_currentTcb = &os_tcbs[0];
-	}
-	else 
-	{
-		os_currentTcb = newtcb;
-	}
+	os_currentTcb = newtcb;
 	
 	OS_EXIT_CRITICAL();
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
-		
-	asm volatile("ret");
 }
 
 StatusType Schedule(void)
 {
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	if (os_currentTcb->preempt == PREEMPTABLE) 
+	if (os_currentTcb->preempt == PREEMPTABLE
+		|| os_currentTcb->state == SUSPENDED) 
 	{
 		for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
 		{
 			if (os_ready_queue[i] == READY)
 			{
-				os_currentTcb = &(os_tcbs[i]);
+				os_currentTcb = &os_tcbs[i];
 				os_ready_queue[i] = RUNNING;
 				break;
 			}
@@ -235,24 +224,8 @@ StatusType Schedule(void)
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
 
-	if (os_currentTcb == NULL)
-	{
-		// Switch to idle then...
-		os_currentTcb = &os_tcbs[0];
-	}
-
 	// Should never get here...
 	return E_OK;	
-}
-
-void WaitTask() {
-	os_ready_queue[os_currentTcb->id] = WAITING;
-	os_currentTcb->state = WAITING;
-	Schedule();
-}
-
-void SignalTask(TaskType t) {
-	os_ready_queue[t] = READY;
 }
 
 TASK(Task_Idle)

@@ -129,8 +129,6 @@ void StartFirstTask(void);
 //************************************
 StatusType Schedule(void);
 
-void WaitTask(void);
-
-void SignalTask(TaskType t);
+void Os_Schedule(void);
 
 #endif /* OSEK_SCHEDULER_H_ */

@@ -9,7 +9,7 @@
 #include "OSEK_Alarm.h"
 #include "OSEK_Task.h"
 
-void RunAlarm(volatile Os_Alarm * alarm) __attribute__ ( (naked) );
+void RunAlarm(volatile Os_Alarm * alarm);
 //QUESTION(Benjamin): We can we use a naked function here? It is called from normal C
 //                    code. Therefore, it mustn't overwrite any register. How can we
 //                    guarantee that here?
@@ -27,7 +27,7 @@ void RunAlarm(volatile Os_Alarm * alarm)
 		//alarm->callback();
 	//}
 	
-	alarm->tick = 0;
+	//alarm->tick = 0;
 	
-	asm volatile ("ret");	
+	//asm volatile ("ret");	
 }

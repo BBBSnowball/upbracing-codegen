@@ -7,7 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "OSEK.h"
 
 volatile uint8_t j = 10;
@@ -57,7 +57,7 @@ int main(void)
 	
 	sei();
 	USARTInit(51);
-	j=0;
+	
 	// Init Os
 	StartOS();
 
@@ -91,10 +91,12 @@ TASK(Task_Shift)
 {
 	//Left shifts global counter for leds
 	//OS_ENTER_CRITICAL();
-	//j = j >> 1;
+	uint8_t temp = j << 1;
+	uint8_t lsb = (j >> 7) & 0x01;
+	j = temp | lsb;
 	//OS_EXIT_CRITICAL();
 	//PORTA = 0x01;
-	USARTWriteChar('a');
+	//USARTWriteChar('a');
 	//Terminate this task
 	TerminateTask();
 }

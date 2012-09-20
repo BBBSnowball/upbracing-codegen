@@ -7,12 +7,15 @@
 #include "semaphore.h"
 #include "queue.h"
 #include "OSEK.h"
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "OSEK_Kernel.h"
 
 
 //NOTE(Benjamin): Your function signatures are wrong. Please make sure that you copy them from the header file. Otherwise, the
 //                program will crash. You have to use a pointer because only then can you change the variable.
+
+
+const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
 
 void _sem_wait(Semaphore* sem){
 	//Definition check needed
@@ -48,11 +51,8 @@ void _sem_wait(Semaphore* sem){
 				sem->queue_end++;
 			}
 			sem->queue[sem->queue_end] = t; 
-			OS_EXIT_CRITICAL();	
-			// Wait
-			WaitTask();
-		}
-		
+		}	
+		OS_EXIT_CRITICAL();	
 		
 		
 		//To be suspended.
@@ -66,7 +66,7 @@ void _sem_signal(Semaphore* sem){
 	//{
 		////System failure
 	//}
-	if (sem->queue_front == sem->queue_cap)
+	if (sem->queue_front == sem->count)
 	{
 		sem->queue_front = 0;
 	}
@@ -80,13 +80,6 @@ void _sem_signal(Semaphore* sem){
 		//if (sem->queue[sem->queue_front] <= OS_NUMBER_OF_TCBS)
 		//	ActivateTask(sem->queue[sem->queue_front]);
 		//call event(semaphore_event, taskid);
-		
-		// Free the first task (make READY)
-		if (sem->queue[sem->queue_front] <= OS_NUMBER_OF_TCBS)
-		{
-			// Ready
-			SignalTask(sem->queue[sem->queue_front]);
-		}			
 	}
 	
 }
@@ -168,7 +161,7 @@ bool _sem_continue_wait(Semaphore* sem , sem_token_t token){
 
 void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 	//Definition pending
-	uint8_t i,j,k,tok;
+	uint8_t i,j,tok;
 	tok = token;
 	
 	if (sem->queue[sem->queue_front] == tok)
@@ -184,37 +177,26 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 		//activatetask(sem->queue[sem->queue_front])
 	}
 	
-	i = sem->queue_front;
-	while(i != sem->queue_end)
+	for (i=0; i<= sem->queue_end; i++)
 	{
-		if (sem->queue_end < 0)
-		{
-			sem->queue_end = sem->queue_cap;
-		}
-		
-		if (i == sem->queue_cap){i=0;}
-		
 		if (sem->queue[i]==tok)
 		{
-			j=i;
-			while (j != sem->queue_end)
+			for (j=i;j<=sem->queue_end;j++)
 			{
-				if (j==sem->queue_cap){j=0;}
-				k = j+1;
-				if (k==sem->queue_cap){k=0;}
-				sem->queue[j]=sem->queue[k];
-				
-				j++;
+				sem->queue[j]=sem->queue[j+1];
 			}
-			 
-			
-			sem->queue_end--;
-			
+			if (sem->queue_end==0)
+			{
+				sem->queue_end = sem->queue_cap;
+			} 
+			else
+			{
+				sem->queue_end--;
+			}
 			
 			//SEM_TOKEN.token_array[SEM_TOKEN.token_base_value-tok] = tok;
 			//SEM_TOKEN.token_count--;		//Not using global tokens
 		}
-		i++;
 	}
 	
 }
@@ -243,9 +225,8 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 		{
 			sem->queue_end++;
 		}
-		sem->queue[sem->queue_end].n = n;
 		sem->queue[sem->queue_end].pid = t;
-			//wait
+		sem->queue[sem->queue_end].n = n;
 	}
 	OS_EXIT_CRITICAL();
 }
@@ -280,7 +261,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 	//Definition pending
 	uint8_t i,tok;
 	tok = sem->token_count++;
-	if (sem->token_count == 0){ sem->token_count = 65280;	}
+	if (sem->token_count == 0){ sem->token_count = 255;	}
 	
 	OS_ENTER_CRITICAL();
 	sem->count--;
@@ -296,7 +277,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 		}
 		sem->queue[sem->queue_end].pid = tok;
 		sem->queue[sem->queue_end].n = n;
-		//no suspend
+		//suspend
 		
 	}
 	OS_EXIT_CRITICAL();
@@ -313,7 +294,6 @@ bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token){
 	if (sem->queue[sem->queue_front].pid == token)
 	{
 		return TRUE;
-		//remove token id from front
 	}
 	return FALSE;
 }

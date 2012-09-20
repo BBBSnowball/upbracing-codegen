@@ -4,11 +4,11 @@
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
  */ 
-#ifndef SEMAPHORE_H_
-#define SEMAPHORE_H_
-
 #include "OSEK.h"
 #include "Platform_Types.h"
+
+#ifndef SEMAPHORE_H_
+#define SEMAPHORE_H_
 
 //NOTE(Benjamin): In theory, we have to keep track of the tokens that we have given out.
 //                However, this takes up too much memory. A token doesn't have to be
@@ -85,7 +85,6 @@ void _sem_signal(Semaphore* sem);
 /* Asynchronous waiting */
 
 typedef uint8_t sem_token_t;
-#define SEM_TOKEN_SUCCESSFUL 0;
 
 /*	@brief	Start waiting on semaphore asynchronously
 
@@ -140,9 +139,11 @@ typedef struct {
 	uint8_t n;
 } Semaphore_n_queue_entry;
 
-typedef struct { 
+typedef struct Semaphore_n{ 
 	int8_t count;
-	uint16_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
+	//NOTE(Peer): No. "token_count" overruns at 255. Its "unsigned char", this is what "uint8_t" stands for ;)
+	//            Or did I get you wrong here?
+	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
 	int8_t queue_front;
 	int8_t queue_end;
 	uint8_t queue_cap;
