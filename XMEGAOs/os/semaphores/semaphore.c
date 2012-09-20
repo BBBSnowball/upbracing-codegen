@@ -48,11 +48,11 @@ void _sem_wait(Semaphore* sem){
 				sem->queue_end++;
 			}
 			sem->queue[sem->queue_end] = t; 
-			
+			OS_EXIT_CRITICAL();	
 			// Wait
 			WaitTask();
 		}
-		OS_EXIT_CRITICAL();	
+		
 		
 		
 		//To be suspended.
@@ -66,7 +66,7 @@ void _sem_signal(Semaphore* sem){
 	//{
 		////System failure
 	//}
-	if (sem->queue_front == sem->count)
+	if (sem->queue_front == sem->queue_cap)
 	{
 		sem->queue_front = 0;
 	}
@@ -168,7 +168,7 @@ bool _sem_continue_wait(Semaphore* sem , sem_token_t token){
 
 void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 	//Definition pending
-	uint8_t i,j,tok;
+	uint8_t i,j,k,tok;
 	tok = token;
 	
 	if (sem->queue[sem->queue_front] == tok)
@@ -184,26 +184,37 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 		//activatetask(sem->queue[sem->queue_front])
 	}
 	
-	for (i=0; i<= sem->queue_end; i++)
+	i = sem->queue_front;
+	while(i != sem->queue_end)
 	{
+		if (sem->queue_end < 0)
+		{
+			sem->queue_end = sem->queue_cap;
+		}
+		
+		if (i == sem->queue_cap){i=0;}
+		
 		if (sem->queue[i]==tok)
 		{
-			for (j=i;j<=sem->queue_end;j++)
+			j=i;
+			while (j != sem->queue_end)
 			{
-				sem->queue[j]=sem->queue[j+1];
+				if (j==sem->queue_cap){j=0;}
+				k = j+1;
+				if (k==sem->queue_cap){k=0;}
+				sem->queue[j]=sem->queue[k];
+				
+				j++;
 			}
-			if (sem->queue_end==0)
-			{
-				sem->queue_end = sem->queue_cap;
-			} 
-			else
-			{
-				sem->queue_end--;
-			}
+			 
+			
+			sem->queue_end--;
+			
 			
 			//SEM_TOKEN.token_array[SEM_TOKEN.token_base_value-tok] = tok;
 			//SEM_TOKEN.token_count--;		//Not using global tokens
 		}
+		i++;
 	}
 	
 }
