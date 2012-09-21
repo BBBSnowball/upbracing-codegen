@@ -19,14 +19,14 @@ public class Warnings {
 	 * It can be retrieved by calling summary()
 	 *  
 	 * @param warning The text of the warning to be printed
-	 * @return the warning text preceded by a newline and "#warning" 
+	 * @return the warning text preceded by newlines and "#warning" 
 	 */
 	public String print(String warning) {
 		System.out.println("Warning: " + warning);
 		
 		warnings.add(warning);
 		
-		return(NL + "#warning " + warning);
+		return(NL + NL + "#warning " + warning + NL);
 	}
 	
 	/**

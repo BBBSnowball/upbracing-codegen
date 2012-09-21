@@ -12,6 +12,14 @@ public class DBCSignalConfig extends DBCSignal {
 	private String immBeforeRx = null;
 	private String immAfterRx = null;
 	private String putValue = null;
+	
+	private String beforeTx = null;
+	private String afterTx = null;
+	private String immBeforeTx = null;
+	private String immAfterTx = null;
+	private String getValue = null;
+	private String param = null;
+	
 	private boolean noGlobalVar = false;
 	private String globalVarName = null;
 
@@ -86,6 +94,54 @@ public class DBCSignalConfig extends DBCSignal {
 
 	public void setPutValue(String putValue) {
 		this.putValue = putValue;
+	}
+
+	public String getBeforeTx() {
+		return beforeTx;
+	}
+
+	public void setBeforeTx(String beforeTx) {
+		this.beforeTx = beforeTx;
+	}
+
+	public String getAfterTx() {
+		return afterTx;
+	}
+
+	public void setAfterTx(String afterTx) {
+		this.afterTx = afterTx;
+	}
+
+	public String getImmBeforeTx() {
+		return immBeforeTx;
+	}
+
+	public void setImmBeforeTx(String immBeforeTx) {
+		this.immBeforeTx = immBeforeTx;
+	}
+
+	public String getImmAfterTx() {
+		return immAfterTx;
+	}
+
+	public void setImmAfterTx(String immAfterTx) {
+		this.immAfterTx = immAfterTx;
+	}
+
+	public String getGetValue() {
+		return getValue;
+	}
+
+	public void setGetValue(String getValue) {
+		this.getValue = getValue;
+	}
+
+	public String getParam() {
+		return param;
+	}
+
+	public void setParam(String param) {
+		this.param = param;
 	}
 
 	public boolean isNoGlobalVar() {
