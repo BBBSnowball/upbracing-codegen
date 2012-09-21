@@ -314,7 +314,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		StateVariable state_variable = smg.getStateVariables()
 				.getVariable(containing_state, StateVariablePurposes.STATE);
 		if (state_variable == null)
-			System.out.println(containing_state + "=> is null");
+			System.out.println(containing_state + " => is null");
 		return state_variable.getRealName();
 	}
 

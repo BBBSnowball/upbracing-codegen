@@ -216,7 +216,6 @@ public class StateVariables {
 
 		public AllOf(Map<StateVariable, String> variable_names) {
 			super(variable_names);
-			// TODO Auto-generated constructor stub
 		}
 	}
 
@@ -224,7 +223,6 @@ public class StateVariables {
 
 		public OneOf(Map<StateVariable, String> variable_names) {
 			super(variable_names);
-			// TODO Auto-generated constructor stub
 		}
 	}
 	
@@ -253,7 +251,7 @@ public class StateVariables {
 				if (scope instanceof NamedItem)
 					vars.name = ((NamedItem)scope).getName();
 				else
-					vars.name = "no_name";	//TODO could that be anything but the diagram?
+					vars.name = "no_name";
 				StateParent parent = scope.getParent();
 				if (parent != null) {
 					vars.parent = getChildrenContainerFor(parent);
@@ -313,6 +311,7 @@ public class StateVariables {
 			}
 		}
 		
+		@SuppressWarnings("unused")
 		private void debugPrint() {
 			VariableContainer root = variableCs.get(StateVariable.findCommonParent(variableCs.keySet()));
 			debugPrint("", root);
@@ -330,12 +329,9 @@ public class StateVariables {
 		}
 		
 		private void collapseEmptyContainers() {
-			debugPrint();
 			boolean something_changed;
 			do {
-				System.out.println("variableCs:");
 				something_changed = collapseEmptyContainers(variableCs);
-				System.out.println("stateCs:");
 				something_changed |= collapseEmptyContainers(stateCs);
 			} while (something_changed);
 		}
@@ -354,12 +350,10 @@ public class StateVariables {
 				
 				if (container.getClass() == parent.getClass() || (container.variables.size() + container.children.size() <= 1)) {
 					something_changed = true;
-					System.out.println("removing container " + container.name + " in " + parent.name + "(" + container + " in " + parent + ")");
-
+					
 					String container_name = container.name;
 					
 					for (VariableContainer container2 : container.children) {
-						System.out.println("  " + container2.name);
 						if (container.important_for_hierarchy) {
 							if (container2.important_for_hierarchy || container.children.size() > 1) {
 								container2.name = container_name + "__" + container2.name;
@@ -372,25 +366,18 @@ public class StateVariables {
 						if (parent.children.contains(container2))
 							System.out.println("ERROR: PARENT ALREADY CONTAINS THIS CONTAINER!");
 						parent.children.add(container2);
-						debugPrint();
 					}
 					
 					for (StateVariable var : container.variables) {
-						System.out.println("  V:" + var.getName());
 						if (container.important_for_hierarchy)
 							addPrefix(var, container_name + "__");
 						parent.variables.add(var);
 					}
 					
-					debugPrint();
-					
-					//System.out.println("removing container: " + container + ", " + container.name);
 					it.remove();
 					container.parent.children.remove(container);
 					
 					container.name = "--removed--(" + container_name + ")--";
-					
-					debugPrint();
 				}
 			}
 			
