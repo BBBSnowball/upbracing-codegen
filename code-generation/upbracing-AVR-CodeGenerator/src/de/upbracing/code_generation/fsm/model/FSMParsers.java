@@ -152,6 +152,8 @@ public final class FSMParsers {
 		if (time > 5 || e > 0) {
 			// significant digits without the ones before the point (e+1)
 			int precision = significant_digits - (e+1);
+			if (precision < 0)
+				precision = 0;
 			
 			return String.format("%1." + precision + "f sec", time);
 		}
