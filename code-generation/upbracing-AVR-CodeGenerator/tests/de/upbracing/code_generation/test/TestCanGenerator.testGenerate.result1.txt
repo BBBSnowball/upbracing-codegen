@@ -12,23 +12,23 @@
 
 // CAN Message IDs:
 typedef enum uint32_t {
-	CAN_Bootloader_SelectNode        = 0x0,   	// receive                        
-	CAN_Bootloader_1                 = 0x1,   	// receive                        
-	CAN_RS232_FORWARD_DATA           = 0x1,   	// receive, alias for Bootloader_1
-	CAN_ClutchGetPos                 = 0x5ff, 	// receive                        
-	CAN_Kupplung_Soll                = 0x10,  	// receive                        
-	CAN_Gear                         = 0x71,  	// receive                        
-	CAN_Sensoren                     = 0x80,  	// receive                        
-	CAN_Sensoren_2                   = 0x81,  	// receive                        
-	CAN_OpenSquirt_Engine            = 0x88,  	// receive                        
-	CAN_Kupplung_Calibration         = 0x101, 	// receive                        
-	CAN_OpenSquirt_Sensoren1         = 0x108, 	// receive                        
-	CAN_Geschwindigkeit              = 0x110, 	// receive                        
-	CAN_Lenkrad_main2display         = 0x4201,	// receive                        
-	CAN_Launch                       = 0x60,  	// send                           
-	CAN_Radio                        = 0x90,  	// send                           
-	CAN_Kupplung_Calibration_Control = 0x250, 	// send                           
-	CAN_CockpitBrightness            = 0x4242,	// send                           
+	CAN_Bootloader_SelectNode        = 0x0,    // receive
+	CAN_Bootloader_1                 = 0x1,    // receive
+	CAN_RS232_FORWARD_DATA           = 0x1,    // receive, alias for Bootloader_1
+	CAN_ClutchGetPos                 = 0x5ff,  // receive
+	CAN_Kupplung_Soll                = 0x10,   // receive
+	CAN_Gear                         = 0x71,   // receive
+	CAN_Sensoren                     = 0x80,   // receive
+	CAN_Sensoren_2                   = 0x81,   // receive
+	CAN_OpenSquirt_Engine            = 0x88,   // receive
+	CAN_Kupplung_Calibration         = 0x101,  // receive
+	CAN_OpenSquirt_Sensoren1         = 0x108,  // receive
+	CAN_Geschwindigkeit              = 0x110,  // receive
+	CAN_Lenkrad_main2display         = 0x4201, // receive
+	CAN_Launch                       = 0x60,   // send
+	CAN_Radio                        = 0x90,   // send
+	CAN_Kupplung_Calibration_Control = 0x250,  // send
+	CAN_CockpitBrightness            = 0x4242, // send
 } CAN_msgID;
 
 // do the messages use extended CAN ids or not (0 = standard, 1 = extended)
@@ -53,51 +53,51 @@ typedef enum {
 } CAN_isExtended;
 
 /*
-tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness
-rx_msgs: OpenSquirt_Sensoren1 OpenSquirt_Engine Gear Lenkrad_main2display ClutchGetPos Bootloader_SelectNode Kupplung_Calibration Sensoren_2 Geschwindigkeit Sensoren Kupplung_Soll Bootloader_1
-rx_signals: Boardspannung Temp_Ansaug Temp_Wasser ThrottlePosition Lambda Druck_Ansaug Drehzahl Gang Lenkrad_main2display Clutch_IstPosition Bootloader_SelectNode Kupplung_RAW Druck_Kraftstoff Geschwindigkeit Druck_Oel Temp_Oel Kupplung_Soll
+tx_msgs: Launch Radio Kupplung_Calibration_Control CockpitBrightness
+rx_msgs: Bootloader_SelectNode Bootloader_1 ClutchGetPos Kupplung_Soll Gear Sensoren Sensoren_2 OpenSquirt_Engine Kupplung_Calibration OpenSquirt_Sensoren1 Geschwindigkeit Lenkrad_main2display
+rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel Druck_Oel Druck_Kraftstoff Drehzahl Druck_Ansaug Lambda ThrottlePosition Kupplung_RAW Temp_Wasser Temp_Ansaug Boardspannung Geschwindigkeit Lenkrad_main2display
 */
 
 #ifndef DONT_SET_VALUE_TABLES
+#ifndef SKIP_VT_BootloaderNode
+typedef enum _BootloaderNode {
+	LenkradMain = 66,
+	LenkradDisplay = 67,
+	LenkradCANtoRS232 = 68,
+	Sensorboard = 71,
+} BootloaderNode;
+#endif	// not defined SKIP_VT_BootloaderNode
 #ifndef SKIP_VT_boolean
 typedef bool boolean;
 #endif	// not defined SKIP_VT_boolean
 #ifndef SKIP_VT_main2display
 typedef enum _main2display {
-	BOOTLOADER_ACTIVE = 3,
-	START_FLIPPER = 2,
-	START_TETRIS = 1,
 	MAIN_ACK = 0,
+	START_TETRIS = 1,
+	START_FLIPPER = 2,
+	BOOTLOADER_ACTIVE = 3,
 } main2display;
 #endif	// not defined SKIP_VT_main2display
-#ifndef SKIP_VT_BootloaderNode
-typedef enum _BootloaderNode {
-	LenkradCANtoRS232 = 68,
-	LenkradDisplay = 67,
-	LenkradMain = 66,
-	Sensorboard = 71,
-} BootloaderNode;
-#endif	// not defined SKIP_VT_BootloaderNode
 #endif	// not defined DONT_SET_VALUE_TABLES
 #endif	// not defined DEFS_MAIN_FILE
 
 #ifndef DEFS_MAIN_FILE
 
 typedef enum {
-	MOB_Bootloader_SelectNode = 1,  	// CAN ID: 0x0, receive                        
-	MOB_Bootloader_1          = 2,  	// CAN ID: 0x1, receive                        
-	MOB_RS232_FORWARD_DATA    = 2,  	// CAN ID: 0x1, receive, alias for Bootloader_1
-	MOB_ClutchGetPos          = 3,  	// CAN ID: 0x5ff, receive                      
-	MOB_Kupplung              = 4,  	// CAN ID: 0x10x, receive                      
-	MOB_Gear                  = 5,  	// CAN ID: 0x71x, receive                      
-	MOB_Sensoren              = 6,  	// CAN ID: 0x80x, receive                      
-	MOB_Sensoren_2            = 7,  	// CAN ID: 0x81x, receive                      
-	MOB_OpenSquirt_Engine     = 8,  	// CAN ID: 0x88x, receive                      
-	MOB_OpenSquirt_Sensoren1  = 9,  	// CAN ID: 0x108x, receive                     
-	MOB_Geschwindigkeit       = 10, 	// CAN ID: 0x110x, receive                     
-	MOB_Lenkrad_main2display  = 11, 	// CAN ID: 0x4201x, receive                    
-	MOB_Launch                = 12, 	// CAN ID: 0x60x, send                         
-	MOB_Radio                 = 13, 	// CAN ID: 0x90x, send                         
+	MOB_Bootloader_SelectNode = 1,   // CAN ID: 0x0, receive
+	MOB_Bootloader_1          = 2,   // CAN ID: 0x1, receive
+	MOB_RS232_FORWARD_DATA    = 2,   // CAN ID: 0x1, receive, alias for Bootloader_1
+	MOB_ClutchGetPos          = 3,   // CAN ID: 0x5ff, receive
+	MOB_Kupplung              = 4,   // CAN ID: 0x10x, receive
+	MOB_Gear                  = 5,   // CAN ID: 0x71x, receive
+	MOB_Sensoren              = 6,   // CAN ID: 0x80x, receive
+	MOB_Sensoren_2            = 7,   // CAN ID: 0x81x, receive
+	MOB_OpenSquirt_Engine     = 8,   // CAN ID: 0x88x, receive
+	MOB_OpenSquirt_Sensoren1  = 9,   // CAN ID: 0x108x, receive
+	MOB_Geschwindigkeit       = 10,  // CAN ID: 0x110x, receive
+	MOB_Lenkrad_main2display  = 11,  // CAN ID: 0x4201x, receive
+	MOB_Launch                = 12,  // CAN ID: 0x60x, send
+	MOB_Radio                 = 13,  // CAN ID: 0x90x, send
 
 	MOB_GENERAL_MESSAGE_TRANSMITTER = 14
 } MessageObjectID;
@@ -121,25 +121,25 @@ ISR(SIG_CAN_INTERRUPT1) {
 	uint8_t saved_canpage = CANPAGE;
 
 	if (0) {	// dummy clause to make code generation easier
-	} else if (can_caused_interrupt(MOB_Bootloader_SelectNode)) {		// CAN ID: 0x0 
+	} else if (can_caused_interrupt(MOB_Bootloader_SelectNode)) {		// CAN ID: 0x0
 		CANPAGE = (MOB_Bootloader_SelectNode<<4);
 		handle_bootloader_selectnode();
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Bootloader_SelectNode<<4);
-	} else if (can_caused_interrupt(MOB_Bootloader_1)) {		// CAN ID: 0x1, alias: RS232_FORWARD_DATA 
+	} else if (can_caused_interrupt(MOB_Bootloader_1)) {		// CAN ID: 0x1, alias: RS232_FORWARD_DATA
 		CANPAGE = (MOB_Bootloader_1<<4);
 		handle_rs232_forward_data();
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Bootloader_1<<4);
-	} else if (can_caused_interrupt(MOB_ClutchGetPos)) {		// CAN ID: 0x5ff 
+	} else if (can_caused_interrupt(MOB_ClutchGetPos)) {		// CAN ID: 0x5ff
 		CANPAGE = (MOB_ClutchGetPos<<4);
 		handle_clutch_actuator();
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_ClutchGetPos<<4);
-	} else if (can_caused_interrupt(MOB_Kupplung)) {		// shared mob 
+	} else if (can_caused_interrupt(MOB_Kupplung)) {		// shared mob
 		CANPAGE = (MOB_Kupplung<<4);
 		if (0) {	// dummy clause to make code generation easier
 		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// Kupplung_Soll, CAN ID: 0x10x
@@ -175,19 +175,18 @@ ISR(SIG_CAN_INTERRUPT1) {
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Kupplung<<4);
-	} else if (can_caused_interrupt(MOB_Gear)) {		// CAN ID: 0x71x 
+	} else if (can_caused_interrupt(MOB_Gear)) {		// CAN ID: 0x71x
 		CANPAGE = (MOB_Gear<<4);
 
 		// reading signal Gang
 		{
 			uint8_t value = CANMSG;
-			display_values[DI_Geschwindigkeit].value8 = value;
-			display_values[DI_Geschwindigkeit].changed = 1;
+			setGang(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Gear<<4);
-	} else if (can_caused_interrupt(MOB_Sensoren)) {		// CAN ID: 0x80x 
+	} else if (can_caused_interrupt(MOB_Sensoren)) {		// CAN ID: 0x80x
 		CANPAGE = (MOB_Sensoren<<4);
 
 		// skipping 2 byte(s)
@@ -197,11 +196,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 		// reading signal Temp_Oel
 		{
 			uint8_t value = CANMSG;
-			if (!demo_mode) {
-				display_values[DI_Temp_Oel].value8 = value;
-				display_values[DI_Temp_Oel].changed = 1;
-			}
-			SET(LED_OELTEMP, (value > 115));
+			setTemp_Oel(value);
 		}
 
 		// skipping 1 byte(s)
@@ -219,16 +214,12 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte0 = CANMSG;
 			x.bytes.byte1 = CANMSG;
 			uint16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Druck_Oel].value16 = value;
-				display_values[DI_Druck_Oel].changed = 1;
-			}
-			SET(LED_OELDRUCK, (value < 250));
+			setDruck_Oel(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Sensoren<<4);
-	} else if (can_caused_interrupt(MOB_Sensoren_2)) {		// CAN ID: 0x81x 
+	} else if (can_caused_interrupt(MOB_Sensoren_2)) {		// CAN ID: 0x81x
 		CANPAGE = (MOB_Sensoren_2<<4);
 
 		// reading signal Druck_Kraftstoff
@@ -243,15 +234,12 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte0 = CANMSG;
 			x.bytes.byte1 = CANMSG;
 			uint16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Druck_Kraftstoff].value16 = value;
-				display_values[DI_Druck_Kraftstoff].changed = 1;
-			}
+			setDruck_Kraftstoff(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Sensoren_2<<4);
-	} else if (can_caused_interrupt(MOB_OpenSquirt_Engine)) {		// CAN ID: 0x88x 
+	} else if (can_caused_interrupt(MOB_OpenSquirt_Engine)) {		// CAN ID: 0x88x
 		CANPAGE = (MOB_OpenSquirt_Engine<<4);
 
 		// reading signal Drehzahl
@@ -266,12 +254,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
 			uint16_t value = x.value;
-			static uint8_t rpm_update_counter = 254;
-			if (rpm_update_counter >= 10) {
-				rpm_update_counter = 0;
-				sevenseg_set(value, 1);
-			} else
-				rpm_update_counter++;
+			setDrehzahl(value);
 		}
 
 		// reading signal Druck_Ansaug
@@ -289,10 +272,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Druck_Ansaug].value16 = value;
-				display_values[DI_Druck_Ansaug].changed = 1;
-			}
+			setDruck_Ansaug(value);
 		}
 
 		// reading signal Lambda
@@ -310,10 +290,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Lambda].value16 = value * 100 / 147;
-				display_values[DI_Lambda].changed = 1;
-			}
+			setLambda(value);
 		}
 
 		// reading signal ThrottlePosition
@@ -331,12 +308,12 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			ThrottlePosition = value;
+			setThrottlePosition(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_OpenSquirt_Engine<<4);
-	} else if (can_caused_interrupt(MOB_OpenSquirt_Sensoren1)) {		// CAN ID: 0x108x 
+	} else if (can_caused_interrupt(MOB_OpenSquirt_Sensoren1)) {		// CAN ID: 0x108x
 		CANPAGE = (MOB_OpenSquirt_Sensoren1<<4);
 
 		// reading signal Temp_Wasser
@@ -354,11 +331,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Temp_Wasser].value16 = (value-320) * 5 / 9;
-				display_values[DI_Temp_Wasser].changed = 1;
-			}
-			SET(LED_WASSERTEMP, (value > 105));
+			setTemp_Wasser(value);
 		}
 
 		// reading signal Temp_Ansaug
@@ -376,10 +349,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Temp_Ansaug].value16 = (value-320) * 5 / 9;
-				display_values[DI_Temp_Ansaug].changed = 1;
-			}
+			setTemp_Ansaug(value);
 		}
 
 		// reading signal Boardspannung
@@ -397,26 +367,23 @@ ISR(SIG_CAN_INTERRUPT1) {
 #warning This signal uses factor or offset, which is not supported yet.
 
 			int16_t value = x.value;
-			if (!demo_mode) {
-				display_values[DI_Boardspannung].value16 = value;
-				display_values[DI_Boardspannung].changed = 1;
-			}
+			setBoardspannung(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_OpenSquirt_Sensoren1<<4);
-	} else if (can_caused_interrupt(MOB_Geschwindigkeit)) {		// CAN ID: 0x110x 
+	} else if (can_caused_interrupt(MOB_Geschwindigkeit)) {		// CAN ID: 0x110x
 		CANPAGE = (MOB_Geschwindigkeit<<4);
 
 		// reading signal Geschwindigkeit
 		{
 			uint8_t value = CANMSG;
-			Geschwindigkeit = value;
+			setGeschwindigkeit(value);
 		}
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
 		CANPAGE = (MOB_Geschwindigkeit<<4);
-	} else if (can_caused_interrupt(MOB_Lenkrad_main2display)) {		// CAN ID: 0x4201x 
+	} else if (can_caused_interrupt(MOB_Lenkrad_main2display)) {		// CAN ID: 0x4201x
 		CANPAGE = (MOB_Lenkrad_main2display<<4);
 		handle_main2display();
 		// only necessary, if we change CANPAGE in our message handler
@@ -634,7 +601,7 @@ inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, u
 
 #endif	// NO_DBC_CAN_DEFS not defined
 
-#warning There were some warnings
+#warning There were 6 warnings
 /*
   warning: This signal uses factor or offset, which is not supported yet.
   warning: This signal uses factor or offset, which is not supported yet.

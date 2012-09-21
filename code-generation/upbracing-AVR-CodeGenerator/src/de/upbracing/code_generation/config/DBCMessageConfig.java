@@ -13,14 +13,19 @@ import de.upbracing.dbc.DBCSignal;
 
 public class DBCMessageConfig extends DBCMessage {
 
-	private String alias;
 	private String rxMob;
 	private String txMob;
 	private String rxHandler = null;
 	private String beforeRx = null;
 	private String afterRx = null;
+	private String txHandler = null;
+	private String txHandlerAll = null;
+	private String beforeTx = null;
+	private String afterTx = null;
+	private List<String> aliases = new LinkedList<String>();
 	private boolean usingGeneralTransmitter = false;
 	private boolean noSendMessage = false;
+	private boolean mobDisabled = false;
 	private boolean rtr = false; //Not sure what this does? (needed for can_id_for_mob function)
 	
 	public DBCMessageConfig(DBCMessage message, List<DBCEcu> newtxecus) {
@@ -63,14 +68,6 @@ public class DBCMessageConfig extends DBCMessage {
 		setSignalOrder(newSignalOrder);
 	}
 
-	public String getAlias() {
-		return alias;
-	}
-
-	public void setAlias(String alias) {
-		this.alias = alias;
-	}
-
 	public boolean isUsingGeneralTransmitter() {
 		return usingGeneralTransmitter;
 	}
@@ -85,6 +82,14 @@ public class DBCMessageConfig extends DBCMessage {
 
 	public void setNoSendMessage(boolean noSendMessage) {
 		this.noSendMessage = noSendMessage;
+	}
+
+	public boolean isMobDisabled() {
+		return mobDisabled;
+	}
+
+	public void setMobDisabled(boolean mobDisabled) {
+		this.mobDisabled = mobDisabled;
 	}
 
 	public String getRxMob() {
@@ -127,6 +132,46 @@ public class DBCMessageConfig extends DBCMessage {
 		this.afterRx = afterRx;
 	}
 	
+	public String getTxHandler() {
+		return txHandler;
+	}
+
+	public void setTxHandler(String txHandler) {
+		this.txHandler = txHandler;
+	}
+
+	public String getTxHandlerAll() {
+		return txHandlerAll;
+	}
+
+	public void setTxHandlerAll(String txHandlerAll) {
+		this.txHandlerAll = txHandlerAll;
+	}
+
+	public String getBeforeTx() {
+		return beforeTx;
+	}
+
+	public void setBeforeTx(String beforeTx) {
+		this.beforeTx = beforeTx;
+	}
+
+	public String getAfterTx() {
+		return afterTx;
+	}
+
+	public void setAfterTx(String afterTx) {
+		this.afterTx = afterTx;
+	}
+
+	public List<String> getAliases() {
+		return aliases;
+	}
+	
+	public void addAlias(String alias) {
+		aliases.add(alias);
+	}
+
 	public boolean isRtr() {
 		return rtr;
 	}

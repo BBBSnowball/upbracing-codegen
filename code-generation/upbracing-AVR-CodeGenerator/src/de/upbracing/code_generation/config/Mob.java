@@ -6,8 +6,10 @@ import java.util.List;
 public class Mob {
 
 	private String name;
-	private List<DBCMessageConfig> rxMessages;
-	private List<DBCMessageConfig> txMessages;
+	private List<String> aliases = new LinkedList<String>();
+	private int mobId;
+	private List<DBCMessageConfig> rxMessages = new LinkedList<DBCMessageConfig>();
+	private List<DBCMessageConfig> txMessages = new LinkedList<DBCMessageConfig>();
 
 	private int[] id = null;
 	private int[] mask = null;
@@ -15,24 +17,36 @@ public class Mob {
 	private boolean extended = false;
 	private boolean disabled = false;
 	
-	public Mob(DBCMessageConfig firstMessage, boolean tx) {
-		rxMessages = new LinkedList<DBCMessageConfig>();
-		txMessages = new LinkedList<DBCMessageConfig>();
-
+	public Mob(DBCMessageConfig firstMessage, int mobId, String name, boolean tx) {
 		if (tx)
 			txMessages.add(firstMessage);
 		else
 			rxMessages.add(firstMessage);
 
+		this.mobId = mobId;
+		this.name = name;
 	}
 	
 	public String getName() {
 		return name;
 	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
 	
+	public void addAlias(String alias) {
+		aliases.add(alias);
+	}
+	
+	public List<String> getAliases() {
+		return aliases;
+	}
+	
+	public int getMobId() {
+		return mobId;
+	}
+
 	public List<DBCMessageConfig> getRxMessages() {
 		return rxMessages;
 	}

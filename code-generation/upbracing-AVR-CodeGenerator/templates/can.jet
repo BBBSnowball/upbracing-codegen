@@ -47,7 +47,6 @@ if (run_generator) {
 
 
 if (run_generator) { %>
-
 #define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
 
 #ifndef NO_DBC_CAN_DEFS
@@ -71,11 +70,11 @@ t.start();
 for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;	 
 %>
-	CAN_<%=msgconfig.getName()%>&&&= <%=messageId(msgconfig, false)%>,&&&	// receive
+	CAN_<%=msgconfig.getName()%>&&&= <%=messageId(msgconfig, false)%>,&&&// receive
 <% 
-	if (msgconfig.getAlias() != null) {
+	for (String alias : msgconfig.getAliases()) {
 %>
-	CAN_<%=msgconfig.getAlias()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// receive, alias for <%=msgconfig.getName()%>
+	CAN_<%= alias %>&&&= <%=messageId(msgconfig, false)%>,&&&// receive, alias for <%=msgconfig.getName()%>
 <% 
 	}
 }
@@ -83,11 +82,11 @@ for (DBCMessage msg : dbcEcu.getRxMsgs()) {
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
-	CAN_<%=msgconfig.getName()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// send
+	CAN_<%=msgconfig.getName()%>&&&= <%=messageId(msgconfig, false)%>,&&&// send
 <%
-	if (msgconfig.getAlias() != null) {
+	for (String alias : msgconfig.getAliases()) {
 %>
-	CAN_<%=msgconfig.getAlias()%>&&&= 0x<%=messageId(msgconfig, false)%>,&&&	// send, alias for <%=msgconfig.getName()%>
+	CAN_<%= alias %>&&&= <%=messageId(msgconfig, false)%>,&&&// send, alias for <%=msgconfig.getName()%>
 <% 
 	}
 } 
@@ -102,14 +101,26 @@ typedef enum {
 <%
 t.start();
 for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
-	CAN_<%=msg.getName()%>_IsExtended&&&= <%=msg.isExtended()?1:0%>,
-<% 
+	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<%
+for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<%	
+	}
 }
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
-	CAN_<%=msg.getName()%>_IsExtended&&&= <%=msg.isExtended()?1:0%>,
+	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
 <% 
+	for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<% 	
+	}
 }  
 t.finish(" ");
 %>
@@ -144,7 +155,7 @@ for (java.util.Map.Entry<String, DBCValueTable> e : config.getCan().getValueTabl
 <%	
 	if (name.equals("boolean")) {
 %>
-typedef bool boolean
+typedef bool boolean;
 <%
 	} else {
 %>
@@ -164,7 +175,6 @@ typedef enum _<%=name%> {
 <%
 }
 %>
-
 #endif	// not defined DONT_SET_VALUE_TABLES
 #endif	// not defined DEFS_MAIN_FILE
 
@@ -173,78 +183,42 @@ typedef enum _<%=name%> {
 typedef enum {
 <%
 
-Map<String, Mob> mobs = new HashMap<String, Mob>();
-
-int mobNumber = 1;
 t.start();
-// RX Messages
-for (DBCMessage msg : dbcEcu.getRxMsgs()) {
-	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
-	if (msgconfig.getRxMob() != null)	{
-		if (!mobs.containsKey(msgconfig.getRxMob())) {
+
+for (Mob mob : dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() > 0) { //RX Mob
+		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
 %>
-	MOB_<%=msgconfig.getRxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=messageId(msgconfig, true)%>, receive
+<%
+		for(String alias : mob.getAliases()) {
+%>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=messageId(msgconfig, true)%>, receive, alias for <%= msgconfig.getName() %>
 <%
 		}
-		if (mobs.containsKey(msgconfig.getRxMob())) mobs.get(msgconfig.getRxMob()).getRxMessages().add(msgconfig);
-		else mobs.put(msgconfig.getRxMob(), new Mob(msgconfig, false));
-	} else {	
+	} else if (mob.getTxMessages().size() > 0) { //TX Mob
+		DBCMessageConfig msgconfig = mob.getTxMessages().get(0);
 %>
-	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=messageId(msgconfig, true)%>, send
 <%
-		if (msgconfig.getAlias() != null)
-		{
+		for(String alias : mob.getAliases()) {
 %>
-	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, receive, alias for <%=msgconfig.getName()%>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=messageId(msgconfig, true)%>, send, alias for <%= msgconfig.getName() %>
 <%
 		}
-		if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getRxMessages().add(msgconfig);
-		else mobs.put(msgconfig.getName(), new Mob(msgconfig, false));	
 	}
-	mobNumber++;
 }
 
-//TX Messages
-for (DBCMessage msg : dbcEcu.getTxMsgs()) {
-	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
-	if (!msgconfig.isUsingGeneralTransmitter()) {
-		if (msgconfig.getTxMob() != null)	{
-			if (!mobs.containsKey(msgconfig.getTxMob())) {
-%>
-	MOB_<%=msgconfig.getTxMob()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send
-<%
-			}
-			if (mobs.containsKey(msgconfig.getTxMob())) mobs.get(msgconfig.getTxMob()).getTxMessages().add(msgconfig);
-			else mobs.put(msgconfig.getTxMob(), new Mob(msgconfig, true));
-		} else {	
-%>
-	MOB_<%=msgconfig.getName()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send
-<%
-			if (msgconfig.getAlias() != null)
-			{
-%>
-	MOB_<%=msgconfig.getAlias()%>&&&= <%=mobNumber%>, &&&	// CAN ID: <%=messageId(msgconfig, true)%>, send, alias for <%=msgconfig.getName()%>
-<%
-			}
-			if (mobs.containsKey(msgconfig.getName())) mobs.get(msgconfig.getName()).getTxMessages().add(msgconfig);
-			else mobs.put(msgconfig.getName(), new Mob(msgconfig, true));	
-		}
-		mobNumber++;
-	}
-}
 
 t.finish(" ");
 %>
 
-	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=mobNumber%>
+	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size() + 1%>
 } MessageObjectID;
 
 #endif	// not defined DEFS_MAIN_FILE
 
 #include "can_at90.h"
-
-
-<% // TODO include the global variable accessors (and initialisors of the glob vars...)%>
 
 <%
 GlobalVariableConfig globVars = config.getGlobalVariables();
@@ -254,11 +228,6 @@ GlobalVariableConfig globVars = config.getGlobalVariables();
 
 
 %>
-
-
-
-
-
 #ifndef DEFS_MAIN_FILE
 // we use interrupts - polling isn't necessary
 inline static void can_poll(void) { }
@@ -275,46 +244,45 @@ ISR(SIG_CAN_INTERRUPT1) {
 
 	if (0) {	// dummy clause to make code generation easier
 <%
-for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
+for (Mob mob : dbcEcu.getMobs()) {
+
+	if( mob.getRxMessages().size() == 0 ) continue;
 	
-	if( entry.getValue().getRxMessages().size() == 0 ) continue;
-	
-	//DBCMessageConfig msgconfig;
 	String mobdesc;
-	if (entry.getValue().getRxMessages().size() == 1) {
-		DBCMessageConfig msgconfig = entry.getValue().getRxMessages().get(0);
+	if (mob.getRxMessages().size() == 1) {
+		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
 		mobdesc = "CAN ID: " + messageId(msgconfig, true);
-		if (msgconfig.getAlias() != null) mobdesc += ", alias: " + msgconfig.getAlias();
+		if (msgconfig.getAliases().size() > 0) mobdesc += ", alias: " + implode(msgconfig.getAliases());
 	} else {
 		mobdesc = "shared mob";
 	}
 	
 	
 %>
-	} else if (can_caused_interrupt(MOB_<%=entry.getKey()%>)) {  	// <%= mobdesc %>
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);
+	} else if (can_caused_interrupt(MOB_<%= mob.getName() %>)) {		// <%= mobdesc %>
+		CANPAGE = (MOB_<%= mob.getName() %><<4);
 <%
-	if (entry.getValue().getRxMessages().size() == 1) {
+	if (mob.getRxMessages().size() == 1) {
 		//Only one Message in MOB
-			readMessageCode(stringBuffer, warnings, globVars, entry.getValue().getRxMessages().get(0), dbcEcu, "\t\t");
+			readMessageCode(stringBuffer, warnings, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
 		} else {
 		//Multiple Message in MOB
 
 %>
 		if (0) {	// dummy clause to make code generation easier
 <%
-		for (DBCMessageConfig msgconfig : entry.getValue().getRxMessages()) {
+		for (DBCMessageConfig msgconfig : mob.getRxMessages()) {
 		
 			String ifstatement = "(1";
 			
-			if ((entry.getValue().getMask()[3] & 1) != 1) {
+			if ((mob.getMask()[3] & 1) != 1) {
 				// mcu doen't check this bit
 				if (msgconfig.isExtended())
 					ifstatement += " && (CANCDMOB & (1<<IDE))";
 				else
 					ifstatement += " && !(CANCDMOB & (1<<IDE))";
 			}
-			int[] significant_diffs = entry.getValue().getSignificantDiffs();
+			int[] significant_diffs = mob.getSignificantDiffs();
 			int[] id = msgconfig.canIdForMob();
 			for (int i=0; i<4; i++) {
 				if (significant_diffs[i] != 0)
@@ -324,7 +292,7 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 			ifstatement += ")";
 		
 %>
-		} else if <%= ifstatement %> {	// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
+		} else if <%= ifstatement %> {		// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
 <%
 			readMessageCode(stringBuffer, warnings, globVars, msgconfig, dbcEcu, "\t\t\t");			
 		}
@@ -335,7 +303,7 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 %>
 		// only necessary, if we change CANPAGE in our message handler
 		// But if we forget to do that, the interrupt handler will be called forever.
-		CANPAGE = (MOB_<%=entry.getKey()%><<4);
+		CANPAGE = (MOB_<%= mob.getName() %><<4);
 <%
 }
 %>
@@ -355,6 +323,7 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 }
 #endif
 
+#ifdef DEFS_MAIN_FILE
 <%
 
 
@@ -364,80 +333,83 @@ for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 
 
 
-for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
-	if (entry.getValue().getRxMessages().size() == 0 && entry.getValue().getTxMessages().size() > 1) {
+//for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
+for(Mob mob: dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
 %>
-// not initialising shared MOB <%= entry.getKey() %> for messages <%= implodeMessages(entry.getValue().getTxMessages()) %>
+// not initialising shared MOB <%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
 <%
 		continue;
 	}
 
 %>
-inline static void can_init_<%= entry.getKey() %>(void) {<%
-	if (entry.getValue().getRxMessages().size() > 1) {
+inline static void can_init_MOB_<%= mob.getName() %>(void) {<%
+	if (mob.getRxMessages().size() > 1) {
 %>
 	// select MOB
-	CANPAGE = (<%= entry.getKey() %><<4);
+	CANPAGE = (MOB_<%= mob.getName() %><<4);
 
 	// set id and mask
 <%
 	
 		for (int i=0; i<4; i++) {
 %>
-	CANIDT<%= i+1 %> = <%= Integer.toHexString(entry.getValue().getID()[i]) %>;
+	CANIDT<%= i+1 %> = <%= String.format("0x%02x", mob.getID()[i]) %>;
 <%
 		}
 	
 		for (int i=0; i<4; i++) {
 %>
-	CANIDM<%= i+1 %> = 0x<%= Integer.toHexString(entry.getValue().getMask()[i]) %>;
+	CANIDM<%= i+1 %> = <%=String.format("0x%02x", mob.getMask()[i]) %>;
 <%
 		}
 %>
 
 	//configure message as receive-msg (see CANCDMOB register, page257)
-	CANCDMOB = (1<<CONMOB1) | (<%= entry.getValue().isExtended()?"1":"0" %><<IDE);
-	
+	CANCDMOB = (1<<CONMOB1) | (<%= mob.isExtended()?"1":"0" %><<IDE);
+
 	// enable interrupts for this MOb
-	can_mob_enable(<%= entry.getKey() %>);
-	can_mob_enable_interrupt(<%= entry.getKey() %>);
+	can_mob_enable(MOB_<%= mob.getName() %>);
+	can_mob_enable_interrupt(MOB_<%= mob.getName() %>);
 }
 <%
-	} else if (entry.getValue().getRxMessages().size() == 1) {
-		String name = entry.getValue().getRxMessages().get(0).getName();
-		String extended =  entry.getValue().getRxMessages().get(0).isExtended() ? "true" : "false";
-%>	can_mob_init_receive2(<%= entry.getKey() %>, CAN_<%= name %>, <%= extended %>); }
+	} else if (mob.getRxMessages().size() == 1) {
+		String name = mob.getRxMessages().get(0).getName();
+		String extended =  mob.getRxMessages().get(0).isExtended() ? "true" : "false";
+%> can_mob_init_receive2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
 <%
-	} else if (entry.getValue().getTxMessages().size() == 1) {
-		String name = entry.getValue().getTxMessages().get(0).getName();
-		String extended =  entry.getValue().getTxMessages().get(0).isExtended() ? "true" : "false";
-%>	can_mob_init_transmit2(<%= entry.getKey() %>, CAN_<%= name %>, <%= extended %>); }
+	} else if (mob.getTxMessages().size() == 1) {
+		String name = mob.getTxMessages().get(0).getName();
+		String extended =  mob.getTxMessages().get(0).isExtended() ? "true" : "false";
+%> can_mob_init_transmit2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
 <%
 	}
 }
 	
 %>
+
 inline static void can_init_mobs(void) {
 <%
-for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
-	if (entry.getValue().getRxMessages().size() == 0 && entry.getValue().getTxMessages().size() > 1) {
+//for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
+for(Mob mob : dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
 %>
-	// not initialising shared MOB <%= entry.getKey() %> for messages <%= implodeMessages(entry.getValue().getTxMessages()) %>
+	// not initialising shared MOB MOB_<%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
 <%
-	} else if(entry.getValue().isDisabled()) {
+	} else if(mob.isDisabled()) {
 %>
-	// not initialising disabled MOB <%= entry.getKey() %> for messages <%= implodeMessages(entry.getValue().getTxMessages()) %>
+	// not initialising disabled MOB MOB_<%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
 <%
 	} else {
 %>
-	can_init_<%= entry.getKey() %>;
+	can_init_MOB_<%= mob.getName() %>();
 <%
 	}
 }
 
 %>
 }
-
+#endif
 
 #ifndef DEFS_MAIN_FILE
 <%
@@ -446,13 +418,86 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 
 	if (msgconfig.isNoSendMessage()) continue;
 
-	String mobName = msgconfig.getName();
-	if (msgconfig.getTxMob() != null) mobName = msgconfig.getTxMob();
-	if (msgconfig.isUsingGeneralTransmitter()) mobName = "GENERAL_MESSAGE_TRANSMITTER";
+	String hr_id = messageId(msgconfig, true);
+	if (msgconfig.getAliases().size() == 1)
+		hr_id += ", alias: " + msgconfig.getAliases().get(0);
+	else if (msgconfig.getAliases().size() > 1)
+		hr_id += ", aliases: " + implode(msgconfig.getAliases());
 
+	Mob mob = null;
+	String mobName = msgconfig.getTxMob();
+	if (msgconfig.isUsingGeneralTransmitter()) {
+		mobName = "GENERAL_MESSAGE_TRANSMITTER";
+	} else {
+		mob = dbcEcu.getMobByName(msgconfig.getTxMob());
+	}
+
+	boolean first = true;
+	String params = "";
+	String param_values = "";
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+		
+		if (signalconfig.getGetValue() != null)
+			continue;
+		
+		if (!first) {
+			params += ", ";
+			param_values += ", ";
+		} else first = false;
+		
+		String name;
+		if (signalconfig.getParam() != null)
+			name = signalconfig.getParam();
+		else
+			name = signalconfig.getName();
+		
+		params += signalconfig.getCType() + " " + name;
+		param_values += name;
+	}
+	
+	
 %>
-// <%=messageId(msgconfig, true)%>
-inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig.getName()%>) {
+// <%= hr_id %>
+<%
+	if (mob != null && mob.getTxMessages().size() > 1) {
+%>
+//NOTE This message is sent via a shared MOB, so the method may
+//     block before sending the message, even if wait==false. This
+//     can happen for all MOBs (shared and not shared), but it is
+//     much more likely for shared MOBs. Therefore make sure that no
+//     other message using the same MOB is still waiting for transmission,
+//     unless blocking is harmless.
+<%
+	}
+	if (mob != null && mob.getRxMessages().size() > 0 ) {
+%>
+//NOTE You are using this MOB to transmit and receive messages. Obviously
+//     you cannot do both at the same time. This message will initialise
+//     the MOB for transmitting the message, so you might have to init it
+//     for receiving, after the message has been transmitted.
+<%
+	/*echo "//TODO What does the \"wait for an ongoing transmission to finish\" loop\n";
+	echo "//     do, if the MOB is receiving messages? Does it block forever? It\n";
+	echo "//     should either do nothing or wait for the ISR to handle the message,\n";
+	echo "//     if a message has been received but not handled, yet.\n";*/
+	//           => The loop finishes immediately, if the MOB is not in transmit mode.
+	//              The rx ISR should take control after at most one asm instruction,
+	//              so if we ever found a received message, the ISR would have handled
+	//              it before we finished the check. We might receive another message
+	//              while we init the MOB, but we cannot do anything about that.
+	}
+%>
+inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
+<%
+	printCode(stringBuffer, msgconfig.getBeforeTx(), "\t\t");
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t\t");
+	}
+	
+	if (!printCode(stringBuffer, msgconfig.getTxHandlerAll(), "\t")) {
+		if (!printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
+%>
 	// select MOB
 	CANPAGE = (MOB_<%=mobName%><<4);
 
@@ -462,40 +507,160 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, boolean <%=msgconfig
 	// reset transmission status
 	CANSTMOB = 0;
 
+<% //TODO we don't need that all the time (e.g. never, unless the MOB is shared) %>
 	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
 
+<% //TODO set IDE for extended messages? %>
 	// disable mob, as it would be retransmitted otherwise
 	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
-
 <%
-		for(DBCSignal sig : msg.getSignalOrder()) { 
-			DBCSignalConfig signal = (DBCSignalConfig) sig;
-						
-%>
-			// writing signal <%=signal.getName()%>
-			{
-				<%=signal.getCType()%> value;
-				value = <%= globVars.get(signal.getGlobalVarName()).getGetterName() %>();
-				CANMSG =<%= signal.getCType().equals("uint8_t") ? "" : " (uint8_t)" %> value;
-			}
-<%
-		}
-%>
+	int addr = 0;
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+		int start = signalconfig.getStart();
+		int len = signalconfig.getLength();
+		String name = signalconfig.getName();
 		
+		//TODO The pdf file says that '1' would mean big endian, but
+		//     CANdb++ shows that as "intel" - which is little endian.
+		//     Our programs agree with that so the RapidPro seems to
+		//     use '1' for little endian as well.
+		boolean big_endian = !signalconfig.getEndianness().equals("1");
+		
+		//TODO by how much must we change the start index?
+		if (big_endian)
+			// this formula is for the values shown in CANdb++
+			// $start -= $len - 8;
+			// this formula is for the values that are saved in the dbc file
+			start -= 7;
+		
+		if (start%8 != 0 || len%8 != 0) {
+			//TODO support that
+			%><%= warnings.print("The signal '" + name + "' is not aligned on a byte boundary, so it will be ignored.") %><%
+			continue;
+		}
+		if (addr > start) {
+			%><%= warnings.print("Cannot write overlapping signals. Ignoring signal '" + name + "'.") %><%
+			continue;
+		}
+		
+		if (addr < start) {
+%>
+		// skipping <%= ((start-addr)/8) %> byte(s)
+<%
+			while (addr < start) {
+%>
+		CANMSG = 0;
+<%
+				addr += 8;
+			}
+		}
+		
+		//TODO support other types
+		//TODO or should we use get_signal_int_type? what happens, if we use
+		//     an enum in a union - the size of the enum can be chosen by the
+		//     compiler
+		String type = signalconfig.getCType();
+		
+		//TODO print comment, if available
+%>
+
+		// writing signal <%= name %>
+		{
+			<%= type %> value;
+<%
+		if (!printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
+			/*if (!empty($signal['place']))
+				$var = $signal['place'];
+			else if (!empty($signal['variable']))
+				$var = $signal['variable'];
+			else if (!empty($signal['param']))
+				$var = $signal['param'];
+			else
+				$var = $signal['name'];
+			echo "\t\t\tvalue = $var;\n";*/
+			String var;
+			if (signalconfig.getParam() != null)
+				var = signalconfig.getParam();
+			else
+				var = name; // globVars.get(signalconfig.getGlobalVarName()).getGetterName() + "()";
+%>
+			value = <%= var %>;
+<%		
+		}
+		
+		printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
+		
+		if (len == 8) {
+%>
+			CANMSG =<%= type.equals("uint8_t") ? "" : " (uint8_t)" %> value;
+<%
+			addr += 8;
+		} else {
+%>
+			union {
+				<%= type %> value;
+				struct {
+<%
+			for (int i=0; i<len/8; i++) {
+%>
+					uint8_t byte<%= i %>;
+<%
+			}
+%>
+				} bytes;
+			} x;
+			
+			x.value = value;
+<%		
+			int bytes = len/8;
+			if (big_endian) {	//TODO which one is big endian?
+				// big endian
+				for (int i=0; i<bytes; i++) {
+%>
+			CANMSG = x.bytes.byte<%= (bytes-i-1) %>;
+<%
+					addr += 8;
+				}
+			} else {
+				// little endian
+				for (int i=0; i<bytes; i++) {
+%>
+			CANMSG = x.bytes.byte<%= i %>;
+<%
+					addr += 8;
+				}
+			}
+			
+			if (signalconfig.getFactor() != 1 || signalconfig.getOffset() != 0)
+				warnings.print("This signal uses factor or offset, which is not supported yet.");
+		}	// len != 8
+		
+		printCode(stringBuffer, signalconfig.getImmAfterTx(), "\t\t\t");
+%>
+		}
+<%
+	}	// foreach signal	
+%>
 	if (wait)
 		can_mob_transmit_wait(MOB_<%=mobName%>);
 	else
 		can_mob_transmit_nowait(MOB_<%=mobName%>);
 }
-inline static void send_<%=msgconfig.getName()%>_wait(boolean <%=msgconfig.getName()%>) {
-	send_<%=msgconfig.getName()%>(true, <%=msgconfig.getName()%>);
+inline static void send_<%=msgconfig.getName()%>_wait(<%= params %>) {
+	send_<%=msgconfig.getName()%>(true, <%= param_values %>);
 }
-inline static void send_<%=msgconfig.getName()%>_nowait(boolean <%=msgconfig.getName()%>) {
-	send_<%=msgconfig.getName()%>(false, <%=msgconfig.getName()%>);
+inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
+	send_<%=msgconfig.getName()%>(false, <%= param_values %>);
 }
-<% } %>
+<%
+		}	// no tx_handler
+	}	// no tx_handler_all
+}
+%>
+#endif
 
-
+#endif	// NO_DBC_CAN_DEFS not defined
 <%=warnings.summary()%>
 
 <%
@@ -543,17 +708,18 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 				
 				if (start%8 != 0 || len%8 != 0) {
 					//TODO support that
-					warnings.print("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.");
+					%><%= warnings.print("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.") %><%
 					continue;
 				}
 				if (addr > start) {
 					//TODO support overlapping signals (only if CANdb++ support them, of course)
-					warnings.print("Cannot read overlapping signals. Ignoring signal " + name + ".");
+					%><%= warnings.print("Cannot read overlapping signals. Ignoring signal " + name + ".") %><%
 					continue;
 				}
 					
 				if (addr < start) {
 %>
+
 <%=indent%>// skipping <%= ((start-addr)/8) %> byte(s)
 <%
 					while (addr < start) {
@@ -570,6 +736,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 				//     compiler
 				String type = signal.getCType();		
 %>
+
 <%=indent%>// reading signal <%= signal.getName() %>
 <%=indent%>{
 <%
@@ -578,7 +745,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 
 				if (len == 8) {
 %>
-<%=indent%>	<%= type %> value = <%= (type.equals("uint8_t")) ? "" : "(" + type + ")" %> CANMSG;
+<%=indent%>	<%= type %> value = <%= (type.equals("uint8_t")) ? "" : "(" + type + ") " %>CANMSG;
 <% 
 					//echo "$indent\t$type value = ";
 					//if ($type != "uint8_t")
@@ -596,7 +763,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 <%=indent%>			uint8_t byte<%= i %>;
 <%
 					}
-%>					
+%>
 <%=indent%>		} bytes;
 <%=indent%>	} x;
 <%					
@@ -619,8 +786,9 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 						}
 					}
 					
-					if (signal.getFactor() != 1 || signal.getOffset() != 0) //TODO: implement factor and offset
-						warnings.print("This signal uses factor or offset, which is not supported yet.");
+					if (signal.getFactor() != 1 || signal.getOffset() != 0) { //TODO: implement factor and offset
+						%><%= warnings.print("This signal uses factor or offset, which is not supported yet.") %><%
+					}
 %>
 <%=indent%>	<%= type %> value = x.value;
 <%
@@ -649,8 +817,9 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 			}
 		}
 		
-		if (addr > msg.getLength()*8)
-			warnings.print("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".");
+		if (addr > msg.getLength()*8) {
+			 %><%= warnings.print("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".")  %><%
+		}
 		
 	}
 	
@@ -679,6 +848,18 @@ String implodeMessages(List<DBCMessageConfig> messages) {
 	
 	for(DBCMessageConfig msg : messages) {
 		result += (firstEntry?"":", ") + msg.getName(); 
+		firstEntry = false;
+	}
+	
+	return result;
+}
+
+String implode(List<String> list) {
+	String result = "";
+	boolean firstEntry = true;
+	
+	for(String string : list) {
+		result += (firstEntry?"":", ") + string; 
 		firstEntry = false;
 	}
 	
