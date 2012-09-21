@@ -98,9 +98,9 @@ void counter_init() {
 	counter_enter_critical();
 
 	counter_state.state = counter_stopped_state;
+	PORTA = 0;
 	counter_stopped_always();
 	counter_stopped_enter();
-	PORTA = 0;
 
 	counter_exit_critical();
 }

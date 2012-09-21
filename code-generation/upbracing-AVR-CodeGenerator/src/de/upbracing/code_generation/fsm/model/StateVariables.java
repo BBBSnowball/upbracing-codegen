@@ -103,7 +103,7 @@ public class StateVariables {
 		return Collections.unmodifiableSet(variables);
 	}
 	
-	public class VariableContainer implements Comparable<VariableContainer> {
+	public class VariableContainer implements Comparable<VariableContainer>, IHasName {
 		public String name;
 		public StateScope forScope;
 		public Set<StateVariable> variables = new HashSet<StateVariable>();
@@ -115,6 +115,11 @@ public class StateVariables {
 		@Override
 		public int compareTo(VariableContainer other) {
 			return name.compareTo(other.name);
+		}
+		
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 	

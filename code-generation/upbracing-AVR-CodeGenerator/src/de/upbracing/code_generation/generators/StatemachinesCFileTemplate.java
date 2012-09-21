@@ -71,9 +71,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 				generateInitFunction(stringBuffer, smg);
 
-				generateTickFunction(stringBuffer, smg, states_with_actions);
+				generateTickFunction(stringBuffer, smg, smg.getStateMachine());
 
-				generateEventFunctions(stringBuffer, smg, states_with_actions);
+				generateEventFunctions(stringBuffer, smg, smg.getStateMachine());
 			}
 		} // for each statemachine
 
@@ -191,7 +191,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	private void generateCodeForNamedTypesInContainer(
 			VariableContainer container) {
 		
-		for (StateVariable var : container.variables) {
+		for (StateVariable var : sortByName(container.variables)) {
 			if (var.getType() != null && !var.getType().isEmpty() && var.getDeclaration() != null && !var.getDeclaration().isEmpty()) {
 				stringBuffer.append("typedef ");
 				stringBuffer.append(var.getDeclaration());
@@ -201,9 +201,23 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			}
 		}
 		
-		for (VariableContainer child : container.children) {
+		for (VariableContainer child : sortByName(container.children)) {
 			generateCodeForNamedTypesInContainer(child);
 		}
+	}
+
+	private <T extends IHasName> SortedSet<T> sortByName(Set<T> xs) {
+		SortedSet<T> sorted = new TreeSet<T>(new Comparator<T>() {
+			public int compare(T a, T b) {
+				int result = a.getName().compareTo(b.getName());
+				if (result != 0)
+					return result;
+				
+				return a.hashCode() - b.hashCode();
+			}
+		});
+		sorted.addAll(xs);
+		return sorted;
 	}
 
 	private void generateCodeForVariableContainer(String indent, VariableContainer container) {
@@ -278,29 +292,30 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 		
 		String sm_name = smg.getName();
-		State firstState = findFirstState(smg.getStates());
+		//Transition initial_transition = smg.findInitialTransition(smg.getStates());
 
 		stringBuffer.append("void " + sm_name + "_init() {\n");
 		
 		stringBuffer.append("\t" + sm_name + "_enter_critical();\n\n");
 
-		if (firstState == null) {
-			stringBuffer
-					.append("#error Cannot find a first state. Please add an InitialState which has exactly one edge to a normal state.\n");
+		/*if (initial_transition == null) {
+			stringBuffer.append("#error Cannot find a first state. Please add an InitialState which has exactly one edge to a normal state.\n");
 		} else {
 			genTrace(10,  "\t","$name_init()");
+			
+			State firstState = initial_transition.getDestination();
 			
 			genTrace(30,  "\t","$name: state <- " + stateName(firstState));
 			stringBuffer.append("\t" + getStateVariableName(firstState.getParent()) + " = "
 					+ stateName(firstState) + ";\n");
 			printActionsFor("\t", null, firstState, firstState);
 
-			for (Transition t : smg.getTransitions()) {
-				if (t.getSource() instanceof InitialState
-						&& t.getDestination() == firstState)
-					printCode("\t", smg.getTransitionInfo(t)
-							.getAction());
-			}
+			printCode("\t", smg.getTransitionInfo(initial_transition)
+					.getAction());
+		}*/
+		
+		for (ActionType type : ActionType.values()) {
+			printInitialActionsForChildren("\t", type, smg.getStateMachine());
 		}
 
 		
@@ -310,12 +325,16 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	private String getStateVariableName(StateParent containing_state) {
-		return smg.getStateVariables().getVariable(containing_state, StateVariablePurposes.STATE).getRealName();
+		StateVariable state_variable = smg.getStateVariables()
+				.getVariable(containing_state, StateVariablePurposes.STATE);
+		if (state_variable == null)
+			System.out.println(containing_state + "=> is null");
+		return state_variable.getRealName();
 	}
 
 	private void generateTickFunction(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg,
-			Collection<StateWithActions> states_with_actions) {
+			StateParent parent) {
 		stringBuffer.append('\n');
 		banner("tick function");
 		stringBuffer.append('\n');
@@ -324,12 +343,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		// null means no event -> tick function
 		// We have to use "" instead of null for the map of events, because
 		// Java/JRuby chokes on a null value.
-		generateEventFunction(null, states_with_actions, smg.getEvents().get(""));
+		generateEventFunction(null, parent, smg.getEvents().get(""));
 	}
 
 	private void generateEventFunctions(final StringBuffer stringBuffer,
-			StateMachineForGeneration smg,
-			Collection<StateWithActions> states_with_actions) {
+			StateMachineForGeneration smg, StateParent parent) {
 		stringBuffer.append('\n');
 		banner("event functions");
 		
@@ -342,7 +360,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				continue;
 
 			stringBuffer.append('\n');
-			generateEventFunction(event, states_with_actions, transitions);
+			generateEventFunction(event, parent, transitions);
 		}
 	}
 
@@ -428,6 +446,10 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	public String getName(Object state) {
 		return smg.getName(state);
 	}
+	
+	public String describe(Object state) {
+		return smg.describe(state);
+	}
 
 	private List<Action> filterActionsByType(List<Action> actions,
 			ActionType type) {
@@ -471,40 +493,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	@SuppressWarnings("unused")
 	private boolean printActions(String indent, Action action) {
 		return printActions(indent, Arrays.asList(action));
-	}
-
-	private boolean printActionsFor(String indent, State source,
-			State destination, StateWithActions self) {
-		/*
-		 * List<Action> active_actions = new LinkedList<Action>();
-		 * 
-		 * for (Action action : smg.getActions(self)) if
-		 * (action.getType().shouldExecuteFor(source, destination, self))
-		 * active_actions.add(action);
-		 * 
-		 * return printActions(indent, active_actions);
-		 */
-
-		String state_name = getName(self);
-
-		StringBuffer sb = new StringBuffer();
-		for (ActionType action_type : ActionType.values()) {
-			String method_name = actionMethod(state_name, action_type);
-			if (action_type.shouldExecuteFor(source, destination, self)
-					&& existing_action_methods.contains(method_name))
-				sb.append(method_name + "();\n");
-		}
-
-		return printCode(indent, sb.toString());
-	}
-
-	private boolean printActionsFor(String indent, State source,
-			State destination, State self) {
-		if (self instanceof StateWithActions)
-			return printActionsFor(indent, source, destination,
-					(StateWithActions) self);
-		else
-			return false;
 	}
 	
 	private boolean executeDuringState(String indent, State state) {
@@ -557,9 +545,13 @@ public class StatemachinesCFileTemplate implements ITemplate {
 							+ stateName(state) + ";\n");
 				}
 				
+				//TODO If destinations_with_parents.last() has regions, we must enter the initial state in each of them.
+				
 				// execute transition action
 				printCode(indent, smg.getTransitionInfo(trans).getAction());
 			}
+			
+			printActionsForChildren(indent, type, trans.getSource(), trans.getSource(), trans.getDestination(), true);
 			
 			for (State self : source_with_parents) {
 				String actionMethodName = actionMethod(getName(self), type);
@@ -572,6 +564,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				if (type.shouldExecuteFor(trans.getSource(), self, self) && existing_action_methods.contains(actionMethodName))
 					printCode(indent, actionMethodName + "();\n");
 			}
+			
+			printInitialActionsForChildren(indent, type, trans.getDestination());
 		}
 	}
 
@@ -586,6 +580,93 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			state2 = state2.getParent();
 		}
 		return parents;
+	}
+
+	private void printActionsForStateAndChildren(String indent, ActionType type, State self,
+			State source, State destination, boolean bottom_up) {
+		if (!bottom_up) {
+			printActionsForState(indent, type, self, source, destination);
+		}
+		
+		printActionsForChildren(indent, type, self, source, destination, bottom_up);
+
+		if (bottom_up) {
+			printActionsForState(indent, type, self, source, destination);
+		}
+	}
+
+	private void printActionsForChildren(String indent, ActionType type, State self, State source,
+			State destination, boolean bottom_up) {
+		if (self instanceof SuperState) {
+			SuperState superstate = (SuperState) self;
+			
+			for (Region region : superstate.getRegions()) {
+				stringBuffer.append(indent + "switch (" + getStateVariableName(region) + ") {\n");
+				stringBuffer.append('\n');
+
+				Collection<State> sorted_states = smg.sortStates(region.getStates());
+				Collection<StateWithActions> states_with_actions
+					= smg.filterStatesWithActions(sorted_states);
+				
+				for (StateWithActions child_state : states_with_actions) {
+					stringBuffer.append(indent + "case " + stateName(child_state) + ":\n");
+					
+					printActionsForStateAndChildren(indent+"\t", type, child_state, child_state, destination, bottom_up);
+					
+					stringBuffer.append(indent + "\tbreak;\n");
+					stringBuffer.append('\n');
+				}
+				
+				stringBuffer.append(indent + "}\n");
+			}
+		}
+	}
+
+	private void printInitialActionsForStateAndChildren(String indent, ActionType type, State self) {
+		printActionsForState(indent, type, self, null, self);
+		
+		printInitialActionsForChildren(indent, type, self);
+	}
+
+	private void printActionsForState(String indent, ActionType type,
+			State self, State source, State destination) {
+		String actionMethodName = actionMethod(getName(self), type);
+		if (type.shouldExecuteFor(source, destination, self) && existing_action_methods.contains(actionMethodName))
+			printCode(indent, actionMethodName + "();\n");
+	}
+
+	private void printInitialActionsForChildren(String indent, ActionType type, State self) {
+		if (self instanceof StateParent)
+			printInitialActionsForChildren(indent, type, (StateParent)self);
+	}
+
+	private void printInitialActionsForChildren(String indent, ActionType type, StateParent self) {
+		if (self instanceof SuperState) {
+			SuperState superstate = (SuperState) self;
+			
+			for (Region region : superstate.getRegions()) {
+				printInitialActionsForChildren(indent, type, region);
+			}
+		} else {
+			Transition initial_transition = smg.findInitialTransition(self.getStates());
+			if (initial_transition == null || initial_transition.getDestination() == null) {
+				stringBuffer.append("#error Cannot find a first state for " + describe(self) + ". Please add an InitialState which has exactly one edge to a normal state.\n");
+				return;
+			}
+
+			State first_state = initial_transition.getDestination();
+			
+			if (type == ActionType.DURING) {
+				// set state variable
+				genTrace(30, indent, "$name: state <- " + stateName(first_state) + " (initial state)");
+				stringBuffer.append(indent + getStateVariableName(self) + " = "
+						+ stateName(first_state) + ";\n");
+				
+				printCode(indent, smg.getTransitionInfo(initial_transition).getAction());
+			}
+			
+			printInitialActionsForStateAndChildren(indent, type, first_state);
+		}
 	}
 
 	private boolean printCode(String indent, String code, boolean inline) {
@@ -625,20 +706,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return printCode(indent, code, false);
 	}
 
-	private State findFirstState(List<State> states) {
-		return smg.findFirstState(states);
-	}
-
-	@SuppressWarnings("unused")
-	private State findFinalState(List<State> states) {
-		return smg.findFinalState(states);
-	}
-
 	private String formatTime(double time) {
 		return FSMParsers.formatTime(time);
 	}
 
-	private void generateEventFunction(String event, Collection<StateWithActions> states_with_actions, Iterable<Transition> transitions) {
+	private void generateEventFunction(String event, StateParent parent, Iterable<Transition> transitions) {
 		String sm_name = smg.getName();
 		if (transitions == null)
 			transitions = smg.getTransitions();
@@ -655,16 +727,28 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				stringBuffer.append('\n');
 		}
 		
-		stringBuffer.append("\tswitch (" + getStateVariableName(smg.getStateMachine()) + ") {\n");
+		generateEventSwitchCase("\t", event, parent, transitions);
+		
+		stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
+		stringBuffer.append("}\n");
+	}
+
+	private void generateEventSwitchCase(String indent, String event,
+			StateParent parent, Iterable<Transition> transitions) {
+		stringBuffer.append(indent + "switch (" + getStateVariableName(parent) + ") {\n");
 		stringBuffer.append('\n');
+
+		Collection<State> sorted_states = smg.sortStates(parent.getStates());
+		Collection<StateWithActions> states_with_actions
+			= smg.filterStatesWithActions(sorted_states);
 		
 		for (StateWithActions state : states_with_actions) {
-			stringBuffer.append("\tcase " + stateName(state) + ":\n");
+			stringBuffer.append(indent + "case " + stateName(state) + ":\n");
 			
 			if (event == null) {
 				// If we are generating the tick function, print actions
 				// that should be executed for the state.
-				if (executeDuringState("\t\t", state))
+				if (executeDuringState(indent + "\t", state))
 					stringBuffer.append('\n');
 			}
 			
@@ -689,7 +773,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			for (Transition t : ts) {
 				TransitionInfo tinfo = smg.getTransitionInfo(t);
 				
-				stringBuffer.append("\t\t");
+				stringBuffer.append(indent + "\t");
 				if (first)
 					first = false;
 				else
@@ -699,7 +783,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				String condition = tinfo.getCondition();
 				if (condition == null || condition.trim().equals(""))
 					condition = "1";
-				printCode("\t\t\t\t\t", condition, true);
+				printCode(indent + "\t\t\t\t", condition, true);
 				stringBuffer.append(") {");
 				if (tinfo.isWaitTransition()) {
 					// print some documentation
@@ -709,18 +793,30 @@ public class StatemachinesCFileTemplate implements ITemplate {
 						stringBuffer.append(" [" + tinfo.getCondition() + "]");*/
 				}
 				stringBuffer.append('\n');
-				executeTransition("\t\t\t", t);
+				executeTransition(indent + "\t\t", t);
 			}
 			if (!first)
-				stringBuffer.append("\t\t}\n\n");
+				stringBuffer.append(indent + "\t}\n\n");
+	
+			// If this is a superstate, we must take care of its children.
+			if (state instanceof SuperState) {
+				SuperState superstate = (SuperState)state;
+				
+				stringBuffer.append('\n');
+				stringBuffer.append(indent + "\t// execute transitions for the children, unless some transition has changed the state\n");
+				stringBuffer.append(indent + "\tif (" + getStateVariableName(parent) + " == " + stateName(superstate) + ") {\n");
+
+				for (Region region : superstate.getRegions())
+					generateEventSwitchCase(indent + "\t\t", event, region, transitions);
+				
+				stringBuffer.append(indent + "\t}\n");
+			}
 			
-			stringBuffer.append("\t\tbreak;\n");
+			stringBuffer.append(indent + "\tbreak;\n");
 			stringBuffer.append('\n');
 		}
-
-		stringBuffer.append("\t}\n");
-		stringBuffer.append("\n\t" + sm_name + "_exit_critical();\n");
-		stringBuffer.append("}\n");
+		
+		stringBuffer.append(indent + "}\n");
 	}
 
 	private boolean genTrace(int level, String indent, String message) {

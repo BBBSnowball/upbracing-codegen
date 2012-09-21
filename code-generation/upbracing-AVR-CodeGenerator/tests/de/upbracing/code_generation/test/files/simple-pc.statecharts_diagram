@@ -159,13 +159,22 @@
                     <element xmi:type="Statecharts:NormalState" href="simple-pc.statecharts#//@states.1/@regions.2/@states.3/@regions.0/@states.1"/>
                     <layoutConstraint xmi:type="notation:Bounds" xmi:id="_DPNlFQEtEeKiX6nCDxL2mQ" x="38" y="69" width="78"/>
                   </children>
+                  <children xmi:type="notation:Node" xmi:id="_j0fR4QQREeKEEb_S3z16aw" type="3004">
+                    <children xmi:type="notation:DecorationNode" xmi:id="_j0f48AQREeKEEb_S3z16aw" visible="false" type="5007">
+                      <layoutConstraint xmi:type="notation:Location" xmi:id="_j0f48QQREeKEEb_S3z16aw" y="5"/>
+                    </children>
+                    <styles xmi:type="notation:DescriptionStyle" xmi:id="_j0fR4gQREeKEEb_S3z16aw"/>
+                    <styles xmi:type="notation:FontStyle" xmi:id="_j0fR4wQREeKEEb_S3z16aw" fontName="Ubuntu"/>
+                    <element xmi:type="Statecharts:InitialState" href="simple-pc.statecharts#//@states.1/@regions.2/@states.3/@regions.0/@states.2"/>
+                    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_j0fR5AQREeKEEb_S3z16aw" x="-2" y="9"/>
+                  </children>
                 </children>
                 <styles xmi:type="notation:DescriptionStyle" xmi:id="_JgzpgQEuEeKiX6nCDxL2mQ"/>
                 <styles xmi:type="notation:FontStyle" xmi:id="_JgzpggEuEeKiX6nCDxL2mQ" fontName="Ubuntu"/>
                 <styles xmi:type="notation:FillStyle" xmi:id="_JgzpgwEuEeKiX6nCDxL2mQ"/>
                 <styles xmi:type="notation:HintedDiagramLinkStyle" xmi:id="_JgzphAEuEeKiX6nCDxL2mQ"/>
                 <element xmi:type="Statecharts:Region" href="simple-pc.statecharts#//@states.1/@regions.2/@states.3/@regions.0"/>
-                <layoutConstraint xmi:type="notation:Bounds" xmi:id="_JgzphQEuEeKiX6nCDxL2mQ" x="2" y="12" width="181" height="149"/>
+                <layoutConstraint xmi:type="notation:Bounds" xmi:id="_JgzphQEuEeKiX6nCDxL2mQ" x="2" y="12" width="193" height="146"/>
               </children>
             </children>
             <styles xmi:type="notation:DescriptionStyle" xmi:id="_mkzZoAEtEeKiX6nCDxL2mQ"/>
@@ -370,5 +379,15 @@
     <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_dBIOgwEuEeKiX6nCDxL2mQ" points="[8, -22, -11, 27]$[9, -45, -10, 4]"/>
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_dBKqwAEuEeKiX6nCDxL2mQ" id="(0.2540861812778603,0.046908315565031986)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_dBKqwQEuEeKiX6nCDxL2mQ" id="(0.20408163265306123,0.7)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_lD-j0AQREeKEEb_S3z16aw" type="4001" source="_j0fR4QQREeKEEb_S3z16aw" target="__-tdoAEsEeKiX6nCDxL2mQ">
+    <children xmi:type="notation:DecorationNode" xmi:id="_lD_K4wQREeKEEb_S3z16aw" visible="false" type="6001">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_lD_K5AQREeKEEb_S3z16aw" y="40"/>
+    </children>
+    <styles xmi:type="notation:RoutingStyle" xmi:id="_lD_K4AQREeKEEb_S3z16aw"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_lD_K4QQREeKEEb_S3z16aw" fontName="Ubuntu"/>
+    <element xmi:type="Statecharts:Transition" href="simple-pc.statecharts#//@transitions.17"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_lD_K4gQREeKEEb_S3z16aw" points="[15, -3, -22, 0]$[25, -3, -12, 0]"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_lEC1QAQREeKEEb_S3z16aw" id="(0.15384615384615385,0.5333333333333333)"/>
   </edges>
 </notation:Diagram>

@@ -2,6 +2,7 @@ package de.upbracing.code_generation.fsm.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import Statecharts.NamedItem;
 import Statecharts.State;
 import Statecharts.StateMachine;
 import Statecharts.StateParent;
+import Statecharts.StateScope;
 import Statecharts.StateWithActions;
 import Statecharts.Transition;
 
@@ -216,11 +218,20 @@ public class StateMachineForGeneration {
 	private void initActions() {
 		actions = new HashMap<State, List<Action>>();
 		
-		for (State state : getStates()) {
+		List<State> states = getStates();
+		initActions(states);
+	}
+
+	private void initActions(List<State> states) {
+		for (State state : states) {
 			if (state instanceof StateWithActions) {
 				String action_str = ((StateWithActions)state).getActions();
 				//TODO handle errors
 				actions.put(state, FSMParsers.parseStateActions(action_str));
+			}
+			
+			if (state instanceof StateParent) {
+				initActions(((StateParent)state).getStates());
 			}
 		}
 	}
@@ -361,6 +372,34 @@ public class StateMachineForGeneration {
 		else
 			throw new RuntimeException("should not get here, unexpected object is " + state);
 	}
+	
+	public String describeSelf(Object state) {
+		if (state instanceof NamedItem)
+			return ((NamedItem) state).getName();
+		else if (state instanceof StateMachine)
+			return "#diagram";
+		else if (state instanceof Transition) {
+			Transition t = (Transition) state;
+			return "transition(" + describe(t.getSource()) + " -> "
+					+ describe(t.getDestination()) + ")";
+		} else if (state == null)
+			return "(null)";
+		else
+			throw new RuntimeException("should not get here, unexpected object is " + state);
+	}
+	
+	public String describe(Object state) {
+		if (state == getStateMachine())
+			return "statemachine(" + getName() + ")";
+		
+		if (state instanceof StateScope) {
+			StateParent parent = ((StateScope)state).getParent();
+			if (parent != null)
+				return describe(parent) + "." + describeSelf(state);
+		}
+		
+		return describeSelf(state);
+	}
 
 	public State findFirstState(Collection<State> states) {
 		List<Transition> transitions = getTransitions();
@@ -375,6 +414,26 @@ public class StateMachineForGeneration {
 					else if (t.getSource() == state
 							&& t.getDestination() instanceof FinalState)
 						finalStateIsAlsoFirst = t.getDestination();
+				}
+			}
+		}
+
+		return finalStateIsAlsoFirst;
+	}
+
+	public Transition findInitialTransition(Collection<State> states) {
+		List<Transition> transitions = getTransitions();
+		Transition finalStateIsAlsoFirst = null;
+
+		for (State state : states) {
+			if (state instanceof InitialState) {
+				for (Transition t : transitions) {
+					if (t.getSource() == state
+							&& t.getDestination() instanceof StateWithActions)
+						return t;
+					else if (t.getSource() == state
+							&& t.getDestination() instanceof FinalState)
+						finalStateIsAlsoFirst = t;
 				}
 			}
 		}
@@ -402,7 +461,40 @@ public class StateMachineForGeneration {
 	}
 
 	public String stateName(State state) {
-		return getName() + "_" + getName(state) + "_state";
+		StringBuffer sb = new StringBuffer();
+		for (StateParent parent : getParentsTopToBottom(state)) {
+			if (parent == getStateMachine())
+				sb.append(this.getName());
+			else
+				sb.append(((NamedItem)parent).getName());
+			sb.append('_');
+		}
+		sb.append(state.getName());
+		sb.append('_');
+		sb.append("state");
+		return sb.toString();
+	}
+
+	private static LinkedList<StateParent> getParents(State state, boolean bottom_most_first) {
+		LinkedList<StateParent> parents = new LinkedList<StateParent>();
+		StateParent parent = state.getParent();
+		while (parent != null) {
+			if (bottom_most_first)
+				parents.addLast(parent);
+			else
+				parents.addFirst(parent);
+			
+			parent = parent.getParent();
+		}
+		return parents;
+	}
+	
+	public static LinkedList<StateParent> getParentsBottomToTop(State state) {
+		return getParents(state, true);
+	}
+	
+	public static LinkedList<StateParent> getParentsTopToBottom(State state) {
+		return getParents(state, false);
 	}
 
 	public SortedSet<Transition> sortedTransitionSet() {

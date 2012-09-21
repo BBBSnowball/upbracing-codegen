@@ -604,8 +604,9 @@ public class StatemachineGenerator extends AbstractGenerator {
 		addStateVariable(smg, parent);
 
 		for (State state : parent.getStates())
-			if (state instanceof StateParent)
-				addStateVariables(smg, (StateParent) state);
+			if (state instanceof SuperState)
+				for (Region region : ((SuperState) state).getRegions())
+					addStateVariables(smg, region);
 	}
 
 	private void addStateVariable(StateMachineForGeneration smg,
