@@ -191,7 +191,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	private void generateCodeForNamedTypesInContainer(
 			VariableContainer container) {
 		
-		for (StateVariable var : sortByName(container.variables)) {
+		for (StateVariable var : container.variables) {
 			if (var.getType() != null && !var.getType().isEmpty() && var.getDeclaration() != null && !var.getDeclaration().isEmpty()) {
 				stringBuffer.append("typedef ");
 				stringBuffer.append(var.getDeclaration());
@@ -201,23 +201,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			}
 		}
 		
-		for (VariableContainer child : sortByName(container.children)) {
+		for (VariableContainer child : container.children) {
 			generateCodeForNamedTypesInContainer(child);
 		}
-	}
-
-	private <T extends IHasName> SortedSet<T> sortByName(Set<T> xs) {
-		SortedSet<T> sorted = new TreeSet<T>(new Comparator<T>() {
-			public int compare(T a, T b) {
-				int result = a.getName().compareTo(b.getName());
-				if (result != 0)
-					return result;
-				
-				return a.hashCode() - b.hashCode();
-			}
-		});
-		sorted.addAll(xs);
-		return sorted;
 	}
 
 	private void generateCodeForVariableContainer(String indent, VariableContainer container) {

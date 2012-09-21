@@ -373,7 +373,7 @@ public class StateMachineForGeneration {
 			throw new RuntimeException("should not get here, unexpected object is " + state);
 	}
 	
-	public String describeSelf(Object state) {
+	public static String describeSelf(Object state) {
 		if (state instanceof NamedItem)
 			return ((NamedItem) state).getName();
 		else if (state instanceof StateMachine)
@@ -388,10 +388,7 @@ public class StateMachineForGeneration {
 			throw new RuntimeException("should not get here, unexpected object is " + state);
 	}
 	
-	public String describe(Object state) {
-		if (state == getStateMachine())
-			return "statemachine(" + getName() + ")";
-		
+	public static String describe(Object state) {
 		if (state instanceof StateScope) {
 			StateParent parent = ((StateScope)state).getParent();
 			if (parent != null)

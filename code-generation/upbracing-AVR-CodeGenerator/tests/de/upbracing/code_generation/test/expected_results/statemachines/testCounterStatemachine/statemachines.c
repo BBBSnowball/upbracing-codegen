@@ -49,8 +49,8 @@ typedef enum {
 } counter_state__state_t;
 
 typedef struct {
+	uint8_t running__wait_time;
 	counter_state__state_t state;
-	uint8_t states_running_wait_time;
 } counter_state_var_t;
 
 static counter_state_var_t counter_state;
@@ -66,7 +66,7 @@ static void counter_running_exit() {
 
 static void counter_running_during() {
 	// increment time for wait(...)
-	++counter_state.states_running_wait_time;
+	++counter_state.running__wait_time;
 }
 
 static void counter_running_always() {
@@ -77,7 +77,7 @@ static void counter_running_enter() {
 	DDRA = 0xff;
 
 	// reset time for wait(...)
-	counter_state.states_running_wait_time = 0;
+	counter_state.running__wait_time = 0;
 }
 
 static void counter_stopped_always() {
@@ -118,7 +118,7 @@ void counter_tick() {
 		counter_running_during();
 		counter_running_always();
 
-		if (counter_state.states_running_wait_time >= 100) {  // wait(100 ms)
+		if (counter_state.running__wait_time >= 100) {  // wait(100 ms)
 			// running -> running
 			counter_running_exit();
 			PORTA++;

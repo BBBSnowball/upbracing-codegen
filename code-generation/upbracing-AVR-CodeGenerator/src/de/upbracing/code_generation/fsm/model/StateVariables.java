@@ -2,11 +2,13 @@ package de.upbracing.code_generation.fsm.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import Statecharts.NamedItem;
@@ -103,29 +105,128 @@ public class StateVariables {
 		return Collections.unmodifiableSet(variables);
 	}
 	
-	public class VariableContainer implements Comparable<VariableContainer>, IHasName {
+	public static class VariableContainer implements Comparable<VariableContainer>, IHasNameAndId {
+		private int id = getNextId();
+		private static int next_id = 0;
+		private static synchronized int getNextId() { return next_id++; }
+		public int getId() { return id; }
+
+		private String getName(StateVariable var) {
+			if (var == null)
+				return null;
+			
+			String name = null;
+			if (variable_names != null)
+				name = variable_names.get(var);
+			if (name == null)
+				name = var.getName();
+			return name;
+		}
+		
+		private <T extends IHasNameAndId> SortedSet<T> sortedSetByName() {
+			return new TreeSet<T>(new Comparator<T>() {
+				public int compare(T a, T b) {
+					if (a == null && b == null)
+						return 0;
+					else if (a != null && b != null && a.getName() == null && b.getName() == null)
+						return a.hashCode() - b.hashCode();
+					else if (a == null || a.getName() == null)
+						return -1;
+					else if (b == null || b.getName() == null)
+						return +1;
+					
+					int result = a.getName().compareTo(b.getName());
+					if (result != 0)
+						return result;
+					
+					return a.getId() - b.getId();
+				}
+			});
+		}
+		
+		private SortedSet<StateVariable> sortedVariableSetByName() {
+			return new TreeSet<StateVariable>(new Comparator<StateVariable>() {
+				public int compare(StateVariable a, StateVariable b) {
+					String name_a = getName(a);
+					String name_b = getName(b);
+					if (a == null && b == null)
+						return 0;
+					else if (a != null && b != null && name_a == null && name_b == null)
+						return a.hashCode() - b.hashCode();
+					else if (a == null || name_a == null)
+						return -1;
+					else if (b == null || name_b == null)
+						return +1;
+					
+					int result = name_a.compareTo(name_b);
+					if (result != 0)
+						return result;
+					
+					return a.getId() - b.getId();
+				}
+			});
+		}
+		
 		public String name;
 		public StateScope forScope;
-		public Set<StateVariable> variables = new HashSet<StateVariable>();
-		public Set<VariableContainer> children = new HashSet<StateVariables.VariableContainer>();
+		public Collection<StateVariable> variables;
+		public Collection<VariableContainer> children;
 		public VariableContainer parent;
 		// only contains a value, if the variable doesn't have its default value
 		public Map<StateVariable, String> variable_names;
+		public boolean important_for_hierarchy;
+		
+		
+		public VariableContainer(Map<StateVariable, String> variable_names) {
+			this.variable_names = variable_names;
+			this.variables = sortedSetByName();
+			this.children = sortedSetByName();
+		}
 		
 		@Override
 		public int compareTo(VariableContainer other) {
-			return name.compareTo(other.name);
+			int result = name.compareTo(other.name);
+			if (result != 0)
+				return result;
+			
+			return this.getId() - other.getId();
 		}
 		
 		@Override
 		public String getName() {
 			return name;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
+		
+		public void sortVariables() {
+			SortedSet<StateVariable> sorted = sortedVariableSetByName();
+			sorted.addAll(variables);
+			variables = sorted;
+		}
 	}
-	
-	public class AllOf extends VariableContainer { }
-	
-	public class OneOf extends VariableContainer { }
+
+	public static class AllOf extends VariableContainer {
+
+		public AllOf(Map<StateVariable, String> variable_names) {
+			super(variable_names);
+			// TODO Auto-generated constructor stub
+		}
+	}
+
+	public static class OneOf extends VariableContainer {
+
+		public OneOf(Map<StateVariable, String> variable_names) {
+			super(variable_names);
+			// TODO Auto-generated constructor stub
+		}
+	}
 	
 	private class PlanStructure {
 		// Each region and diagram has an oneOf
@@ -146,7 +247,7 @@ public class StateVariables {
 		private VariableContainer getVariableContainerFor(StateScope scope) {
 			VariableContainer vars = variableCs.get(scope);
 			if (vars == null) {
-				vars = new AllOf();
+				vars = new AllOf(names);
 				vars.forScope = scope;
 				variableCs.put(scope, vars);
 				if (scope instanceof NamedItem)
@@ -158,6 +259,7 @@ public class StateVariables {
 					vars.parent = getChildrenContainerFor(parent);
 					vars.parent.children.add(vars);
 				}
+				vars.important_for_hierarchy = true;
 			}
 			return vars;
 		}
@@ -168,15 +270,16 @@ public class StateVariables {
 				return vars;
 			
 			if (scope instanceof SuperState)
-				vars = new AllOf();
+				vars = new AllOf(names);
 			else
-				vars = new OneOf();
+				vars = new OneOf(names);
 			
 			vars.forScope = scope;
 			stateCs.put(scope, vars);
 			vars.name = "states";
 			vars.parent = getVariableContainerFor(scope);
 			vars.parent.children.add(vars);
+			vars.important_for_hierarchy = false;
 			
 			return vars;
 		}
@@ -192,7 +295,7 @@ public class StateVariables {
 			
 			setVariableRealNames();
 			
-			putNamesMapIntoContainers();
+			sortVariables();
 			
 			return root;
 		}
@@ -210,12 +313,36 @@ public class StateVariables {
 			}
 		}
 		
-		private void collapseEmptyContainers() {
-			collapseEmptyContainers(variableCs);
-			collapseEmptyContainers(stateCs);
+		private void debugPrint() {
+			VariableContainer root = variableCs.get(StateVariable.findCommonParent(variableCs.keySet()));
+			debugPrint("", root);
 		}
 
-		private void collapseEmptyContainers(Map<StateScope, VariableContainer> containers) {
+		private void debugPrint(String indent, VariableContainer container) {
+			System.out.println(indent + container.name + "\t\t\t" + container);
+			indent += "\t";
+			
+			for (StateVariable var : container.variables)
+				System.out.println(indent + "V: " + var.getName() + " (" + getName(var) + ")");
+			
+			for (VariableContainer child : container.children)
+				debugPrint(indent, child);
+		}
+		
+		private void collapseEmptyContainers() {
+			debugPrint();
+			boolean something_changed;
+			do {
+				System.out.println("variableCs:");
+				something_changed = collapseEmptyContainers(variableCs);
+				System.out.println("stateCs:");
+				something_changed |= collapseEmptyContainers(stateCs);
+			} while (something_changed);
+		}
+
+		private boolean collapseEmptyContainers(Map<StateScope, VariableContainer> containers) {
+			boolean something_changed = false;
+			
 			Iterator<VariableContainer> it = containers.values().iterator();
 			while (it.hasNext()) {
 				VariableContainer container = it.next();
@@ -226,21 +353,48 @@ public class StateVariables {
 				VariableContainer parent = container.parent;
 				
 				if (container.getClass() == parent.getClass() || (container.variables.size() + container.children.size() <= 1)) {
+					something_changed = true;
+					System.out.println("removing container " + container.name + " in " + parent.name + "(" + container + " in " + parent + ")");
+
+					String container_name = container.name;
+					
 					for (VariableContainer container2 : container.children) {
-						container2.name = container.name + "_" + container2.name;
+						System.out.println("  " + container2.name);
+						if (container.important_for_hierarchy) {
+							if (container2.important_for_hierarchy || container.children.size() > 1) {
+								container2.name = container_name + "__" + container2.name;
+							} else {
+								container2.name = container_name;
+							}
+							container2.important_for_hierarchy = true;
+						}
+						container2.parent = parent;
+						if (parent.children.contains(container2))
+							System.out.println("ERROR: PARENT ALREADY CONTAINS THIS CONTAINER!");
 						parent.children.add(container2);
+						debugPrint();
 					}
 					
 					for (StateVariable var : container.variables) {
-						addPrefix(var, container.name + "_");
+						System.out.println("  V:" + var.getName());
+						if (container.important_for_hierarchy)
+							addPrefix(var, container_name + "__");
 						parent.variables.add(var);
 					}
+					
+					debugPrint();
 					
 					//System.out.println("removing container: " + container + ", " + container.name);
 					it.remove();
 					container.parent.children.remove(container);
+					
+					container.name = "--removed--(" + container_name + ")--";
+					
+					debugPrint();
 				}
 			}
+			
+			return something_changed;
 		}
 
 		private void addPrefix(StateVariable var, String prefix) {
@@ -349,16 +503,16 @@ public class StateVariables {
 			return name;
 		}
 
-		private void putNamesMapIntoContainers() {
-			putNamesMapIntoContainers(variableCs.values());
-			putNamesMapIntoContainers(stateCs.values());
+		private void sortVariables() {
+			sortVariables(variableCs.values());
+			sortVariables(stateCs.values());
 		}
 
-		private void putNamesMapIntoContainers(Collection<VariableContainer> containers) {
+		private void sortVariables(Collection<VariableContainer> containers) {
 			for (VariableContainer container : containers) {
-				container.variable_names = names;
+				container.sortVariables();
 				
-				putNamesMapIntoContainers(container.children);
+				sortVariables(container.children);
 			}
 		}
 	}

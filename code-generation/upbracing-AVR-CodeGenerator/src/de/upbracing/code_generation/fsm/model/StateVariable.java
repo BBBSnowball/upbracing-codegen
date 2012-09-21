@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import Statecharts.StateParent;
 import Statecharts.StateScope;
 
-public class StateVariable implements Comparable<StateVariable>, IHasName {
+public class StateVariable implements Comparable<StateVariable>, IHasNameAndId {
 	public static final String TYPE_AUTONAME = "--- new type with automatic name ---";
 	
 	private static int next_unique_id = 1;
@@ -70,6 +70,11 @@ public class StateVariable implements Comparable<StateVariable>, IHasName {
 	
 	/** a name that you can use in the C program to access the variable */
 	private String real_name;
+	
+	/** make sure that variables with the same name can be put into the same set (thus they are not equal) */
+	private int id = getNextId();
+	private static int next_id = 0;
+	private static synchronized int getNextId() { return next_id++; }
 
 	public StateVariable(String name, String type, String declaration,
 			Collection<StateScope> visibility_scope,
@@ -91,6 +96,10 @@ public class StateVariable implements Comparable<StateVariable>, IHasName {
 		this.visibility_scope = Collections.unmodifiableSet(
 				optimizeScope(new HashSet<StateScope>(Arrays.asList(scopes))));
 		this.lifetime_scope = visibility_scope;
+	}
+	
+	public int getId() {
+		return id;
 	}
 	
 	public String getName() {
@@ -227,6 +236,10 @@ public class StateVariable implements Comparable<StateVariable>, IHasName {
 
 	@Override
 	public int compareTo(StateVariable var) {
-		return name.compareTo(var.name);
+		int result = name.compareTo(var.name);
+		if (result != 0)
+			return result;
+		
+		return id - var.id;
 	}
 }
