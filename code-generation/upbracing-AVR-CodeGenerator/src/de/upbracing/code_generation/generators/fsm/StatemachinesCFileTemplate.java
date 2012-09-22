@@ -1,9 +1,10 @@
-package de.upbracing.code_generation.generators;
+package de.upbracing.code_generation.generators.fsm;
 
 import java.util.*;
 import java.util.Map.Entry;
 
 import de.upbracing.code_generation.ITemplate;
+import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.config.*;
 import de.upbracing.code_generation.fsm.model.*;
 import de.upbracing.code_generation.fsm.model.StateVariables.AllOf;
@@ -48,6 +49,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			StatemachinesConfig statemachines = config.getStatemachines();
 
 			stringBuffer.append("#include \"statemachines.h\"\n");
+			
+			printWarningsAndErrors(stringBuffer, statemachines.getMessages());
 
 			generateCodeForGlobalCodeBoxes(stringBuffer, statemachines);
 
@@ -83,6 +86,17 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 		return stringBuffer.toString();
 	} // end of method generate(...)
+
+	private void printWarningsAndErrors(StringBuffer stringBuffer,
+			Messages messages) {
+		if (!messages.isEmpty()) {
+			stringBuffer.append('\n');
+			banner("messages from validation and config update");
+			stringBuffer.append('\n');
+			
+			messages.summarizeForCode(stringBuffer);
+		}
+	}
 
 	private void generateCodeForGlobalCodeBoxes(
 			final StringBuffer stringBuffer, StatemachinesConfig statemachines) {

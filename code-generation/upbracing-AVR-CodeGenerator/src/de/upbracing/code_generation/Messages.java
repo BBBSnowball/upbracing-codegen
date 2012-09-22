@@ -545,4 +545,12 @@ public class Messages {
 		addObjectFormatter(forClass, formatter);
 		return this;
 	}
+
+	/** is the list of messages empty?
+	 * 
+	 * @return true, if there are no messages; false, otherwise
+	 */
+	public boolean isEmpty() {
+		return messages.isEmpty();
+	}
 }
