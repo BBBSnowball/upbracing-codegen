@@ -1,11 +1,10 @@
 package de.upbracing.code_generation.fsm.model;
 
-import static org.junit.Assert.*;
+import static de.upbracing.code_generation.test.TestHelpers.assertListEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -205,25 +204,6 @@ public class TestParsers {
 				new TransitionInfo(null, null, "x()", "at", 3600+2*60+13.7),
 				FSMParsers.parseTransitionInfo("at 1:02:13.7 / x()"));
 		//NOTE: 1:02:.7 would not work
-	}
-	
-	private static void assertListEquals(Collection<?> expected, Collection<?> actual) {
-		//assertEquals(expected.size(), actual.size());
-		Iterator<?> it1 = expected.iterator(),
-				it2 = actual.iterator();
-		while (it1.hasNext() && it2.hasNext()) {
-			assertEquals(it1.next(), it2.next());
-		}
-		
-		if (it1.hasNext())
-			assertFalse("expected at least one more element: " + it1.next(), it1.hasNext());
-		
-		if (it2.hasNext())
-			assertFalse("unexpected element: " + it2.next(), it2.hasNext());
-	}
-	
-	private static void assertListEquals(Collection<?> actual, Object... expected) {
-		assertListEquals(Arrays.asList(expected), actual);
 	}
 
 	public static void main(String args[]) throws IOException {

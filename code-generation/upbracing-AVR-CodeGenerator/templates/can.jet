@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="CanTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.* java.util.Map java.util.HashMap java.util.List" %>
+	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.* java.util.List" %>
 
 <%
 
@@ -62,7 +62,7 @@ if (run_generator) { %>
 typedef enum uint32_t {
 <%
 
-Warnings warnings = new Warnings();
+Messages messages = new Messages().withOutputTo(System.err);
 
 Table t = new Table(stringBuffer);
 t.start();
@@ -264,7 +264,7 @@ for (Mob mob : dbcEcu.getMobs()) {
 <%
 	if (mob.getRxMessages().size() == 1) {
 		//Only one Message in MOB
-			readMessageCode(stringBuffer, warnings, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
+			readMessageCode(stringBuffer, messages, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
 		} else {
 		//Multiple Message in MOB
 
@@ -294,7 +294,7 @@ for (Mob mob : dbcEcu.getMobs()) {
 %>
 		} else if <%= ifstatement %> {		// <%=msgconfig.getName()%>, CAN ID: <%=messageId(msgconfig, true)%>
 <%
-			readMessageCode(stringBuffer, warnings, globVars, msgconfig, dbcEcu, "\t\t\t");			
+			readMessageCode(stringBuffer, messages, globVars, msgconfig, dbcEcu, "\t\t\t");			
 		}
 %>
 		}
@@ -536,11 +536,11 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 		
 		if (start%8 != 0 || len%8 != 0) {
 			//TODO support that
-			%><%= warnings.print("The signal '" + name + "' is not aligned on a byte boundary, so it will be ignored.") %><%
+			%><% messages.warn("The signal '%s' is not aligned on a byte boundary, so it will be ignored.", name).formatForCode(stringBuffer); %><%
 			continue;
 		}
 		if (addr > start) {
-			%><%= warnings.print("Cannot write overlapping signals. Ignoring signal '" + name + "'.") %><%
+			%><% messages.warn("Cannot write overlapping signals. Ignoring signal '%s'.", name).formatForCode(stringBuffer); %><%
 			continue;
 		}
 		
@@ -633,7 +633,7 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 			}
 			
 			if (signalconfig.getFactor() != 1 || signalconfig.getOffset() != 0)
-				warnings.print("This signal uses factor or offset, which is not supported yet.");
+				messages.warn("The signal '%s' uses factor or offset, which is not supported yet.", name).formatForCode(stringBuffer);
 		}	// len != 8
 		
 		printCode(stringBuffer, signalconfig.getImmAfterTx(), "\t\t\t");
@@ -661,7 +661,7 @@ inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
 #endif
 
 #endif	// NO_DBC_CAN_DEFS not defined
-<%=warnings.summary()%>
+<% messages.summarizeForCode(stringBuffer); %>
 
 <%
 	
@@ -674,7 +674,7 @@ String messageId(DBCMessage message, boolean suffix) {
 	return "0x" + Integer.toHexString(message.getId()) + ((suffix && message.isExtended()) ? "x" : "");
 }
 
-void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariableConfig globVars, DBCMessageConfig msg, DBCEcu currentEcu, String indent) {
+void readMessageCode(StringBuffer stringBuffer, Messages messages, GlobalVariableConfig globVars, DBCMessageConfig msg, DBCEcu currentEcu, String indent) {
 
 	printCode(stringBuffer, msg.getBeforeRx(), indent);
 	for(DBCSignal signal : msg.getSignalOrder()) {
@@ -708,12 +708,12 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 				
 				if (start%8 != 0 || len%8 != 0) {
 					//TODO support that
-					%><%= warnings.print("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.") %><%
+					%><% messages.warn("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.").formatForCode(stringBuffer); %><%
 					continue;
 				}
 				if (addr > start) {
 					//TODO support overlapping signals (only if CANdb++ support them, of course)
-					%><%= warnings.print("Cannot read overlapping signals. Ignoring signal " + name + ".") %><%
+					%><% messages.warn("Cannot read overlapping signals. Ignoring signal " + name + ".").formatForCode(stringBuffer); %><%
 					continue;
 				}
 					
@@ -787,7 +787,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 					}
 					
 					if (signal.getFactor() != 1 || signal.getOffset() != 0) { //TODO: implement factor and offset
-						%><%= warnings.print("This signal uses factor or offset, which is not supported yet.") %><%
+						%><% messages.warn("This signal uses factor or offset, which is not supported yet.").formatForCode(stringBuffer); %><%
 					}
 %>
 <%=indent%>	<%= type %> value = x.value;
@@ -818,7 +818,7 @@ void readMessageCode(StringBuffer stringBuffer, Warnings warnings, GlobalVariabl
 		}
 		
 		if (addr > msg.getLength()*8) {
-			 %><%= warnings.print("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".")  %><%
+			 %><% messages.warn("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".").formatForCode(stringBuffer); %><%
 		}
 		
 	}

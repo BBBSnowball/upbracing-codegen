@@ -8,7 +8,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ TestCanGenerator.class, TestEepromGenerator.class,
 		TestGlobalVariableGenerator.class, TestPinGenerator.class,
 		TestRTOSGenerator.class, TestStatemachineGenerator.class,
-		TestTable.class, TestStateNameValidation.class })
+		TestTable.class, TestStateNameValidation.class,
+		TestMessages.class })
 public class AllTests {
 
 }

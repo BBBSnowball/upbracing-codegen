@@ -601,12 +601,12 @@ inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, u
 
 #endif	// NO_DBC_CAN_DEFS not defined
 
-#warning There were 6 warnings
+#warning There were 6 warnings and/or errors
 /*
-  warning: This signal uses factor or offset, which is not supported yet.
-  warning: This signal uses factor or offset, which is not supported yet.
-  warning: This signal uses factor or offset, which is not supported yet.
-  warning: This signal uses factor or offset, which is not supported yet.
-  warning: This signal uses factor or offset, which is not supported yet.
-  warning: This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  This signal uses factor or offset, which is not supported yet.
 */
