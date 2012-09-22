@@ -28,6 +28,9 @@ public class Messages {
 		ERROR  ("ERROR: ", "#error "),
 		FATAL  ("FATAL: ", "#error ");
 		
+		public static final Severity LOWEST = TRACE;
+		public static final Severity HIGHEST = FATAL;
+		
 		private String normal_prefix, code_prefix;
 		
 		private Severity(String normal_prefix, String code_prefix) {
@@ -509,15 +512,19 @@ public class Messages {
 		sb.append("*/");
 	}
 	
-	/** from now on print all messages to this stream
+	/** from now on print messages to a stream with high severity
 	 * 
 	 * @param stream the stream to print to
+	 * @param minimum_severity lowest severity that should be printed
 	 * @return itself, for use in fluent style
 	 */
-	public Messages withOutputTo(final PrintStream stream) {
+	public Messages withOutputTo(final PrintStream stream, final Severity minimum_severity) {
 		addMessageListener(new MessageListener() {
 			@Override
 			public void message(Message msg) {
+				if (msg.getSeverity().ordinal() < minimum_severity.ordinal())
+					return;
+				
 				StringBuffer sb = new StringBuffer();
 				msg.format(sb);
 				stream.println(sb.toString());
@@ -525,6 +532,15 @@ public class Messages {
 		});
 		
 		return this;
+	}
+	
+	/** from now on print all messages to a stream
+	 * 
+	 * @param stream the stream to print to
+	 * @return itself, for use in fluent style
+	 */
+	public Messages withOutputTo(final PrintStream stream) {
+		return withOutputTo(stream, Severity.LOWEST);
 	}
 	
 	/** add a message listener, fluent interface 
