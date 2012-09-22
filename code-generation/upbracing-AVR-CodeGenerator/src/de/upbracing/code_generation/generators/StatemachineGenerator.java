@@ -131,8 +131,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return valid;
 	}
-	
-	//check all the state types and perform validation
+
+	// check all the state types and perform validation
 	private boolean typeCheckAndValidate(List<State> s,
 			StateMachineForGeneration smg) {
 		boolean valid = true;
@@ -156,15 +156,15 @@ public class StatemachineGenerator extends AbstractGenerator {
 				typeCheckAndValidate(superInnerStateValidate(state, smg), smg);
 			}
 		}
-		
-		//check number of initial states for each parent
-		if(!initialCount(smg, s))
+
+		// check number of initial states for each parent
+		if (!initialCount(smg, s))
 			valid = false;
-		
+
 		return valid;
 	}
-	
-	//perform validation of initial state
+
+	// perform validation of initial state
 	private boolean initalValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
 
@@ -182,16 +182,17 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 		return valid;
 	}
-	
-	//count number of initial states 
-	private boolean initialCount(StateMachineForGeneration smg, List<State> states) {
+
+	// count number of initial states
+	private boolean initialCount(StateMachineForGeneration smg,
+			List<State> states) {
 		int initialcount = 0;
 		boolean valid = true;
-		
+
 		for (State state : smg.getStates()) {
 			if (state instanceof InitialState) {
 				initialcount++;
-				if (initialcount > 1){
+				if (initialcount > 1) {
 					System.err.println(getStateInfo(smg, state)
 							+ " has more than one start states");
 					valid = false;
@@ -206,8 +207,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return valid;
 	}
-	
-	//validate all final states
+
+	// validate all final states
 	private boolean finalValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
 
@@ -225,8 +226,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 		return valid;
 	}
-	
-	//validate normal and super states
+
+	// validate normal and super states
 	private boolean normSupValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
 
@@ -241,8 +242,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 		return valid;
 	}
-	
-	//validate states inside superstate
+
+	// validate states inside superstate
 	private List<State> superInnerStateValidate(State state,
 			StateMachineForGeneration smg) {
 		List<State> states = new ArrayList<State>();
@@ -267,7 +268,6 @@ public class StatemachineGenerator extends AbstractGenerator {
 				}
 			}
 		}
-
 		return true;
 	}
 
@@ -280,7 +280,6 @@ public class StatemachineGenerator extends AbstractGenerator {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -324,42 +323,44 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 		}
 	}
-	
-	//validate state name
+
+	// validate state name
 	public static boolean nameValidate(Object nametobevalidated,
 			StateMachineForGeneration smg) {
-		Pattern digit = Pattern.compile("[a-zA-Z_]\\w*");
+		Pattern digit = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
 		boolean validname = true;
 
 		if (nametobevalidated instanceof State) {
-			String name = ((State) nametobevalidated).getName();
-			if (!(digit.matcher(name).matches()) || emptyOrNull(name)) {
-
-				System.err.println(getStateInfo(smg, (State) nametobevalidated)
+			State state = (State) nametobevalidated;
+			String name = state.getName();
+			
+			if (emptyOrNull(name) || (!digit.matcher(name).matches())) {
+				System.err.println(getStateInfo(smg, state)
 						+ " is not a valid C identifier!");
 				validname = false;
-			}
+				}
 		} else if (!(digit.matcher((String) nametobevalidated).matches())) {
 			System.err.println(getStateInfo(smg));
 			validname = false;
 		}
+
 		return validname;
 	}
 
 	// event name validator
 	private boolean evNameValidate(StateMachineForGeneration smg, String event) {
-		Pattern digit = Pattern.compile("[a-zA-Z_]\\w*");
+		Pattern digit = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
 		boolean validevent = true;
 
-		if (!digit.matcher(event).matches() && !event.isEmpty()) {
+		if (event.isEmpty() || (!digit.matcher(event).matches())) {
 			System.err.println(getStateInfo(smg) + " | Event name -> " + event
 					+ " is not a valid C identifier!");
 			validevent = false;
 		}
 		return validevent;
 	}
-	
-	//get state information
+
+	// get state information
 	private static String getStateInfo(StateMachineForGeneration smg,
 			State... state) {
 		StringBuilder str = new StringBuilder();
@@ -388,14 +389,14 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return info.toString();
 	}
-	
-	//get transition information
+
+	// get transition information
 	private String getTransitionInfo(Transition trans) {
 		return (" | Transition -> Source : " + trans.getSource()
 				+ " Destination : " + trans.getDestination());
 	}
-	
-	//validate initial state transitions
+
+	// validate initial state transitions
 	private boolean initialTransValidate(State state,
 			StateMachineForGeneration smg) {
 
@@ -423,7 +424,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 		return valid;
 	}
 
-	//validate normal/super state transition
+	// validate normal/super state transition
 	private boolean normalTransValidate(State state,
 			StateMachineForGeneration smg) {
 
@@ -455,8 +456,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return valid;
 	}
-	
-	//check whether initial state has incoming transitions
+
+	// check whether initial state has incoming transitions
 	private boolean initialHasInTransValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean hasincoming = true;
@@ -468,8 +469,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 		return hasincoming;
 	}
-	
-	//perform checks for outgoing transitions from initial state
+
+	// perform checks for outgoing transitions from initial state
 	private boolean initialOutValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean hasoutgoing = true;
@@ -480,8 +481,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return hasoutgoing;
 	}
-	
-	//check whether final has any outgoing transitions
+
+	// check whether final has any outgoing transitions
 	private boolean finalOutValidate(State state, StateMachineForGeneration smg) {
 		boolean outgoing = false;
 		if (state.getOutgoingTransitions().size() != 0) {
@@ -492,7 +493,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 		return outgoing;
 	}
 
-	//check whether state has incoming transitions
+	// check whether state has incoming transitions
 	private boolean stateInTransValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean incoming = true;
@@ -503,8 +504,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 		}
 		return incoming;
 	}
-	
-	//remove final states
+
+	// remove final states
 	private void removeFinalStates(MCUConfiguration config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			removeFinalStates(smg.getStates(), smg.getStateMachine());
@@ -536,8 +537,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 
 		state.get(0).getParent().getStates().remove(state.get(0));
 	}
-	
-	//assign names to unnamed states
+
+	// assign names to unnamed states
 	private void assignNames(MCUConfiguration config) {
 		int runningCounter = 0;
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
@@ -576,8 +577,8 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 		}
 	}
-	
-	//get list of unnamed states
+
+	// get list of unnamed states
 	private List<State> assignNames(Iterable<State> states, StateParent parent,
 			List<State> unnamed) {
 		for (State state : states) {
