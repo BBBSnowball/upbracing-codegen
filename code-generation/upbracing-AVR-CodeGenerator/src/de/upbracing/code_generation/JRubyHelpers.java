@@ -11,7 +11,10 @@ import Statecharts.StatechartsFactory;
 
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 
-public class JRubyHelpers {
+public final class JRubyHelpers {
+	// we don't want any instances of this class
+	private JRubyHelpers() { }
+	
 	public static String readResource(String name) throws IOException {
 		InputStream stream = JRubyHelpers.class.getClassLoader().getResourceAsStream(name);
 		if (stream == null)

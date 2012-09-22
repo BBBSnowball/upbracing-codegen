@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jruby.org.objectweb.asm.tree.IntInsnNode;
-
 import Statecharts.FinalState;
 import Statecharts.InitialState;
 import Statecharts.NormalState;
@@ -116,7 +114,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 				// look like this: "SuperState abc -> Region x -> State foo"
 
 				// statemachine validation
-				if (!nameValidate(smg.getName(), smg))
+				if (!nameValidate(smg))
 					valid = false;
 
 				// event validation
@@ -153,7 +151,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 			if (state instanceof SuperState) {
 				if (!normSupValidate(state, smg))
 					valid = false;
-				typeCheckAndValidate(superInnerStateValidate(state, smg), smg);
+				typeCheckAndValidate(superInnerStateValidate((SuperState)state, smg), smg);
 			}
 		}
 
@@ -244,7 +242,7 @@ public class StatemachineGenerator extends AbstractGenerator {
 	}
 
 	// validate states inside superstate
-	private List<State> superInnerStateValidate(State state,
+	private List<State> superInnerStateValidate(SuperState state,
 			StateMachineForGeneration smg) {
 		List<State> states = new ArrayList<State>();
 
@@ -323,58 +321,63 @@ public class StatemachineGenerator extends AbstractGenerator {
 			}
 		}
 	}
+	
+	public static boolean nameValidate(StateMachineForGeneration smg) {
+		if (emptyOrNull(smg.getName())) {
+			System.err.println("Statemachine name cannot be empty!");
+			return false;
+		} else if (!isNameValid(smg.getName())) {
+			System.err.println("Statemachine name '" + smg.getName() + "'"
+					+ " is not a valid C identifier!");
+			return false;
+		} else
+			return true;
+	}
 
 	// validate state name
-	public static boolean nameValidate(Object nametobevalidated,
+	public static boolean nameValidate(State state,
 			StateMachineForGeneration smg) {
-		Pattern digit = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
-		boolean validname = true;
+		String name = state.getName();
 
-		if (nametobevalidated instanceof State) {
-			State state = (State) nametobevalidated;
-			String name = state.getName();
-			
-			if (emptyOrNull(name) || (!digit.matcher(name).matches())) {
-				System.err.println(getStateInfo(smg, state)
-						+ " is not a valid C identifier!");
-				validname = false;
-				}
-		} else if (!(digit.matcher((String) nametobevalidated).matches())) {
-			System.err.println(getStateInfo(smg));
-			validname = false;
+		if (emptyOrNull(name) || isNameValid(name))
+			return true;
+		else {
+			System.err.println(getStateInfo(smg, state)
+					+ " is not a valid C identifier!");
+			return false;
 		}
+	}
 
-		return validname;
+	public static boolean isNameValid(String nametobevalidated) {
+		Pattern name_pattern = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
+		return name_pattern.matcher(nametobevalidated).matches();
 	}
 
 	// event name validator
+	//TODO pass Transition to this method and use it in the error message.
 	private boolean evNameValidate(StateMachineForGeneration smg, String event) {
-		Pattern digit = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
-		boolean validevent = true;
-
-		if (event.isEmpty() || (!digit.matcher(event).matches())) {
-			System.err.println(getStateInfo(smg) + " | Event name -> " + event
+		if (emptyOrNull(event) || isNameValid(event))
+			return true;
+		else {
+			System.err.println(getStateInfo(smg, null) + " | Event name -> " + event
 					+ " is not a valid C identifier!");
-			validevent = false;
+			return false;
 		}
-		return validevent;
 	}
 
 	// get state information
 	private static String getStateInfo(StateMachineForGeneration smg,
-			State... state) {
+			State state) {
 		StringBuilder str = new StringBuilder();
 		str.append("Statemachine -> " + smg.getName());
-		State[] stat = state;
 
-		if (state.length != 0)
-			str.append(getStateInfo(new StringBuilder(), stat[0]));
+		if (state != null)
+			getStateInfo(str, state);
 
 		return str.toString();
 	}
 
-	private static String getStateInfo(StringBuilder inf, State state) {
-		StringBuilder info = new StringBuilder();
+	private static void getStateInfo(StringBuilder info, State state) {
 		StateParent parent = state.getParent();
 
 		if (parent instanceof StateMachine) {
@@ -387,7 +390,6 @@ public class StatemachineGenerator extends AbstractGenerator {
 					+ " | Region -> " + region.getName());
 			getStateInfo(info, super_state);
 		}
-		return info.toString();
 	}
 
 	// get transition information
