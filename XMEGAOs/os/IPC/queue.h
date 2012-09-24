@@ -35,7 +35,7 @@ typedef struct
 			= { { 0, 0, (capacity), 0 } }; \
 		SEMAPHORE(sem##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
 		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (writer_count)); \
-		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, 0, (reader_count));
+		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, 0, (reader_count))
 		/* add the other semaphores here */
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
