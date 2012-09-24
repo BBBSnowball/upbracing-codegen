@@ -151,7 +151,7 @@ typedef struct Semaphore_n{
 	Semaphore_n_queue_entry queue [1];
 } Semaphore_n;
 
-#define SEMAPHORE_n(sem , queue_capacity ) \
+#define SEMAPHORE_N(sem, initial_value, queue_capacity ) \
 	struct { Semaphore sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
 		= { { (initial_value), 0, (queue_capacity) }, 0 };
 #define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
