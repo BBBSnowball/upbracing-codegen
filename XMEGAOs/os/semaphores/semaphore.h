@@ -4,7 +4,7 @@
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
  */ 
-#include "OSEK.h"
+//#include "OSEK.h"
 #include "Platform_Types.h"
 
 #ifndef SEMAPHORE_H_

@@ -19,9 +19,13 @@
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
       <ToolName>JTAGICE mkII</ToolName>
       <ToolNumber>00B000002588</ToolNumber>
+      <KeepTimersRunning>true</KeepTimersRunning>
+      <OverrideVtor>false</OverrideVtor>
+      <OverrideVtorValue>
+      </OverrideVtorValue>
       <Channel>
         <host>127.0.0.1</host>
-        <port>49273</port>
+        <port>49206</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
@@ -202,7 +206,6 @@
       <Value>../os/IPC</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize most (-O3)</avrgcc.compiler.optimization.level>
   <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
   <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
@@ -273,6 +276,9 @@
     <Compile Include="os\drivers\Gpio.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="os\drivers\USART.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="os\drivers\Sdram.c">
       <SubType>compile</SubType>
     </Compile>
@@ -283,6 +289,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\drivers\Timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\drivers\USART.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\internal\OSEK_Alarm.c">
