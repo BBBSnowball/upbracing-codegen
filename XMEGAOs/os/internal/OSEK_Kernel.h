@@ -127,8 +127,6 @@ void StartFirstTask(void);
 // Qualifier:
 // Parameter: void
 //************************************
-StatusType Schedule(void);
-
-void Os_Schedule(void);
+StatusType Os_Schedule(void);
 
 #endif /* OSEK_SCHEDULER_H_ */

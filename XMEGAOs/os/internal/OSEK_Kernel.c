@@ -46,8 +46,8 @@ uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 void InitializeStackForTask(volatile Os_Tcb * tcb)
 {
 	//volatile uint8_t taskAddressLow = 0, taskAddressHigh = 0;
-	volatile uint16_t taskAddress = 0;
-	volatile StackPointerType *sp = tcb->topOfStack;
+	uint16_t taskAddress = 0;
+	StackPointerType *sp = tcb->topOfStack;
 	
 	/* Return address of this stack: init to function pointer */
 	taskAddress = (uint16_t) tcb->func;
@@ -174,8 +174,7 @@ void TIMER1_COMPA_vect(void)
 	asm volatile("reti");
 }
 
-void Os_Schedule(void);
-void Os_Schedule(void)
+StatusType Os_Schedule(void)
 {	
 	// Decide which task to run next...
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
@@ -193,40 +192,41 @@ void Os_Schedule(void)
 				break;
 			}
 		}
+		os_currentTcb = newtcb;
 	}
 
-	os_currentTcb = newtcb;
-	
 	OS_EXIT_CRITICAL();
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error Multiple activations for basic tasks, multiple tasks per priority
 	#endif
+	
+	return E_OK;
 }
 
-StatusType Schedule(void)
-{
-	// Decide which task to run next...
-	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	if (os_currentTcb->preempt == PREEMPTABLE
-		|| os_currentTcb->state == SUSPENDED) 
-	{
-		for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
-		{
-			if (os_ready_queue[i] == READY)
-			{
-				os_currentTcb = &os_tcbs[i];
-				os_ready_queue[i] = RUNNING;
-				break;
-			}
-		}
-	}
-	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	#error Multiple activations for basic tasks, multiple tasks per priority
-	#endif
-
-	// Should never get here...
-	return E_OK;	
-}
+//StatusType Schedule(void)
+//{
+	//// Decide which task to run next...
+	//#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
+	//if (os_currentTcb->preempt == PREEMPTABLE
+		//|| os_currentTcb->state == SUSPENDED) 
+	//{
+		//for (int8_t i = OS_NUMBER_OF_TCBS - 1; i >= 0; i--)
+		//{
+			//if (os_ready_queue[i] == READY)
+			//{
+				//os_currentTcb = &os_tcbs[i];
+				//os_ready_queue[i] = RUNNING;
+				//break;
+			//}
+		//}
+	//}
+	//#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
+	//#error Multiple activations for basic tasks, multiple tasks per priority
+	//#endif
+//
+	//// Should never get here...
+	//return E_OK;	
+//}
 
 TASK(Task_Idle)
 {
