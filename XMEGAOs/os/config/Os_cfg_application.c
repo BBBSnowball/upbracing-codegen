@@ -53,7 +53,7 @@ volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS_DEFINE] =
 	{	// Alarm for Task_Update
 		1,				// Task ID: Update
 		0,				// Current Value
-		2,				// Ticks Per Base	
+		4,				// Ticks Per Base	
 	},					
 	{	// Alarm for Task_Increment
 		2,				// Task ID: Increment
@@ -63,6 +63,6 @@ volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS_DEFINE] =
 	{	// Alarm for Task_Shift
 		3,				// Task ID: Shift
 		0,				// Current Value
-		2,				// Ticks Per Base
+		3,				// Ticks Per Base
 	}			
 };

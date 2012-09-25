@@ -55,7 +55,7 @@ typedef struct { //Declarations incomplete
 #define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
 #define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), 65280, -1, 0, (queue_capacity) } }
+		{ { (initial_value), 65280, 0, -1, (queue_capacity) } }
 #define SEMAPHORE(sem, initial_value, queue_capacity) \
 		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
@@ -154,7 +154,7 @@ typedef struct Semaphore_n{
 
 #define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
 	struct { Semaphore sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), 0, (queue_capacity) }, 0 };
+		= { { (initial_value), 65280, 0, -1, (queue_capacity) }, 0 };
 #define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
 
  #define sem_wait_n(sem, n) _sem_wait_n(SEMAPHORE_REF_N(sem), n)

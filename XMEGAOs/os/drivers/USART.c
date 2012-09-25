@@ -13,7 +13,7 @@
 // Capacity: 10 Bytes
 // Receivers: 1 (This driver)
 // Senders: arbitrary number (2 in this TEST! case. How can we automate this?)
-QUEUE(usart, 10, 1, 2);
+QUEUE(usart,10,1,2);
 
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)

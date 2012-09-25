@@ -32,10 +32,10 @@ typedef struct
 //NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
 #define QUEUE(sem, capacity, reader_count, writer_count) \
 		struct { Queue q; uint8_t rest_q_queue[(capacity)-1]; } sem##_QUEUE \
-			= { { 0, 0, (capacity), 0 } }; \
+			= { { 0, -1, (capacity), 0 } }; \
 		SEMAPHORE(sem##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
 		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (writer_count)); \
-		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, 0, (reader_count))
+		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, (capacity), (reader_count))
 		/* add the other semaphores here */
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
