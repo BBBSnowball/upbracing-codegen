@@ -15,6 +15,7 @@
 volatile uint8_t j = 10;
 volatile uint8_t shift = 0;
 
+
 int main(void)
 {	
 	// Init PORTA
@@ -50,7 +51,8 @@ TASK(Task_Increment)
 	j++;
 	
 	// Enqueue something for USART
-	USARTEnqueue(3, "123");
+	
+	USARTEnqueue(5, "First");
 	
 	// Terminate this task
 	TerminateTask();
@@ -64,7 +66,7 @@ TASK(Task_Shift)
 		shift = 0;
 	
 	// Enqueue something different for USART
-	USARTEnqueue(6, "abcxyz");
+	USARTEnqueue(6, "Second");
 	
 	// Terminate this task
 	TerminateTask();

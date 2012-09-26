@@ -23,7 +23,7 @@ void _sem_wait(Semaphore* sem){
 		
 		if (sem->count < 0) 
 		{
-			if (sem->queue_end == sem->queue_cap)
+			if (sem->queue_end == sem->queue_cap-1)
 			{
 				sem->queue_end = 0;
 			}
@@ -43,7 +43,7 @@ void _sem_signal(Semaphore* sem){
 		
 	sem->count++;
 	
-	if (sem->queue_front == sem->count)
+	if (sem->queue_front == sem->queue_cap-1)
 	{
 		sem->queue_front = 0;
 	}
@@ -75,7 +75,7 @@ sem_token_t _sem_start_wait(Semaphore* sem){
 	sem->count--;
 	if (sem->count < 0)
 	{
-		if (sem->queue_end == sem->queue_cap)
+		if (sem->queue_end == sem->queue_cap-1)
 		{
 			sem->queue_end = 0;
 		}
@@ -121,7 +121,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 	
 	if (sem->queue[sem->queue_front] == tok)
 	{
-		if (sem->queue_front == sem->count)
+		if (sem->queue_front == sem->queue_cap-1)
 		{
 			sem->queue_front = 0;
 		}
@@ -144,7 +144,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 			}
 			if (sem->queue_end==0)
 			{
-				sem->queue_end = sem->queue_cap;
+				sem->queue_end = sem->queue_cap-1;
 			} 
 			else
 			{
@@ -172,7 +172,7 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 	
 	if (sem->count < 0)
 	{
-		if (sem->queue_end == sem->queue_cap)
+		if (sem->queue_end == sem->queue_cap-1)
 		{
 			sem->queue_end = 0;
 		}
@@ -192,7 +192,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n){
 	
 	sem->count++;
 	
-	if (sem->queue_front == sem->queue_cap)
+	if (sem->queue_front == sem->queue_cap-1)
 	{
 		sem->queue_front = 0;
 	}
@@ -221,7 +221,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 	sem->count--;
 	if (sem->count < 0)
 	{
-		if (sem->queue_end == sem->queue_cap)
+		if (sem->queue_end == sem->queue_cap-1)
 		{
 			sem->queue_end = 0;
 		}
@@ -260,7 +260,7 @@ void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token){
 	
 	if (sem->queue[sem->queue_front].pid == tok)
 	{
-		if (sem->queue_front == sem->count)
+		if (sem->queue_front == sem->queue_cap-1)
 		{
 			sem->queue_front = 0;
 		}
@@ -282,7 +282,7 @@ void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token){
 			}
 			if (sem->queue_end==0)
 			{
-				sem->queue_end = sem->queue_cap;
+				sem->queue_end = sem->queue_cap-1;
 			}
 			else
 			{

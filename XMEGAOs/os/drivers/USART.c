@@ -35,7 +35,12 @@ void USARTInit(uint16_t ubrr_value)
 void USARTEnqueue(uint8_t length, const char * text) 
 {
 	// TODO: This should block, if there is not enough space available!
+	
+	//sem_wait(QUEUE_SEM_REF(usart));
+	//sem_wait_n(QUEUE_PROD_REF(usart),3);
 	queue_enqueue2(usart, length, text);
+	//sem_signal_n(QUEUE_PROD_REF(usart),3);
+	//sem_signal(QUEUE_SEM_REF(usart));
 	
 	// Send first char, if USART is ready!
 	// - let the Send-Complete Interrupt do the rest
