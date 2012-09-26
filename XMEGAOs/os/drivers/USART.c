@@ -36,11 +36,9 @@ void USARTEnqueue(uint8_t length, const char * text)
 {
 	// TODO: This should block, if there is not enough space available!
 	
-	//sem_wait(QUEUE_SEM_REF(usart));
-	//sem_wait_n(QUEUE_PROD_REF(usart),3);
+	
 	queue_enqueue2(usart, length, text);
-	//sem_signal_n(QUEUE_PROD_REF(usart),3);
-	//sem_signal(QUEUE_SEM_REF(usart));
+	
 	
 	// Send first char, if USART is ready!
 	// - let the Send-Complete Interrupt do the rest
@@ -48,7 +46,8 @@ void USARTEnqueue(uint8_t length, const char * text)
 	OS_ENTER_CRITICAL();
 	if(UCSR0A & (1<<UDRE0))
 	{
-		char c = queue_dequeue(usart);
+		char c;
+		queue_dequeue(usart, &c);
 		UDR0 = c;
 	}
 	OS_EXIT_CRITICAL();
@@ -59,7 +58,8 @@ ISR(USART0_TX_vect)
 	// Only do this, if there is something in the queue!
 	if (queue_is_data_available(usart, 1)) 
 	{
-		char c = queue_dequeue(usart);
+		char c; 
+		queue_dequeue(usart,&c);
 		UDR0 = c;
 	}	
 }

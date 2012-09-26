@@ -2,9 +2,9 @@
  * queue.h
  *
  * Created: 16-Jul-12 7:19:01 PM
- *  Author: Krishna
+ *  Author: Krishna (s.krishna1989@gmail.com)
  */ 
-#include "OSEK.h"
+#include "Os.h"
 #include "semaphores/semaphore.h"
 #include "Platform_Types.h"
 
@@ -47,7 +47,7 @@ typedef struct
 //                queue_capacity is 255. You can reduce it a bit, if you have to. You
 //                should note that in the documentation.
 
-#define QUEUE_REF(sem)     (&(sem##_QUEUE).q)
+#define QUEUE_REF(sem)     &sem##_QUEUE.q
 #define QUEUE_SEM_REF(sem) SEMAPHORE_REF(sem##_QUEUE_SEM)
 #define QUEUE_PROD_REF(sem) SEMAPHORE_REF_N(sem##_QUEUE_FREE)
 #define QUEUE_CONS_REF(sem) SEMAPHORE_REF_N(sem##_QUEUE_AVAILABLE)
@@ -60,21 +60,42 @@ typedef struct
 //NOTE(Benjamin): When you implement the queues, you will find out which semaphores you
 //                need for each of the functions. Then you can add them as arguments, as
 //                I have done here for queue_enqueue.
-#define queue_enqueue (sem, data) _queue_enqueue(QUEUE_REF(sem), data, QUEUE_SEM_REF(sem))
+#define queue_enqueue (sem, data) _sem_wait(QUEUE_SEM_REF(sem));\
+									_sem_wait_n(QUEUE_PROD_REF(sem),1);\
+									while (!_queue_has_free_space(QUEUE_REF(sem),1));\
+									_queue_enqueue(QUEUE_REF(sem), data);\
+									_sem_signal_n(QUEUE_PROD_REF(sem),bytes);\
+									_sem_signal(QUEUE_SEM_REF(sem))
+
 void _queue_enqueue(Queue* sem, uint8_t data);
-#define queue_enqueue2(sem, bytes, data) _queue_enqueue2(QUEUE_REF(sem), bytes, data)
+#define queue_enqueue2(sem, bytes, data) _sem_wait(QUEUE_SEM_REF(sem));\
+											_sem_wait_n(QUEUE_PROD_REF(sem),bytes);\
+											while (!_queue_has_free_space(QUEUE_REF(sem),bytes));\
+											_queue_enqueue2(QUEUE_REF(sem), bytes, data);\
+											_sem_signal_n(QUEUE_PROD_REF(sem),bytes);\
+											_sem_signal(QUEUE_SEM_REF(sem))
 void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 
-#define queue_dequeue(sem) _queue_dequeue(QUEUE_REF(sem))
-uint8_t _queue_dequeue(Queue* sem);
-#define  queue_dequeue2(sem, bytes, data_out) _queue_dequeue2(QUEUE_REF(sem), bytes, data_out)
-void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out);
+#define queue_dequeue(q, data_out) _sem_wait(QUEUE_SEM_REF(q));\
+						_sem_wait_n(QUEUE_CONS_REF(q),1);\
+						while (!_queue_has_free_space(QUEUE_REF(q),1));\
+						_queue_dequeue(QUEUE_REF(q), data_out);\
+						_sem_signal_n(QUEUE_CONS_REF(q),1);\
+						_sem_signal(QUEUE_SEM_REF(q))
+void _queue_dequeue(Queue* q, uint8_t* data_out);
+#define  queue_dequeue2(q, bytes, data_out) _sem_wait(QUEUE_SEM_REF(q));\
+											_sem_wait_n(QUEUE_CONS_REF(q),bytes);\
+											while (!_queue_has_free_space(QUEUE_REF(q),bytes));\
+											_queue_dequeue2(QUEUE_REF(q), bytes, data_out);\
+											_sem_signal_n(QUEUE_CONS_REF(q),bytes);\
+											_sem_signal(QUEUE_SEM_REF(q))
+void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out);
 
-#define queue_is_data_available(sem, bytes) _queue_is_data_available(QUEUE_CONS_REF(sem), bytes)
-bool _queue_is_data_available (Queue* sem, uint8_t number_of_bytes);
+#define queue_is_data_available(q, bytes) _queue_is_data_available(QUEUE_REF(q), bytes)
+bool _queue_is_data_available (Queue* q, uint8_t number_of_bytes);
 
-#define queue_has_free_space(sem, bytes) _queue_has_free_space(QUEUE_PROD_REF(sem), bytes)
-bool _queue_has_free_space (Queue* sem, uint8_t number_of_bytes);
+#define queue_has_free_space(q, bytes) _queue_has_free_space(QUEUE_REF(q), bytes)
+bool _queue_has_free_space (Queue* q, uint8_t number_of_bytes);
 
 #define queue_start_wait_data_available(sem,n) _queue_start_wait_data_available(QUEUE_CONS_REF(sem), n)
 sem_token_t _queue_start_wait_data_available (Semaphore_n* sem, uint8_t n);

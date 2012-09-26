@@ -6,9 +6,9 @@
  */ 
 #include "semaphore.h"
 #include "queue.h"
-#include "OSEK.h"
+#include "Os.h"
 //#include <util/delay.h>
-#include "OSEK_Kernel.h"
+#include "Os_Kernel.h"
 
 
 const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
@@ -185,6 +185,8 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 		OS_EXIT_CRITICAL();
 		//Suspend here
 	}
+	
+	
 	
 }
 

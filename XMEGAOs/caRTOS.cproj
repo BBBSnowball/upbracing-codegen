@@ -12,26 +12,26 @@
     <AvrGccProjectExtensions>
     </AvrGccProjectExtensions>
     <AssemblyName>XMEGATest2</AssemblyName>
-    <Name>XMEGAOs</Name>
+    <Name>caRTOS</Name>
     <RootNamespace>XMEGATest2</RootNamespace>
     <avrtool>com.atmel.avrdbg.tool.jtagicemkii</avrtool>
     <com_atmel_avrdbg_tool_jtagicemkii>
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
       <ToolName>JTAGICE mkII</ToolName>
-      <ToolNumber>070000005DEE</ToolNumber>
+      <ToolNumber>00B000002588</ToolNumber>
       <KeepTimersRunning>true</KeepTimersRunning>
       <OverrideVtor>false</OverrideVtor>
       <OverrideVtorValue>
       </OverrideVtorValue>
       <Channel>
         <host>127.0.0.1</host>
-        <port>8720</port>
+        <port>49206</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
         <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
-          <JtagDbgClock>250000</JtagDbgClock>
+          <JtagDbgClock>1000000</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
           <IspClock>150000</IspClock>
           <JtagInChain>false</JtagInChain>
@@ -180,58 +180,59 @@
     <OutputFileExtension>.elf</OutputFileExtension>
     <ToolchainSettings>
       <AvrGcc>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>../os</Value>
-      <Value>../os/internal</Value>
-      <Value>../os/datatypes</Value>
-      <Value>../os/generated</Value>
-      <Value>../os/drivers</Value>
-      <Value>../src/asf/xmega/drivers/cpu</Value>
-      <Value>../src/asf/xmega/drivers/pmic</Value>
-      <Value>../src/asf/xmega/drivers/sleep</Value>
-      <Value>../src/asf/xmega/drivers/ebi</Value>
-      <Value>../src/asf/common/utils</Value>
-      <Value>../src/asf/xmega/utils/preprocessor</Value>
-      <Value>../src/asf/xmega/utils</Value>
-      <Value>../src/asf/common/services/sleepmgr</Value>
-      <Value>../src/config/</Value>
-      <Value>../src/asf/common/services/clock</Value>
-      <Value>../os/semaphores</Value>
-      <Value>../os/IPC</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
-  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.linker.libraries.Libraries>
-    <ListValues>
-      <Value>m</Value>
-    </ListValues>
-  </avrgcc.linker.libraries.Libraries>
-  <avrgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>../src/asf/xmega/drivers/cpu</Value>
-      <Value>../src/asf/xmega/drivers/pmic</Value>
-      <Value>../src/asf/xmega/drivers/sleep</Value>
-      <Value>../src/asf/xmega/drivers/ebi</Value>
-      <Value>../src/asf/common/utils</Value>
-      <Value>../src/asf/xmega/utils/preprocessor</Value>
-      <Value>../src/asf/xmega/utils</Value>
-      <Value>../src/asf/common/services/sleepmgr</Value>
-      <Value>../src/config/</Value>
-      <Value>../src/asf/common/services/clock</Value>
-    </ListValues>
-  </avrgcc.assembler.general.IncludePaths>
-  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-</AvrGcc>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>../os</Value>
+            <Value>../os/internal</Value>
+            <Value>../os/datatypes</Value>
+            <Value>../os/generated</Value>
+            <Value>../os/drivers</Value>
+            <Value>../src/asf/xmega/drivers/cpu</Value>
+            <Value>../src/asf/xmega/drivers/pmic</Value>
+            <Value>../src/asf/xmega/drivers/sleep</Value>
+            <Value>../src/asf/xmega/drivers/ebi</Value>
+            <Value>../src/asf/common/utils</Value>
+            <Value>../src/asf/xmega/utils/preprocessor</Value>
+            <Value>../src/asf/xmega/utils</Value>
+            <Value>../src/asf/common/services/sleepmgr</Value>
+            <Value>../src/config/</Value>
+            <Value>../src/asf/common/services/clock</Value>
+            <Value>../os/semaphores</Value>
+            <Value>../os/IPC</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize most (-O3)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcc.linker.libraries.Libraries>
+          <ListValues>
+            <Value>m</Value>
+          </ListValues>
+        </avrgcc.linker.libraries.Libraries>
+        <avrgcc.linker.memorysettings.InitialStack>0x01ff</avrgcc.linker.memorysettings.InitialStack>
+        <avrgcc.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>../src/asf/xmega/drivers/cpu</Value>
+            <Value>../src/asf/xmega/drivers/pmic</Value>
+            <Value>../src/asf/xmega/drivers/sleep</Value>
+            <Value>../src/asf/xmega/drivers/ebi</Value>
+            <Value>../src/asf/common/utils</Value>
+            <Value>../src/asf/xmega/utils/preprocessor</Value>
+            <Value>../src/asf/xmega/utils</Value>
+            <Value>../src/asf/common/services/sleepmgr</Value>
+            <Value>../src/config/</Value>
+            <Value>../src/asf/common/services/clock</Value>
+          </ListValues>
+        </avrgcc.assembler.general.IncludePaths>
+        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+      </AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
@@ -253,13 +254,13 @@
     <Compile Include="os\config\Os_config.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\datatypes\OSEK_AlarmTypes.h">
+    <Compile Include="os\datatypes\Os_AlarmTypes.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\datatypes\OSEK_TaskTypes.h">
+    <Compile Include="os\datatypes\Os_TaskTypes.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\datatypes\OSEK_StatusTypes.h">
+    <Compile Include="os\datatypes\Os_StatusTypes.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\datatypes\Platform_Types.h">
@@ -295,22 +296,22 @@
     <Compile Include="os\drivers\USART.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Alarm.c">
+    <Compile Include="os\internal\Os_Alarm.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Alarm.h">
+    <Compile Include="os\internal\Os_Alarm.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Kernel.c">
+    <Compile Include="os\internal\Os_Kernel.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Kernel.h">
+    <Compile Include="os\internal\Os_Kernel.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Task.c">
+    <Compile Include="os\internal\Os_Task.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\internal\OSEK_Task.h">
+    <Compile Include="os\internal\Os_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\IPC\queue.c">
@@ -319,10 +320,10 @@
     <Compile Include="os\IPC\queue.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\OSEK.c">
+    <Compile Include="os\Os.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\OSEK.h">
+    <Compile Include="os\Os.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\semaphores\semaphore.c">

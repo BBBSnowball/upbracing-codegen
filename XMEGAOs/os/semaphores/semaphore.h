@@ -4,8 +4,9 @@
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
  */ 
-//#include "OSEK.h"
+//#include "Os.h"
 #include "Platform_Types.h"
+//#include "queue.h"
 
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
@@ -144,7 +145,8 @@ typedef struct Semaphore_n{
 	int8_t count;
 	//NOTE(Peer): No. "token_count" overruns at 255. Its "unsigned char", this is what "uint8_t" stands for ;)
 	//            Or did I get you wrong here?
-	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
+	//NOTE(Krishna): should be uint16_t
+	uint16_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
 	int8_t queue_front;
 	int8_t queue_end;
 	uint8_t queue_cap;
@@ -160,19 +162,19 @@ typedef struct Semaphore_n{
  #define sem_wait_n(sem, n) _sem_wait_n(SEMAPHORE_REF_N(sem), n)
  void _sem_wait_n (Semaphore_n* sem , uint8_t n);
  
- #define sem_signal_n(sem, n) _sem_signal_n(&sem##_SEM_n, n)
+ #define sem_signal_n(sem, n) _sem_signal_n(SEMAPHORE_REF_N(sem), n)
  void _sem_signal_n (Semaphore_n* sem , uint8_t n);
  
  //Start waiting for queue
- #define sem_start_wait_n(sem,n) _sem_start_wait_n(&sem##_SEM_n, n)
+ #define sem_start_wait_n(sem,n) _sem_start_wait_n(SEMAPHORE_REF_N(sem), n)
  sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
  
  //Continue waiting for queue
- #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(&sem##_SEM_n, token)
+ #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
  bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
  //Stop waiting for queue
- #define sem_stop_wait_n(sem, token) _sem_stop_wait_n(&sem##_SEM_n, token)
+ #define sem_stop_wait_n(sem, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), token)
  void _sem_stop_wait_n (Semaphore_n* sem, sem_token_t token );
 
 
