@@ -32,7 +32,7 @@ typedef struct
 //NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
 #define QUEUE(sem, capacity, reader_count, writer_count) \
 		struct { Queue q; uint8_t rest_q_queue[(capacity)-1]; } sem##_QUEUE \
-			= { { 0, -1, (capacity), 0 } }; \
+			= { { 0, 0, (capacity), 0 } }; \
 		SEMAPHORE(sem##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
 		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (writer_count)); \
 		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, (capacity), (reader_count))
@@ -68,12 +68,12 @@ typedef struct
 									_sem_signal(QUEUE_SEM_REF(sem))
 
 void _queue_enqueue(Queue* sem, uint8_t data);
-#define queue_enqueue2(sem, bytes, data) _sem_wait(QUEUE_SEM_REF(sem));\
-											_sem_wait_n(QUEUE_PROD_REF(sem),bytes);\
-											while (!_queue_has_free_space(QUEUE_REF(sem),bytes));\
-											_queue_enqueue2(QUEUE_REF(sem), bytes, data);\
-											_sem_signal_n(QUEUE_PROD_REF(sem),bytes);\
-											_sem_signal(QUEUE_SEM_REF(sem))
+#define queue_enqueue2(sem, bytes, data) \
+_sem_wait(QUEUE_SEM_REF(sem)); \
+_sem_wait_n(QUEUE_PROD_REF(sem), bytes); \
+_queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data); \
+_sem_signal_n(QUEUE_PROD_REF(sem), bytes); \
+_sem_signal(QUEUE_SEM_REF(sem));
 void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 
 #define queue_dequeue(q, data_out) _sem_wait(QUEUE_SEM_REF(q));\

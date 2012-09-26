@@ -22,7 +22,7 @@ void Os_InitializeTaskContext(Os_Tcb * tcb)
 	
 	// Reset R0
 	*sp = (uint8_t) 0x00;
-	*sp--;
+	sp--;
 	// Status register
 	*sp = OS_STATUS_REG_INT_ENABLED;					// SREG with global interrupt enable flag
 		

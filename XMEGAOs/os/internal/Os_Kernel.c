@@ -45,6 +45,8 @@ void Os_StartFirstTask(void)
 {
 	OS_RESTORE_CONTEXT();
 	os_isStarted = 1;
+	
+	asm volatile("reti");
 }
 
 void Os_TimerIncrement(void) 

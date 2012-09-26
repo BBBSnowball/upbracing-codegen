@@ -32,10 +32,10 @@ void _sem_wait(Semaphore* sem){
 				sem->queue_end++;
 			}
 			sem->queue[sem->queue_end] = t; 
-			OS_EXIT_CRITICAL();
+			
 			//To be suspended.
 		}	
-		
+		OS_EXIT_CRITICAL();
 }
 
 
@@ -64,7 +64,7 @@ void _sem_signal(Semaphore* sem){
 
 sem_token_t _sem_start_wait(Semaphore* sem){
 	
-	uint8_t i,tok;
+	uint8_t tok;
 	
 	
 	tok = sem->token_count++;
@@ -96,7 +96,7 @@ sem_token_t _sem_start_wait(Semaphore* sem){
 
 bool _sem_continue_wait(Semaphore* sem , sem_token_t token){
 	
-	uint8_t i,tok;
+	uint8_t tok;
 	tok = token;
 	if (tok == 0)
 	{
@@ -153,7 +153,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token){
 			
 			
 		}
-		if (i=sem->queue_cap){i=0;}else{i++;}
+		if (i==sem->queue_cap){i=0;}else{i++;}
 		
 	}
 	
@@ -182,10 +182,9 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n){
 		}
 		sem->queue[sem->queue_end].pid = t;
 		sem->queue[sem->queue_end].n = n;
-		OS_EXIT_CRITICAL();
 		//Suspend here
 	}
-	
+	OS_EXIT_CRITICAL();
 	
 	
 }
@@ -215,7 +214,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n){
 
 sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 	
-	uint8_t i,tok;
+	uint8_t tok;
 	tok = sem->token_count++;
 	if(sem->token_count == 0) sem->token_count = 65280;
 	
@@ -233,11 +232,10 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n){
 		}
 		sem->queue[sem->queue_end].pid = tok;
 		sem->queue[sem->queue_end].n = n;
-		OS_EXIT_CRITICAL();
 		//no suspend
 		
 	}
-	
+	OS_EXIT_CRITICAL();
 	return tok;
 }
 
@@ -292,6 +290,6 @@ void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token){
 			}
 			
 		}
-		if (i=sem->queue_cap){i=0;}else{i++;}
+		if (i==sem->queue_cap){i=0;}else{i++;}
 	}
 }
