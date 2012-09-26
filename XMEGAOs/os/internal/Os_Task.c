@@ -30,7 +30,7 @@ void InitializeTaskContext(Os_Tcb * tcb)
 	
 	// R0 may contain anything (temp register)
 	// Status register
-	*sp = Os_STATUS_REG_INT_ENABLED;					// SREG with global interrupt enable flag
+	*sp = OS_STATUS_REG_INT_ENABLED;					// SREG with global interrupt enable flag
 	sp--;
 	
 	// R1 always needs to be zero
@@ -64,6 +64,7 @@ StatusType TerminateTask(void)
 	
 	// Write the start address of the task function to the very top of this stack
 	// -> This will make the processor return to that task when context is restored
+	// -> These first 2 Bytes will not be altered by the inline asm below.
 	*sp = (StackPointerType) (((uint16_t) os_currentTcb->func) & (uint16_t) 0x00ff);
 	sp--;
 	*sp = (StackPointerType) ((((uint16_t) os_currentTcb->func) >> 8) & (uint16_t) 0x00ff);
@@ -74,8 +75,8 @@ StatusType TerminateTask(void)
 	// cannot be used for interating over the memory space.
 	
 	// Therefore, the next part is written in assembly.
-	// 1) Restore the Stack pointer to the top of the Stack
-	// 2) Decrement lower byte by 2 (no handling for carry, yet)
+	// 1) Load top stack pointer for this TCB
+	// 2) Decrement stack pointer by 2
 	// 3) Clear R1 (just to be sure)
 	// 4) Fill R0 space with zero
 	// 5) Push a valid SREG (init SREG value)
@@ -83,13 +84,12 @@ StatusType TerminateTask(void)
 	
 	// The rest is written in assembly to ensure, that no optimizations take place here.
 	/* Set StackPointer to sp */
-	asm volatile(	// 1) Restore the Stack pointer to the top of the Stack
+	asm volatile(	// 1) Load top stack pointer for this TCB
 					"lds r26, os_currentTcb		\n\t"
 					"lds r27, os_currentTcb + 1	\n\t"
 					"ld r28, x+					\n\t"
-					// 2) Decrement lower byte by 2 (no handling for carry, yet)
-					"dec r28					\n\t"
-					"dec r28					\n\t"
+					// 2) Decrement stack pointer by 2
+					"sbiw r28, 2				\n\t"
 					"out __SP_L__, r28			\n\t"
 					"ld r29, x+					\n\t"
 					"out __SP_H__, r29			\n\t"
