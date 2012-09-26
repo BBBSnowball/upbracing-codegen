@@ -1,6 +1,6 @@
 #include "queue.h"
 #include "semaphore.h"
-#include "OSEK.h"
+#include "Os.h"
 /*
  * queue.c
  *
@@ -15,7 +15,10 @@
 */
 void _queue_enqueue(Queue* q, uint8_t data )
 {
-	q->queue_end = (q->queue_end==q->capacity)? 0 : q->queue_end + 1;
+	// NOTE(Peer): I changed the queue_end counter handling. It was faulty before.
+	q->queue_end++;
+	if (q->queue_end == q->capacity)
+		q->queue_end = 0;
 	q->q_queue[q->queue_end] = data;
 	q->occupied++;
 	
@@ -35,7 +38,10 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 	uint8_t i;
 	for (i=0;i<bytes;i++)
 	{
-		q->queue_end = (q->queue_end==q->capacity)? 0 : q->queue_end + 1;
+		// NOTE(Peer): I changed the queue_end counter handling. It was faulty before.
+		q->queue_end++;
+		if (q->queue_end == q->capacity)
+			q->queue_end = 0;
 		q->q_queue[q->queue_end] = data[i];
 	}
 	q->occupied = q->occupied + bytes;

@@ -25,22 +25,22 @@ extern uint8_t os_ready_queue[];
 
 #define OS_RESET_CONTEXT()		\
 	asm volatile(	/* Reset stack pointer for this task */						\
-					"lds r26, os_currentTcb		\n\t"							\ 
+					"lds r26, os_currentTcb		\n\t"							\
 					"lds r27, os_currentTcb + 1	\n\t"							\
 					"adiw r26, 2				\n\t"							\
-					"ld r28, x+					\n\t"							\
-					"ld r29, x+					\n\t"							\
-					"out __SP_L__, r28			\n\t"							\
-					"out __SP_H__, r29			\n\t"							\
+					"ld __tmp_reg__, x+					\n\t"					\
+					"out __SP_L__, __tmp_reg__			\n\t"							\
+					"ld __tmp_reg__, x+					\n\t"							\
+					"out __SP_H__, __tmp_reg__			\n\t"							\
 					/* Get task function address */								\
 					"lds r26, os_currentTcb		\n\t"							\
 					"lds r27, os_currentTcb + 1	\n\t"							\
 					"adiw r26, 5                \n\t"							\
-					"ld r28, x+					\n\t"							\
-					"ld r29, x+					\n\t"							\
 					/* Push the function address at the very top position */	\
-					"push r28					\n\t"							\
-					"push r29					\n\t"							\
+					"ld __tmp_reg__, x+					\n\t"							\
+					"push __tmp_reg__					\n\t"							\
+					"ld __tmp_reg__, x+					\n\t"							\
+					"push __tmp_reg__					\n\t"							\
 					/* Clear zero reg, store init SREG and clear context */		\
 					"clr __zero_reg__			\n\t"							\
 					"push __zero_reg__			\n\t"							\
@@ -80,7 +80,7 @@ extern uint8_t os_ready_queue[];
 					:															\
 					:															\
 					/* Clobber list */											\
-					: "r16", "r26", "r27", "r28", "r29"							\
+					: "r16", "r26", "r27"						\
 	)
 
 //////////////////////////////////////////////////////////////////////////
