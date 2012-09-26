@@ -112,18 +112,22 @@
 							"pop r0						\n\t"	\
 						)
 
-// Starts the first task
-void StartFirstTask(void);
+//////////////////////////////////////////////////////////////////////////
+// Function:  Os_StartFirstTask                                         //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Restores context of first TCB (idle).                                //
+//////////////////////////////////////////////////////////////////////////
+void Os_StartFirstTask(void);
 
-// Direct call to the scheduler
-//************************************
-// Method:    Schedule
-// FullName:  Schedule
-// Access:    public 
-// Returns:   StatusType
-// Qualifier:
-// Parameter: void
-//************************************
+//////////////////////////////////////////////////////////////////////////
+// Function:  Os_Schedule                                               //
+// Returns:   Constant Status (E_OK)                                    //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Chooses a new TCB for later restore. Restore is triggered by         //
+// system timer interrupt.                                              //
+//////////////////////////////////////////////////////////////////////////
 StatusType Os_Schedule(void);
 
 #endif /* OS_KERNEL_H_ */

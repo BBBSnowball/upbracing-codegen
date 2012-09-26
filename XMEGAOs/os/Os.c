@@ -27,7 +27,7 @@ void StartOS(void)
 	// Init all tasks
 	for (i = 0; i < OS_NUMBER_OF_TCBS; i++)
 	{
-		InitializeTaskContext((Os_Tcb *) &os_tcbs[i]);
+		Os_InitializeTaskContext((Os_Tcb *) &os_tcbs[i]);
 	}
 	
 	// Switch to idle task
@@ -38,7 +38,7 @@ void StartOS(void)
 	TimerInit();
 	
 	// Start first task
-	StartFirstTask();
+	Os_StartFirstTask();
 	
 	// Globally enable interrupts
 	//QUESTION(Benjamin): I think the program will never get here. This line should be earlier,

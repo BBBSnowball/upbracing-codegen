@@ -23,43 +23,113 @@ extern uint8_t os_ready_queue[];
 #error Multiple activations for basic tasks, multiple tasks per priority
 #endif
 
-// Initializes a tcb and the stack for a task						
-void InitializeTaskContext(Os_Tcb *tcb);
+#define OS_RESET_CONTEXT()		\
+	asm volatile(	/* Reset stack pointer for this task */						\
+					"lds r26, os_currentTcb		\n\t"							\ 
+					"lds r27, os_currentTcb + 1	\n\t"							\
+					"adiw r26, 2				\n\t"							\
+					"ld r28, x+					\n\t"							\
+					"ld r29, x+					\n\t"							\
+					"out __SP_L__, r28			\n\t"							\
+					"out __SP_H__, r29			\n\t"							\
+					/* Get task function address */								\
+					"lds r26, os_currentTcb		\n\t"							\
+					"lds r27, os_currentTcb + 1	\n\t"							\
+					"adiw r26, 5                \n\t"							\
+					"ld r28, x+					\n\t"							\
+					"ld r29, x+					\n\t"							\
+					/* Push the function address at the very top position */	\
+					"push r28					\n\t"							\
+					"push r29					\n\t"							\
+					/* Clear zero reg, store init SREG and clear context */		\
+					"clr __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"ldi r16, 128				\n\t"							\
+					"push r16					\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					"push __zero_reg__			\n\t"							\
+					:															\
+					:															\
+					/* Clobber list */											\
+					: "r16", "r26", "r27", "r28", "r29"							\
+	)
 
-// Terminates the running task
-//************************************
-// Method:    TerminateTask
-// FullName:  TerminateTask
-// Access:    public 
-// Returns:   StatusType
-// Qualifier:
-// Parameter: void
-//************************************
+//////////////////////////////////////////////////////////////////////////
+// Function:  Os_InitializeTaskContext                                  //
+// Returns:   void                                                      //
+// Parameter: Os_TcbType * tcb                                          //     
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Initializes the stack of a given TCB for first time use.             //
+//////////////////////////////////////////////////////////////////////////					
+void Os_InitializeTaskContext(Os_Tcb *tcb);
+
+//////////////////////////////////////////////////////////////////////////
+// Function:  TerminateTask                                             //
+// Returns:   void                                                      //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Suspends the current task and cleans up stack space.                 //
+//////////////////////////////////////////////////////////////////////////
 StatusType TerminateTask(void);
 
-// Returns the id of the current task
-//************************************
-// Method:    GetTaskID
-// FullName:  GetTaskID
-// Access:    public 
-// Returns:   StatusType
-// Qualifier:
-// Parameter: TaskRefType taskId
-//************************************
+//////////////////////////////////////////////////////////////////////////
+// Function:  GetTaskID                                                 //
+// Returns:   ID of the running task                                    //
+// Parameter: Pointer to return value                                   //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Returns the ID of the running task.                                  //
+//////////////////////////////////////////////////////////////////////////
 StatusType GetTaskID(TaskRefType taskId);
 
-// Returns the state of current task
-//************************************
-// Method:    GetTaskState
-// FullName:  GetTaskState
-// Access:    public 
-// Returns:   StatusType
-// Qualifier:
-// Parameter: TaskType taskId
-// Parameter: TaskStateRefType state
-//************************************
+//////////////////////////////////////////////////////////////////////////
+// Function:  GetTaskState                                              //
+// Returns:   State of the running task                                 //
+// Parameter: Pointer to return value                                   //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Returns the state of the running task.                               //
+//////////////////////////////////////////////////////////////////////////
 StatusType GetTaskState(TaskStateRefType state);
 
+//////////////////////////////////////////////////////////////////////////
+// Function:  ActivateTask                                              //
+// Parameter: ID of the task to activate                                //
+//////////////////////////////////////////////////////////////////////////
+// Description:                                                         //
+// Sets the state of a task to ready and marks this in the              //
+// ready-flag array accordingly.                                        //
+//////////////////////////////////////////////////////////////////////////
 StatusType ActivateTask(volatile TaskType taskId);
 
 #endif /* OS_TASK_H_ */
