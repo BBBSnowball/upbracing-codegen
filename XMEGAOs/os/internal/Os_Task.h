@@ -1,13 +1,13 @@
 /*
- * OSEK_Task.h
+ * Os_Task.h
  *
  * Created: 27.12.2011 20:34:33
- *  Author: Peer Adelt
+ *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 
-#ifndef OSEK_TASK_H_
-#define OSEK_TASK_H_
+#ifndef OS_TASK_H_
+#define OS_TASK_H_
 
 #include "Os_StatusTypes.h"
 #include "Os_TaskTypes.h"
@@ -62,4 +62,4 @@ StatusType GetTaskState(TaskStateRefType state);
 
 StatusType ActivateTask(volatile TaskType taskId);
 
-#endif /* OSEK_TASK_H_ */
+#endif /* OS_TASK_H_ */

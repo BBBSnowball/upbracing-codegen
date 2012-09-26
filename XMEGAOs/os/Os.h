@@ -2,7 +2,7 @@
  * Os.h
  *
  * Created: 22.12.2011 20:54:57
- *  Author: peer
+ *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 

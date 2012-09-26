@@ -1,13 +1,13 @@
 /*
- * OSEK_StatusTypes.h
+ * Os_StatusTypes.h
  *
  * Created: 21.12.2011 18:12:02
  *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 
-#ifndef OSEK_TYPES_H_
-#define OSEK_TYPES_H_
+#ifndef OS_STATUSTYPES_H_
+#define OS_STATUSTYPES_H_
 
 #define BCC1 1
 #define BCC2 2
@@ -16,7 +16,7 @@
 
 #include "Platform_Types.h"
 
-// OSEK_ERROR_TYPES: ErrorCodes (see OS223.pdf -> p.48)
+// Os_ERROR_TYPES: ErrorCodes (see OS223.pdf -> p.48)
 typedef enum
 {
 	E_OK =	0,
@@ -30,4 +30,4 @@ typedef enum
 	E_OS_VALUE = 8,
 } StatusType;
 
-#endif /* OSEK_TYPES_H_ */
+#endif /* OS_STATUSTYPES_H_ */

@@ -1,13 +1,13 @@
 /*
- * OSEK_AlarmTypes.h
+ * Os_AlarmTypes.h
  *
  * Created: 27.12.2011 20:53:33
  *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 
-#ifndef OSEK_ALARMTYPES_H_
-#define OSEK_ALARMTYPES_H_
+#ifndef OS_ALARMTYPES_H_
+#define OS_ALARMTYPES_H_
 
 #include "Platform_Types.h"
 
@@ -34,4 +34,4 @@ typedef uint8_t AlarmType;
 #define ALARM_PHASE(phase, ticksperbase) \
 	(TickType) ((ticksperbase) - 1 - (phase))
 
-#endif /* OSEK_ALARMTYPES_H_ */
+#endif /* OS_ALARMTYPES_H_ */

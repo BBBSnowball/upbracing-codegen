@@ -1,5 +1,5 @@
 /*
- * OSEK_Alarm.c
+ * Os_Alarm.c
  *
  * Created: 27.12.2011 22:19:58
  *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
@@ -26,8 +26,4 @@ void RunAlarm(volatile Os_Alarm * alarm)
 	//{
 		//alarm->callback();
 	//}
-	
-	//alarm->tick = 0;
-	
-	//asm volatile ("ret");	
 }

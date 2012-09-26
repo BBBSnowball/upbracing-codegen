@@ -1,5 +1,5 @@
 /*
- * OSEK.c
+ * Os.c
  *
  * Created: 22.12.2011 21:43:40
  *  Author: Peer Adelt
@@ -10,7 +10,6 @@
 #include "Timer.h"
 #include <avr/interrupt.h>
 #include <stdlib.h>
-//#include <util/delay.h>
 
 #ifndef OS_CFG_CC
 #error No Conformance Class specified!

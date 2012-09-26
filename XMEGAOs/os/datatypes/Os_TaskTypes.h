@@ -1,13 +1,13 @@
 /*
- * OSEK_TaskTypes.h
+ * Os_TaskTypes.h
  *
  * Created: 27.12.2011 20:51:13
  *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 
-#ifndef OSEK_TASKTYPES_H_
-#define OSEK_TASKTYPES_H_
+#ifndef OS_TASKTYPES_H_
+#define OS_TASKTYPES_H_
 
 #include "Platform_Types.h"
 
@@ -53,4 +53,4 @@ typedef struct
 	
 } Os_Tcb;
 
-#endif /* OSEK_TASKTYPES_H_ */
+#endif /* OS_TASKTYPES_H_ */

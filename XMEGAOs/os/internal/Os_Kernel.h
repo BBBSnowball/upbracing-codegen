@@ -1,18 +1,18 @@
 /*
- * OSEK_Scheduler.h
+ * Os_Kernel.h
  *
  * Created: 21.12.2011 18:41:49
- *  Author: Peer Adelt
+ *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 
-#ifndef OSEK_SCHEDULER_H_
-#define OSEK_SCHEDULER_H_
+#ifndef OS_SCHEDULER_H_
+#define OS_SCHEDULER_H_
 
 #include "Os_Task.h"
 #include "Os_Alarm.h"
 
-#define Os_STATUS_REG_INT_ENABLED	0x80
+#define OS_STATUS_REG_INT_ENABLED	0x80
 
 #define OS_ENTER_CRITICAL()								\
 			asm volatile("in __tmp_reg__, __SREG__" :: );		\
@@ -126,4 +126,4 @@ void StartFirstTask(void);
 //************************************
 StatusType Os_Schedule(void);
 
-#endif /* OSEK_SCHEDULER_H_ */
+#endif /* OS_KERNEL_H_ */
