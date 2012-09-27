@@ -15,7 +15,7 @@ const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
 
 void _sem_wait(Semaphore* sem)
 {
-	cli();
+	OS_ENTER_CRITICAL();
 	
 	//Definition check needed
 	TaskType t;
@@ -65,14 +65,14 @@ void _sem_signal(Semaphore* sem)
 		}
 	}
 	
-	sei();
+	OS_EXIT_CRITICAL();
 }
 
 /*	Semaphore synchronization for queues*/
 /*	@brief	Performs wait for queue semaphore*/
 void _sem_wait_n(Semaphore_n* sem , uint8_t n)
 {
-	cli();
+	OS_ENTER_CRITICAL();
 	
 	TaskType t;
 	GetTaskID(&t);
@@ -136,7 +136,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n)
 		}
 	}	
 	
-	sei();
+	OS_EXIT_CRITICAL();
 }
 
 sem_token_t _sem_start_wait(Semaphore* sem)
@@ -233,7 +233,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token)
 
 sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 {
-	cli();
+	OS_EXIT_CRITICAL();
 	
 	uint8_t tok;
 	tok = sem->token_count++;
@@ -256,7 +256,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 		
 	}
 	
-	sei();
+	OS_EXIT_CRITICAL();
 	return tok;
 }
 

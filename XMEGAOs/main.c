@@ -15,12 +15,13 @@ volatile uint8_t shift = 0;
 
 int main(void)
 {	
-	// Init PORTA
-	DDRA = 0xFF;
+	// Init GPIO: (demo: DDRA = 0xFF)
+	GpioInit();
 	
 	// Init the USART (38400 8N1)
 	USARTInit(12);
 	
+	// Globally enable interrupts
 	sei();
 	
 	// Init Os
