@@ -62,30 +62,26 @@ typedef struct
 //                I have done here for queue_enqueue.
 #define queue_enqueue (sem, data) _sem_wait(QUEUE_SEM_REF(sem));\
 									_sem_wait_n(QUEUE_PROD_REF(sem),1);\
-									while (!_queue_has_free_space(QUEUE_REF(sem),1));\
 									_queue_enqueue(QUEUE_REF(sem), data);\
 									_sem_signal_n(QUEUE_PROD_REF(sem),bytes);\
 									_sem_signal(QUEUE_SEM_REF(sem))
 
 void _queue_enqueue(Queue* sem, uint8_t data);
-#define queue_enqueue2(sem, bytes, data) \
-_sem_wait(QUEUE_SEM_REF(sem)); \
-_sem_wait_n(QUEUE_PROD_REF(sem), bytes); \
-_queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data); \
-_sem_signal_n(QUEUE_PROD_REF(sem), bytes); \
-_sem_signal(QUEUE_SEM_REF(sem));
+#define queue_enqueue2(sem, bytes, data) _sem_wait(QUEUE_SEM_REF(sem)); \
+										_sem_wait_n(QUEUE_PROD_REF(sem), bytes); \
+										_queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data); \
+										_sem_signal_n(QUEUE_PROD_REF(sem), bytes); \
+										_sem_signal(QUEUE_SEM_REF(sem));
 void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 
 #define queue_dequeue(q, data_out) _sem_wait(QUEUE_SEM_REF(q));\
 						_sem_wait_n(QUEUE_CONS_REF(q),1);\
-						while (!_queue_has_free_space(QUEUE_REF(q),1));\
 						_queue_dequeue(QUEUE_REF(q), data_out);\
 						_sem_signal_n(QUEUE_CONS_REF(q),1);\
 						_sem_signal(QUEUE_SEM_REF(q))
 void _queue_dequeue(Queue* q, uint8_t* data_out);
 #define  queue_dequeue2(q, bytes, data_out) _sem_wait(QUEUE_SEM_REF(q));\
 											_sem_wait_n(QUEUE_CONS_REF(q),bytes);\
-											while (!_queue_has_free_space(QUEUE_REF(q),bytes));\
 											_queue_dequeue2(QUEUE_REF(q), bytes, data_out);\
 											_sem_signal_n(QUEUE_CONS_REF(q),bytes);\
 											_sem_signal(QUEUE_SEM_REF(q))
