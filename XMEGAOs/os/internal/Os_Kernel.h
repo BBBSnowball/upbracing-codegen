@@ -11,18 +11,22 @@
 
 #include "Os_Task.h"
 #include "Os_Alarm.h"
+#include <avr/interrupt.h>
 
 #define OS_STATUS_REG_INT_ENABLED	0x80
 
-#define OS_ENTER_CRITICAL()								\
-			asm volatile("in __tmp_reg__, __SREG__" :: );		\
-			asm volatile("cli" :: );							\
-			asm volatile("push __tmp_reg__" :: )
+//#define OS_ENTER_CRITICAL()								\
+			//asm volatile("in __tmp_reg__, __SREG__" :: );		\
+			//asm volatile("cli" :: );							\
+			//asm volatile("push __tmp_reg__" :: )
+			//
+//#define OS_EXIT_CRITICAL()								\
+			//asm volatile("pop __tmp_reg__" :: );				\
+			//asm volatile("out __SREG__, __tmp_reg__" :: )
 			
-#define OS_EXIT_CRITICAL()								\
-			asm volatile("pop __tmp_reg__" :: );				\
-			asm volatile("out __SREG__, __tmp_reg__" :: )
+#define OS_ENTER_CRITICAL()	cli()
 			
+#define OS_EXIT_CRITICAL() sei()
 
 #define OS_SAVE_CONTEXT()									\
 			asm volatile(	"push r0					\n\t"	\

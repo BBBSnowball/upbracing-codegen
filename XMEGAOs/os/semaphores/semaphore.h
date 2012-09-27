@@ -56,15 +56,42 @@ typedef struct { //Declarations incomplete
 #define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
 #define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), 65280, 0, -1, (queue_capacity) } }
+		{ { (initial_value), 65280, 0, 0, (queue_capacity) } }
 #define SEMAPHORE(sem, initial_value, queue_capacity) \
 		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
 #define SEMAPHORE_REF(sem) (&(sem##_SEM).sem)
 
+/* Semaphores for Queue Synchronization */
+typedef uint8_t sem_token_t;
+// entry in the queue of a Semaphore_n
+typedef struct {
+	// the waiting process or token
+	sem_token_t pid;
+
+	// how often is it waiting?
+	// (parameter n of sem_wait_n)
+	uint8_t n;
+} Semaphore_n_queue_entry;
+
+typedef struct Semaphore_n{ 
+	int8_t count;
+	//NOTE(Peer): No. "token_count" overruns at 255. Its "unsigned char", this is what "uint8_t" stands for ;)
+	//            Or did I get you wrong here?
+	uint16_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
+	int8_t queue_front;
+	int8_t queue_end;
+	uint8_t queue_cap;
+	
+	Semaphore_n_queue_entry queue [1];
+} Semaphore_n;
+
+#define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
+	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
+		= { { (initial_value), 65280, 0, 0, (queue_capacity) } }
+#define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
 
 /* Synchronous wait and signal */
-
 /*	@brief Performs wait operation on semaphore
 	
 	@param[in] name		Semaphore name on which wait is performed
@@ -83,11 +110,13 @@ void _sem_wait(Semaphore* sem);
 #define sem_signal(sem) _sem_signal(SEMAPHORE_REF(sem))
 void _sem_signal(Semaphore* sem);
 
+#define sem_wait_n(sem, n) _sem_wait_n(SEMAPHORE_REF_N(sem), n)
+void _sem_wait_n (Semaphore_n* sem , uint8_t n);
+ 
+#define sem_signal_n(sem, n) _sem_signal_n(SEMAPHORE_REF_N(sem), n)
+void _sem_signal_n (Semaphore_n* sem , uint8_t n);
 
 /* Asynchronous waiting */
-
-typedef uint8_t sem_token_t;
-
 /*	@brief	Start waiting on semaphore asynchronously
 
 	@param[in]name		Semaphore name on which asynchronous wait is performed
@@ -126,56 +155,18 @@ bool _sem_continue_wait (Semaphore* sem , sem_token_t token );
 */
 #define sem_stop_wait(sem, token) _sem_stop_wait(SEMAPHORE_REF(sem), (token))
 void _sem_stop_wait (Semaphore* sem , sem_token_t token );
-
-
-
-/* Semaphores for Queue Synchronization */
-
-// entry in the queue of a Semaphore_n
-typedef struct {
-	// the waiting process or token
-	sem_token_t pid;
-
-	// how often is it waiting?
-	// (parameter n of sem_wait_n)
-	uint8_t n;
-} Semaphore_n_queue_entry;
-
-typedef struct Semaphore_n{ 
-	int8_t count;
-	//NOTE(Peer): No. "token_count" overruns at 255. Its "unsigned char", this is what "uint8_t" stands for ;)
-	//            Or did I get you wrong here?
-	//NOTE(Krishna): should be uint16_t
-	uint16_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
-	int8_t queue_front;
-	int8_t queue_end;
-	uint8_t queue_cap;
-	
-	Semaphore_n_queue_entry queue [1];
-} Semaphore_n;
-
-#define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
-	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), 65280, 0, -1, (queue_capacity) } };
-#define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
-
- #define sem_wait_n(sem, n) _sem_wait_n(SEMAPHORE_REF_N(sem), n)
- void _sem_wait_n (Semaphore_n* sem , uint8_t n);
  
- #define sem_signal_n(sem, n) _sem_signal_n(SEMAPHORE_REF_N(sem), n)
- void _sem_signal_n (Semaphore_n* sem , uint8_t n);
+//Start waiting for queue
+#define sem_start_wait_n(sem,n) _sem_start_wait_n(SEMAPHORE_REF_N(sem), n)
+sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
  
- //Start waiting for queue
- #define sem_start_wait_n(sem,n) _sem_start_wait_n(SEMAPHORE_REF_N(sem), n)
- sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
+//Continue waiting for queue
+#define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
+bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
- //Continue waiting for queue
- #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
- bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
- 
- //Stop waiting for queue
- #define sem_stop_wait_n(sem, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), token)
- void _sem_stop_wait_n (Semaphore_n* sem, sem_token_t token );
+//Stop waiting for queue
+#define sem_stop_wait_n(sem, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), token)
+void _sem_stop_wait_n (Semaphore_n* sem, sem_token_t token );
 
 
 #endif /* SEMAPHORE_H_ */

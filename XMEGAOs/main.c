@@ -1,5 +1,5 @@
 /*
- * XMEGATest2.c
+ * main.c
  *
  * Created: 20.12.2011 21:44:56
  *  Author: peer
@@ -7,9 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-//#include <util/delay.h>
 #include "Os.h"
-#include "queue.h"
 #include "USART.h"
 
 volatile uint8_t j = 10;
@@ -18,14 +16,14 @@ volatile uint8_t shift = 0;
 
 int main(void)
 {	
-	// Init PORTA
-	//GpioInit();
-	DDRA = 0xFF;
+	// Init GPIO: (demo: DDRA = 0xFF)
+	GpioInit();
 	
-	USARTInit(51);
+	// Init the USART (38400 8N1)
+	USARTInit(12);
 	
+	// Globally enable interrupts
 	sei();
-	
 	
 	// Init Os
 	StartOS();
@@ -36,10 +34,11 @@ int main(void)
 
 TASK(Task_Update)
 {
-	// Update the port with the leds connected
-	uint8_t temp = j << shift;
-	uint8_t lsb = (j >> (8 - shift)) & 0x01;
-	PORTA = temp | lsb;
+	PORTA = j;
+	
+	// Enqueue something for USART
+	// -> demonstration of Queues and Semaphores
+	USARTEnqueue(6, "update");
 	
 	// Terminate this task
 	TerminateTask();
@@ -51,6 +50,8 @@ TASK(Task_Increment)
 	j++;
 	
 	// Enqueue something for USART
+	// -> demonstration of Queues and Semaphores
+	USARTEnqueue(3, "inc");
 	
 	USARTEnqueue(5, "First");
 	
@@ -64,10 +65,7 @@ TASK(Task_Shift)
 	shift++;
 	if (shift == 8)
 		shift = 0;
-	
-	// Enqueue something different for USART
-	USARTEnqueue(6, "Second");
-	
+		
 	// Terminate this task
 	TerminateTask();
 }

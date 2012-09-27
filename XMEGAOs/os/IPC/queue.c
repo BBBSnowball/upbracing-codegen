@@ -1,12 +1,13 @@
-#include "queue.h"
-#include "semaphore.h"
-#include "Os.h"
 /*
  * queue.c
  *
  * Created: 16-Jul-12 7:20:31 PM
  *  Author: Krishna (s.krishna1989@gmail.com)
  */ 
+#include "queue.h"
+#include "semaphore.h"
+#include "Os.h"
+#include <avr/interrupt.h>
 
 /*	@brief	Writes a byte of data into the queue passed as the parameter
 
@@ -15,14 +16,11 @@
 */
 void _queue_enqueue(Queue* q, uint8_t data )
 {
-	// NOTE(Peer): I changed the queue_end counter handling. It was faulty before.
+	q->q_queue[q->queue_end] = data;
 	q->queue_end++;
 	if (q->queue_end == q->capacity)
 		q->queue_end = 0;
-	q->q_queue[q->queue_end] = data;
 	q->occupied++;
-	
-	
 	
 }
 
@@ -40,16 +38,12 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 	
 	for (i=0;i<bytes;i++)
 	{
-		// NOTE(Peer): I changed the queue_end counter handling. It was faulty before.
+		q->q_queue[q->queue_end] = data[i];
 		q->queue_end++;
 		if (q->queue_end == q->capacity)
 			q->queue_end = 0;
-		q->q_queue[q->queue_end] = data[i];
 	}
 	q->occupied = q->occupied + bytes;
-	
-	
-	
 }
 
 
@@ -59,17 +53,16 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 	@return				First data in the queue
 	
 */
-void _queue_dequeue(Queue* q, uint8_t* data_out)
+void _queue_dequeue(Queue* q, uint8_t* output)
 {
 	uint8_t ret;
 	
 	
 	ret = q->q_queue[q->queue_front];
-	q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
+	q->queue_front = (q->queue_front==(q->capacity-1))? 0 : q->queue_front +1;
 	q->occupied--;
 	
-	
-	*data_out = ret;
+	*output = ret;
 }
 
 /*	@brief	Returns large data from the queue. 
@@ -88,8 +81,6 @@ void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out )
 		q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
 	}
 	q->occupied = q->occupied - bytes;
-	
-	
 }
 
 /*	@brief	Checks if there is data available to be read, in the queue

@@ -5,7 +5,7 @@
  *  Author: Krishna (s.krishna1989@gmail.com)
  */ 
 #include "Os.h"
-#include "semaphores/semaphore.h"
+#include "semaphore.h"
 #include "Platform_Types.h"
 
 #ifndef QUEUE_H_
@@ -13,12 +13,12 @@
 
 //NOTE(Benjamin): What should this struct do? I don't think that we have to
 //                keep track of the processes owning a queue.
-typedef struct
-{
-	TaskType id;
-	uint8_t n;
-}ipc_queue;
-
+//NOTE(Peer): Since this is not used anywhere, I removed it.
+//typedef struct
+//{
+	//TaskType id;
+	//uint8_t n;
+//}ipc_queue;
 
 typedef struct  
 {
@@ -28,14 +28,15 @@ typedef struct
 	int8_t occupied; // number of bytes present in the queue
 	
 	uint8_t q_queue[1];
-}Queue;
+} Queue;
+
 //NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
 #define QUEUE(sem, capacity, reader_count, writer_count) \
 		struct { Queue q; uint8_t rest_q_queue[(capacity)-1]; } sem##_QUEUE \
 			= { { 0, 0, (capacity), 0 } }; \
 		SEMAPHORE(sem##_QUEUE_SEM, 1, (reader_count)+(writer_count)); \
-		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (writer_count)); \
-		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, (capacity), (reader_count))
+		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (capacity)); \
+		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, (capacity), 0)
 		/* add the other semaphores here */
 //TODO: check if above declaration is correct ?
 //TODO: check if parameter passing is correct ?
@@ -60,32 +61,38 @@ typedef struct
 //NOTE(Benjamin): When you implement the queues, you will find out which semaphores you
 //                need for each of the functions. Then you can add them as arguments, as
 //                I have done here for queue_enqueue.
-#define queue_enqueue (sem, data) _sem_wait(QUEUE_SEM_REF(sem));\
-									_sem_wait_n(QUEUE_PROD_REF(sem),1);\
-									_queue_enqueue(QUEUE_REF(sem), data);\
-									_sem_signal_n(QUEUE_PROD_REF(sem),bytes);\
-									_sem_signal(QUEUE_SEM_REF(sem))
 
+#define queue_enqueue (sem, data) \
+_sem_wait_n(QUEUE_PROD_REF(sem), 1); \
+_sem_wait(QUEUE_SEM_REF(sem)); \
+_queue_enqueue(QUEUE_REF(sem), (const uint8_t*) data); \
+_sem_signal(QUEUE_SEM_REF(sem)); \
+_sem_signal_n(QUEUE_CONS_REF(sem), 1)
 void _queue_enqueue(Queue* sem, uint8_t data);
-#define queue_enqueue2(sem, bytes, data) _sem_wait(QUEUE_SEM_REF(sem)); \
-										_sem_wait_n(QUEUE_PROD_REF(sem), bytes); \
-										_queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data); \
-										_sem_signal_n(QUEUE_PROD_REF(sem), bytes); \
-										_sem_signal(QUEUE_SEM_REF(sem));
+
+#define queue_enqueue2(sem, bytes, data) \
+_sem_wait_n(QUEUE_PROD_REF(sem), bytes); \
+_sem_wait(QUEUE_SEM_REF(sem)); \
+_queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data); \
+_sem_signal(QUEUE_SEM_REF(sem)); \
+_sem_signal_n(QUEUE_CONS_REF(sem), bytes)
 void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data);
 
-#define queue_dequeue(q, data_out) _sem_wait(QUEUE_SEM_REF(q));\
-						_sem_wait_n(QUEUE_CONS_REF(q),1);\
-						_queue_dequeue(QUEUE_REF(q), data_out);\
-						_sem_signal_n(QUEUE_CONS_REF(q),1);\
-						_sem_signal(QUEUE_SEM_REF(q))
-void _queue_dequeue(Queue* q, uint8_t* data_out);
-#define  queue_dequeue2(q, bytes, data_out) _sem_wait(QUEUE_SEM_REF(q));\
-											_sem_wait_n(QUEUE_CONS_REF(q),bytes);\
-											_queue_dequeue2(QUEUE_REF(q), bytes, data_out);\
-											_sem_signal_n(QUEUE_CONS_REF(q),bytes);\
-											_sem_signal(QUEUE_SEM_REF(q))
-void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out);
+#define queue_dequeue(sem, output) \
+_sem_wait_n(QUEUE_CONS_REF(sem), 1); \
+_sem_wait(QUEUE_SEM_REF(sem)); \
+_queue_dequeue(QUEUE_REF(sem), output); \
+_sem_signal(QUEUE_SEM_REF(sem)); \
+_sem_signal_n(QUEUE_PROD_REF(sem), 1)
+void _queue_dequeue(Queue* sem, uint8_t* output);
+
+#define  queue_dequeue2(sem, bytes, data_out) \
+_sem_wait_n(QUEUE_CONS_REF(sem), bytes); \
+_sem_wait(QUEUE_SEM_REF(sem)); \
+_queue_dequeue2(QUEUE_REF(sem), bytes, data_out); \
+_sem_signal(QUEUE_SEM_REF(sem)); \
+_sem_signal_n(QUEUE_PROD_REF(sem), bytes)
+void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out);
 
 #define queue_is_data_available(q, bytes) _queue_is_data_available(QUEUE_REF(q), bytes)
 bool _queue_is_data_available (Queue* q, uint8_t number_of_bytes);

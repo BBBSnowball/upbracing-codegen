@@ -79,13 +79,51 @@ StatusType GetTaskState(TaskStateRefType state)
 StatusType ActivateTask(TaskType taskId)
 {
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_ready_queue[taskId] = READY;
-	os_tcbs[taskId].state = READY;
+	// Waiting tasks should be resumed differently (FCFS!)
+	if (os_tcbs[taskId].state != WAITING) 
+	{
+		os_ready_queue[taskId] = READY;
+		os_tcbs[taskId].state = READY;
+	}	
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
 
 	//QUESTION(Benjamin): That reminds me of the "yield" function. Does OSEK have something like it?
 	//ANSWER(Peer): What is the "yield" function?
+	return E_OK;
+}
+
+StatusType WaitTask(TaskType taskId) 
+{
+	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
+	os_ready_queue[taskId] = WAITING;
+	os_tcbs[taskId].state = WAITING;
+	
+	OS_SAVE_CONTEXT();
+	Os_Schedule();
+	OS_RESTORE_CONTEXT();
+	asm volatile("reti");
+	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
+	#error BCC2 and ECC2 are not yet supported!
+	#endif
+	return E_OK;	
+}
+
+StatusType ResumeTask(TaskType taskId)
+{
+	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
+	os_ready_queue[os_currentTcb->id] = READY;
+	os_currentTcb->state = READY;
+	os_ready_queue[taskId] = RUNNING;
+	os_tcbs[taskId].state = RUNNING;
+	
+	OS_SAVE_CONTEXT();
+	os_currentTcb = &os_tcbs[taskId];
+	OS_RESTORE_CONTEXT();
+	asm volatile("reti");
+	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
+	#error BCC2 and ECC2 are not yet supported!
+	#endif
 	return E_OK;
 }

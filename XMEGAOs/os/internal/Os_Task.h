@@ -130,6 +130,10 @@ StatusType GetTaskState(TaskStateRefType state);
 // Sets the state of a task to ready and marks this in the              //
 // ready-flag array accordingly.                                        //
 //////////////////////////////////////////////////////////////////////////
-StatusType ActivateTask(volatile TaskType taskId);
+StatusType ActivateTask(TaskType taskId);
+
+StatusType WaitTask(TaskType taskId) __attribute__ ( (naked) );
+
+StatusType ResumeTask(TaskType taskId) __attribute__ ( (naked) );
 
 #endif /* OS_TASK_H_ */

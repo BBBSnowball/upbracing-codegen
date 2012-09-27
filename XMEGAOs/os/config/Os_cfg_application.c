@@ -22,20 +22,12 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		0, /* Id/Priority */
 		PREEMPTABLE,
 	},				 				 
-	{
-		(StackPointerType *) 0x06FF,									
-		(StackPointerType *) 0x06FF,																	 
-		SUSPENDED,										 
-		Task_Update,									 
-		1,
-		PREEMPTABLE,												 
-	},
 	{		 
 		(StackPointerType *) 0x04FF,	/* Top of stack	*/
 		(StackPointerType *) 0x04FF, /* Base address of the stack */
 		SUSPENDED, /* Task State */
 		Task_Increment,	/* Function Pointer */
-		2, /* Id/Priority */
+		1, /* Id/Priority */
 		PREEMPTABLE,
 	},
 	{
@@ -43,26 +35,47 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		(StackPointerType *) 0x02FF,	/*Base address of stack */
 		SUSPENDED, /* Task State */
 		Task_Shift,
-		3, /* ID/Priority */
+		2, /* ID/Priority */
 		PREEMPTABLE,
-	}													 
+	},	
+	{
+		(StackPointerType *) 0x06FF,									
+		(StackPointerType *) 0x06FF,																	 
+		SUSPENDED,										 
+		Task_Update,									 
+		3,
+		PREEMPTABLE,												 
+	},
+	{
+		(StackPointerType *) 0x03FF,	/* Top of stack	*/
+		(StackPointerType *) 0x03FF, /* Base address of the stack */
+		SUSPENDED, /* Task State */
+		Task_UsartTransmit,	/* Function Pointer */
+		4, /* Id/Priority */
+		PREEMPTABLE,
+	}											 
 };
 
 volatile Os_Alarm os_alarms[OS_NUMBER_OF_ALARMS_DEFINE] =
 {						
 	{	// Alarm for Task_Update
-		1,				// Task ID: Update
+		3,				// Task ID: Update
 		0,				// Current Value
-		4,				// Ticks Per Base	
+		1,				// Ticks Per Base	
 	},					
 	{	// Alarm for Task_Increment
-		2,				// Task ID: Increment
+		1,				// Task ID: Increment
 		0,				// Current Value
-		2,				// Ticks Per Base		
+		128,				// Ticks Per Base		
 	},
 	{	// Alarm for Task_Shift
-		3,				// Task ID: Shift
+		2,				// Task ID: Shift
 		0,				// Current Value
-		3,				// Ticks Per Base
-	}			
+		6,				// Ticks Per Base
+	},
+	{	// Alarm for Task_UsartTransmit
+		4,				// Task ID: Shift
+		0,				// Current Value
+		1,				// Ticks Per Base
+	}		
 };
