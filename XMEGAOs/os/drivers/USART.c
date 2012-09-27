@@ -7,6 +7,7 @@
 
 #include <avr/interrupt.h>
 #include "USART.h"
+#include "Os.h"
 
 // This is the queue for the USART Transmit buffer
 // Name: usart
@@ -18,43 +19,33 @@ QUEUE(usart,10,1,2);
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)
 {
-	//Set Baud rate
+	// Set baud rate
 	UBRR0L = ubrr_value;
 	UBRR0H = (ubrr_value>>8);
 
-	UCSR0C = (1<<UCSZ01) | (1<<UCSZ00); // 8data, no parity & 1 stop bit
+	// Flow control: 8 Bits, 1 Stop Bit, No Parity
+	UCSR0C = (1<<UCSZ01) | (1<<UCSZ00);
 
-	//Enable The receiver and transmitter
+	// Enable the receiver and transmitter
 	UCSR0B=(1<<RXEN0)|(1<<TXEN0);
-	
-	// Enable Transmit Complete interrupt
-	UCSR0B |= (1<<TXCIE0);
 }
 
 // This function enqueues <length> bytes for transmit
 void USARTEnqueue(uint8_t length, const char * text) 
 {
-	// TODO: This should block, if there is not enough space available!
+	// This blocks, if there is not enough space available!
 	queue_enqueue2(usart, length, text);
-	
-	// Send first char, if USART is ready!
-	// - let the Send-Complete Interrupt do the rest
-	// -> if it already sending, this will be auto-sent later 
-	OS_ENTER_CRITICAL();
-	if(UCSR0A & (1<<UDRE0))
-	{
-		char c = queue_dequeue(usart);
-		UDR0 = c;
-	}
-	OS_EXIT_CRITICAL();
 }
 
-ISR(USART0_TX_vect)
+TASK(Task_UsartTransmit)
 {
-	// Only do this, if there is something in the queue!
-	if (queue_is_data_available(usart, 1)) 
+	// Check, if Transmitter is ready:
+	if (UCSR0A & (1<<UDRE0))
 	{
-		char c = queue_dequeue(usart);
+		char c;
+		// This blocks, if there is no char ready to read!
+		queue_dequeue(usart, (uint8_t*) &c);
 		UDR0 = c;
-	}	
+	}
+	TerminateTask();
 }
