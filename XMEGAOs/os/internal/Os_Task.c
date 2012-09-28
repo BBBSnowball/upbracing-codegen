@@ -52,12 +52,13 @@ StatusType TerminateTask(void)
 	// -> This changes only global (volatile) data and is thus safe to do here.		
 	os_currentTcb->currentBaseOfStack = os_currentTcb->topOfStack - 35;
 
-	// The critical part is over now
-	OS_EXIT_CRITICAL();
-
 	// Switch to another task
 	Os_Schedule();
 	OS_RESTORE_CONTEXT();
+	
+	// The critical part is over now
+	OS_EXIT_CRITICAL();
+	
 	asm volatile("reti");
 	
 	// will never get here
