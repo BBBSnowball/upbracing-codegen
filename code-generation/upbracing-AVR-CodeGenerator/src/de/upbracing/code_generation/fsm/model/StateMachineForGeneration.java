@@ -71,7 +71,7 @@ public class StateMachineForGeneration {
 		update();
 	}
 
-	public StateParent getStateMachine() {
+	public StateMachine getStateMachine() {
 		return inner;
 	}
 
@@ -399,7 +399,11 @@ public class StateMachineForGeneration {
 	}
 
 	public State findFirstState(Collection<State> states) {
-		List<Transition> transitions = getTransitions();
+		return findFirstState(getStateMachine(), states);
+	}
+
+	public static State findFirstState(StateMachine statemachine, Collection<State> states) {
+		List<Transition> transitions = statemachine.getTransitions();
 		State finalStateIsAlsoFirst = null;
 
 		for (State state : states) {
