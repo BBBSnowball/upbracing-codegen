@@ -38,7 +38,7 @@
 //Global tokens not used.
 //Initialize token_array: 9000-9255
 
-typedef struct { //Declarations incomplete 
+typedef struct { 
 	int8_t count;
 	uint16_t token_count; // = 65280, will roll over to 0 when tokens exhausted. then reset to 65280.
 	int8_t queue_front;

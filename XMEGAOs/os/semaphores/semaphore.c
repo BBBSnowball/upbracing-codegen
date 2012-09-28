@@ -17,7 +17,7 @@ void _sem_wait(Semaphore* sem)
 {
 	OS_ENTER_CRITICAL();
 	
-	//Definition check needed
+	
 	TaskType t;
 	GetTaskID(&t);
 	

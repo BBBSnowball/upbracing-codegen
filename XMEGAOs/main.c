@@ -51,9 +51,9 @@ TASK(Task_Increment)
 	
 	// Enqueue something for USART
 	// -> demonstration of Queues and Semaphores
-	USARTEnqueue(3, "inc");
+	USARTEnqueue(3, "INC");
 	
-	USARTEnqueue(5, "First");
+	//USARTEnqueue(5, "First");
 	
 	// Terminate this task
 	TerminateTask();
