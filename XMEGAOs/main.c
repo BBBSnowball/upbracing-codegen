@@ -9,6 +9,7 @@
 #include <avr/interrupt.h>
 #include "Os.h"
 #include "USART.h"
+#include "Gpio.h"
 
 volatile uint8_t j = 10;
 volatile uint8_t shift = 0;
@@ -17,12 +18,19 @@ int main(void)
 {	
 	// Init GPIO: (demo: DDRA = 0xFF)
 	GpioInit();
+	PORTA = 0xFF;
 	
-	// Init the USART (38400 8N1)
-	USARTInit(12);
+	// Init the USART (57600 8N1)
+	USARTInit(8);
 	
-	// Globally enable interrupts
-	sei();
+	// NOTE(Peer):
+	// DO NOT enable Interrupts here
+	// StartOs will call Os_StartFirstTask.
+	// Os_StartFirstTask will enable interrupts when system is ready.
+	// If we enable interrupts now, the first timer tick
+	// most likely comes too early if the timer freq is high enough.
+	//// Globally enable interrupts
+	//sei();
 	
 	// Init Os
 	StartOS();
