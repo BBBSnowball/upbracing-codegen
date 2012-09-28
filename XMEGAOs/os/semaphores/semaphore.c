@@ -15,15 +15,12 @@ const sem_token_t SEM_TOKEN_SUCCESSFUL = 0;
 
 void _sem_wait(Semaphore* sem)
 {
-	OS_ENTER_CRITICAL();
-	
-	
 	TaskType t;
 	GetTaskID(&t);
 	
-	sem->count--;
+	OS_ENTER_CRITICAL();
 		
-	if (sem->count < 0) 
+	if (sem->count < 1) 
 	{
 		sem->queue[sem->queue_end] = t; 
 		sem->queue_end++;
@@ -34,35 +31,48 @@ void _sem_wait(Semaphore* sem)
 			
 		// Another operation is going on: wait
 		WaitTask(t);
+		
+		OS_ENTER_CRITICAL();
 	}	
+	
+	sem->count--;
+	OS_EXIT_CRITICAL();
 }
 
 void _sem_signal(Semaphore* sem)
 {
 	// Get number of waiting tasks for this resource:
-	uint8_t nrOfTasks = 0;
-	if (sem->queue_end >= sem->queue_front) 
-	{
-		nrOfTasks = sem->queue_end - sem->queue_front;
-	}
-	else 
-	{
-		nrOfTasks = sem->queue_end + (sem->queue_cap - sem->queue_front);	
-	}
+	//uint8_t nrOfTasks = 0;
+	
+	OS_ENTER_CRITICAL();
+	
+	//if (sem->queue_end >= sem->queue_front) 
+	//{
+		//nrOfTasks = sem->queue_end - sem->queue_front;
+	//}
+	//else 
+	//{
+		//nrOfTasks = sem->queue_end + (sem->queue_cap - sem->queue_front);	
+	//}
 		
 	sem->count++;
 	
 	// Only continue, if tasks are waiting AND the resource is free
-	if (sem->count > 0 && nrOfTasks > 0)
+	if (sem->queue_end != sem->queue_front && sem->count > 0)
 	{
-		// Wake task waiting for this semaphore:
-		ResumeTask(sem->queue[sem->queue_front]);
-	
+		uint8_t tId = sem->queue[sem->queue_front];
+		
+		// Increment pointer to next semaphore queue entry
 		sem->queue_front++;
-		if (sem->queue_front == sem->count)
+		if (sem->queue_front == sem->queue_cap)
 		{
 			sem->queue_front = 0;
 		}
+		
+		// Wake the task waiting for this semaphore:
+		// TODO: Replace ActivateTask() with ImmediatelyResumeTask()
+		//ActivateTask(sem->queue[sem->queue_front].pid);
+		ResumeTask(tId);
 	}
 	
 	OS_EXIT_CRITICAL();
@@ -72,10 +82,12 @@ void _sem_signal(Semaphore* sem)
 /*	@brief	Performs wait for queue semaphore*/
 void _sem_wait_n(Semaphore_n* sem , uint8_t n)
 {
-	OS_ENTER_CRITICAL();
+	//OS_ENTER_CRITICAL();
 	
 	TaskType t;
 	GetTaskID(&t);
+	
+	OS_ENTER_CRITICAL();
 	
 	// Is there enough free space available?
 	if (sem->count < n)
@@ -92,6 +104,8 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n)
 		
 		// 2) Block this task since there is not enough free space
 		WaitTask(t);
+		
+		OS_ENTER_CRITICAL();
 	}
 	
 	// We have a First-Come-First-Serve scenario here:
@@ -99,34 +113,33 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n)
 	sem->count -= n;
 	
 	// If we got here, no blocking was necessary.
+	OS_EXIT_CRITICAL();
 }
 
 void _sem_signal_n(Semaphore_n* sem, uint8_t n)
 {
 	// Get number of waiting tasks for this resource:
-	uint8_t nrOfTasks = 0;
-	if (sem->queue_end >= sem->queue_front) 
-	{
-		nrOfTasks = sem->queue_end - sem->queue_front;
-	}
-	else 
-	{
-		nrOfTasks = sem->queue_end + (sem->queue_cap - sem->queue_front);	
-	}
+	//uint8_t nrOfTasks = 0;
+	
+	OS_ENTER_CRITICAL();
+	
+	//if (sem->queue_end >= sem->queue_front) 
+	//{
+		//nrOfTasks = sem->queue_end - sem->queue_front;
+	//}
+	//else 
+	//{
+		//nrOfTasks = sem->queue_end + (sem->queue_cap - sem->queue_front);	
+	//}
 
 	// Signalize free space:
 	sem->count += n;
 	
 	// Is there a task waiting for this resource?
 	// And: Is there enough resource available for the waiting task?
-	if (nrOfTasks > 0 && sem->count >= sem->queue[sem->queue_front].n) 
+	if (sem->queue_end != sem->queue_front && sem->count >= sem->queue[sem->queue_front].n) 
 	{
-		// Yes, there are.
-			
-		// Wake the task waiting for this semaphore:
-		// TODO: Replace ActivateTask() with ImmediatelyResumeTask()
-		//ActivateTask(sem->queue[sem->queue_front].pid);
-		ResumeTask(sem->queue[sem->queue_front].pid);
+		uint8_t tId = sem->queue[sem->queue_front].pid;
 		
 		// Increment pointer to next semaphore queue entry
 		sem->queue_front++;
@@ -134,6 +147,11 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n)
 		{
 			sem->queue_front = 0;
 		}
+		
+		// Wake the task waiting for this semaphore:
+		// TODO: Replace ActivateTask() with ImmediatelyResumeTask()
+		//ActivateTask(sem->queue[sem->queue_front].pid);
+		ResumeTask(tId);
 	}	
 	
 	OS_EXIT_CRITICAL();

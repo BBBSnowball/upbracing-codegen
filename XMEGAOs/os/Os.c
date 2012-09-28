@@ -43,5 +43,6 @@ void StartOS(void)
 	// Globally enable interrupts
 	//QUESTION(Benjamin): I think the program will never get here. This line should be earlier,
 	//                    but I think that is already the case - otherwise nothing would work ;-)
-	sei();
+	// NOTE(Peer): You're right. But this is kind of special. 
+	//             Now, Os_StartFirstTask() will restore context of the idle task and start scheduler.             
 }
