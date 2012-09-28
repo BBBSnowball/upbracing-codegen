@@ -1,0 +1,4 @@
+random_statechart*.dot
+random_statechart*.dot.*
+random_statechart*.statechart
+random_statechart*.statecharts

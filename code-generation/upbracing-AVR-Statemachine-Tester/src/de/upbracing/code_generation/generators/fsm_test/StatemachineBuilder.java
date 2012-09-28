@@ -602,7 +602,9 @@ public class StatemachineBuilder {
 
 		private void createWaypointTransitions(Waypoint waypoint,
 				TransitionActivation activation) {
-			createWaypointTransitions(waypoint, activation, 1.0/waypoint.getMaximumDepth());
+			do {
+				createWaypointTransitions(waypoint, activation, 1.0/waypoint.getMaximumDepth());
+			} while (activation.activated_transitions.isEmpty());
 		}
 
 		private StateScope createWaypointTransitions(Waypoint waypoint,
@@ -783,25 +785,34 @@ public class StatemachineBuilder {
 		}
 
 		private Waypoint copyLayersUpTo(Waypoint updated_child_waypoint,
-				Waypoint expected_level) {
+				Waypoint expected_level_and_previous_states) {
 			// are we at the expected level?
-			if (expected_level.active_state.getParent() == updated_child_waypoint.active_state.getParent())
+			if (expected_level_and_previous_states.active_state.getParent() == updated_child_waypoint.active_state.getParent())
 				return updated_child_waypoint;
 			
-			// If this is a leaf node, we are in a branch that is not affected by
-			// the changes. We can simply return the expected_level waypoint.
-			if (expected_level.children.isEmpty())
-				return expected_level;
-			
-			// This level is copied and the children are updated recursively. If the updated
-			// waypoint isn't part of this subtree, we could return the data without making
-			// an extra copy - but we don't know that at this point.
-			List<Waypoint> updated_children = new ArrayList<StatemachineBuilder.Waypoint>(expected_level.children.size());
-			for (Waypoint child : expected_level.children) {
-				updated_children.add(copyLayersUpTo(updated_child_waypoint, child));
+			// find parent of updated_child_waypoint that is on the current level
+			for (StateScope parent : StateVariable.getParents(updated_child_waypoint.active_state)) {
+				if (parent.getParent() == expected_level_and_previous_states.active_state.getParent()) {
+					// This is the way to go to. If it is the same state as before, we update the children
+					// using the old waypoint expected_level. If we have changed the state here, we use
+					// the initial state for that new state.
+					if (parent != expected_level_and_previous_states.active_state)
+						expected_level_and_previous_states = getInitialWaypointForState((State)parent);
+
+					// This level is copied and the children are updated recursively.
+					List<Waypoint> updated_children = new ArrayList<StatemachineBuilder.Waypoint>(expected_level_and_previous_states.children.size());
+					for (Waypoint child : expected_level_and_previous_states.children) {
+						updated_children.add(copyLayersUpTo(updated_child_waypoint, child));
+					}
+					
+					// Return the updated waypoint.
+					return new Waypoint(expected_level_and_previous_states.active_state, updated_children);
+				}
 			}
-			return new Waypoint(expected_level.active_state, updated_children);
 			
+			// We couldn't find the parent in here, so we are in a branch that is not affected by
+			// the changes. This waypoint remains the same as before.
+			return expected_level_and_previous_states;
 		}
 
 		private void removeOrphans(StatemachineWithWay smw) {
@@ -947,6 +958,7 @@ public class StatemachineBuilder {
 		if (state instanceof SuperState) {
 			SuperState super_state = (SuperState) state;
 			w.println(indent + "subgraph cluster_" + statename + " {");
+			w.println(indent + "\tstyle=solid;");
 			
 			String superstate_style = "shape=rectangle";
 			if (style != null)
@@ -955,6 +967,7 @@ public class StatemachineBuilder {
 			
 			for (Region region : super_state.getRegions()) {
 				w.println(indent + "\tsubgraph cluster_" + statename + "_" + region.getName() + " {");
+				w.println(indent + "\tstyle=dashed;");
 				
 				for (State child : region.getStates())
 					exportDot(w, indent+"\t\t", child, state_attrs);
@@ -1007,16 +1020,41 @@ public class StatemachineBuilder {
 			throw new IllegalArgumentException("Expecting a StateMachine or something with a name (a state or region)");
 	}
 
+	public static List<State> getStatesInWaypoint(Waypoint waypoint) {
+		List<State> states = new LinkedList<State>();
+		getStatesInWaypoint(waypoint, states);
+		return states;
+	}
+	
+	private static void getStatesInWaypoint(Waypoint waypoint, Collection<State> states) {
+		states.add(waypoint.active_state);
+		
+		for (Waypoint child : waypoint.children)
+			getStatesInWaypoint(child, states);
+	}
+	
+	public static Set<State> getCommonStates(Waypoint wp1, Waypoint wp2) {
+		HashSet<State> states1 = new HashSet<State>();
+		HashSet<State> states2 = new HashSet<State>();
+		getStatesInWaypoint(wp1, states1);
+		getStatesInWaypoint(wp2, states2);
+		states1.retainAll(states2);	// intersection operation
+		return states1;
+	}
+
 	private static Map<State, String> highlight(String style, Waypoint waypoint) {
 		return highlight(style, waypoint, new HashMap<State, String>());
 	}
 	
 	private static Map<State, String> highlight(String style, Waypoint waypoint,
 			Map<State, String> attrs) {
-		attrs.put(waypoint.active_state, style);
-		
-		for (Waypoint child : waypoint.children)
-			highlight(style, child, attrs);
+		return highlight(style, getStatesInWaypoint(waypoint), attrs);
+	}
+
+	private static Map<State, String> highlight(String style,
+			Iterable<State> states, Map<State, String> attrs) {
+		for (State state : states)
+			attrs.put(state, style);
 		
 		return attrs;
 	}
@@ -1064,14 +1102,32 @@ public class StatemachineBuilder {
 		for (Waypoint waypoint : smw.waypoints)
 			System.out.println(waypoint);
 		
-		Map<State, String> state_attrs = highlight("color=red,style=bold", smw.waypoints.get(0));
-		if (smw.waypoints.size() > 1)
-			state_attrs = highlight("color = blue,style=bold", smw.waypoints.get(1), state_attrs);
+		boolean all_in_one = false;
+		if (all_in_one) {
+			int count = smw.transitions.size();
+			Map<State, String> state_attrs = new HashMap<State, String>();
+			Map<Transition, String> transition_attrs = new HashMap<Transition, String>();
+			for (int i=0;i<count;i++) {
+				String color = String.format("%f,%f,%f", 1.0/(count+1)*i, 1.0, 0.5);
+				highlight("color=\"" + color + "\"", smw.waypoints.get(i), state_attrs);
+				highlight("color=\"" + color + "\"", smw.transitions.get(i), transition_attrs);
+			}
+	
+			String dot_file = "random_statechart_with_way_" + seed + ".dot";
+			exportDot(sm, dot_file, transition_attrs, state_attrs);
+			Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
+		} else {
+			int count = smw.transitions.size();
+			for (int i=0;i<count;i++) {
+				Map<State, String> state_attrs = highlight("color=red,style=bold", smw.waypoints.get(i+1));
+				highlight("color=blue,style=bold", smw.waypoints.get(i), state_attrs);
+				highlight("color=purple,style=bold", getCommonStates(smw.waypoints.get(i), smw.waypoints.get(i+1)), state_attrs);
+				Map<Transition, String> transition_attrs = highlight("color=red,style=bold", smw.transitions.get(i));
 		
-		Map<Transition, String> transition_attrs = (smw.transitions.isEmpty() ? Collections.<Transition,String>emptyMap() : highlight("style=bold", smw.transitions.get(0)));
-
-		String dot_file = "random_statechart_with_way_" + seed + ".dot";
-		exportDot(sm, dot_file, transition_attrs, state_attrs);
-		Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
+				String dot_file = "random_statechart_with_way_" + seed + "_step" + i + ".dot";
+				exportDot(sm, dot_file, transition_attrs, state_attrs);
+				Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
+			}
+		}
 	}
 }
