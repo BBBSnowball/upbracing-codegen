@@ -185,6 +185,11 @@
   <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
   <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
   <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>F_CPU=8000000UL</Value>
+    </ListValues>
+  </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>../os</Value>
@@ -204,6 +209,7 @@
       <Value>../src/asf/common/services/clock</Value>
       <Value>../os/semaphores</Value>
       <Value>../os/IPC</Value>
+      <Value>../os/config</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
   <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
