@@ -1,0 +1,57 @@
+= Framework / Config =
+
+== loose coupling for the configuration object ==
+- find generators with the Services framework
+- ask them for a configuration object and a name
+- the main configuration object can be queried by name or object type -> gives back the object
+- Ruby gets a special object which uses method_missing to implement the usual interface;
+  It uses the variable name to ask the configuration for the object. Generators may be able
+  to extend the Ruby object with methods (also resolved by method_missing).
+
+== split generator project ==
+Each generator gets its own project. make-run-scripts.rb collects all the classpaths automatically. With an argument, you can choose the generators to run. This is handled by either run or Main. We have to make sure that we don't include dependencies for deactivated generators.
+
+== modular RTOS generation ==
+Put RTOS specific stuff (e.g. make a task for ...) into an object that the other code generators can use. Provide a way to use a different object (e.g. Services framework).
+
+
+= Statemachines =
+
+== extensions, e.g. for transition conditions (instead of the event name) ==
+
+- make wait(100ms) an extension instead of a built-in feature
+- sem_wait(name) -> rewritten to use start_wait, continue_wait and stop_wait
+- similar for queues
+
+Interface:
+- use Services framework to find extensions
+- let them extend the parser (add alternatives in certain places; they can use things like the grammar for times)
+- called after parser to create their own condition objects, etc.
+- called in updateConfig -> they must transform all custom objects into normal actions and conditions
+
+
+= RTOS =
+
+== Visualize scheduling ==
+
+Peer has a tool for that. We have to instrument the source code (manually, I guess). Output data on a port and capture it with a logic analyzer. I have an OpenLogic Sniffer, which would be enough for short bursts. If it can capture continuously, we might get arbitrary data length, if we make the processor slow enough (change frequency).
+
+== Asynchronous semaphores: Token overflow ==
+
+scenario: a = start_wait; for (...) { temp = start_wait; stop_wait(temp); }; b = start_wait -> might be the same token (a==b)
+
+from email between Peer and Benjamin:
+
+	Ich sehe da folgende Lösungen:
+
+	1. Dokumentieren und der Nutzer ist dafür verantwortlich, dass Tokens nicht doppelt vergeben werden. Wenn das doch mal der Fall ist, kommt evtl einer der Tasks zu früh dran während der andere zu lange wartet. Wenn der andere Task sich korrekt verhält (nicht stop_waiting zu oft aufruft), bleibt für den "Verlierer" immer noch ein Token übrig. Solange die Zahl der Tasks plus die Länge der Warteschlange (maximal vergebene Tokens) unter 256 ist, haben wir eigentlich nie ein Problem.
+
+	2. Durch die Warteschlange gucken, ob es das Token schon gibt. Ist nicht so ganz effizient, aber eine Möglichkeit. Vielleicht kann man das optimieren, weil ja die Tokens (immer?) in aufsteigender Reihenfolge in die Queue kommen (Task-IDs muss man dann ignorieren).
+
+	3. Dein Vorschlag mit dem Bitfield. Allerdings würden die 16 Byte unseren Speicherbedarf um ein vielfaches erhöhen. Vielleicht lieber in Abhängigkeit von der Warteschlangen-Länge - dann kommt nur Warteschlange/8 dazu.
+
+
+	Mein Ansatz dazu war, Lösung 1 zu nehmen (das Problem existiert, aber es ist nicht mein Problem *g*). Und später vielleicht noch Variante 2 zu implementieren. Die bessere Idee wäre wohl in Abhängigkeit von der WSchlangen-Länge zwischen 2 und 3 zu wählen: 2 ist relativ doof implementiert, aber braucht keinen Speicher und für Länge<4..8 ist es auch noch halbwegs effizient. 3 hat den großen Vorteil, dass man es sehr schnell auf einen von 8 eingrenzen kann (irgendwas frei: byte!=0xff). Der Vorteil kommt dann zum tragen, wenn man erheblich mehr als 8 Bits hat. Aber 12 Bit fällt der Speicherverbrauch im Vergleich zur Warteschlange nicht mehr so ins Gewicht.
+
+
+	Ich nehme an, dass wir in den meisten fällen nicht mehr als 10 Tasks haben und die meisten Warteschlangen haben deutlich weniger als 10 Plätze. Damit treten niemals Überläufe auf, und wir erwähnen das einfach irgendwo in der Dokumentation. Zur Not muss der User halt auf uint16_t Task-IDs wechseln. 
