@@ -377,30 +377,32 @@ public class Main {
 		if (!validate(generators, config, false, failed_generators, null))
 			return false;
 		
-		Map<IGenerator, Object> generator_data = new HashMap<IGenerator, Object>();
+		Map<IGenerator, Object> generator_data_values = new HashMap<IGenerator, Object>();
 		for (IGenerator gen : generators) {
 			if (!failed_generators.contains(gen))
-				generator_data.put(gen, gen.updateConfig(config));
+				generator_data_values.put(gen, gen.updateConfig(config));
 		}
 
-		if (!validate(generators, config, true, failed_generators, generator_data))
+		if (!validate(generators, config, true, failed_generators, generator_data_values))
 			return false;
 		
 		for (IGenerator gen : generators) {
 			if (failed_generators.contains(gen))
 				continue;
+
+			Object generator_data = generator_data_values.get(gen);
 			
 			for (Entry<String, ITemplate> e : gen.getFiles().entrySet()) {
 				File file = new File(target_directory + e.getKey());
-				ITemplate generator = e.getValue();
+				ITemplate template = e.getValue();
 				
-				if (!gen.isTemplateActive(e.getKey(), generator, config))
+				if (!gen.isTemplateActive(e.getKey(), template, config))
 					//TODO should we delete the file?
 					continue;
 				
 				// run the generator
 				System.out.println("Generating " + file);
-				String contents = generator.generate(config, generator_data.get(generator));
+				String contents = template.generate(config, generator_data);
 				//TODO track errors and warnings and display a summary;
 				//      return a non-zero value with System.exit, if there are errors
 				
