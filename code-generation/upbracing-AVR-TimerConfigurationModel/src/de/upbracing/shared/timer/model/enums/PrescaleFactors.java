@@ -1,12 +1,42 @@
 package de.upbracing.shared.timer.model.enums;
 
+/**
+ * This enum defines the valid prescale factors 
+ * {@link PrescaleFactors#ONE 1}, {@link PrescaleFactors#EIGHT 8},
+ * {@link PrescaleFactors#SIXTYFOUR 64}, 
+ * {@link PrescaleFactors#TWOHUNDREDANDSIXTYFIVE 256}
+ * and {@link PrescaleFactors#ONETHOUSANDANDTWENTYFOUR 1024}
+ * for the AT90CAN128 processor.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public enum PrescaleFactors {
+	/**
+	 * Timer runs at full processor speed. 
+	 */
 	ONE,
+	/**
+	 * Timer runs at 1/8th of processor speed.
+	 */
 	EIGHT,
+	/**
+	 * Timer runs at 1/64th of processor speed.
+	 */
 	SIXTYFOUR,
+	/**
+	 * Timer runs at 1/256th of processor speed.
+	 */
 	TWOHUNDREDANDSIXTYFIVE,
+	/**
+	 * Timer runs at 1/1024th of processor speed.
+	 */
 	ONETHOUSANDANDTWENTYFOUR;
 	
+	/** 
+	 * This method returns a user-friendly <code>String</code> representation
+	 * of the current prescale factor selection.
+	 * @return a user-friendly <code>String</code> representation.
+	 */
+	@Override
 	public String toString() {
 		if (this.equals(PrescaleFactors.ONE))
 			return "1";
@@ -22,21 +52,10 @@ public enum PrescaleFactors {
 		return this.name();
 	}
 	
-	public static PrescaleFactors fromString(String str) {
-		if (str.equals("1"))
-			return PrescaleFactors.ONE;
-		if (str.equals("8"))
-			return PrescaleFactors.EIGHT;
-		if (str.equals("64"))
-			return PrescaleFactors.SIXTYFOUR;
-		if (str.equals("256"))
-			return PrescaleFactors.TWOHUNDREDANDSIXTYFIVE;
-		if (str.equals("1024"))
-			return PrescaleFactors.ONETHOUSANDANDTWENTYFOUR;
-		// Fallback
-		return PrescaleFactors.ONE;
-	}
-	
+	/**
+	 * Gets the prescale divisor as integer.
+	 * @return the prescale divisor.
+	 */
 	public int getNumeric() {
 		if (this.equals(PrescaleFactors.ONE))
 			return 1;

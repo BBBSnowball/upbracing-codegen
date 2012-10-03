@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<project name="ConfigurationModel" default="main" basedir=".">
+  <!-- Sets variables which can later be used. -->
+  <!-- The value of a property is accessed via ${} -->
+  <property name="src.dir" location="src" />
+  <property name="build.dir" location="bin" />
+  <property name="dist.dir" location="dist" />
+  <property name="docs.dir" location="doc" />
+
+  <!-- Deletes the existing build, docs and dist directory-->
+  <target name="clean">
+    <delete dir="${build.dir}" />
+  	<delete dir="${docs.dir}" />
+    <delete dir="${dist.dir}" />
+  </target>
+
+  <!-- Creates the  build, docs and dist directory-->
+  <target name="makedir">
+    <mkdir dir="${build.dir}" />
+  	<mkdir dir="${docs.dir}" />
+    <mkdir dir="${dist.dir}" />
+  </target>
+
+  <!-- Compiles the java code (including the usage of library for JUnit -->
+  <target name="compile" depends="clean, makedir">
+    <javac srcdir="${src.dir}" debug="true" destdir="${build.dir}" includeantruntime="false">
+    </javac>
+  </target>
+
+  <!-- Creates Javadoc -->
+  <target name="docs" depends="compile">
+    <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+      <!-- Define which files / directory should get included, we include all -->
+       <fileset dir="${src.dir}">
+          <include name="**" />
+       </fileset>
+    </javadoc>
+  </target>
+	
+  <!--Creates the deployable jar file  -->
+  <target name="jar" depends="compile">
+    <jar destfile="${dist.dir}\de.upbracing.timer.configurationmodel.jar" basedir="${build.dir}">
+      <manifest>
+        <!--<attribute name="Main-Class" value="test.Main" />-->
+      </manifest>
+    </jar>
+  	<!-- I did not yet find a better solution. Referencing the jar from dist folder does not work for TimerConfigurationEditor.
+  	     But it works with a local copy in that project. -->
+  	<copyfile src="${dist.dir}\de.upbracing.timer.configurationmodel.jar" 
+  		dest="../upbracing-AVR-TimerConfigurationEditor/include/de.upbracing.timer.configurationmodel.jar"/>
+	<!--<copyfile src="${dist.dir}\de.upbracing.timer.configurationmodel.jar" 
+  		dest="../upbracing-AVR-CodeGenerator/libs/de.upbracing.timer.configurationmodel.jar"/>-->
+  </target>
+
+  <target name="main" depends="compile, jar, docs">
+    <description>Main target</description>
+  </target>
+
+</project> 
