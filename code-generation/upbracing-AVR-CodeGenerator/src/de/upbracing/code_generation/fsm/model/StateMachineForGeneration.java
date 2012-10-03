@@ -2,7 +2,6 @@ package de.upbracing.code_generation.fsm.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +60,6 @@ public class StateMachineForGeneration {
 	private SortedMap<String, Set<Transition>> events;
 	private Map<State, List<Action>> actions;
 	private Map<Transition, TransitionInfo> transition_infos;
-	private boolean hasHeaderCodeBoxes, hasCFileCodeBoxes;
 	private StateVariables state_variables = new StateVariables();
 
 	public StateMachineForGeneration(String name, StateMachine inner) {
@@ -123,11 +121,19 @@ public class StateMachineForGeneration {
 	}
 
 	public boolean hasHeaderCodeBoxes() {
-		return hasHeaderCodeBoxes;
+		for (GlobalCode box : getGlobalCodeBoxes()) {
+			if (box.getInHeaderFile())
+				return true;
+		}
+		return false;
 	}
 
 	public boolean hasCFileCodeBoxes() {
-		return hasCFileCodeBoxes;
+		for (GlobalCode box : getGlobalCodeBoxes()) {
+			if (!box.getInHeaderFile())
+				return true;
+		}
+		return false;
 	}
 	
 
@@ -185,7 +191,6 @@ public class StateMachineForGeneration {
 		initActions();
 		initTransitionInfos();
 		initEvents();
-		initCodeBoxBools();
 		
 		updateParents();
 	}
@@ -243,20 +248,6 @@ public class StateMachineForGeneration {
 			String transition_str = transition.getTransitionInfo();
 			//TODO handle errors
 			transition_infos.put(transition, FSMParsers.parseTransitionInfo(transition_str));
-		}
-	}
-	
-	private void initCodeBoxBools() {
-		hasHeaderCodeBoxes = false;
-		hasCFileCodeBoxes = false;
-		for (GlobalCode box : getGlobalCodeBoxes()) {
-			if (box.getInHeaderFile())
-				hasHeaderCodeBoxes = true;
-			else
-				hasCFileCodeBoxes = true;
-			
-			if (hasHeaderCodeBoxes && hasCFileCodeBoxes)
-				break;
 		}
 	}
 	
