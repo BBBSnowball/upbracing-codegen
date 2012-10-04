@@ -3,7 +3,9 @@ package de.upbracing.code_generation.generators;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.upbracing.code_generation.CanTemplate;
+import de.upbracing.code_generation.CanHeaderTemplate;
+import de.upbracing.code_generation.CanCFileTemplate;
+import de.upbracing.code_generation.CanValueTablesTemplate;
 import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
@@ -20,7 +22,9 @@ import de.upbracing.dbc.DBCSignal;
  */
 public class CanGenerator extends AbstractGenerator {
 	public CanGenerator() {
-		super(GlobalVariableGenerator.class, "can.h", new CanTemplate());
+		super(GlobalVariableGenerator.class, "can.h", new CanHeaderTemplate(), 
+											 "can.c", new CanCFileTemplate(), 
+											 "can_valuetables.h", new CanValueTablesTemplate());
 	}
 	
 	@Override
@@ -151,6 +155,9 @@ public class CanGenerator extends AbstractGenerator {
 				addGlobalVariable(config, signal);
 			}
 		}
+		
+		//Add declaration for value tables to global variables
+		config.getGlobalVariables().addDeclaration("#include \"can_valuetables.h\"");
 		
 		return null;
 	}

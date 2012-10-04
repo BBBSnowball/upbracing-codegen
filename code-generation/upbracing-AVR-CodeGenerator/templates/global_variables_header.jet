@@ -13,6 +13,20 @@
 
 #ifndef GLOBAL_VARIABLES_H_
 #define GLOBAL_VARIABLES_H_
+<%
+
+if (config.getGlobalVariables().getDeclarations().size() > 0) {
+%>
+
+// Generated declarations
+<%
+}
+
+for(String declaration : config.getGlobalVariables().getDeclarations()) {
+%>
+<%= declaration %><%
+}
+%>
 
 //////////////////////////
 ///  global variables  ///

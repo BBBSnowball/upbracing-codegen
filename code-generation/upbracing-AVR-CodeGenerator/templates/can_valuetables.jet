@@ -1,0 +1,68 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="CanValueTablesTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.*" %>
+
+<%
+
+// check prerequisites for running the code generator
+
+boolean run_generator = true;
+
+DBCConfig can_config = config.getCanConfig();
+
+if (can_config == null) {
+	run_generator = false;
+%>// not generating CAN code because DBC file hasn't been provided
+// use $config.can = parse_dbc(dbc_file)
+<%
+}
+
+if (run_generator) { 
+	
+	Messages messages = new Messages().withOutputTo(System.err);
+	
+%>
+#ifndef CAN_VALUETABLES_H_
+#define CAN_VALUETABLES_H_
+
+#ifndef DONT_SET_VALUE_TABLES
+<%
+for (java.util.Map.Entry<String, DBCValueTable> e : config.getCan().getValueTables().entrySet()) {
+	String name = e.getKey();
+	DBCValueTable table = e.getValue();
+	
+%>
+#ifndef SKIP_VT_<%=name%>
+<%	
+	if (name.equals("boolean")) {
+%>
+typedef bool boolean;
+<%
+	} else {
+%>
+typedef enum _<%=name%> {
+<%
+		for (java.util.Map.Entry<String, String> e2 : table.entrySet()) {
+%>
+	<%=e2.getValue()%> = <%=e2.getKey()%>,
+<%
+		}
+%>
+} <%=name%>;
+<%
+	}
+%>
+#endif	// not defined SKIP_VT_<%=name%>
+<%
+}
+%>
+#endif	// not defined DONT_SET_VALUE_TABLES
+
+#endif	// defined CAN_VALUETABLES_H_
+<% messages.summarizeForCode(stringBuffer); %>
+
+<%
+} // if run_generator
+%>
