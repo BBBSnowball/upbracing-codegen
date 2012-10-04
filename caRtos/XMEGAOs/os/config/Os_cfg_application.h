@@ -15,9 +15,10 @@ extern TASK(Task_Increment);
 extern TASK(Task_Update);
 extern TASK(Task_Idle);
 extern TASK(Task_Shift);
+extern TASK(Task_UsartTransmit);
 extern ALARMCALLBACK(Alarm_Test);
 
-#define OS_NUMBER_OF_TCBS_DEFINE   4
-#define OS_NUMBER_OF_ALARMS_DEFINE 3
+#define OS_NUMBER_OF_TCBS_DEFINE   5
+#define OS_NUMBER_OF_ALARMS_DEFINE 4
 
 #endif /* OS_CFG_APPLICATION_H_ */

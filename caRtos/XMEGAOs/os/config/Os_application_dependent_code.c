@@ -32,7 +32,7 @@
 // your code
 
 
-// from file os/internal/OSEK_Kernel.c:
+// from file os/internal/Os_Kernel.c:
 
 #if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 /* Simple priority "queue":

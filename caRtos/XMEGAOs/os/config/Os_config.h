@@ -14,9 +14,9 @@
 #ifndef OS_CONFIG_H_
 #define OS_CONFIG_H_
 
-#include "datatypes/OSEK_StatusTypes.h"
-#include "datatypes/OSEK_AlarmTypes.h"
-#include "datatypes/OSEK_TaskTypes.h"
+#include "Os_StatusTypes.h"
+#include "Os_AlarmTypes.h"
+#include "Os_TaskTypes.h"
 
 #include "Os_cfg_features.h"
 

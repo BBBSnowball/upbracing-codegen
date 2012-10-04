@@ -2,7 +2,7 @@
  * Platform_Types.h
  *
  * Created: 27.12.2011 17:00:32
- *  Author: peer
+ *  Author: Peer Adelt (adelt@mail.uni-paderborn.de)
  */ 
 
 

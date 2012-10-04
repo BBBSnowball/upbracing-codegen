@@ -17,7 +17,7 @@
 
 //TODO put as much as possible into program memory constants or
 //     initialization functions in OS_cfg_generated.c
-#define OS_TIMER_PRESCALE			TIMER_PRESCALE_64_bm
-#define OS_TIMER_COMPARE_VALUE		12499
+#define OS_TIMER_PRESCALE			TIMER_PRESCALE_1_bm
+#define OS_TIMER_COMPARE_VALUE		6249
 
 #endif /* OS_CFG_FEATURES_H_ */

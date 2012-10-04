@@ -1,82 +1,78 @@
-#include "queue.h"
-#include "semaphore.h"
-#include "OSEK.h"
 /*
  * queue.c
  *
  * Created: 16-Jul-12 7:20:31 PM
  *  Author: Krishna
  */ 
+#include "queue.h"
+#include "semaphore.h"
+#include "Os.h"
+#include <avr/interrupt.h>
 
-/*	@brief	Blocks called task until enough space is available
+/*	@brief	Writes a byte of data into the queue passed as the parameter
 
 	@param[in] data		Data to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* sem, uint8_t data )
+void _queue_enqueue(Queue* q, uint8_t data )
 {
-	sem->queue_end = (sem->queue_end==sem->capacity)? 0 : sem->queue_end + 1;
-	sem->q_queue[sem->queue_end] = data;
-	sem->occupied++;
-	
-	//activate tasks which are waiting for data, activateConsumer(taskId, 1)
-	
+	q->q_queue[q->queue_end] = data;
+	q->queue_end++;
+	if (q->queue_end == q->capacity)
+		q->queue_end = 0;
+	q->occupied++;
 }
 
 
-/*	@brief	Blocks called task until enough space is available, then places data on queue
+/*	@brief	Writes multiple bytes into the queue passed as parameter
 
 	@param[in] bytes	Number of bytes of input
 	@param[in] *data	Pointer to data, to be placed on the queue
 	
 */
-void _queue_enqueue2(Queue* sem, uint8_t bytes, const uint8_t* data )
+void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)
 	{
-		sem->queue_end = (sem->queue_end==sem->capacity)? 0 : sem->queue_end + 1;
-		sem->q_queue[sem->queue_end] = data[i];
+		q->q_queue[q->queue_end] = data[i];
+		q->queue_end++;
+		if (q->queue_end == q->capacity)
+			q->queue_end = 0;
 	}
-	sem->occupied = sem->occupied + bytes;
-	
-	//activate tasks which are waiting for data, activateConsumer(taskId, bytes)
+	q->occupied = q->occupied + bytes;
 }
 
-/*	@brief	Returns data from the queue. Blocks till data is available.
+/*	@brief	Returns data from the queue.
 
 	@return				First data in the queue
 	
 */
-uint8_t _queue_dequeue(Queue* sem)
+void _queue_dequeue(Queue* q, uint8_t* output)
 {
 	uint8_t ret;
-	ret = sem->q_queue[sem->queue_front];
-	sem->queue_front = (sem->queue_front==sem->capacity)? 0 : sem->queue_front +1;
-	sem->occupied--;
+	ret = q->q_queue[q->queue_front];
+	q->queue_front = (q->queue_front==(q->capacity-1))? 0 : q->queue_front +1;
+	q->occupied--;
 	
-	//activate tasks which are waiting for space, activateProducer(taskId, 1)
-	
-	return ret;
+	*output = ret;
 }
 
-/*	@brief	Returns large data from the queue. Blocks until required amount of data in in the queue.
+/*	@brief	Returns large data from the queue. 
 
 	@param[in] bytes	Number of bytes of required data
 	@param[in] *data_out	Pointer to memory where data is to be stored
 	
 */
-void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out )
+void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out )
 {
 	uint8_t i;
 	for (i=0;i<bytes;i++)
 	{
-		data_out[i] = sem->q_queue[sem->queue_front];
-		sem->queue_front = (sem->queue_front==sem->capacity)? 0 : sem->queue_front +1;
+		data_out[i] = q->q_queue[q->queue_front];
+		q->queue_front = (q->queue_front==q->capacity)? 0 : q->queue_front +1;
 	}
-	sem->occupied = sem->occupied - bytes;
-	
-	//activate tasks which are waiting for space, activateProducer(taskId, bytes)
+	q->occupied = q->occupied - bytes;
 }
 
 /*	@brief	Checks if there is data available to be read, in the queue
@@ -86,9 +82,9 @@ void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out )
 	@return		True, if data available. False, if otherwise.
 	
 */
-bool _queue_is_data_available(Queue* sem, uint8_t number_of_bytes )
+bool _queue_is_data_available(Queue* q, uint8_t number_of_bytes )
 {
-	if (sem->occupied >= number_of_bytes)
+	if (q->occupied >= number_of_bytes)
 	{
 		return TRUE;
 	}
@@ -102,9 +98,9 @@ bool _queue_is_data_available(Queue* sem, uint8_t number_of_bytes )
 	@return		True, if space available. False, if otherwise.
 
 */
-bool _queue_has_free_space(Queue* sem, uint8_t number_of_bytes )
+bool _queue_has_free_space(Queue* q, uint8_t number_of_bytes )
 {
-	if ((sem->capacity - sem->occupied) >= number_of_bytes)
+	if ((q->capacity - q->occupied) >= number_of_bytes)
 	{
 		return TRUE;
 	}
