@@ -346,138 +346,152 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 	// disable mob, as it would be retransmitted otherwise
 	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 <%
-	int addr = 0;
-	for (DBCSignal signal : msgconfig.getSignalOrder()) {
-		DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
-		int start = signalconfig.getStart();
-		int len = signalconfig.getLength();
-		String name = signalconfig.getName();
+
+			if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerData(), "\t")) {
 		
-		//TODO The pdf file says that '1' would mean big endian, but
-		//     CANdb++ shows that as "intel" - which is little endian.
-		//     Our programs agree with that so the RapidPro seems to
-		//     use '1' for little endian as well.
-		boolean big_endian = !signalconfig.getEndianness().equals("1");
-		
-		//TODO by how much must we change the start index?
-		if (big_endian)
-			// this formula is for the values shown in CANdb++
-			// $start -= $len - 8;
-			// this formula is for the values that are saved in the dbc file
-			start -= 7;
-		
-		if (start%8 != 0 || len%8 != 0) {
-			//TODO support that
-			%><% messages.warn("The signal '%s' is not aligned on a byte boundary, so it will be ignored.", name).formatForCode(stringBuffer); %><%
-			continue;
-		}
-		if (addr > start) {
-			%><% messages.warn("Cannot write overlapping signals. Ignoring signal '%s'.", name).formatForCode(stringBuffer); %><%
-			continue;
-		}
-		
-		if (addr < start) {
+				int addr = 0;
+				for (DBCSignal signal : msgconfig.getSignalOrder()) {
+					DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+					int start = signalconfig.getStart();
+					int len = signalconfig.getLength();
+					String name = signalconfig.getName();
+					
+					//TODO The pdf file says that '1' would mean big endian, but
+					//     CANdb++ shows that as "intel" - which is little endian.
+					//     Our programs agree with that so the RapidPro seems to
+					//     use '1' for little endian as well.
+					boolean big_endian = !signalconfig.getEndianness().equals("1");
+					
+					//TODO by how much must we change the start index?
+					if (big_endian)
+						// this formula is for the values shown in CANdb++
+						// $start -= $len - 8;
+						// this formula is for the values that are saved in the dbc file
+						start -= 7;
+					
+					if (start%8 != 0 || len%8 != 0) {
+						//TODO support that
+						%><% messages.warn("The signal '%s' is not aligned on a byte boundary, so it will be ignored.", name).formatForCode(stringBuffer); %><%
+						continue;
+					}
+					if (addr > start) {
+						%><% messages.warn("Cannot write overlapping signals. Ignoring signal '%s'.", name).formatForCode(stringBuffer); %><%
+						continue;
+					}
+					
+					if (addr < start) {
 %>
 		// skipping <%= ((start-addr)/8) %> byte(s)
 <%
-			while (addr < start) {
+						while (addr < start) {
 %>
 		CANMSG = 0;
 <%
-				addr += 8;
-			}
-		}
-		
-		//TODO support other types
-		//TODO or should we use get_signal_int_type? what happens, if we use
-		//     an enum in a union - the size of the enum can be chosen by the
-		//     compiler
-		String type = signalconfig.getCType();
-		
-		//TODO print comment, if available
+							addr += 8;
+						}
+					}
+					
+					//TODO support other types
+					//TODO or should we use get_signal_int_type? what happens, if we use
+					//     an enum in a union - the size of the enum can be chosen by the
+					//     compiler
+					String type = signalconfig.getCType();
+					
+					//TODO print comment, if available
 %>
 
 		// writing signal <%= name %>
 		{
 			<%= type %> value;
 <%
-		if (!CanGeneratorHelper.printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
-			/*if (!empty($signal['place']))
-				$var = $signal['place'];
-			else if (!empty($signal['variable']))
-				$var = $signal['variable'];
-			else if (!empty($signal['param']))
-				$var = $signal['param'];
-			else
-				$var = $signal['name'];
-			echo "\t\t\tvalue = $var;\n";*/
-			String var;
-			if (signalconfig.getParam() != null)
-				var = signalconfig.getParam();
-			else
-				var = name;
+					if (!CanGeneratorHelper.printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
+						/*if (!empty($signal['place']))
+							$var = $signal['place'];
+						else if (!empty($signal['variable']))
+							$var = $signal['variable'];
+						else if (!empty($signal['param']))
+							$var = $signal['param'];
+						else
+							$var = $signal['name'];
+						echo "\t\t\tvalue = $var;\n";*/
+						String var;
+						if (signalconfig.getParam() != null)
+							var = signalconfig.getParam();
+						else
+							var = name;
 %>
 			value = <%= var %>;
 <%		
-		}
-		
-		CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
-		
-		if (len == 8) {
+					}
+					
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
+					
+					if (len == 8) {
 %>
 			CANMSG =<%= type.equals("uint8_t") ? "" : " (uint8_t)" %> value;
 <%
-			addr += 8;
-		} else {
+						addr += 8;
+					} else {
 %>
 			union {
 				<%= type %> value;
 				struct {
 <%
-			for (int i=0; i<len/8; i++) {
+						for (int i=0; i<len/8; i++) {
 %>
 					uint8_t byte<%= i %>;
 <%
-			}
+						}
 %>
 				} bytes;
 			} x;
 			
 			x.value = value;
 <%		
-			int bytes = len/8;
-			if (big_endian) {	//TODO which one is big endian?
-				// big endian
-				for (int i=0; i<bytes; i++) {
+						int bytes = len/8;
+						if (big_endian) {	//TODO which one is big endian?
+							// big endian
+							for (int i=0; i<bytes; i++) {
 %>
 			CANMSG = x.bytes.byte<%= (bytes-i-1) %>;
 <%
-					addr += 8;
-				}
-			} else {
-				// little endian
-				for (int i=0; i<bytes; i++) {
+								addr += 8;
+							}
+						} else {
+							// little endian
+							for (int i=0; i<bytes; i++) {
 %>
 			CANMSG = x.bytes.byte<%= i %>;
 <%
-					addr += 8;
-				}
-			}
-			
-			if (signalconfig.getFactor() != 1 || signalconfig.getOffset() != 0)
-				messages.warn("The signal '%s' uses factor or offset, which is not supported yet.", name).formatForCode(stringBuffer);
-		}	// len != 8
-		
-		CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmAfterTx(), "\t\t\t");
+								addr += 8;
+							}
+						}
+						
+						if (signalconfig.getFactor() != 1 || signalconfig.getOffset() != 0)
+							messages.warn("The signal '%s' uses factor or offset, which is not supported yet.", name).formatForCode(stringBuffer);
+					}	// len != 8
+					
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmAfterTx(), "\t\t\t");
 %>
 		}
 <%
-	}	// foreach signal	
+				}	// foreach signal
+			}	// no tx_handler_data
 %>
 	if (wait)
 		can_mob_transmit_wait(MOB_<%=mobName%>);
 	else
 		can_mob_transmit_nowait(MOB_<%=mobName%>);
+<%
+		}	// no tx_handler
+	}	// no tx_handler_all
+	
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getAfterTx(), "\t");
+	}
+	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getAfterTx(), "\t");
+
+%>
 }
 inline static void send_<%=msgconfig.getName()%>_wait(<%= params %>) {
 	send_<%=msgconfig.getName()%>(true, <%= param_values %>);
@@ -486,8 +500,7 @@ inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
 	send_<%=msgconfig.getName()%>(false, <%= param_values %>);
 }
 <%
-		}	// no tx_handler
-	}	// no tx_handler_all
+
 }
 %>
 

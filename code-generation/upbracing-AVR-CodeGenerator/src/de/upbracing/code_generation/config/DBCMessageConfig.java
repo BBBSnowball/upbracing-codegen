@@ -20,6 +20,7 @@ public class DBCMessageConfig extends DBCMessage {
 	private String afterRx = null;
 	private String txHandler = null;
 	private String txHandlerAll = null;
+	private String txHandlerData = null;
 	private String beforeTx = null;
 	private String afterTx = null;
 	private List<String> aliases = new LinkedList<String>();
@@ -146,6 +147,14 @@ public class DBCMessageConfig extends DBCMessage {
 
 	public void setTxHandlerAll(String txHandlerAll) {
 		this.txHandlerAll = txHandlerAll;
+	}
+
+	public String getTxHandlerData() {
+		return txHandlerData;
+	}
+
+	public void setTxHandlerData(String txHandlerData) {
+		this.txHandlerData = txHandlerData;
 	}
 
 	public String getBeforeTx() {
