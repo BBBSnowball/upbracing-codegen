@@ -6,19 +6,21 @@ public class IntegerDisplayToModelConverter implements IConverter {
 
 	@Override
 	public Object convert(Object arg0) {
-		// TODO Auto-generated method stub
+		// Just return the parsed Integer
 		return Integer.parseInt(arg0.toString());
 	}
 
 	@Override
 	public Object getFromType() {
-		// TODO Auto-generated method stub
+		// FromType could be String in this case. 
+		// Returning null here makes this accepting any source type.
 		return null;
 	}
 
 	@Override
 	public Object getToType() {
-		// TODO Auto-generated method stub
+		// ToType could be Integer in this case. 
+		// Returning null here makes this accepting any source type.
 		return null;
 	}
 

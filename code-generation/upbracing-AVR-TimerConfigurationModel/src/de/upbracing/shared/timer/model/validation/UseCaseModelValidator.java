@@ -470,10 +470,10 @@ public class UseCaseModelValidator extends AValidatorBase {
 		double timerFreq = ((double) frequency / (double) prescale);
 		double timerPeriod = 1.0 / timerFreq;
 		// Calculate Register Value From Desired Period
-		int registerValue = (int) Math.round(period / timerPeriod) - 1;
+		int registerValue = (int) Math.floor((period / timerPeriod) + 0.5d) - 1;
 		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)
 				|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
-			registerValue = (int) Math.round(period / (2 * timerPeriod)) - 1;
+			registerValue = (int) Math.floor((period / (2 * timerPeriod)) + 0.5d) - 1;
 		
 		return registerValue;
 	}
@@ -561,10 +561,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		//               = period * timerFreq
 		//               = period * (frequency / prescale)
 		// <=> period = registerValue / (frequency / prescale)
-		
-		// TODO: Check this with Single-Slope/Dual-Slope!
-		// TODO: Check, if the Dual-Slope handling is correct!
-		
+
 		int frequency = parent.getFrequency();
 		int prescale = model.getPrescale().getNumeric();
 		double timerFreq = ((double) frequency / (double) prescale);

@@ -6,19 +6,21 @@ public class DoubleDisplayToModelConverter implements IConverter {
 
 	@Override
 	public Object convert(Object arg0) {
-		// TODO Auto-generated method stub
+		// Just return the parsed double
 		return Double.parseDouble(arg0.toString());
 	}
 
 	@Override
 	public Object getFromType() {
-		// TODO Auto-generated method stub
+		// FromType could be String in this case. 
+		// Returning null here makes this accepting any source type.
 		return null;
 	}
 
 	@Override
 	public Object getToType() {
-		// TODO Auto-generated method stub
+		// ToType could be Double in this case. 
+		// Returning null here makes this accepting any target type.
 		return null;
 	}
 

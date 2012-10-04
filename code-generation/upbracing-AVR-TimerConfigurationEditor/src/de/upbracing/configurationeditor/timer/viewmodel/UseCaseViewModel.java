@@ -28,7 +28,7 @@ public class UseCaseViewModel extends AViewModelBase {
 		this.validator = new UseCaseModelValidator(parent, m);
 	}
 
-	// Getter for Parent
+	// Getter for underlying model
 	public UseCaseModel getModel() {
 		return model;
 	}
@@ -69,6 +69,9 @@ public class UseCaseViewModel extends AViewModelBase {
 		model.setName(n);
 		changes.firePropertyChange("name", null, null);
 		validator.updateValidation();
+		
+		// Alert the parent, that the name of one of its child has changed
+		// -> this is needed to check for name collisions
 		getParent().updateUseCaseValidation();
 	}
 	public void setMode(TimerOperationModes m) {
@@ -93,21 +96,25 @@ public class UseCaseViewModel extends AViewModelBase {
 		this.model.setIcrPeriod(f);
 		changes.firePropertyChange("icrPeriod", null, null);
 		validator.updateValidation();
+		triggerUpdateView();
 	}
 	public void setOcrAPeriod(double f) {
 		this.model.setOcrAPeriod(f);
 		changes.firePropertyChange("ocrAPeriod", null, null);
 		validator.updateValidation();
+		triggerUpdateView();
 	}
 	public void setOcrBPeriod(double f) {
 		this.model.setOcrBPeriod(f);
 		changes.firePropertyChange("ocrBPeriod", null, null);
 		validator.updateValidation();
+		triggerUpdateView();
 	}
 	public void setOcrCPeriod(double f) {
 		this.model.setOcrCPeriod(f);
 		changes.firePropertyChange("ocrCPeriod", null, null);
 		validator.updateValidation();
+		triggerUpdateView();
 	}
 	
 	// Dynamic data-bound View Data:
@@ -191,59 +198,38 @@ public class UseCaseViewModel extends AViewModelBase {
 		int maxValue = 255;
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65536;
-		int timerNumber = 0;
-		if (getTimer().equals(TimerEnum.TIMER1))
-			timerNumber = 1;
-		if (getTimer().equals(TimerEnum.TIMER2))
-			timerNumber = 2;
-		if (getTimer().equals(TimerEnum.TIMER3))
-			timerNumber = 3;
-		String tickDuration = "";
-		DecimalFormat df = new DecimalFormat("###.##########");
-		DecimalFormatSymbols sym = new DecimalFormatSymbols();
-		sym.setDecimalSeparator('.');
-		df.setDecimalFormatSymbols(sym);
-		tickDuration = df.format((double)1.0/getTickFrequency());
-		String tickFrequency = df.format(getTickFrequency());
-						
-		// Overflow
-		String overflowInt = "";
-		if (!model.getOverflowInterrupt())
-			overflowInt = "not ";
-		String overflowTime = df.format(((double) (maxValue + 1)) / getTickFrequency());
+		int timerNumber = getTimer().ordinal();
+		String tickDuration = getFormattedDecimal((double)1.0/getTickFrequency());
+		String tickFrequency = getFormattedDecimal(getTickFrequency());
+		
+		// 8 or 16 Bit?
+		int bit = 8;
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
+			bit = 16;
+		
+		// Text
+		String text = "Timer Number: " + timerNumber + " (" + bit + "Bit)" + ls
+				+ "Frequency: " + tickFrequency + "Hz (with prescale divisor " + getPrescale().getNumeric() + ")" + ls
+				+ "Resolution: " + tickDuration + "s" + ls
+				+ "Max. Counter Value: " + maxValue + ls + ls;
 		
 		// CTC
-		String ctcTopReg = "ICR (Input Capture Register)";
-		if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.OCRnA)) {
-			ctcTopReg = "OCR" + timerNumber;
-			if (timerNumber % 2 == 1)
-				ctcTopReg += "A";
-			ctcTopReg += " (Output Capture Register)";
-		}
-		
-		String d = "";
+		String d = text;
 		
 		if (getMode().equals(TimerOperationModes.OVERFLOW)) {
-			d = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
-			d += "Interrupts are " + overflowInt + "generated on overflow.";
-			d += ls + ls + "Timer will run at " + tickFrequency + "Hz (Prescale: " + getPrescale().toString() + ").";
-			d += ls + "Each tick will take " + tickDuration + "s." + ls;
-			d += "=> Timer will overflow every " + overflowTime + "s.";
+			d += getOverflowDescription(maxValue);
 		}
 		if (getMode().equals(TimerOperationModes.CTC)) {
-			d = "The Timer will run from 0 to the Top Value stored in " + ctcTopReg + "." + ls + ls;
-			d += "Interrupts can be generated on Compare Match. Output Pins can be toggled for frequency generation.";
-			d += ls + ls + "Timer will run at " + tickFrequency + "Hz.";
+			d += getCtcDescription();
 		}
 		if (getMode().equals(TimerOperationModes.PWM_FAST)) {
-			d = "The Timer will run in Fast PWM Mode. Period cannot be altered during runtime. Period can be fixed 8Bit, 9Bit, 10Bit and defined in ICR (Input Capture Register) or OCRnA (Output Compare Register). If duty-cycles should be altered during runtime, Phase Correct PWM Mode is recommended instead!";
-			d += ls + ls + "Timer will run at " + tickFrequency + "Hz.";
+			d += getPWMDescription();
 		}
 		if (getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
-			d = "The Timer will run in Phase Correct PWM Mode. Period cannot be altered during runtime. Period can be fixed 8Bit, 9Bit, 10Bit and defined in ICR (Input Capture Register) or OCRnA (Output Compare Register). Duty-cycles can be altered during runtime.";
+			d += getPWMDescription();
 		}
 		if (getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
-			d = "The Timer will run in Phase and Frequency Correct PWM Mode. Period can be fixed 8Bit, 9Bit, 10Bit and defined in ICR (Input Capture Register) or OCRnA (Output Compare Register). When period is controlled via ICR or OCRnA, it can be altered during runtime. Duty-cycles can be altered during runtime.";
+			d += getPWMDescription();
 		}
 		
 		return d;
@@ -449,4 +435,79 @@ public class UseCaseViewModel extends AViewModelBase {
 		return 0.0;
 	}
 	
+	// Private Description Helpers:
+	private String getOverflowDescription(int maxValue) {
+		
+		String ls = System.getProperty("line.separator");
+		
+		String overflowTime = getFormattedDecimal(((double) (maxValue + 1)) / getTickFrequency());
+		String text = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
+		text += "=> Timer will overflow every " + overflowTime + "s.";
+		if (model.getOverflowInterrupt())
+			text += ls + "=> Interrupts are generated on overflow.";
+		
+		return text;
+	}
+	
+	private String getCtcDescription() {
+		
+		String ls = System.getProperty("line.separator");
+		
+		String ctcTopReg = "ICR (Input Capture Register)";
+		if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.OCRnA)) {
+			ctcTopReg = "OCR" + getTimer().ordinal();
+			if (getTimer().ordinal() % 2 == 1)
+				ctcTopReg += "A";
+			ctcTopReg += " (Output Capture Register)";
+		}
+
+		String text = "The Timer will run from 0 to the Top Value stored in " + ctcTopReg + "." + ls;
+		
+		// Interrupts:
+		if (getCompareInterruptA())
+			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrAPeriod()) + "s after timer reset.";
+		if (getCompareInterruptB())
+			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrBPeriod()) + "s after timer reset.";
+		if (getCompareInterruptC())
+			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrCPeriod()) + "s after timer reset.";
+		if (getCompareInterruptA() || getCompareInterruptB() || getCompareInterruptC())
+			text += ls;
+		
+		// Output modes:
+		if (!getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {
+			text += ls + "=> Channel A will " + getComparePinModeA().toString().toLowerCase() + ".";
+		}
+		if (!getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
+			text += ls + "=> Channel B will " + getComparePinModeB().toString().toLowerCase() + ".";	
+		}
+		if (!getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
+			text += ls + "=> Channel C will " + getComparePinModeC().toString().toLowerCase() + "."; 
+		}
+		
+		return text;
+	}
+	
+	private String getPWMDescription() {
+		
+		String text = "The Timer will run in " + getMode().toString() + ". ";
+		
+		if (getMode().equals(TimerOperationModes.PWM_FAST) || getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
+			text += "Period cannot be altered during runtime.";
+		}
+		
+		// TODO: Base rate:
+		
+		// TODO: Channels:
+		
+		return text;
+	}
+	
+	private String getFormattedDecimal(double d) {
+		DecimalFormatSymbols sym = new DecimalFormatSymbols();
+		sym.setDecimalSeparator('.');
+		DecimalFormat df = new DecimalFormat("###.##########");
+		df.setDecimalFormatSymbols(sym);
+		
+		return df.format(d);
+	}
 }
