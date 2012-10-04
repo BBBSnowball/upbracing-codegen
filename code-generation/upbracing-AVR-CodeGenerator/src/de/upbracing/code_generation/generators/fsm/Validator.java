@@ -1,6 +1,5 @@
 package de.upbracing.code_generation.generators.fsm;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -9,11 +8,10 @@ import Statecharts.InitialState;
 import Statecharts.NormalState;
 import Statecharts.Region;
 import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
 import Statecharts.SuperState;
 import Statecharts.Transition;
 import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.ParserException;
@@ -28,7 +26,7 @@ public class Validator {
 	@SuppressWarnings("unused")
 	private Object generator_data;
 	private Messages messages;
-	
+
 	public Validator(MCUConfiguration config, boolean after_update_config,
 			Object generator_data) {
 		this.config = config;
@@ -36,16 +34,17 @@ public class Validator {
 		this.generator_data = generator_data;
 		this.messages = config.getStatemachines().getMessages();
 	}
-	
-	/** constructor used for tests
+
+	/**
+	 * constructor used for tests
 	 * 
-	 * Only a few methods can be used, if you built the object
-	 * with this constructor.
+	 * Only a few methods can be used, if you built the object with this
+	 * constructor.
 	 */
 	public Validator(Messages messages) {
 		this.messages = messages;
 	}
-	
+
 	public Messages getMessages() {
 		return messages;
 	}
@@ -86,7 +85,7 @@ public class Validator {
 			if (smg.getBasePeriodAsString() == null) {
 				System.err.println("ERROR: Statemachine needs a base rate");
 
-				// set some rate because the program will crash, if it find a
+				// set some rate because the program will crash, if it finds a
 				// null in there
 				smg.setBasePeriod("1s");
 			}
@@ -127,8 +126,22 @@ public class Validator {
 				// look like this: "SuperState abc -> Region x -> State foo"
 
 				// statemachine validation
-				if (!nameValidate(smg))
+//			
+				messages.addObjectFormatter(State.class, new Messages.ObjectFormatter<State>() {
+
+					@Override
+					public String format(int type, State obj) {
+						// TODO Auto-generated method stub
+						return obj.getName();
+					}
+				});
+				
+				ContextItem statemachine_context = messages.pushContext(smg);
+
+				if (!nameValidate(smg)) {
+					getNameErrorMess(smg.getName());
 					valid = false;
+				}
 
 				// event validation
 				else if (smg.getEvents().keySet().size() > 0) {
@@ -138,10 +151,13 @@ public class Validator {
 
 				} else if (!typeCheckAndValidate(smg.getStates(), smg))
 					valid = false;
+
+				statemachine_context.pop();
 			}
 		}
-		
-		return messages.getHighestSeverity().ordinal() < Severity.ERROR.ordinal();
+
+		return messages.getHighestSeverity().ordinal() < Severity.ERROR
+				.ordinal();
 	}
 
 	// check all the state types and perform validation
@@ -150,6 +166,7 @@ public class Validator {
 		boolean valid = true;
 
 		for (State state : s) {
+
 			if (state instanceof InitialState)
 				if (!initalValidate(state, smg))
 					valid = false;
@@ -163,14 +180,24 @@ public class Validator {
 					valid = false;
 
 			if (state instanceof SuperState) {
+				ContextItem superstate_context = messages
+						.pushContext((SuperState) state);
+
 				if (!normSupValidate(state, smg))
 					valid = false;
-				typeCheckAndValidate(superInnerStateValidate((SuperState)state, smg), smg);
+
+				for (Region region : ((SuperState) state).getRegions()) {
+					ContextItem region_context = messages.pushContext(region);
+
+					typeCheckAndValidate(region.getStates(), smg);
+					region_context.pop();
+				}
+				superstate_context.pop();
 			}
 		}
 
 		// check number of initial states for each parent
-		if (!initialCount(smg, s))
+		if (!initialCount(smg.getStates()))
 			valid = false;
 
 		return valid;
@@ -196,27 +223,34 @@ public class Validator {
 	}
 
 	// count number of initial states
-	private boolean initialCount(StateMachineForGeneration smg,
-			List<State> states) {
+	private boolean initialCount(List<State> states) {
 		int initialcount = 0;
 		boolean valid = true;
 
-		for (State state : smg.getStates()) {
+		for (State state : states) {
 			if (state instanceof InitialState) {
 				initialcount++;
+
 				if (initialcount > 1) {
-					System.err.println(getStateInfo(smg, state)
-							+ " has more than one start states");
+					messages.error("%s has more than 1 start states",
+							state.getName()).formatForCode(new StringBuffer());
 					valid = false;
 				}
 			}
-			for (State st : smg.getStates()) {
-				if (state instanceof SuperState) {
-					for (Region region : ((SuperState) state).getRegions())
-						initialCount(smg, region.getStates());
+		}
+
+		for (State s : states) {
+			if (s instanceof SuperState) {
+				ContextItem superstate_context = messages.pushContext(s);
+				for (Region region : ((SuperState) s).getRegions()) {
+					ContextItem region_context = messages.pushContext(region);
+					initialCount(region.getStates());
+					region_context.pop();
 				}
+				superstate_context.pop();
 			}
 		}
+
 		return valid;
 	}
 
@@ -255,17 +289,6 @@ public class Validator {
 		return valid;
 	}
 
-	// validate states inside superstate
-	private List<State> superInnerStateValidate(SuperState state,
-			StateMachineForGeneration smg) {
-		List<State> states = new ArrayList<State>();
-
-		for (Region region : ((SuperState) state).getRegions())
-			states.addAll(states);
-
-		return states;
-	}
-
 	private boolean validateStatesNotNull(Iterable<State> states) {
 		for (State state : states) {
 			validateNotNull(state.getIncomingTransitions(),
@@ -298,81 +321,52 @@ public class Validator {
 	public static boolean emptyOrNull(String obj) {
 		return obj == null || obj.isEmpty();
 	}
-	
-	public static boolean nameValidate(StateMachineForGeneration smg) {
+
+	public boolean nameValidate(StateMachineForGeneration smg) {
 		if (emptyOrNull(smg.getName())) {
-			System.err.println("Statemachine name cannot be empty!");
+			messages.error("Statemachine name is empty or null!", smg)
+					.formatForCode(new StringBuffer());
 			return false;
+
 		} else if (!isNameValid(smg.getName())) {
-			System.err.println("Statemachine name '" + smg.getName() + "'"
-					+ " is not a valid C identifier!");
+			getNameErrorMess(smg.getName());
 			return false;
+
 		} else
 			return true;
 	}
 
 	// validate state name
-	public static boolean nameValidate(State state,
-			StateMachineForGeneration smg) {
+	public boolean nameValidate(State state, StateMachineForGeneration smg) {
 		String name = state.getName();
 
 		if (emptyOrNull(name) || isNameValid(name))
 			return true;
 		else {
-			System.err.println(getStateInfo(smg, state)
-					+ " is not a valid C identifier!");
+			getNameErrorMess(name);
 			return false;
 		}
 	}
 
-	public static boolean isNameValid(String nametobevalidated) {
+	public boolean isNameValid(String nametobevalidated) {
 		Pattern name_pattern = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
 		return name_pattern.matcher(nametobevalidated).matches();
 	}
 
 	// event name validator
-	//TODO pass Transition to this method and use it in the error message.
+	// TODO pass Transition to this method and use it in the error message.
 	private boolean evNameValidate(StateMachineForGeneration smg, String event) {
 		if (emptyOrNull(event) || isNameValid(event))
 			return true;
 		else {
-			System.err.println(getStateInfo(smg, null) + " | Event name -> " + event
-					+ " is not a valid C identifier!");
+			getNameErrorMess(event);
 			return false;
 		}
 	}
 
-	// get state information
-	private static String getStateInfo(StateMachineForGeneration smg,
-			State state) {
-		StringBuilder str = new StringBuilder();
-		str.append("Statemachine -> " + smg.getName());
-
-		if (state != null)
-			getStateInfo(str, state);
-
-		return str.toString();
-	}
-
-	private static void getStateInfo(StringBuilder info, State state) {
-		StateParent parent = state.getParent();
-
-		if (parent instanceof StateMachine) {
-			info.insert(0, " | State -> " + state.getName());
-
-		} else if (parent instanceof Region) {
-			Region region = (Region) parent;
-			SuperState super_state = (SuperState) region.getParent();
-			info.insert(0, " | Super State -> " + super_state.getName()
-					+ " | Region -> " + region.getName());
-			getStateInfo(info, super_state);
-		}
-	}
-
-	// get transition information
-	private String getTransitionInfo(Transition trans) {
-		return (" | Transition -> Source : " + trans.getSource()
-				+ " Destination : " + trans.getDestination());
+	private void getNameErrorMess(Object name) {
+		messages.error("%s is not a valid C identifier!", name).formatForCode(
+				new StringBuffer());
 	}
 
 	// validate initial state transitions
@@ -384,19 +378,20 @@ public class Validator {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
 
 			if (ti.isWaitTransition()) {
-				System.err.println(getStateInfo(smg, state)
-						+ getTransitionInfo(trans)
-						+ " : Start state cannot have waiting transition!");
+				getTransitionErrorMessage(trans.getSource(),
+						trans.getDestination(), "waiting transition");
 				valid = false;
+
 			} else if (!emptyOrNull(ti.getEventName())) {
-				System.err.println(getStateInfo(smg, state)
-						+ getTransitionInfo(trans)
-						+ " : Start state cannot have events!");
+
+				getTransitionErrorMessage(trans.getSource(),
+						trans.getDestination(), "events");
 				valid = false;
+
 			} else if (!emptyOrNull(ti.getCondition())) {
-				System.err.println(getStateInfo(smg, state)
-						+ getTransitionInfo(trans)
-						+ " : Start state cannot have conditions !");
+
+				getTransitionErrorMessage(trans.getSource(),
+						trans.getDestination(), "conditions");
 				valid = false;
 			}
 		}
@@ -416,19 +411,17 @@ public class Validator {
 						|| !emptyOrNull(ti.getEventName())) {
 
 					if (ti.getWaitType() == "wait")
-						System.err
-								.println(getStateInfo(smg, state)
-										+ getTransitionInfo(trans)
-										+ " Transition having condition or event cannot have wait type wait!");
+
+						getTransitionErrorMessage(trans.getSource(),
+								trans.getDestination(), "waitType wait");
 					valid = false;
 
 				} else if (ti.getWaitType() == "before") {
 					if (ti.getCondition().isEmpty()
 							&& ti.getEventName().isEmpty())
-						System.err
-								.println(getStateInfo(smg, state)
-										+ getTransitionInfo(trans)
-										+ " Transition must either have a condition or an event!");
+
+						getTransitionErrorMessage(trans.getSource(),
+								trans.getDestination(), "no condition/event");
 					valid = false;
 				}
 			}
@@ -440,9 +433,11 @@ public class Validator {
 	private boolean initialHasInTransValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean hasincoming = true;
+
 		if (state.getIncomingTransitions().size() != 0) {
-			System.err.println(getStateInfo(smg, state)
-					+ " Initial state cannot have any incoming transitions! ");
+			for (Transition trans : state.getIncomingTransitions())
+				getTransitionErrorMessage(trans.getSource(),
+						trans.getDestination(), "no incoming");
 		} else
 			hasincoming = false;
 
@@ -453,9 +448,9 @@ public class Validator {
 	private boolean initialOutValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean hasoutgoing = true;
+
 		if (state.getOutgoingTransitions().size() > 1) {
-			System.err.println(getStateInfo(smg, state)
-					+ " cannot have more than 1 outgoing transitions!");
+			getStateTransitionError("more than 1 outgoing");
 			hasoutgoing = false;
 		}
 		return hasoutgoing;
@@ -464,9 +459,9 @@ public class Validator {
 	// check whether final has any outgoing transitions
 	private boolean finalOutValidate(State state, StateMachineForGeneration smg) {
 		boolean outgoing = false;
+
 		if (state.getOutgoingTransitions().size() != 0) {
-			System.err.println(getStateInfo(smg, state)
-					+ " : has outgoing transitions!");
+			getStateTransitionError("outgoing");
 			outgoing = true;
 		}
 		return outgoing;
@@ -476,11 +471,21 @@ public class Validator {
 	private boolean stateInTransValidate(State state,
 			StateMachineForGeneration smg) {
 		boolean incoming = true;
+
 		if (state.getIncomingTransitions().size() == 0) {
-			System.err.println(getStateInfo(smg, state)
-					+ " : has no incoming transitions!");
+			getStateTransitionError("no incoming");
 			incoming = false;
 		}
 		return incoming;
+	}
+
+	private void getTransitionErrorMessage(Object... args) {
+		messages.error(" Transition -> Source : %s Destination %s has %s!",
+				args).formatForCode(new StringBuffer());
+	}
+
+	private void getStateTransitionError(String s) {
+		messages.error(" State has %s transitions!", s).formatForCode(
+				new StringBuffer());
 	}
 }

@@ -8,6 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * This class stores the processor frequency together with the list of of use {@link UseCaseModel} objects.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public class ConfigurationModel {
 	
 	// Private fields:
@@ -15,38 +19,73 @@ public class ConfigurationModel {
 	private ArrayList<UseCaseModel>	configurations;		// Each ConfigurationModel has an arbitrary
 														// number of UseCaseConfigurations
 	// Constructor:
+	/**
+	 * Creates a new instance of this class and initializes the list of {@link UseCaseModel} objects.
+	 */
 	public ConfigurationModel() {
 		configurations = new ArrayList<UseCaseModel>();
 	}
 	
 	// Public Getters:
+	/**
+	 * Gets the configured frequency of the AT90CAN128 processor.
+	 * @return the frequency of the processor.
+	 */
 	public int getFrequency() {
 		return this.frequency;
 	}
+	/**
+	 * Gets the list of {@link UseCaseModel} objects.
+	 * @return the list of {@link UseCaseModel} objects.
+	 */
 	public ArrayList<UseCaseModel> getConfigurations() {
 		return configurations;
 	}
 	
 	// Public Setters:
+	/**
+	 * Sets the frequency of the AT90CAN128 processor.
+	 * (Note, that invalid frequency values will be stored. But keep in mind, that validation will fail.)
+	 * @param f the new frequency setting.
+	 */
 	public void setFrequency(int f) {
 		this.frequency = f;
 	}
+	/**
+	 * Changes the list of {@link UseCaseModel} objects.
+	 * (This method is invoked during XML deserialization within {@link ConfigurationModel#Load Load} and not intended to be used otherwise.)
+	 * @param c new list of {@link UseCaseModel} objects.
+	 */
 	public void setConfigurations(ArrayList<UseCaseModel> c) {
 		this.configurations = c;
 	}
 	
 	// Configuration Add/Remove Methods:
+	/**
+	 * Creates a new configuration and adds this to the list of {@link UseCaseModel} objects.
+	 * @return the newly created {@link UseCaseModel}.
+	 */
 	public UseCaseModel addConfiguration() {
 		UseCaseModel model = new UseCaseModel();
 		configurations.add(model);
 		return model;
 	}
+	/**
+	 * Removes a given {@link UseCaseModel}.
+	 * @param m the {@link UseCaseModel} to remove.
+	 */
 	public void removeConfiguration(UseCaseModel m) {
 		if (configurations.contains(m))
 			configurations.remove(m);
 	}
 	
 	// Save/Load Methods:
+	/**
+	 * Loads a previously saved XML representation of a {@link ConfigurationModel} from disk.
+	 * @param path to the XML file containing the model representation.
+	 * @return the deserialized {@link ConfigurationModel} object.
+	 * @throws FileNotFoundException
+	 */
 	public static ConfigurationModel Load(String path) throws FileNotFoundException {
 		
 		// Just load the previously serialized file from "path"
@@ -55,6 +94,11 @@ public class ConfigurationModel {
 		return (ConfigurationModel)dec.readObject();
 	}
 	
+	/**
+	 * Saves this configuration model as an XML representation to a specified path to disk.
+	 * @param path to the XML file being created.
+	 * @throws IOException
+	 */
 	public void Save(String path) throws IOException {
 		
 		// Just serialize the model object to "path"

@@ -7,6 +7,8 @@ import org.junit.Test;
 import Statecharts.NormalState;
 import Statecharts.StateMachine;
 import de.upbracing.code_generation.JRubyHelpers;
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Validator;
 
@@ -41,10 +43,15 @@ public class TestStateNameValidation {
 		state[10].setName(null);
 		state[11].setName("");
 		
+		Messages messages = new Messages();
+		messages.withOutputTo(System.err, Severity.ERROR);
+		
+		Validator validate = new Validator(messages);
+		
 		for(int i=0; i<7; i++)
-			assertEquals(false, Validator.nameValidate(state[i], smg));
+			assertEquals(false, validate.nameValidate(state[i], smg));
 	
 		for(int i=7; i<state.length; i++)
-			assertEquals(true, Validator.nameValidate(state[i], smg));
+			assertEquals(true, validate.nameValidate(state[i], smg));
 	}
 }
