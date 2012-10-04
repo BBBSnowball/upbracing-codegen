@@ -167,6 +167,9 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		
 		for (UseCaseViewModel m: model.getConfigurations()) {
 			ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+			// The empty String is (for some strange reason)
+			// necessary to make the title appear in linux.
+			ei.setText(" ");
 			new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, m, this);
 		}
 		
@@ -208,6 +211,9 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		UseCaseViewModel newModel = model.addConfiguration();
 		// Add the view for this configuration
 		ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+		// The empty String is (for some strange reason)
+		// necessary to make the title appear in linux.
+		ei.setText(" ");
 		new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, this);
 		// Set project status "dirty"
 		setDirty(true);

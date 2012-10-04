@@ -77,6 +77,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
 				expandItem.setText("Timer Configuration: " + t.getTextBox().getText());
+				bar.redraw();
 				editor.setDirty(true);
 			}
 		});
