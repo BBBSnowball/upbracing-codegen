@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import de.upbracing.code_generation.CanTemplate;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -70,14 +69,14 @@ public class TestCanGenerator {
 		
 		
 		//Ecu
-		DBCEcu ecu = new DBCEcu("Cockpit");
+		DBCEcu ecu = new DBCEcu("Display"); //Cockpit?
 		ecu.setComment("Test Comment");
 		ecu.setRxMsgs(new ArrayList<DBCMessage>());
 		ecu.setRxSignals(new ArrayList<DBCSignal>());
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
-		dbc.getEcus().put("Cockpit", ecu);
-		dbc.getEcuNames().add("Cockpit");
-		config.getEcus().add(new ECUDefinition("Cockpit", "", "", "", "0x43", ""));
+		dbc.getEcus().put("Display", ecu);
+		dbc.getEcuNames().add("Display");
+		config.getEcus().add(new ECUDefinition("Display", "", "", "", "0x43", ""));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));
@@ -274,7 +273,7 @@ public class TestCanGenerator {
 		dbc.getMessages().put("CockpitBrightness", message);
 
 		config.setCan(dbc);
-		config.selectEcu("Cockpit");
+		config.selectEcu("Display");
 		
 		
 		
@@ -333,9 +332,7 @@ public class TestCanGenerator {
 		//config.getCanConfig().getMessage("CockpitBrightness").setNoSendMessage(true);
 
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
-		
-		gen.testTemplate(new CanTemplate(),
-				"TestCanGenerator.testGenerate.result1.txt");
+		gen.testTemplates("expected_results/can");
 		
 	}
 
