@@ -150,81 +150,17 @@ for (Mob mob : dbcEcu.getMobs()) {
     CANPAGE = saved_canpage;
 }
 
-<%
-
-
-
-
-
-
-
-
-//for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
-for(Mob mob: dbcEcu.getMobs()) {
-	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
-%>
-// not initialising shared MOB <%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
-<%
-		continue;
-	}
-
-%>
-inline static void can_init_MOB_<%= mob.getName() %>(void) {<%
-	if (mob.getRxMessages().size() > 1) {
-%>
-	// select MOB
-	CANPAGE = (MOB_<%= mob.getName() %><<4);
-
-	// set id and mask
-<%
-	
-		for (int i=0; i<4; i++) {
-%>
-	CANIDT<%= i+1 %> = <%= String.format("0x%02x", mob.getID()[i]) %>;
-<%
-		}
-	
-		for (int i=0; i<4; i++) {
-%>
-	CANIDM<%= i+1 %> = <%=String.format("0x%02x", mob.getMask()[i]) %>;
-<%
-		}
-%>
-
-	//configure message as receive-msg (see CANCDMOB register, page257)
-	CANCDMOB = (1<<CONMOB1) | (<%= mob.isExtended()?"1":"0" %><<IDE);
-
-	// enable interrupts for this MOb
-	can_mob_enable(MOB_<%= mob.getName() %>);
-	can_mob_enable_interrupt(MOB_<%= mob.getName() %>);
-}
-<%
-	} else if (mob.getRxMessages().size() == 1) {
-		String name = mob.getRxMessages().get(0).getName();
-		String extended =  mob.getRxMessages().get(0).isExtended() ? "true" : "false";
-%> can_mob_init_receive2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
-<%
-	} else if (mob.getTxMessages().size() == 1) {
-		String name = mob.getTxMessages().get(0).getName();
-		String extended =  mob.getTxMessages().get(0).isExtended() ? "true" : "false";
-%> can_mob_init_transmit2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
-<%
-	}
-}
-	
-%>
-
-inline static void can_init_mobs(void) {
+static void can_init_mobs(void) {
 <%
 //for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 for(Mob mob : dbcEcu.getMobs()) {
 	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
 %>
-	// not initialising shared MOB MOB_<%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
+	// not initialising shared MOB MOB_<%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
 <%
 	} else if(mob.isDisabled()) {
 %>
-	// not initialising disabled MOB MOB_<%= mob.getName() %> for messages <%= implodeMessages(mob.getTxMessages()) %>
+	// not initialising disabled MOB MOB_<%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
 <%
 	} else {
 %>
@@ -399,18 +335,6 @@ void readMessageCode(StringBuffer stringBuffer, Messages messages, GlobalVariabl
 	}
 	CanGeneratorHelper.printCode(stringBuffer, msg.getAfterRx(), indent);
 	
-}
-
-String implodeMessages(List<DBCMessageConfig> messages) {
-	String result = "";
-	boolean firstEntry = true;
-	
-	for(DBCMessageConfig msg : messages) {
-		result += (firstEntry?"":", ") + msg.getName(); 
-		firstEntry = false;
-	}
-	
-	return result;
 }
 
 @SuppressWarnings("unused")

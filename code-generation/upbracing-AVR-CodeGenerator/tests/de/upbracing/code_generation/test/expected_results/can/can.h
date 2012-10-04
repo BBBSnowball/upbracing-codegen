@@ -80,6 +80,42 @@ typedef enum {
 
 #include "can_at90.h"
 
+inline static void can_init_MOB_Bootloader_SelectNode(void) { can_mob_init_receive2(MOB_Bootloader_SelectNode, CAN_Bootloader_SelectNode, false); }
+inline static void can_init_MOB_Bootloader_1(void) { can_mob_init_receive2(MOB_Bootloader_1, CAN_Bootloader_1, false); }
+inline static void can_init_MOB_ClutchGetPos(void) { can_mob_init_receive2(MOB_ClutchGetPos, CAN_ClutchGetPos, false); }
+inline static void can_init_MOB_Kupplung(void) {
+	// select MOB
+	CANPAGE = (MOB_Kupplung<<4);
+
+	// set id and mask
+	CANIDT1 = 0x00;
+	CANIDT2 = 0x00;
+	CANIDT3 = 0x08;
+	CANIDT4 = 0x88;
+	CANIDM1 = 0xff;
+	CANIDM2 = 0xff;
+	CANIDM3 = 0xf7;
+	CANIDM4 = 0x75;
+
+	//configure message as receive-msg (see CANCDMOB register, page257)
+	CANCDMOB = (1<<CONMOB1) | (1<<IDE);
+
+	// enable interrupts for this MOb
+	can_mob_enable(MOB_Kupplung);
+	can_mob_enable_interrupt(MOB_Kupplung);
+}
+inline static void can_init_MOB_Gear(void) { can_mob_init_receive2(MOB_Gear, CAN_Gear, true); }
+inline static void can_init_MOB_Sensoren(void) { can_mob_init_receive2(MOB_Sensoren, CAN_Sensoren, true); }
+inline static void can_init_MOB_Sensoren_2(void) { can_mob_init_receive2(MOB_Sensoren_2, CAN_Sensoren_2, true); }
+inline static void can_init_MOB_OpenSquirt_Engine(void) { can_mob_init_receive2(MOB_OpenSquirt_Engine, CAN_OpenSquirt_Engine, true); }
+inline static void can_init_MOB_OpenSquirt_Sensoren1(void) { can_mob_init_receive2(MOB_OpenSquirt_Sensoren1, CAN_OpenSquirt_Sensoren1, true); }
+inline static void can_init_MOB_Geschwindigkeit(void) { can_mob_init_receive2(MOB_Geschwindigkeit, CAN_Geschwindigkeit, true); }
+inline static void can_init_MOB_Lenkrad_main2display(void) { can_mob_init_receive2(MOB_Lenkrad_main2display, CAN_Lenkrad_main2display, true); }
+inline static void can_init_MOB_Launch(void) { can_mob_init_transmit2(MOB_Launch, CAN_Launch, true); }
+inline static void can_init_MOB_Radio(void) { can_mob_init_transmit2(MOB_Radio, CAN_Radio, true); }
+
+static void can_init_mobs(void);
+
 // we use interrupts - polling isn't necessary
 inline static void can_poll(void) { }
 

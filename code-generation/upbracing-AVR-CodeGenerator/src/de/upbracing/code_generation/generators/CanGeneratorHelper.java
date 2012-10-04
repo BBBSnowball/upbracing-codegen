@@ -2,6 +2,7 @@ package de.upbracing.code_generation.generators;
 
 import java.util.List;
 
+import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.dbc.DBCMessage;
 
 /**
@@ -12,6 +13,7 @@ import de.upbracing.dbc.DBCMessage;
 public class CanGeneratorHelper {
 	/**
 	 * Returns the id of a message with an optional suffix
+	 * 
 	 * @param message The message object
 	 * @param suffix If true, an "x" is added to the id of an extended message
 	 * @return The message id as a hex string with "0x" prefix
@@ -22,6 +24,7 @@ public class CanGeneratorHelper {
 
 	/**
 	 * Prints a string to a StringBuffer and prefixes each line with an indent string
+	 * 
 	 * @param stringBuffer The StringBuffer to which the code is printed
 	 * @param code A multiline string that is printed to the StringBuffer
 	 * @param indent String that is added as a prefix to each line of code (usually tabs)
@@ -40,6 +43,7 @@ public class CanGeneratorHelper {
 
 	/**
 	 * Concatenates a list of strings to one string, separated by commas
+	 * 
 	 * @param list A list of strings
 	 * @return String with concatenated list
 	 */
@@ -49,6 +53,24 @@ public class CanGeneratorHelper {
 		
 		for(String string : list) {
 			result += (firstEntry?"":", ") + string; 
+			firstEntry = false;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Concatenates the names of a list of DBCMessageConfig objects to one string, separated by commas 
+	 * 
+	 * @param messages A list with DBCMessageConfig objects
+	 * @return String with concatenated message names
+	 */
+	public static String implodeMessages(List<DBCMessageConfig> messages) {
+		String result = "";
+		boolean firstEntry = true;
+		
+		for(DBCMessageConfig msg : messages) {
+			result += (firstEntry?"":", ") + msg.getName(); 
 			firstEntry = false;
 		}
 		
