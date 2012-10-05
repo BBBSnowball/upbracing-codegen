@@ -132,7 +132,7 @@ public class StatemachineBuilder {
 		factory = getDefaultStatemachineFactory();
 	}
 	
-	private static StatechartsFactory getDefaultStatemachineFactory() {
+	public static StatechartsFactory getDefaultStatemachineFactory() {
 		return new Statecharts.impl.StatechartsFactoryImpl();
 	}
 	
@@ -210,6 +210,11 @@ public class StatemachineBuilder {
 		 */
 		public boolean isActiveFor(Transition t) {
 			return t.getTransitionInfo().equals(eventname);
+		}
+
+		public void appendExecutionInstructions(String statemachine_name, String indent,
+				StringBuffer stringBuffer) {
+			stringBuffer.append(indent + statemachine_name + "_event_" + eventname + "();\n");
 		}
 		
 		//TODO some indication of other conditions, e.g. values of global variables
@@ -1026,6 +1031,12 @@ public class StatemachineBuilder {
 		return states;
 	}
 	
+	public static Set<State> getStatesInWaypointSet(Waypoint waypoint) {
+		HashSet<State> states = new HashSet<State>();
+		getStatesInWaypoint(waypoint, states);
+		return states;
+	}
+	
 	private static void getStatesInWaypoint(Waypoint waypoint, Collection<State> states) {
 		states.add(waypoint.active_state);
 		
@@ -1034,10 +1045,8 @@ public class StatemachineBuilder {
 	}
 	
 	public static Set<State> getCommonStates(Waypoint wp1, Waypoint wp2) {
-		HashSet<State> states1 = new HashSet<State>();
-		HashSet<State> states2 = new HashSet<State>();
-		getStatesInWaypoint(wp1, states1);
-		getStatesInWaypoint(wp2, states2);
+		Set<State> states1 = getStatesInWaypointSet(wp1);
+		Set<State> states2 = getStatesInWaypointSet(wp2);
 		states1.retainAll(states2);	// intersection operation
 		return states1;
 	}
