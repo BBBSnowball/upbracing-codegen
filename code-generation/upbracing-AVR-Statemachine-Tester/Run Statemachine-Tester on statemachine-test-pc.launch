@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/upbracing-AVR-CodeGenerator/src/de/upbracing/code_generation/Main.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.debug.ui.CONSIDER_INHERITED_MAIN" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.upbracing.code_generation.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-C ../gen ../config.rb"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="upbracing-AVR-Statemachine-Tester"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:statemachine-test-pc/Debug}"/>
+</launchConfiguration>

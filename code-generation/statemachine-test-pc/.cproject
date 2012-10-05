@@ -7,6 +7,7 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.debug.82294448" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 				<macros>
 					<stringMacro name="CODE_GENERATOR_DIR_VARIABLE" type="VALUE_PATH_ANY" value="${workspace_loc:/upbracing-AVR-CodeGenerator}"/>
+					<stringMacro name="EXTRA_CLASSPATH_VARIABLE" type="VALUE_PATH_ANY" value="${workspace_loc:/upbracing-AVR-Statemachine-Tester/bin}"/>
 				</macros>
 				<externalSettings/>
 				<extensions>
@@ -35,7 +36,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.323274812" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.2143040798" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
-								<option id="gnu.c.link.option.libs.607557122" superClass="gnu.c.link.option.libs" valueType="libs">
+								<option id="gnu.c.link.option.libs.607557122" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cunit"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.925288232" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -60,6 +61,7 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.release.477193364" moduleId="org.eclipse.cdt.core.settings" name="Release">
 				<macros>
 					<stringMacro name="CODE_GENERATOR_DIR_VARIABLE" type="VALUE_PATH_ANY" value="${workspace_loc:/upbracing-AVR-CodeGenerator}"/>
+					<stringMacro name="EXTRA_CLASSPATH_VARIABLE" type="VALUE_PATH_ANY" value="${workspace_loc:/upbracing-AVR-Statemachine-Tester/bin}"/>
 				</macros>
 				<externalSettings/>
 				<extensions>

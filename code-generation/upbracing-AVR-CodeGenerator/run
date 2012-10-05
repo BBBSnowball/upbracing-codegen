@@ -2,4 +2,4 @@
 #!/bin/sh
 
 DIR="$(dirname "$0")"
-java -cp "$DIR/bin:$DIR/libs/jruby-complete-1.6.7.2.jar:$DIR/libs/simple-xml-2.6.4.jar:$DIR/libs/ruby-gems.jar:$DIR/libs/commons-cli-1.2.jar:$DIR/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar:$DIR/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar:$DIR/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar:$DIR/libs/guava-13.0.1.jar:$DIR/libs/TimerConfigurationModel.jar:$DIR/./../StatechartEditor/bin:$DIR/./../java-parser-tools/bin" de.upbracing.code_generation.Main "$@"
+java -cp "$DIR/bin:$DIR/libs/jruby-complete-1.6.7.2.jar:$DIR/libs/simple-xml-2.6.4.jar:$DIR/libs/ruby-gems.jar:$DIR/libs/commons-cli-1.2.jar:$DIR/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar:$DIR/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar:$DIR/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar:$DIR/libs/guava-13.0.1.jar:$DIR/libs/TimerConfigurationModel.jar:$DIR/./../StatechartEditor/bin:$DIR/./../java-parser-tools/bin:$EXTRA_CLASSPATH" de.upbracing.code_generation.Main "$@"

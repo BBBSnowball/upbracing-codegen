@@ -63,6 +63,9 @@ classpath = read_classpath(filename,
 unix_classpath = classpath.map {|x| '$DIR/' + x}.join ":"
 win_classpath = classpath.map {|x| '%~dp0\\' + x}.join ";"
 
+unix_classpath += ":$EXTRA_CLASSPATH"
+win_classpath  += ";%EXTRA_CLASSPATH%"
+
 File.open("run", "w") do |f|
   f.chmod(0755)
   f.write(%{
