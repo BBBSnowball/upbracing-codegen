@@ -1,5 +1,8 @@
 package de.upbracing.configurationeditor.timer.editors;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
@@ -82,6 +85,15 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		DataBindingContext c = new DataBindingContext();
 		c.bindValue(SWTObservables.observeText(descriptionL), 
 				BeansObservables.observeValue(model, "description"));
+		model.addPropertyChangeListener("description", new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				summaryGroup.layout();
+				layout();
+			}
+			
+		});
 	}
 	
 	public Group getSettingsGroup() {

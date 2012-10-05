@@ -33,13 +33,13 @@ public class StatusImageConverter implements IConverter {
 
 	@Override
 	public Object getFromType() {
-		// TODO Auto-generated method stub
-		return null;
+		// FromType is ValidationResult
+		return ValidationResult.class;
 	}
 
 	@Override
 	public Object getToType() {
-		// TODO Auto-generated method stub
+		// ToType is Image
 		return Image.class;
 	}
 

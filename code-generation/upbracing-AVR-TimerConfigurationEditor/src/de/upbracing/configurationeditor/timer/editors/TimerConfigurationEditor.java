@@ -73,7 +73,7 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 			model = Load(file.getRawLocation().toOSString());
 			setPartName(file.getName());
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			// Print stack and quit, if file was not found
 			e.printStackTrace();
 		}
 	}
@@ -167,6 +167,9 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		
 		for (UseCaseViewModel m: model.getConfigurations()) {
 			ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+			// The empty String is (for some strange reason)
+			// necessary to make the title appear in linux.
+			ei.setText(" ");
 			new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, m, this);
 		}
 		
@@ -198,7 +201,7 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 			setDirty(false);
 			
 		} catch (CoreException e) {
-			// TODO Auto-generated catch block
+			// Print stack and quit, if there was an error while saving or refreshing
 			e.printStackTrace();
 		}
 	}
@@ -208,6 +211,9 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		UseCaseViewModel newModel = model.addConfiguration();
 		// Add the view for this configuration
 		ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+		// The empty String is (for some strange reason)
+		// necessary to make the title appear in linux.
+		ei.setText(" ");
 		new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, this);
 		// Set project status "dirty"
 		setDirty(true);

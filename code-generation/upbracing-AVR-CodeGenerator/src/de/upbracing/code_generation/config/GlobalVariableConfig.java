@@ -1,9 +1,15 @@
 package de.upbracing.code_generation.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.simpleframework.xml.Default;
 
 @Default
 public class GlobalVariableConfig extends Variables<GlobalVariable> {
+	
+	List<String> declerations = new ArrayList<String>();
+	
 	/** constructor */
 	public GlobalVariableConfig() {
 		super(false);
@@ -42,5 +48,24 @@ public class GlobalVariableConfig extends Variables<GlobalVariable> {
 		GlobalVariable e = new GlobalVariable(name, type, size, initialValue);
 		add(e);
 		return e;
+	}
+	
+	/**
+	 * add a declaration that is included in the generated file to include 
+	 * additional datatypes. (It is used by the CAN code generator) 
+	 * 
+	 * @param declaration String with declaration to be embedded into the generated file
+	 */
+	public void addDeclaration(String declaration) {
+		this.declerations.add(declaration);
+	}
+	
+	/**
+	 * returns the list of declarations
+	 * 
+	 * @return the list of declarations
+	 */
+	public List<String> getDeclarations() {
+		return declerations;
 	}
 }

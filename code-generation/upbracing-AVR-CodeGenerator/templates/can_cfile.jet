@@ -1,0 +1,341 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="CanCFileTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.* java.util.List" %>
+
+<%
+
+// check prerequisites for running the code generator
+
+boolean run_generator = true;
+
+de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
+DBCConfig can_config = config.getCanConfig();
+
+if (can_config == null) {
+	run_generator = false;
+%>// not generating CAN code because DBC file hasn't been provided
+// use $config.can = parse_dbc(dbc_file)
+<%
+} else if (current_ecu == null) {
+	run_generator = false;
+%>// not generating CAN code because no ECU has been selected
+// use $config.selectEcu(name)
+<%
+}
+
+// if we still want to run, check the name
+DBCEcuConfig dbcEcu = null;
+if (run_generator) {
+	// find ecu by its node name (the one meant for lookup in the DBC file)
+	DBCEcu dbcEcu_ = can_config.getEcus().get(current_ecu.getNodeName());
+	
+	// use the normal name as backup
+	if (dbcEcu_ == null)
+		dbcEcu_ = can_config.getEcus().get(current_ecu.getName());
+	
+	// check, whether we have a config
+	if (dbcEcu_ != null) {
+		dbcEcu = (DBCEcuConfig) dbcEcu_;
+	} else {
+		run_generator = false;
+	%>#error The DBC file doesn't have an ECU with name '<%= current_ecu.getNodeName() %>'
+	<%
+	}
+}
+
+
+if (run_generator) { 
+
+	Messages messages = new Messages().withOutputTo(System.err);
+
+%>
+#include "can.h"
+#include "can_at90.h"
+
+<%
+GlobalVariableConfig globVars = config.getGlobalVariables();
+
+
+
+
+
+%>
+// CAN receive interrupt
+ISR(SIG_CAN_INTERRUPT1) {
+	if (CANSIT1==0 && CANSIT2==0)
+		//TODO we HAVE to reset the interrupt reason!
+		return;
+
+	uint8_t saved_canpage = CANPAGE;
+
+	if (0) {	// dummy clause to make code generation easier
+<%
+for (Mob mob : dbcEcu.getMobs()) {
+
+	if( mob.getRxMessages().size() == 0 ) continue;
+	
+	String mobdesc;
+	if (mob.getRxMessages().size() == 1) {
+		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
+		mobdesc = "CAN ID: " + CanGeneratorHelper.messageId(msgconfig, true);
+		if (msgconfig.getAliases().size() > 0) mobdesc += ", alias: " + CanGeneratorHelper.implode(msgconfig.getAliases());
+	} else {
+		mobdesc = "shared mob";
+	}
+	
+	
+%>
+	} else if (can_caused_interrupt(MOB_<%= mob.getName() %>)) {		// <%= mobdesc %>
+		CANPAGE = (MOB_<%= mob.getName() %><<4);
+<%
+	if (mob.getRxMessages().size() == 1) {
+		//Only one Message in MOB
+			readMessageCode(stringBuffer, messages, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
+		} else {
+		//Multiple Message in MOB
+
+%>
+		if (0) {	// dummy clause to make code generation easier
+<%
+		for (DBCMessageConfig msgconfig : mob.getRxMessages()) {
+		
+			String ifstatement = "(1";
+			
+			if ((mob.getMask()[3] & 1) != 1) {
+				// mcu doen't check this bit
+				if (msgconfig.isExtended())
+					ifstatement += " && (CANCDMOB & (1<<IDE))";
+				else
+					ifstatement += " && !(CANCDMOB & (1<<IDE))";
+			}
+			int[] significant_diffs = mob.getSignificantDiffs();
+			int[] id = msgconfig.canIdForMob();
+			for (int i=0; i<4; i++) {
+				if (significant_diffs[i] != 0)
+					ifstatement += " && CANIDT" + (i+1) + " == " + id[i];
+			}
+				
+			ifstatement += ")";
+		
+%>
+		} else if <%= ifstatement %> {		// <%=msgconfig.getName()%>, CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>
+<%
+			readMessageCode(stringBuffer, messages, globVars, msgconfig, dbcEcu, "\t\t\t");			
+		}
+%>
+		}
+<%
+	}
+%>
+		// only necessary, if we change CANPAGE in our message handler
+		// But if we forget to do that, the interrupt handler will be called forever.
+		CANPAGE = (MOB_<%= mob.getName() %><<4);
+<%
+}
+%>
+	} else {
+		// well, this shouldn't happen
+		// do nothing...
+	}
+
+    // reset INT reason
+    CANSTMOB &= ~(1<<RXOK);
+    // re-enable RX, reconfigure MOb IDE=1
+    //CANCDMOB = (1<<CONMOB1) | (1<<IDE);
+    CANCDMOB |= (1<<CONMOB1);
+
+    // restore CANPAGE
+    CANPAGE = saved_canpage;
+}
+
+static void can_init_mobs(void) {
+<%
+//for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
+for(Mob mob : dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
+%>
+	// not initialising shared MOB MOB_<%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
+<%
+	} else if(mob.isDisabled()) {
+%>
+	// not initialising disabled MOB MOB_<%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
+<%
+	} else {
+%>
+	can_init_MOB_<%= mob.getName() %>();
+<%
+	}
+}
+
+%>
+}
+<% messages.summarizeForCode(stringBuffer); %>
+
+<%
+	
+} // if run_generator
+ 
+    return stringBuffer.toString();
+}	// end of method generate(...)
+
+void readMessageCode(StringBuffer stringBuffer, Messages messages, GlobalVariableConfig globVars, DBCMessageConfig msg, DBCEcu currentEcu, String indent) {
+
+	CanGeneratorHelper.printCode(stringBuffer, msg.getBeforeRx(), indent);
+	for(DBCSignal signal : msg.getSignalOrder()) {
+		if (signal.getRxEcus().contains(currentEcu)) 
+			CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeRx(), indent);
+	}
+	
+	if (!CanGeneratorHelper.printCode(stringBuffer, msg.getRxHandler(), indent)) {
+		int addr = 0;
+		
+		for(DBCSignal sig : msg.getSignalOrder()) {
+			DBCSignalConfig signal = (DBCSignalConfig)sig;
+			if (signal.getRxEcus().contains(currentEcu)) {
+								
+				int start = signal.getStart();
+				int len = signal.getLength();
+				String name = signal.getName();
+				
+				//TODO The pdf file says that '1' would mean big endian, but
+				//     CANdb++ shows that as "intel" - which is little endian.
+				//     Our programs agree with that so the RapidPro seems to
+				//     use '1' for little endian as well.
+				boolean big_endian = !signal.getEndianness().equals("1");
+
+				//TODO by how much must we change the start index?
+				if (big_endian)
+					// this formula is for the values shown in CANdb++
+					// start -= len - 8;
+					// this formula is for the values that are saved in the dbc file
+					start -= 7;
+				
+				if (start%8 != 0 || len%8 != 0) {
+					//TODO support that
+					%><% messages.warn("The signal " + name + " is not aligned on a byte boundary, so it will be ignored.").formatForCode(stringBuffer); %><%
+					continue;
+				}
+				if (addr > start) {
+					//TODO support overlapping signals (only if CANdb++ support them, of course)
+					%><% messages.warn("Cannot read overlapping signals. Ignoring signal " + name + ".").formatForCode(stringBuffer); %><%
+					continue;
+				}
+					
+				if (addr < start) {
+%>
+
+<%=indent%>// skipping <%= ((start-addr)/8) %> byte(s)
+<%
+					while (addr < start) {
+%>
+<%=indent%>CANMSG;
+<%
+						addr += 8;
+					}
+				}
+		
+				//TODO support other types
+				//TODO or should we use get_signal_int_type? what happens, if we use
+				//     an enum in a union - the size of the enum can be chosen by the
+				//     compiler
+				String type = signal.getCType();		
+%>
+
+<%=indent%>// reading signal <%= signal.getName() %>
+<%=indent%>{
+<%
+				CanGeneratorHelper.printCode(stringBuffer, signal.getImmBeforeRx(), indent + "\t");
+
+
+				if (len == 8) {
+%>
+<%=indent%>	<%= type %> value = <%= (type.equals("uint8_t")) ? "" : "(" + type + ") " %>CANMSG;
+<% 
+					//echo "$indent\t$type value = ";
+					//if ($type != "uint8_t")
+					//	echo "($type) ";
+					//echo "CANMSG;\n";
+					addr += 8;
+				} else {
+%>
+<%=indent%>	union {
+<%=indent%>		<%= type %> value;
+<%=indent%>		struct {
+<%
+					for (int i=0; i<len/8; i++) {
+%>
+<%=indent%>			uint8_t byte<%= i %>;
+<%
+					}
+%>
+<%=indent%>		} bytes;
+<%=indent%>	} x;
+<%					
+					int bytes = len/8;
+					if (big_endian) {	//TODO which one is big endian?
+						// big endian
+						for (int i=0; i<bytes; i++) {
+%>
+<%=indent%>	x.bytes.byte<%= (bytes-i-1) %> = CANMSG;
+<%
+							addr += 8;
+						}
+					} else {
+						// little endian
+						for (int i=0; i<bytes; i++) {
+%>
+<%=indent%>	x.bytes.byte<%= i %> = CANMSG;
+<%
+							addr += 8;
+						}
+					}
+					
+					if (signal.getFactor() != 1 || signal.getOffset() != 0) { //TODO: implement factor and offset
+						%><% messages.warn("This signal uses factor or offset, which is not supported yet.").formatForCode(stringBuffer); %><%
+					}
+%>
+<%=indent%>	<%= type %> value = x.value;
+<%
+				}	// len != 8
+				
+				if (! CanGeneratorHelper.printCode(stringBuffer, signal.getPutValue(), indent + "\t")) {
+					//Not sure if we still need places and variables now that we use the os global variables...
+					/*String var = "";
+					if (signal.getPlace() != null && signal.getPlace().length() > 0)
+						var = signal.getPlace();
+					else if (signal.getVariable() != null && signal.getVariable().length() > 0)
+						var = signal.getVariable();
+					else
+						var = signal.getName();
+						
+					var = value;  */
+%>
+<%=indent%>	<%= globVars.get(signal.getGlobalVarName()).getSetterName() %>(value);
+<%
+				}
+				CanGeneratorHelper.printCode(stringBuffer, signal.getImmAfterRx(), indent + "\t");
+%>
+<%=indent%>}
+<%
+
+			}
+		}
+		
+		if (addr > msg.getLength()*8) {
+			 %><% messages.warn("Message " + msg.getName() + " too short: We need " + addr + " bits, but we only have " + (msg.getLength()*8) + ".").formatForCode(stringBuffer); %><%
+		}
+		
+	}
+	
+	for(DBCSignal signal : msg.getSignalOrder()) {
+		if (signal.getRxEcus().contains(currentEcu)) 
+			CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getAfterRx(), indent);
+	}
+	CanGeneratorHelper.printCode(stringBuffer, msg.getAfterRx(), indent);
+	
+}
+
+@SuppressWarnings("unused")
+private String dummy(StringBuffer stringBuffer) {%>

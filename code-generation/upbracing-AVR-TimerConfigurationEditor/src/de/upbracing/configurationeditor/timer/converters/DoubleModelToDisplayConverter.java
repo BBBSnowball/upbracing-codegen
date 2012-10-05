@@ -17,13 +17,15 @@ public class DoubleModelToDisplayConverter implements IConverter {
 
 	@Override
 	public Object getFromType() {
-		// TODO Auto-generated method stub
+		// FromType could be Double in this case. 
+		// Returning null here makes this accepting any target type.
 		return null;
 	}
 
 	@Override
 	public Object getToType() {
-		// TODO Auto-generated method stub
+		// ToType could be String in this case. 
+		// Returning null here makes this accepting any source type.
 		return null;
 	}
 

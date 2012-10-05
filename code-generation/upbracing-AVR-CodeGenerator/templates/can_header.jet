@@ -1,0 +1,518 @@
+<%@ jet
+	package="de.upbracing.code_generation"
+	class="CanHeaderTemplate"
+	skeleton="generator.skeleton"
+	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.*" %>
+<%
+
+// check prerequisites for running the code generator
+
+boolean run_generator = true;
+
+de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
+DBCConfig can_config = config.getCanConfig();
+
+if (can_config == null) {
+	run_generator = false;
+%>// not generating CAN code because DBC file hasn't been provided
+// use $config.can = parse_dbc(dbc_file)
+<%
+} else if (current_ecu == null) {
+	run_generator = false;
+%>// not generating CAN code because no ECU has been selected
+// use $config.selectEcu(name)
+<%
+}
+
+// if we still want to run, check the name
+DBCEcuConfig dbcEcu = null;
+if (run_generator) {
+	// find ecu by its node name (the one meant for lookup in the DBC file)
+	DBCEcu dbcEcu_ = can_config.getEcus().get(current_ecu.getNodeName());
+	
+	// use the normal name as backup
+	if (dbcEcu_ == null)
+		dbcEcu_ = can_config.getEcus().get(current_ecu.getName());
+	
+	// check, whether we have a config
+	if (dbcEcu_ != null) {
+		dbcEcu = (DBCEcuConfig) dbcEcu_;
+	} else {
+		run_generator = false;
+	%>#error The DBC file doesn't have an ECU with name '<%= current_ecu.getNodeName() %>'
+	<%
+	}
+}
+
+
+if (run_generator) { 
+	
+	Messages messages = new Messages().withOutputTo(System.err);
+	
+%>
+#ifndef CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
+#define CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
+
+#define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
+
+
+/////////////////////////
+///  CAN definitions  ///
+/////////////////////////
+
+// CAN Message IDs:
+typedef enum uint32_t {
+<%
+
+Table t = new Table(stringBuffer);
+t.start();
+
+for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;	 
+%>
+	CAN_<%=msgconfig.getName()%>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// receive
+<% 
+	for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// receive, alias for <%=msgconfig.getName()%>
+<% 
+	}
+}
+
+for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
+%>
+	CAN_<%=msgconfig.getName()%>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// send
+<%
+	for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// send, alias for <%=msgconfig.getName()%>
+<% 
+	}
+} 
+
+
+t.finish(" ");
+%>
+} CAN_msgID;
+
+// do the messages use extended CAN ids or not (0 = standard, 1 = extended)
+typedef enum {
+<%
+t.start();
+for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
+%>
+	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<%
+for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<%	
+	}
+}
+for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
+%>
+	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<% 
+	for (String alias : msgconfig.getAliases()) {
+%>
+	CAN_<%= alias %>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
+<% 	
+	}
+}  
+t.finish(" ");
+%>
+} CAN_isExtended;
+
+/*
+tx_msgs:<%
+for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	%> <%=msg.getName()%><%
+}
+%>
+rx_msgs:<%
+for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	%> <%=msg.getName()%><%
+}
+%>
+rx_signals:<%
+for (DBCSignal signal : dbcEcu.getRxSignals()) {
+	%> <%=signal.getName()%><%
+}
+%>
+*/
+
+#include "can_valuetables.h"
+
+typedef enum {
+<%
+
+t.start();
+
+for (Mob mob : dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() > 0) { //RX Mob
+		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
+%>
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive
+<%
+		for(String alias : mob.getAliases()) {
+%>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive, alias for <%= msgconfig.getName() %>
+<%
+		}
+	} else if (mob.getTxMessages().size() > 0) { //TX Mob
+		DBCMessageConfig msgconfig = mob.getTxMessages().get(0);
+%>
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send
+<%
+		for(String alias : mob.getAliases()) {
+%>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send, alias for <%= msgconfig.getName() %>
+<%
+		}
+	}
+}
+
+
+t.finish(" ");
+%>
+
+	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size() + 1%>
+} MessageObjectID;
+
+#include "can_at90.h"
+
+<%
+for(Mob mob: dbcEcu.getMobs()) {
+	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
+%>
+// not initialising shared MOB <%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
+<%
+		continue;
+	}
+
+%>
+inline static void can_init_MOB_<%= mob.getName() %>(void) {<%
+	if (mob.getRxMessages().size() > 1) {
+%>
+	// select MOB
+	CANPAGE = (MOB_<%= mob.getName() %><<4);
+
+	// set id and mask
+<%
+	
+		for (int i=0; i<4; i++) {
+%>
+	CANIDT<%= i+1 %> = <%= String.format("0x%02x", mob.getID()[i]) %>;
+<%
+		}
+	
+		for (int i=0; i<4; i++) {
+%>
+	CANIDM<%= i+1 %> = <%=String.format("0x%02x", mob.getMask()[i]) %>;
+<%
+		}
+%>
+
+	//configure message as receive-msg (see CANCDMOB register, page257)
+	CANCDMOB = (1<<CONMOB1) | (<%= mob.isExtended()?"1":"0" %><<IDE);
+
+	// enable interrupts for this MOb
+	can_mob_enable(MOB_<%= mob.getName() %>);
+	can_mob_enable_interrupt(MOB_<%= mob.getName() %>);
+}
+<%
+	} else if (mob.getRxMessages().size() == 1) {
+		String name = mob.getRxMessages().get(0).getName();
+		String extended =  mob.getRxMessages().get(0).isExtended() ? "true" : "false";
+%> can_mob_init_receive2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
+<%
+	} else if (mob.getTxMessages().size() == 1) {
+		String name = mob.getTxMessages().get(0).getName();
+		String extended =  mob.getTxMessages().get(0).isExtended() ? "true" : "false";
+%> can_mob_init_transmit2(MOB_<%= mob.getName() %>, CAN_<%= name %>, <%= extended %>); }
+<%
+	}
+}
+	
+%>
+
+static void can_init_mobs(void);
+
+// we use interrupts - polling isn't necessary
+inline static void can_poll(void) { }
+
+<%
+for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
+
+	if (msgconfig.isNoSendMessage()) continue;
+
+	String hr_id = CanGeneratorHelper.messageId(msgconfig, true);
+	if (msgconfig.getAliases().size() == 1)
+		hr_id += ", alias: " + msgconfig.getAliases().get(0);
+	else if (msgconfig.getAliases().size() > 1)
+		hr_id += ", aliases: " + CanGeneratorHelper.implode(msgconfig.getAliases());
+
+	Mob mob = null;
+	String mobName = msgconfig.getTxMob();
+	if (msgconfig.isUsingGeneralTransmitter()) {
+		mobName = "GENERAL_MESSAGE_TRANSMITTER";
+	} else {
+		mob = dbcEcu.getMobByName(msgconfig.getTxMob());
+	}
+
+	boolean first = true;
+	String params = "";
+	String param_values = "";
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+		
+		if (signalconfig.getGetValue() != null)
+			continue;
+		
+		if (!first) {
+			params += ", ";
+			param_values += ", ";
+		} else first = false;
+		
+		String name;
+		if (signalconfig.getParam() != null)
+			name = signalconfig.getParam();
+		else
+			name = signalconfig.getName();
+		
+		params += signalconfig.getCType() + " " + name;
+		param_values += name;
+	}
+	
+	
+%>
+// <%= hr_id %>
+<%
+	if (mob != null && mob.getTxMessages().size() > 1) {
+%>
+//NOTE This message is sent via a shared MOB, so the method may
+//     block before sending the message, even if wait==false. This
+//     can happen for all MOBs (shared and not shared), but it is
+//     much more likely for shared MOBs. Therefore make sure that no
+//     other message using the same MOB is still waiting for transmission,
+//     unless blocking is harmless.
+<%
+	}
+	if (mob != null && mob.getRxMessages().size() > 0 ) {
+%>
+//NOTE You are using this MOB to transmit and receive messages. Obviously
+//     you cannot do both at the same time. This message will initialise
+//     the MOB for transmitting the message, so you might have to init it
+//     for receiving, after the message has been transmitted.
+<%
+	/*echo "//TODO What does the \"wait for an ongoing transmission to finish\" loop\n";
+	echo "//     do, if the MOB is receiving messages? Does it block forever? It\n";
+	echo "//     should either do nothing or wait for the ISR to handle the message,\n";
+	echo "//     if a message has been received but not handled, yet.\n";*/
+	//           => The loop finishes immediately, if the MOB is not in transmit mode.
+	//              The rx ISR should take control after at most one asm instruction,
+	//              so if we ever found a received message, the ISR would have handled
+	//              it before we finished the check. We might receive another message
+	//              while we init the MOB, but we cannot do anything about that.
+	}
+%>
+inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
+<%
+	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t\t");
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t\t");
+	}
+	
+	if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerAll(), "\t")) {
+		if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
+%>
+	// select MOB
+	CANPAGE = (MOB_<%=mobName%><<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+<% //TODO we don't need that all the time (e.g. never, unless the MOB is shared) %>
+	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
+
+<% //TODO set IDE for extended messages? %>
+	// disable mob, as it would be retransmitted otherwise
+	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
+<%
+
+			if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerData(), "\t")) {
+		
+				int addr = 0;
+				for (DBCSignal signal : msgconfig.getSignalOrder()) {
+					DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+					int start = signalconfig.getStart();
+					int len = signalconfig.getLength();
+					String name = signalconfig.getName();
+					
+					//TODO The pdf file says that '1' would mean big endian, but
+					//     CANdb++ shows that as "intel" - which is little endian.
+					//     Our programs agree with that so the RapidPro seems to
+					//     use '1' for little endian as well.
+					boolean big_endian = !signalconfig.getEndianness().equals("1");
+					
+					//TODO by how much must we change the start index?
+					if (big_endian)
+						// this formula is for the values shown in CANdb++
+						// $start -= $len - 8;
+						// this formula is for the values that are saved in the dbc file
+						start -= 7;
+					
+					if (start%8 != 0 || len%8 != 0) {
+						//TODO support that
+						%><% messages.warn("The signal '%s' is not aligned on a byte boundary, so it will be ignored.", name).formatForCode(stringBuffer); %><%
+						continue;
+					}
+					if (addr > start) {
+						%><% messages.warn("Cannot write overlapping signals. Ignoring signal '%s'.", name).formatForCode(stringBuffer); %><%
+						continue;
+					}
+					
+					if (addr < start) {
+%>
+		// skipping <%= ((start-addr)/8) %> byte(s)
+<%
+						while (addr < start) {
+%>
+		CANMSG = 0;
+<%
+							addr += 8;
+						}
+					}
+					
+					//TODO support other types
+					//TODO or should we use get_signal_int_type? what happens, if we use
+					//     an enum in a union - the size of the enum can be chosen by the
+					//     compiler
+					String type = signalconfig.getCType();
+					
+					//TODO print comment, if available
+%>
+
+		// writing signal <%= name %>
+		{
+			<%= type %> value;
+<%
+					if (!CanGeneratorHelper.printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
+						/*if (!empty($signal['place']))
+							$var = $signal['place'];
+						else if (!empty($signal['variable']))
+							$var = $signal['variable'];
+						else if (!empty($signal['param']))
+							$var = $signal['param'];
+						else
+							$var = $signal['name'];
+						echo "\t\t\tvalue = $var;\n";*/
+						String var;
+						if (signalconfig.getParam() != null)
+							var = signalconfig.getParam();
+						else
+							var = name;
+%>
+			value = <%= var %>;
+<%		
+					}
+					
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
+					
+					if (len == 8) {
+%>
+			CANMSG =<%= type.equals("uint8_t") ? "" : " (uint8_t)" %> value;
+<%
+						addr += 8;
+					} else {
+%>
+			union {
+				<%= type %> value;
+				struct {
+<%
+						for (int i=0; i<len/8; i++) {
+%>
+					uint8_t byte<%= i %>;
+<%
+						}
+%>
+				} bytes;
+			} x;
+			
+			x.value = value;
+<%		
+						int bytes = len/8;
+						if (big_endian) {	//TODO which one is big endian?
+							// big endian
+							for (int i=0; i<bytes; i++) {
+%>
+			CANMSG = x.bytes.byte<%= (bytes-i-1) %>;
+<%
+								addr += 8;
+							}
+						} else {
+							// little endian
+							for (int i=0; i<bytes; i++) {
+%>
+			CANMSG = x.bytes.byte<%= i %>;
+<%
+								addr += 8;
+							}
+						}
+						
+						if (signalconfig.getFactor() != 1 || signalconfig.getOffset() != 0)
+							messages.warn("The signal '%s' uses factor or offset, which is not supported yet.", name).formatForCode(stringBuffer);
+					}	// len != 8
+					
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmAfterTx(), "\t\t\t");
+%>
+		}
+<%
+				}	// foreach signal
+			}	// no tx_handler_data
+%>
+	if (wait)
+		can_mob_transmit_wait(MOB_<%=mobName%>);
+	else
+		can_mob_transmit_nowait(MOB_<%=mobName%>);
+<%
+		}	// no tx_handler
+	}	// no tx_handler_all
+	
+	for (DBCSignal signal : msgconfig.getSignalOrder()) {
+		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getAfterTx(), "\t");
+	}
+	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getAfterTx(), "\t");
+
+%>
+}
+inline static void send_<%=msgconfig.getName()%>_wait(<%= params %>) {
+	send_<%=msgconfig.getName()%>(true, <%= param_values %>);
+}
+inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
+	send_<%=msgconfig.getName()%>(false, <%= param_values %>);
+}
+<%
+
+}
+%>
+
+#endif	// defined CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
+<% messages.summarizeForCode(stringBuffer); %>
+
+<%
+	
+} // if run_generator
+ 
+    return stringBuffer.toString();
+}	// end of method generate(...)
+
+@SuppressWarnings("unused")
+private String dummy(StringBuffer stringBuffer) {%>
