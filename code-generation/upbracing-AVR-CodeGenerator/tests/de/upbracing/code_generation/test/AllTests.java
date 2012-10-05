@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 		TestGlobalVariableGenerator.class, TestPinGenerator.class,
 		TestRTOSGenerator.class, TestStatemachineGenerator.class,
 		TestTable.class, TestStateNameValidation.class,
-		TestMessages.class })
+		TestMessages.class, TestUtils.class })
 public class AllTests {
 
 }

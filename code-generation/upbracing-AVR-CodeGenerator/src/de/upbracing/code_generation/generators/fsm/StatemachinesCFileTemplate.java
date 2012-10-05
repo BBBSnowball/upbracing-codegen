@@ -9,6 +9,7 @@ import de.upbracing.code_generation.config.*;
 import de.upbracing.code_generation.fsm.model.*;
 import de.upbracing.code_generation.fsm.model.StateVariables.AllOf;
 import de.upbracing.code_generation.fsm.model.StateVariables.VariableContainer;
+import de.upbracing.code_generation.utils.Util;
 import Statecharts.*;
 
 //NOTE This used to be a JET template, but I was using stringBuffer.append(...) anyway and with code completion it's MUCH easier :-)
@@ -80,7 +81,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		this.smg = null;
 		this.existing_action_methods = null;
 
-		return stringBuffer.toString();
+		return Util.fixNL(stringBuffer.toString());
 	} // end of method generate(...)
 
 	private void printWarningsAndErrors(StringBuffer stringBuffer,

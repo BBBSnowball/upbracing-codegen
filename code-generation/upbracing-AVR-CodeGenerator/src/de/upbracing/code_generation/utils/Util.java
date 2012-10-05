@@ -33,7 +33,7 @@ public class Util {
 		return clazz.getClassLoader().getResource(path);
 	}
 	
-	public static String loadResource(Class<?> clazz, String name) {
+	public static String loadResourceRaw(Class<?> clazz, String name) {
 		String path = getResourcePath(clazz, name);
 		InputStream stream = clazz.getClassLoader().getResourceAsStream(path);
 		if (stream == null)
@@ -46,5 +46,17 @@ public class Util {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static String nl() {
+		return System.getProperties().getProperty("line.separator");
+	}
+	
+	public static String fixNL(String string) {
+		return string.replaceAll("\r?\n|\r", nl());
+	}
+
+	public static String loadResource(Class<?> clazz, String name) {
+		return fixNL(loadResourceRaw(clazz, name));
 	}
 }

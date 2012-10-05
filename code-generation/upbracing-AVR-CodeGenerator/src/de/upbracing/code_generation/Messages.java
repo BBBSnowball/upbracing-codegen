@@ -10,12 +10,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import de.upbracing.code_generation.utils.Util;
+
 /**
  * Helper class for keeping track of messages (e.g. errors and warnings) during validation and code-generation
  * 
  * @author Benjamin
  */
 public class Messages {
+	private static final String NL = Util.nl();
+	
 	/** severity of a message */
 	public static enum Severity {
 		// NONE is not allowed for a message
@@ -99,7 +103,7 @@ public class Messages {
 				if (fmt == null)
 					continue;
 				
-				sb.append("\n" + indent + "in ");
+				sb.append(NL + indent + "in ");
 
 				sb.append(fmt);
 			}
@@ -160,7 +164,7 @@ public class Messages {
 			
 			getContext().toLongString("\t", sb);
 			
-			sb.append('\n');
+			sb.append(NL);
 		}
 	}
 	
@@ -496,14 +500,14 @@ public class Messages {
 		if (count <= 0)
 			return;
 		
-		sb.append("\n\n");
+		sb.append(NL + NL);
 		
 		sb.append(highest_severity.getCodePrefix());
 		
 		if (count == 1)
-			sb.append("There was one warning or error\n/*");
+			sb.append("There was one warning or error" + NL + "/*");
 		else
-			sb.append("There were " + count + " warnings and/or errors\n/*\n");
+			sb.append("There were " + count + " warnings and/or errors" + NL + "/*" + NL);
 		
 		for (Message msg : warnings_and_errors) {
 			msg.format(sb);
