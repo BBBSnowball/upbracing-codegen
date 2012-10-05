@@ -51,6 +51,9 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 			ways.put(smg, smw);
 			
 			addTestActions(smg);
+			
+			// parse actions
+			smg.update();
 		}
 		
 		return ways;

@@ -29,9 +29,9 @@ typedef enum {
 	counter_running_state,
 } counter_state__state_t;
 
-typedef struct counter_state {
+typedef struct {
+	uint8_t running__wait_time;
 	counter_state__state_t state;
-	uint8_t states_running_wait_time;
 } counter_state_var_t;
 
 counter_state_var_t counter_state;

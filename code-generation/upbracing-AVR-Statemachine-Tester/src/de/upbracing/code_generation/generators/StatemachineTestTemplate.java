@@ -79,6 +79,7 @@ public class StatemachineTestTemplate implements ITemplate {
 			StatemachineWithWay smw, String test_function_name, Waypoint waypoint,
 			StringBuffer stringBuffer) {
 		stringBuffer.append("\nvoid " + test_function_name + "(void) {\n");
+		stringBuffer.append("\t" + smg.getName() + "_init();\n\n");
 		
 		printWaypointTestCode("", smg.getName(), waypoint, StatemachineTestGenerator.getAllStates(smg.getStateMachine()), stringBuffer);
 		
