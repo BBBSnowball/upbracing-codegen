@@ -12,7 +12,7 @@
 #include "Gpio.h"
 #include "semaphore.h"
 
-volatile uint8_t j = 10;
+volatile uint8_t j = 1;
 volatile uint8_t shift = 0;
 
 //SEMAPHORE(led,1,5);
@@ -53,15 +53,24 @@ TASK(Task_Update)
 	USARTEnqueue(6, "ABCDEF");
 	
 	
-	led_token1 = sem_start_wait_n(led,1);
+	//led_token1 = sem_start_wait(led);
+	//while(sem_continue_wait(led,led_token1) == FALSE )
+	//{
+	//}
+	//if(sem_continue_wait(led,led_token1) == TRUE)
+	//{
+		//PORTA = j;
+	//}
+	//sem_stop_wait(led,led_token1);
 	
-	while(sem_continue_wait_n(led,led_token1) == FALSE )
+	led_token1 = sem_start_wait_n(led,1);
+	while (sem_continue_wait_n(led,led_token1) == FALSE)
 	{
 	}
-	//sem_stop_wait(led,led_token1);
-	PORTA = j;
-	
-	
+	if (sem_continue_wait_n(led,led_token1) == TRUE)
+	{
+		PORTA = j;
+	}
 	sem_stop_wait_n(led,1,led_token1);
 	
 	// Terminate this task
@@ -79,15 +88,24 @@ TASK(Task_Increment)
 	// -> demonstration of Queues and Semaphores
 	USARTEnqueue(6, "mNoPqR");
 	
+	//led_token2 = sem_start_wait(led);
+	//while (sem_continue_wait(led, led_token2) == FALSE)
+	//{
+	//}
+	//if (sem_continue_wait(led,led_token2) == TRUE)
+	//{
+		//j++;
+	//}
+	//sem_stop_wait(led,led_token2);
+	
 	led_token2 = sem_start_wait_n(led,1);
-	
-	
-	while (sem_continue_wait_n(led, led_token2) == FALSE)
+	while (sem_continue_wait_n(led,led_token2) == FALSE)
 	{
 	}
-	j++;
-	
-	
+	if (sem_continue_wait_n(led,led_token2) == TRUE)
+	{
+		j++;
+	}
 	sem_stop_wait_n(led,1,led_token2);
 	
 	//USARTEnqueue(5, "First");

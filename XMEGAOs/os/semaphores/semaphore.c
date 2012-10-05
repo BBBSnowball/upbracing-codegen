@@ -264,7 +264,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 {
 	OS_EXIT_CRITICAL();
 	
-	uint8_t tok;
+	uint8_t tok = 0;
 	
 	
 	
