@@ -531,6 +531,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			}
 		}
 		
+		//TODO All states in the parents lists may have other regions. We have to
+		//     generate action switch-case statements for them.
+		
 		for (ActionType type : ActionType.values()) {
 			if (type == ActionType.DURING) {
 				// this is a good place to execute transition actions
@@ -735,6 +738,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 	private void generateEventSwitchCase(String indent, String event,
 			StateParent parent, Iterable<Transition> transitions) {
+		//TODO If this is a nested switch-case, a previous one might
+		//      have executed a transition. If this has changed the
+		//      state, we shouldn't do anything here.
+		//      -> Check parent states in an "if".
+		
 		stringBuffer.append(indent + "switch (" + getStateVariableName(parent) + ") {\n");
 		stringBuffer.append('\n');
 
