@@ -39,7 +39,7 @@ class InitialState extends State {
 @Ecore(constraints="no_outgoing")
 @gmf.node(label="name", label.icon="false", label.placement="none", figure="rectangle", color="0,0,0", border.color="0,0,0", size="30,30")
 @"http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot"(no_outgoing="self.outgoingTransitions->isEmpty()")
-class FinalState extends State {
+class FinalState extends StateWithActions {
   attr String name = "end";
 }
 
