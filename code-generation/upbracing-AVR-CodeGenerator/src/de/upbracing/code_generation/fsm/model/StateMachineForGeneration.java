@@ -20,11 +20,13 @@ import Statecharts.FinalState;
 import Statecharts.GlobalCode;
 import Statecharts.InitialState;
 import Statecharts.NamedItem;
+import Statecharts.Region;
 import Statecharts.State;
 import Statecharts.StateMachine;
 import Statecharts.StateParent;
 import Statecharts.StateScope;
 import Statecharts.StateWithActions;
+import Statecharts.SuperState;
 import Statecharts.Transition;
 
 public class StateMachineForGeneration {
@@ -260,7 +262,14 @@ public class StateMachineForGeneration {
 		for (State state : states) {
 			state.setParent(parent);
 			
-			if (state instanceof StateParent) {
+			if (state instanceof SuperState) {
+				SuperState superState = (SuperState) state;
+				for (Region region : superState.getRegions()) {
+					region.setParent(superState);
+					
+					updateParents(region.getStates(), region);
+				}
+			} else if (state instanceof StateParent) {
 				StateParent parent2 = (StateParent) state;
 				updateParents(parent2.getStates(), parent2);
 			}
