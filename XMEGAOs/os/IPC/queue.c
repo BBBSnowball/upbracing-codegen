@@ -160,9 +160,9 @@ bool _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token
 	
 	The token must not be used after this.
 */
-void _queue_stop_wait_data_available(Semaphore_n* sem , sem_token_t token )
+void _queue_stop_wait_data_available(Semaphore_n* sem , uint8_t n, sem_token_t token )
 {
-	_sem_start_wait_n(sem, token);
+	_sem_stop_wait_n(sem, n, token);
 	
 }
 
@@ -210,9 +210,9 @@ bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t t
 	
 	The token must not be used after this.
 */
-void _queue_stop_wait_data_free_space(Semaphore_n* sem , sem_token_t token )
+void _queue_stop_wait_data_free_space(Semaphore_n* sem , uint8_t n, sem_token_t token )
 {
-	_sem_stop_wait_n(sem,token);
+	_sem_stop_wait_n(sem, n, token);
 }
 
 

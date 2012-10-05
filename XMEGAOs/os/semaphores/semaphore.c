@@ -72,6 +72,8 @@ void _sem_signal(Semaphore* sem)
 		// Wake the task waiting for this semaphore:
 		// TODO: Replace ActivateTask() with ImmediatelyResumeTask()
 		//ActivateTask(sem->queue[sem->queue_front].pid);
+		//To Peer: Resume task only if the front of the queue contains task id.
+		//			do not do anything, if it is token
 		ResumeTask(tId);
 	}
 	
@@ -159,26 +161,21 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n)
 
 sem_token_t _sem_start_wait(Semaphore* sem)
 {
-	uint8_t tok;
-	
-	tok = sem->token_count++;
-	if(sem->token_count == 0) sem->token_count = 65280;
-	
+	uint8_t tok = 0;
 		
 	OS_ENTER_CRITICAL();
 	sem->count--;
 	if (sem->count < 0)
 	{
-		if (sem->queue_end == sem->queue_cap-1)
+		tok = sem->token_count++;
+		if(sem->token_count == 0) sem->token_count = OS_NUMBER_OF_TCBS_DEFINE;
+		sem->queue[sem->queue_end] = tok;
+		
+		sem->queue_end++;
+		if (sem->queue_end == sem->queue_cap)
 		{
 			sem->queue_end = 0;
 		}
-		else
-		{
-			sem->queue_end++;
-		}
-		sem->queue[sem->queue_end] = tok;
-			
 			
 	}
 	OS_EXIT_CRITICAL();
@@ -206,40 +203,54 @@ bool _sem_continue_wait(Semaphore* sem , sem_token_t token)
 
 void _sem_stop_wait(Semaphore* sem, sem_token_t token)
 {
-	uint8_t i,j,tok;
+	uint8_t i,j,k,tok;
 	tok = token;
 	
-	if (sem->queue[sem->queue_front] == tok)
+	if (tok == 0)
 	{
-		if (sem->queue_front == sem->queue_cap-1)
-		{
-			sem->queue_front = 0;
-		}
-		else
-		{
-			sem->queue_front++;
-		}
-		//activatetask(sem->queue[sem->queue_front])
+		sem->count++;
 		return;
 	}
 	
+	if (sem->queue[sem->queue_front] == tok)
+	{
+		sem->count++;
+		sem->queue_front++;
+		if (sem->queue_front == sem->queue_cap)
+		{
+			sem->queue_front = 0;
+		}
+		
+		
+		//if front is not token, activate task
+		if (sem->queue[sem->queue_front] < OS_NUMBER_OF_TCBS_DEFINE)
+		{
+			ResumeTask(sem->queue[sem->queue_front]);
+		}
+		
+		return;
+	}
 	
+	i = sem->queue_front;
 	while(i != sem->queue_end)
 	{
 		if (sem->queue[i]==tok)
 		{
-			for (j=i;j<=sem->queue_end;j++)
+			j=i;
+			while (j != sem->queue_end)
 			{
-				sem->queue[j]=sem->queue[j+1];
+				k = j+1;
+				if (k == sem->queue_cap){k=0;}
+				
+				sem->queue[j]=sem->queue[k];
+				j=k;
 			}
-			if (sem->queue_end==0)
+			sem->queue_end--;
+			if (sem->queue_end < 0)
 			{
 				sem->queue_end = sem->queue_cap-1;
 			} 
-			else
-			{
-				sem->queue_end--;
-			}
+			sem->count++;
 			
 			
 		}
@@ -254,26 +265,28 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 	OS_EXIT_CRITICAL();
 	
 	uint8_t tok;
-	tok = sem->token_count++;
-	if(sem->token_count == 0) sem->token_count = 65280;
 	
-	sem->count--;
-	if (sem->count < 0)
+	
+	
+	if (sem->count < n)
 	{
-		if (sem->queue_end == sem->queue_cap-1)
+		tok = sem->token_count++;
+		if(sem->token_count == 0) sem->token_count = OS_NUMBER_OF_TCBS_DEFINE;
+		
+		sem->queue[sem->queue_end].pid = tok;
+		sem->queue[sem->queue_end].n = n;
+		
+		sem->queue_end++;
+		if (sem->queue_end == sem->queue_cap)
 		{
 			sem->queue_end = 0;
 		}
-		else
-		{
-			sem->queue_end++;
-		}
-		sem->queue[sem->queue_end].pid = tok;
-		sem->queue[sem->queue_end].n = n;
+		
+		
 		//no suspend
 		
 	}
-	
+	sem->count -= n;
 	OS_EXIT_CRITICAL();
 	return tok;
 }
@@ -292,13 +305,20 @@ bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token)
 	return FALSE;
 }
 
-void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token)
+void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token)
 {
-	uint8_t i,j,tok;
+	uint8_t i,j,k,tok;
 	tok = token;
+	
+	if (tok == 0)
+	{
+		sem->count += n;
+		return;
+	}
 	
 	if (sem->queue[sem->queue_front].pid == tok)
 	{
+		sem->count = sem->count + sem->queue[sem->queue_front].n;
 		if (sem->queue_front == sem->queue_cap-1)
 		{
 			sem->queue_front = 0;
@@ -307,17 +327,29 @@ void _sem_stop_wait_n(Semaphore_n* sem, sem_token_t token)
 		{
 			sem->queue_front++;
 		}
-		//activatetask(sem->queue[sem->queue_front].pid)
+		
+		//if front is not token, activate task
+		if (sem->queue[sem->queue_front].pid < OS_NUMBER_OF_TCBS_DEFINE)
+		{
+			ResumeTask(sem->queue[sem->queue_front].pid);
+		}
 		return;
 	}
 	
+	i = sem->queue_front;
 	while(i != sem->queue_end)
 	{
 		if (sem->queue[i].pid==tok)
 		{
-			for (j=i;j<=sem->queue_end;j++)
+			sem->count = sem->count + sem->queue[i].n;
+			j=i;
+			while (j != sem->queue_end)
 			{
-				sem->queue[j]=sem->queue[j+1];
+				k = j+1;
+				if (k == sem->queue_cap) k=0;
+				
+				sem->queue[j]=sem->queue[k];
+				j=k;
 			}
 			if (sem->queue_end==0)
 			{

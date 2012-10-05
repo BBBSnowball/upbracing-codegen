@@ -10,10 +10,13 @@
 #include "Os.h"
 #include "USART.h"
 #include "Gpio.h"
+#include "semaphore.h"
 
 volatile uint8_t j = 10;
 volatile uint8_t shift = 0;
 
+//SEMAPHORE(led,1,5);
+SEMAPHORE_N(led,5,1);
 
 int main(void)
 {	
@@ -42,11 +45,24 @@ int main(void)
 
 TASK(Task_Update)
 {
-	PORTA = j;
+	sem_token_t led_token1;
+	bool see;
 	
 	// Enqueue something for USART
 	// -> demonstration of Queues and Semaphores
-	USARTEnqueue(6, "update");
+	USARTEnqueue(6, "ABCDEF");
+	
+	
+	led_token1 = sem_start_wait_n(led,1);
+	
+	while(sem_continue_wait_n(led,led_token1) == FALSE )
+	{
+	}
+	//sem_stop_wait(led,led_token1);
+	PORTA = j;
+	
+	
+	sem_stop_wait_n(led,1,led_token1);
 	
 	// Terminate this task
 	TerminateTask();
@@ -54,12 +70,25 @@ TASK(Task_Update)
 
 TASK(Task_Increment)
 {
+	sem_token_t led_token2;
+	bool check;
 	// Increment global counter for leds
-	j++;
+	
 	
 	// Enqueue something for USART
 	// -> demonstration of Queues and Semaphores
-	USARTEnqueue(3, "INC");
+	USARTEnqueue(6, "mNoPqR");
+	
+	led_token2 = sem_start_wait_n(led,1);
+	
+	
+	while (sem_continue_wait_n(led, led_token2) == FALSE)
+	{
+	}
+	j++;
+	
+	
+	sem_stop_wait_n(led,1,led_token2);
 	
 	//USARTEnqueue(5, "First");
 	
@@ -73,7 +102,8 @@ TASK(Task_Shift)
 	shift++;
 	if (shift == 8)
 		shift = 0;
-		
+	
+	USARTEnqueue(6,"ghijkl");
 	// Terminate this task
 	TerminateTask();
 }

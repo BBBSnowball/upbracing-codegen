@@ -18,20 +18,20 @@
     <com_atmel_avrdbg_tool_jtagicemkii>
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
       <ToolName>JTAGICE mkII</ToolName>
-      <ToolNumber>00B000002588</ToolNumber>
+      <ToolNumber>070000005DEE</ToolNumber>
       <KeepTimersRunning>true</KeepTimersRunning>
       <OverrideVtor>false</OverrideVtor>
       <OverrideVtorValue>
       </OverrideVtorValue>
       <Channel>
         <host>127.0.0.1</host>
-        <port>49573</port>
+        <port>4931</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
         <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
-          <JtagDbgClock>1000000</JtagDbgClock>
+          <JtagDbgClock>200000</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
           <IspClock>150000</IspClock>
           <JtagInChain>false</JtagInChain>
@@ -212,7 +212,6 @@
       <Value>../os/config</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
   <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
   <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>

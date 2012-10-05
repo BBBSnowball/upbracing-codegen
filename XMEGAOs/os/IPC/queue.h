@@ -106,8 +106,8 @@ sem_token_t _queue_start_wait_data_available (Semaphore_n* sem, uint8_t n);
 #define queue_continue_wait_data_available(sem, token) _queue_continue_wait_data_available(QUEUE_CONS_REF(sem), QUEUE_REF(sem), token)
 bool _queue_continue_wait_data_available (Semaphore_n* sem , Queue* que, sem_token_t token );
 
-#define queue_stop_wait_data_available(sem, token) _queue_stop_wait_data_available(QUEUE_CONS_REF(sem), token)
-void _queue_stop_wait_data_available (Semaphore_n* sem , sem_token_t token );
+#define queue_stop_wait_data_available(sem, n, token) _queue_stop_wait_data_available(QUEUE_CONS_REF(sem), n, token)
+void _queue_stop_wait_data_available (Semaphore_n* sem , uint8_t n, sem_token_t token );
 
 #define queue_start_wait_free_space(sem, n) _queue_start_wait_free_space(QUEUE_PROD_REF(sem), n)
 sem_token_t _queue_start_wait_free_space (Semaphore_n* sem , uint8_t n);
@@ -115,8 +115,8 @@ sem_token_t _queue_start_wait_free_space (Semaphore_n* sem , uint8_t n);
 #define queue_continue_wait_free_space(sem, token) _queue_continue_wait_free_space(QUEUE_PROD_REF(sem), QUEUE_REF(sem), token)
 bool _queue_continue_wait_free_space (Semaphore_n* sem ,Queue* que, sem_token_t token );
 
-#define queue_stop_wait_data_free_space(sem, token) _queue_stop_wait_data_free_space(QUEUE_PROD_REF(sem), token)
-void _queue_stop_wait_data_free_space (Semaphore_n* sem , sem_token_t token );
+#define queue_stop_wait_data_free_space(sem, n, token) _queue_stop_wait_data_free_space(QUEUE_PROD_REF(sem), n, token)
+void _queue_stop_wait_data_free_space (Semaphore_n* sem , uint8_t n, sem_token_t token );
 
 
 #endif /* QUEUE_H_ */
