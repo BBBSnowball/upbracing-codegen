@@ -78,11 +78,10 @@ int main(void) {
 	uint8_t switch_state = PINE & 0xf4;
 
 	usart_init();
-	usart_send_str("blub\n");
-	usart_send_str_P(PSTR("blubP\n"));
+	usart_send_str_P(PSTR("started\n"));
 
 	counter_init();
-	usart_send('I');
+	usart_send_str_P(PSTR("main loop\n"));
 	while (1) {
 		counter_tick();
 
@@ -91,17 +90,15 @@ int main(void) {
 		if (switch_events) {
 			switch_state = switch_state2;
 
-			usart_send_str("switches: changed = ");
-			usart_send_number_binary(switch_events);
-			usart_send_str(", new state = ");
-			usart_send_number_binary(switch_state);
-			usart_send_str("\n");
-
 			// center switch pressed
-			if ((switch_events & BUTTON_CENTER) && (switch_state & BUTTON_CENTER) == 0)
+			if ((switch_events & BUTTON_CENTER) && (switch_state & BUTTON_CENTER) == 0) {
+				usart_send_str_P(PSTR("event: startstop_pressed\n"));
 				counter_event_startstop_pressed();
-			if ((switch_events & BUTTON_SOUTH) && (switch_state & BUTTON_SOUTH) == 0)
+			}
+			if ((switch_events & BUTTON_SOUTH) && (switch_state & BUTTON_SOUTH) == 0) {
+				usart_send_str_P(PSTR("event: reset\n"));
 				counter_event_reset();
+			}
 		}
 
 		//TODO we should use a timer because with a delay we get a

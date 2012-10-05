@@ -11,25 +11,25 @@
 #include <avr/io.h>
 
 // use usart 1 because usart 0 conflicts with the ISP interface
-#define USE_USART_NUMBER 1
+#define USE_USART_NUMBER 0
 
 #if (USE_USART_NUMBER == 0)
 
-#define UCSRxA UCSR1A
-#define UDREx  UDRE1
-#define RXCx   RXC1
+#define UCSRxA UCSR0A
+#define UDREx  UDRE0
+#define RXCx   RXC0
 
-#define UCSRxB UCSR1B
-#define RXENx  RXEN1
-#define TXENx  TXEN1
+#define UCSRxB UCSR0B
+#define RXENx  RXEN0
+#define TXENx  TXEN0
 
-#define UCSRxC UCSR1C
-#define UCSZx  UCSZ1
+#define UCSRxC UCSR0C
+#define UCSZx  UCSZ0
 
-#define UBRRxH UBRR1H
-#define UBRRxL UBRR1L
+#define UBRRxH UBRR0H
+#define UBRRxL UBRR0L
 
-#define UDRx   UDR1
+#define UDRx   UDR0
 
 #elif (USE_USART_NUMBER == 1)
 
