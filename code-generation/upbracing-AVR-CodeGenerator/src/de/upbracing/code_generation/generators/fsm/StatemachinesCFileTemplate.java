@@ -59,18 +59,14 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			for (StateMachineForGeneration smg : statemachines) {
 				this.smg = smg;
 				
-				Collection<State> sorted_states = smg.sortStates(smg.getStates());
-				Collection<StateWithActions> states_with_actions
-					= smg.filterStatesWithActions(sorted_states);
-
 				stringBuffer.append('\n');
 				stringBuffer.append('\n');
 				hugeBanner(smg.getName());
 				stringBuffer.append('\n');
 
-				generateStatemachineData(stringBuffer, smg, sorted_states);
+				generateStatemachineData(stringBuffer, smg);
 
-				generateActionFunctions(stringBuffer, smg, states_with_actions);
+				generateActionFunctions(stringBuffer, smg);
 
 				generateInitFunction(stringBuffer, smg);
 
@@ -181,7 +177,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	private void generateStatemachineData(final StringBuffer stringBuffer,
-			StateMachineForGeneration smg, Collection<State> sorted_states) {
+			StateMachineForGeneration smg) {
 		stringBuffer.append('\n');
 		banner("data");
 		stringBuffer.append('\n');
@@ -256,31 +252,48 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	}
 
 	private void generateActionFunctions(final StringBuffer stringBuffer,
-			StateMachineForGeneration smg,
-			Collection<StateWithActions> states_with_actions) {
+			StateMachineForGeneration smg) {
 		stringBuffer.append('\n');
 		banner("action functions");
 		stringBuffer.append('\n');
 
 		this.existing_action_methods = new HashSet<String>();
-		for (StateWithActions state : states_with_actions) {
-			String name = getName(state);
+		
+		generateActionFunctions(stringBuffer, smg, smg.getStateMachine());
+	}
 
-			for (ActionType actionType : ActionType.values()) {
-				List<Action> actions = filterActionsByType(
-						smg.getActions(state), actionType);
+	private void generateActionFunctions(final StringBuffer stringBuffer,
+			StateMachineForGeneration smg,
+			StateParent parent) {
+		//NOTE a SuperState will return all the states in its regions
+		Collection<State> sorted_states = smg.sortStates(parent.getStates());
 
-				if (actions != null && !actions.isEmpty()) {
-					String method_name = actionMethod(name, actionType);
-					existing_action_methods.add(method_name);
-
-					stringBuffer.append('\n');
-					stringBuffer.append("static void " + method_name
-							+ "() {\n");
-					genTrace(70, "\t", method_name + "()");
-					printActions("\t", actions);
-					stringBuffer.append("}\n");
+		for (State state_ : sorted_states) {
+			if (state_ instanceof StateWithActions) {
+				StateWithActions state = (StateWithActions) state_;
+	
+				for (ActionType actionType : ActionType.values()) {
+					List<Action> actions = filterActionsByType(
+							smg.getActions(state), actionType);
+	
+					if (actions != null && !actions.isEmpty()) {
+						String method_name = actionMethod(state, actionType);
+						existing_action_methods.add(method_name);
+	
+						stringBuffer.append('\n');
+						stringBuffer.append("static void " + method_name
+								+ "() {\n");
+						genTrace(70, "\t", method_name + "()");
+						printActions("\t", actions);
+						stringBuffer.append("}\n");
+					}
 				}
+			}
+			
+			if (state_ instanceof StateParent) {
+				StateParent state = (StateParent) state_;
+				
+				generateActionFunctions(stringBuffer, smg, state);
 			}
 		}
 	}
@@ -460,7 +473,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return actions2;
 	}
 
-	private String actionMethod(String state_name, ActionType actionType) {
+	private String actionMethod(State state, ActionType actionType) {
+		String state_name = getFullStateName(state);
+		
 		return smg.getName() + "_" + state_name + "_"
 				+ actionType.toString().toLowerCase();
 	}
@@ -499,7 +514,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		boolean printedCode = false;
 		
 		for (ActionType type : ActionType.values()) {
-			String actionMethodName = actionMethod(getName(state), type);
+			String actionMethodName = actionMethod(state, type);
 			if (type.shouldExecuteFor(null, state) && existing_action_methods.contains(actionMethodName))
 				printedCode |= printCode(indent, actionMethodName + "();\n");
 		}
@@ -557,13 +572,13 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			printActionsForChildren(indent, type, trans.getSource(), trans.getSource(), trans.getDestination(), true);
 			
 			for (State self : source_with_parents) {
-				String actionMethodName = actionMethod(getName(self), type);
+				String actionMethodName = actionMethod(self, type);
 				if (type.shouldExecuteFor(self, trans.getDestination(), self) && existing_action_methods.contains(actionMethodName))
 					printCode(indent, actionMethodName + "();\n");
 			}
 
 			for (State self : destination_with_parents) {
-				String actionMethodName = actionMethod(getName(self), type);
+				String actionMethodName = actionMethod(self, type);
 				if (type.shouldExecuteFor(trans.getSource(), self, self) && existing_action_methods.contains(actionMethodName))
 					printCode(indent, actionMethodName + "();\n");
 			}
@@ -633,7 +648,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 	private void printActionsForState(String indent, ActionType type,
 			State self, State source, State destination) {
-		String actionMethodName = actionMethod(getName(self), type);
+		String actionMethodName = actionMethod(self, type);
 		if (type.shouldExecuteFor(source, destination, self) && existing_action_methods.contains(actionMethodName))
 			printCode(indent, actionMethodName + "();\n");
 	}
@@ -848,5 +863,19 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				+ message + "\"));\n");
 		
 		return true;
+	}
+
+	public static String getFullStateName(StateScope state) {
+		if (state instanceof StateMachine)
+			return null;
+		else if (state instanceof NamedItem) {
+			StateParent parent = state.getParent();
+			String parent_name = (parent != null ? getFullStateName(parent) : null);
+			String name = ((NamedItem)state).getName();
+			if (parent_name != null)
+				name = parent_name + "_" + name;
+			return name;
+		} else
+			throw new IllegalArgumentException("Expecting a StateMachine or something with a name (a state or region)");
 	}
 }

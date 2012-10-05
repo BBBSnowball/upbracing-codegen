@@ -7,6 +7,7 @@ import java.util.Map;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
+import de.upbracing.code_generation.generators.fsm.StatemachinesCFileTemplate;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.GaussianProbability;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.StatemachineWithWay;
@@ -89,17 +90,7 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 	}
 
 	public static String getStateName(StateScope state) {
-		if (state instanceof StateMachine)
-			return null;
-		else if (state instanceof NamedItem) {
-			StateParent parent = state.getParent();
-			String parent_name = (parent != null ? getStateName(parent) : null);
-			String name = ((NamedItem)state).getName();
-			if (parent_name != null)
-				name = parent_name + "_" + name;
-			return name;
-		} else
-			throw new IllegalArgumentException("Expecting a StateMachine or something with a name (a state or region)");
+		return StatemachinesCFileTemplate.getFullStateName(state);
 	}
 
 	public static List<State> getAllStates(StateParent parent) {
