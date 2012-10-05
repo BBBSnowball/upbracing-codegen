@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import Statecharts.InitialState;
 import Statecharts.State;
 import Statecharts.StateWithActions;
 
@@ -72,7 +71,7 @@ public class StatemachineTestTemplate implements ITemplate {
 					+ "test_" + name + "_step" + i + "))\n\t\treturn 0;\n");
 		}
 		
-		stringBuffer.append("\n\treturn 0;\n");
+		stringBuffer.append("\n\treturn 1;\n");
 		stringBuffer.append("}\n");
 	}
 
@@ -136,12 +135,11 @@ public class StatemachineTestTemplate implements ITemplate {
 			if (smw != null) {
 				stringBuffer.append(
 					  "	if (!add_test_suite_" + smg.getName() + "()) {\n"
-					+ "		CU_cleanup_registry();\n"
-					+ "		return CU_get_error();\n"
+					+ "		return 0;\n"
 					+ "	}\n");
 			}
 		}
-		stringBuffer.append("\treturn 0;\n}\n");
+		stringBuffer.append("\treturn 1;\n}\n");
 		
 		stringBuffer.append("\n"
 			+ "int random_test_main(void) {\n"
