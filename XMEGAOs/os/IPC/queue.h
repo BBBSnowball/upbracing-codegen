@@ -38,8 +38,7 @@ typedef struct
 		SEMAPHORE_N(sem##_QUEUE_FREE, (capacity), (capacity)); \
 		SEMAPHORE_N(sem##_QUEUE_AVAILABLE, (capacity), 0)
 		/* add the other semaphores here */
-//TODO: check if above declaration is correct ?
-//TODO: check if parameter passing is correct ?
+
 
 // what is the max length of queue ?
 //NOTE(Benjamin): I'm not sure whether I understand this question...
@@ -94,6 +93,10 @@ _sem_signal(QUEUE_SEM_REF(sem)); \
 _sem_signal_n(QUEUE_PROD_REF(sem), bytes)
 void _queue_dequeue2(Queue* sem, uint8_t bytes, uint8_t* data_out);
 
+#define queue_enqueue_async(sem, bytes, data_in) _queue_enqueue2(QUEUE_REF(sem), bytes, (const uint8_t*) data_in)
+
+#define queue_dequeue_async(sem, bytes, data_out) _queue_dequeue2(QUEUE_REF(sem), bytes, data_out)
+
 #define queue_is_data_available(q, bytes) _queue_is_data_available(QUEUE_REF(q), bytes)
 bool _queue_is_data_available (Queue* q, uint8_t number_of_bytes);
 
@@ -118,5 +121,13 @@ bool _queue_continue_wait_free_space (Semaphore_n* sem ,Queue* que, sem_token_t 
 #define queue_stop_wait_data_free_space(sem, n, token) _queue_stop_wait_data_free_space(QUEUE_PROD_REF(sem), n, token)
 void _queue_stop_wait_data_free_space (Semaphore_n* sem , uint8_t n, sem_token_t token );
 
+#define queue_start_wait(que) _queue_start_wait(QUEUE_SEM_REF(que))
+sem_token_t _queue_start_wait(Semaphore* sem);
+
+#define queue_continue_wait(que, token) _queue_continue_wait(QUEUE_SEM_REF(que), token)
+bool _queue_continue_wait(Semaphore* sem, sem_token_t token);
+
+#define queue_stop_wait(que, token) _queue_stop_wait(QUEUE_SEM_REF(que), token)
+_queue_stop_wait(Semaphore* sem, sem_token_t token);
 
 #endif /* QUEUE_H_ */

@@ -18,6 +18,8 @@ volatile uint8_t shift = 0;
 //SEMAPHORE(led,1,5);
 SEMAPHORE_N(led,5,1);
 
+QUEUE(ipc,10,1,1);
+
 int main(void)
 {	
 	// Init GPIO: (demo: DDRA = 0xFF)
@@ -45,13 +47,29 @@ int main(void)
 
 TASK(Task_Update)
 {
-	sem_token_t led_token1;
-	bool see;
+	sem_token_t led_token1, free_token1, queue_token1;
+	bool see, look;
 	
 	// Enqueue something for USART
 	// -> demonstration of Queues and Semaphores
-	USARTEnqueue(6, "ABCDEF");
-	
+	//USARTEnqueue(6, "ABCDEF");
+	free_token1 = queue_start_wait_free_space(ipc,1);
+	while (queue_continue_wait_free_space(ipc,free_token1) == FALSE)
+	{
+	}
+	if (queue_continue_wait_free_space(ipc,free_token1) == TRUE)
+	{
+		queue_token1 = queue_start_wait(ipc);
+		while (queue_continue_wait(ipc,queue_token1) == FALSE)
+		{
+		}
+		if (queue_continue_wait(ipc,queue_token1) == TRUE)
+		{
+			queue_enqueue_async(ipc,1,"A");
+		}
+		queue_stop_wait(ipc,queue_token1);
+	}
+	queue_stop_wait_data_free_space(ipc,1,queue_token1);
 	
 	//led_token1 = sem_start_wait(led);
 	//while(sem_continue_wait(led,led_token1) == FALSE )

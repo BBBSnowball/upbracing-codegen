@@ -215,4 +215,19 @@ void _queue_stop_wait_data_free_space(Semaphore_n* sem , uint8_t n, sem_token_t 
 	_sem_stop_wait_n(sem, n, token);
 }
 
+sem_token_t _queue_start_wait( Semaphore* sem )
+{
+	return _sem_start_wait(sem);
+}
+
+bool _queue_continue_wait( Semaphore* sem, sem_token_t token )
+{
+	return _sem_continue_wait(sem,token);
+}
+
+ _queue_stop_wait( Semaphore* sem, sem_token_t token )
+{
+	_sem_stop_wait(sem,token);
+}
+
 
