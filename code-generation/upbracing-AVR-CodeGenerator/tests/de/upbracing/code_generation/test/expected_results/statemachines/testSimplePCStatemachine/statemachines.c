@@ -82,6 +82,26 @@ static simple_pc_state_var_t simple_pc_state;
 //////////////////////////////////////////////////
 
 
+static void simple_pc_on_Kernel_booting_during() {
+	// increment time for wait(...)
+	++simple_pc_state.on__Kernel__booting__wait_time;
+}
+
+static void simple_pc_on_Kernel_booting_enter() {
+	// reset time for wait(...)
+	simple_pc_state.on__Kernel__booting__wait_time = 0;
+}
+
+static void simple_pc_on_Desktop_loading_during() {
+	// increment time for wait(...)
+	++simple_pc_state.on__Desktop.loading__wait_time;
+}
+
+static void simple_pc_on_Desktop_loading_enter() {
+	// reset time for wait(...)
+	simple_pc_state.on__Desktop.loading__wait_time = 0;
+}
+
 //////////////////////////////////////////////////
 //                init function                 //
 //////////////////////////////////////////////////
