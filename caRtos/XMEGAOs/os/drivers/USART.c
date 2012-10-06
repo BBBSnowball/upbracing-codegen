@@ -34,6 +34,8 @@ void USARTInit(uint16_t ubrr_value)
 void USARTEnqueue(uint8_t length, const char * text) 
 {
 	// This blocks, if there is not enough space available!
+	
+	
 	queue_enqueue2(usart, length, text);
 }
 
