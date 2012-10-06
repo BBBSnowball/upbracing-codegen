@@ -28,6 +28,15 @@ import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 
+/**
+ * Content for the {@code UseCaseModel} ExpandItems.<br>
+ * Consists of "Name", "Timer", "Mode", "Delete Button",
+ * and a "SettingsComposite".<p>
+ * "SettingsComposite" is filled with {@link AConfigurationCompositeBase} 
+ * objects for each possible use case. Depending on "Mode" setting, the correct
+ * {@link AConfigurationCompositeBase} is displayed, while all others are hidden.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public class ConfigurationExpandItemComposite extends Composite {
 
 	private ExpandBar bar;
@@ -40,12 +49,22 @@ public class ConfigurationExpandItemComposite extends Composite {
 	private ConfigurationCompositePhaseAndFrequencyCorrectPWM pfcPWMC;
 	private AConfigurationCompositeBase activeC;
 	
+	/**
+	 * Creates a new {@link ConfigurationExpandItemComposite} instance.
+	 * @param parent 
+	 * @param style style passed through to {@code Composite} constructor
+	 * @param bar {@code ExpandBar} reference (needs for triggering its redraw() method)
+	 * @param expandItem {@code ExpandItem} for which this instance provides content
+	 * @param model {@link UseCaseViewModel} to databind visual elements to
+	 * @param editor {@link TimerConfigurationEditor} reference, to set dirty flag, if
+	 * necessary.
+	 */
 	public ConfigurationExpandItemComposite(Composite parent, 
-			int style, 
-			final ExpandBar bar, 
-			final ExpandItem expandItem, 
-			final UseCaseViewModel model, 
-			final TimerConfigurationEditor editor) {
+											int style, 
+											final ExpandBar bar, 
+											final ExpandItem expandItem, 
+											final UseCaseViewModel model, 
+											final TimerConfigurationEditor editor) {
 		super(parent, style);
 
 		this.bar = bar;
@@ -69,10 +88,6 @@ public class ConfigurationExpandItemComposite extends Composite {
 		Label label = new Label(this, SWT.NONE);
 		label.setText("Name:");
 		final TextValidationComposite t = new TextValidationComposite(this, SWT.NONE, null, "name", model.getValidator(), null, String.class);
-//		GridData d = new GridData();
-//		d.widthHint = 150;
-//		final Text t = new Text(this, SWT.SINGLE | SWT.BORDER);
-//		t.setLayoutData(d);
 		t.getTextBox().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
@@ -192,7 +207,18 @@ public class ConfigurationExpandItemComposite extends Composite {
 		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
 	}
 
-private void initUseCaseGroups() {
+	/**
+	 * Forces this composite to recalculate size and repaint.
+	 */
+	public void updateLayout() {
+		activeC.layout();
+		settingsComposite.layout();
+		layout();
+		
+		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
+	}
+
+	private void initUseCaseGroups() {
 		
 		activeC = overflowC;
 		settingsComposite.layout();
@@ -238,14 +264,6 @@ private void initUseCaseGroups() {
 		dispose();
 	}
 
-	public void updateLayout() {
-		activeC.layout();
-		settingsComposite.layout();
-		layout();
-		
-		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
-	}
-	
 	private void setVisibility(Composite c, boolean b) {
 
 		GridData d = (GridData) c.getLayoutData();

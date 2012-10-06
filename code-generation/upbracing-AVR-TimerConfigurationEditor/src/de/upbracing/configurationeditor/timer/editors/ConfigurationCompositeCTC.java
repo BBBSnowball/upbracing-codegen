@@ -24,10 +24,26 @@ import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 
+/**
+ * Content for the settings group in CTC mode.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 
-	public ConfigurationCompositeCTC(Composite parent, ConfigurationExpandItemComposite expandItem, int style,
-			TimerConfigurationEditor editor, UseCaseViewModel model) {
+	/**
+	 * Creates a new {@link ConfigurationCompositeCTC} instance.
+	 * @param parent parent {@code Composite} to add this instance to
+	 * @param expandItem @code ExpandItem} for which this object provides content
+	 * @param style style passed through to {@code Composite} constructor
+	 * @param editor {@link TimerConfigurationEditor} reference, to set dirty flag, if
+	 * necessary.
+	 * @param model {@link UseCaseViewModel} to databind visual elements to
+	 */
+	public ConfigurationCompositeCTC(Composite parent, 
+									 ConfigurationExpandItemComposite expandItem, 
+									 int style,
+									 TimerConfigurationEditor editor, 
+									 UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
 
@@ -99,10 +115,6 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		public void modifyText(ModifyEvent arg0) {
 			editor.setDirty(true);
 		}});
-		
-//		// Label for Unit
-//		Label lbUnit = new Label(scComp, SWT.NONE);
-//		lbUnit.setText("s");
 		
 		if (compareInterrupt) {
 			// Interrupt enable checkbox for Compare Match

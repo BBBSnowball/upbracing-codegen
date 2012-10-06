@@ -20,11 +20,26 @@ import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMTopValues;
 
+/**
+ * Content for the settings group in Fast PWM mode.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public class ConfigurationCompositeFastPWM extends AConfigurationCompositeBase {
 
+	/**
+	 * Creates a new {@link ConfigurationCompositeFastPWM} instance.
+	 * @param parent parent {@code Composite} to add this instance to
+	 * @param expandItem @code ExpandItem} for which this object provides content
+	 * @param style style passed through to {@code Composite} constructor
+	 * @param editor {@link TimerConfigurationEditor} reference, to set dirty flag, if
+	 * necessary.
+	 * @param model {@link UseCaseViewModel} to databind visual elements to
+	 */
 	public ConfigurationCompositeFastPWM(Composite parent,
-			ConfigurationExpandItemComposite expandItem, int style,
-			TimerConfigurationEditor editor, UseCaseViewModel model) {
+										 ConfigurationExpandItemComposite expandItem, 
+										 int style,
+										 TimerConfigurationEditor editor, 
+										 UseCaseViewModel model) {
 		super(parent, expandItem, style, editor, model);
 		
 		createTopRegisterSelection(getSettingsGroup(), PWMTopValues.values(), "fastPWMTop");

@@ -15,11 +15,29 @@ import org.eclipse.swt.widgets.Label;
 
 import de.upbracing.configurationeditor.timer.converters.StatusImageConverter;
 
+/**
+ * Databound SWT ComboViewer and validation Image with error hover text.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public class ComboValidationComposite extends Composite {
 
 	private ComboViewer combo;
 	
-	public ComboValidationComposite(Composite parent, int style, Object model, String textProperty, Object validator, Object[] choices) {
+	/**
+	 * Creates a new {@link ComboValidationComposite} instance.
+	 * @param parent {@code Composite} to add this instance to
+	 * @param style passed through to {@code Composite} constructor
+	 * @param model data source to bind to
+	 * @param textProperty property name within data source
+	 * @param validator model validator object
+	 * @param choices collection of choices for the Combo
+	 */
+	public ComboValidationComposite(Composite parent, 
+									int style, 
+									Object model, 
+									String textProperty, 
+									Object validator, 
+									Object[] choices) {
 		super(parent, style);
 		
 		int columns = 1;
@@ -54,6 +72,10 @@ public class ComboValidationComposite extends Composite {
 		}
 	}
 	
+	/**
+	 * Returns the inner SWT ComboViewer.
+	 * @return SWT ComboViewer
+	 */
 	public ComboViewer getCombo() {
 		return combo;
 	}

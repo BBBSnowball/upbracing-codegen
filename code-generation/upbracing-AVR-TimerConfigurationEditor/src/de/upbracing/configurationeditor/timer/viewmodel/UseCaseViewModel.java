@@ -474,13 +474,13 @@ public class UseCaseViewModel extends AViewModelBase {
 			text += ls;
 		
 		// Output modes:
-		if (!getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {
+		if (getComparePinModeA() != null && !getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {
 			text += ls + "=> Channel A will " + getComparePinModeA().toString().toLowerCase() + ".";
 		}
-		if (!getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
+		if (getComparePinModeB() != null && !getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
 			text += ls + "=> Channel B will " + getComparePinModeB().toString().toLowerCase() + ".";	
 		}
-		if (!getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
+		if (getComparePinModeC() != null && !getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
 			text += ls + "=> Channel C will " + getComparePinModeC().toString().toLowerCase() + "."; 
 		}
 		

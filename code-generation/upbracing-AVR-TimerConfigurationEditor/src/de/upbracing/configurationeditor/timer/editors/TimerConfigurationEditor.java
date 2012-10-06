@@ -32,19 +32,32 @@ import org.eclipse.ui.part.EditorPart;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 
-public class TimerConfigurationEditor extends EditorPart implements Listener {
+/**
+ * This is the graphical timer configuration editor, which is loaded by Eclipse.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
+public class TimerConfigurationEditor extends EditorPart {
 
-	private boolean finishedLoading = false;
-	private boolean isDirty = false;
+	private boolean finishedLoading;
+	private boolean isDirty;
 	private IFile file;
 	private ConfigurationViewModel model;
 	private Text freqText;
 	private ExpandBar bar;
 	
+	/**
+	 * Creates an editor instance.
+	 */
 	public TimerConfigurationEditor() {
 		super();
+		finishedLoading = false;
+		isDirty = false;
 	}
 
+	/**
+	 * Saves the current timer configuration.
+	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
+	 */
 	@Override
 	public void doSave(IProgressMonitor arg0) {
 		
@@ -56,11 +69,21 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		}
 	}
 
+	/**
+	 * Save As functionality is not implemented. This method does nothing.
+	 * @see org.eclipse.ui.part.EditorPart#doSaveAs()
+	 */
 	@Override
 	public void doSaveAs() {
 		// For now, no "Save As..." functionality is implemented
 	}
 
+	/**
+	 * Initializes the editor and loads the configuration file.
+	 * @param arg0 {@code IEditorSite} to display
+	 * @param arg1 {@code IEditorInput} (contains path to timer configuration file)
+	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
+	 */
 	@Override
 	public void init(IEditorSite arg0, IEditorInput arg1)
 			throws PartInitException {
@@ -78,12 +101,21 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		}
 	}
 
+	/**
+	 * Returns true, when the timer configuration has unsaved changes.
+	 * @return true, when the timer configuration has unsaved changes.
+	 * @see org.eclipse.ui.part.EditorPart#isDirty()
+	 */
 	@Override
 	public boolean isDirty() {
 		// Returns whether the file was altered...
 		return isDirty;
 	}
 	
+	/**
+	 * Sets the dirty flag of the editor window.
+	 * @param value new dirty flag
+	 */
 	public void setDirty(boolean value) {
 		if (finishedLoading) {
 			this.isDirty = value;
@@ -93,12 +125,21 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 			this.isDirty = false;
 	}
 
+	/**
+	 * Since Save As is not supported, this method always returns false.
+	 * @return false
+	 * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
+	 */
 	@Override
 	public boolean isSaveAsAllowed() {
 		// For now, no "Save As..." functionality is implemented
 		return false;
 	}
 
+	/**
+	 * Sets focus for frequency text field in the editor window.
+	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+	 */
 	@Override
 	public void setFocus() {
 		// Changing a drop-down value will make the project dirty but will
@@ -107,6 +148,16 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 		freqText.setFocus();
 	}
 	
+	/**
+	 * Creates the content of the editor window.
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
 	@Override
 	public void createPartControl(Composite arg0) {
 		
@@ -173,7 +224,20 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 			new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, m, this);
 		}
 		
-		newConfigButton.addListener(SWT.Selection, this);
+		newConfigButton.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event) {
+				// Add a new configuration to the model
+				UseCaseViewModel newModel = model.addConfiguration();
+				// Add the view for this configuration
+				ExpandItem ei = new ExpandItem(bar, SWT.NONE);
+				// The empty String is (for some strange reason)
+				// necessary to make the title appear in linux.
+				ei.setText(" ");
+				new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, getEditor());
+				// Set project status "dirty"
+				setDirty(true);
+			}
+		});
 		generateCodeButton.addListener(SWT.Selection, new Listener() {
 
 			@Override
@@ -184,12 +248,25 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 
 		this.finishedLoading = true;
 	}
-	
+
+	/**
+	 * Loads a {@code ConfigurationModel} from disk, creates a {@link ConfigurationViewModel} from it
+	 * and finally returns it.
+	 * @param path to model file
+	 * @return loaded/created {@link ConfigurationViewModel}
+	 * @throws FileNotFoundException
+	 */
 	private ConfigurationViewModel Load(String path) throws FileNotFoundException {
 		
 		return ConfigurationViewModel.Load(path);
 	}
 	
+	/**
+	 * Saves the current configuration to disk.
+	 * @param path to model file
+	 * @throws IOException if save process failed or 
+	 * eclipse failed to synchronize the file changes.
+	 */
 	private void Save(String path) throws IOException {
 		
 		// Resynchronize the file after it has been altered
@@ -205,17 +282,14 @@ public class TimerConfigurationEditor extends EditorPart implements Listener {
 			e.printStackTrace();
 		}
 	}
-
-	public void handleEvent(Event event) {
-		// Add a new configuration to the model
-		UseCaseViewModel newModel = model.addConfiguration();
-		// Add the view for this configuration
-		ExpandItem ei = new ExpandItem(bar, SWT.NONE);
-		// The empty String is (for some strange reason)
-		// necessary to make the title appear in linux.
-		ei.setText(" ");
-		new ConfigurationExpandItemComposite(bar, SWT.NONE, bar, ei, newModel, this);
-		// Set project status "dirty"
-		setDirty(true);
+	
+	/**
+	 * This method is a workaround to access this editor from
+	 * the "Add new configuration" event handler. "this" does
+	 * work in that scenario. 
+	 * @return editor instance (this)
+	 */
+	private TimerConfigurationEditor getEditor() {
+		return this;
 	}
 }

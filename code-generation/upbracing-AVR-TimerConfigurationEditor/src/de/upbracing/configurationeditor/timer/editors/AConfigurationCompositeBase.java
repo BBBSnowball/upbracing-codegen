@@ -21,6 +21,16 @@ import org.eclipse.swt.widgets.Label;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.PrescaleFactors;
 
+/**
+ * This is the base class for the bottom part of the {@link UseCaseViewModel}'s ExpandItem.<p>
+ * It consists of:<br>
+ * - Settings group (left)<br>
+ * - Summary group (right)<p>
+ * The derived classes specify the content of the settings group.<br>
+ * Summary group is databound to the {@link UseCaseViewModel}'s 
+ * "description" property.
+ * @author Peer Adelt (adelt@mail.uni-paderborn.de)
+ */
 public abstract class AConfigurationCompositeBase extends Composite {
 
 	protected TimerConfigurationEditor editor;
@@ -29,7 +39,20 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	private Group summaryGroup;
 	private ConfigurationExpandItemComposite expandItem;
 	
-	public AConfigurationCompositeBase(Composite parent, ConfigurationExpandItemComposite expandItem, int style, final TimerConfigurationEditor editor, UseCaseViewModel model) {
+	/**
+	 * Prepares an {@link AConfigurationCompositeBase} object.
+	 * @param parent parent {@code Composite} to add this instance to
+	 * @param expandItem {@code ExpandItem} for which this object provides content
+	 * @param style style passed through to {@code Composite} constructor
+	 * @param editor {@link TimerConfigurationEditor} reference, to set dirty flag, if
+	 * necessary.
+	 * @param model {@link UseCaseViewModel} to databind visual elements to
+	 */
+	public AConfigurationCompositeBase(Composite parent, 
+									   ConfigurationExpandItemComposite expandItem, 
+									   int style, 
+									   final TimerConfigurationEditor editor, 
+									   UseCaseViewModel model) {
 		super(parent, style);
 		
 		this.editor = editor;
@@ -96,11 +119,12 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		});
 	}
 	
+	/**
+	 * Returns the inner SWT settings Group.
+	 * @return SWT settings Group
+	 */
 	public Group getSettingsGroup() {
 		return settingsGroup;
-	}
-	public Group getSummaryGroup() {
-		return summaryGroup;
 	}
 	
 	protected void createTopRegisterSelection(Composite parent, Object[] choices, String choicesProperty) {
