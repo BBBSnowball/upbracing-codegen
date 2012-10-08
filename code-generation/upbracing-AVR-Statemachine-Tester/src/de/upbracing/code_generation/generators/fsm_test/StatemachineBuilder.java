@@ -1091,6 +1091,18 @@ public class StatemachineBuilder {
 			Map<Transition, String> transition_attrs) {
 		transition_attrs.put(transition, style);
 	}
+	
+	public static void exportStep(StatemachineWithWay smw, int step, String dot_file) throws IOException {
+		StateMachine sm = smw.statemachine;
+		
+		Map<State, String> state_attrs = highlight("color=red,style=bold", smw.waypoints.get(step+1));
+		highlight("color=blue,style=bold", smw.waypoints.get(step), state_attrs);
+		highlight("color=purple,style=bold", getCommonStates(smw.waypoints.get(step), smw.waypoints.get(step+1)), state_attrs);
+		Map<Transition, String> transition_attrs = highlight("color=red,style=bold", smw.transitions.get(step));
+
+		exportDot(sm, dot_file, transition_attrs, state_attrs);
+		Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
+	}
 
 	public static void main(String[] args) throws IOException {
 		int seed = 0;
