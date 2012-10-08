@@ -42,7 +42,9 @@ public class Updater {
 		convertWaitToActionsAndConditions(config);
 		
 		context.pop();
-
+		Validator val = new Validator(config, true, null);
+		val.validate();
+		
 		return null;
 	}
 
