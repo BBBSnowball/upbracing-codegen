@@ -1,6 +1,7 @@
 package de.upbracing.code_generation.generators.fsm;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import Statecharts.FinalState;
@@ -33,6 +34,7 @@ public class Validator {
 		this.after_update_config = after_update_config;
 		this.generator_data = generator_data;
 		this.messages = config.getStatemachines().getMessages();
+		initFormatters();
 	}
 
 	/**
@@ -43,6 +45,7 @@ public class Validator {
 	 */
 	public Validator(Messages messages) {
 		this.messages = messages;
+		initFormatters();
 	}
 
 	public Messages getMessages() {
@@ -54,6 +57,8 @@ public class Validator {
 	}
 
 	public boolean validate() {
+
+		@SuppressWarnings("unused")
 		boolean valid = true;
 
 		// make sure that we don't have any unexpected null values
@@ -126,27 +131,20 @@ public class Validator {
 				// look like this: "SuperState abc -> Region x -> State foo"
 
 				// statemachine validation
-//			
-				messages.addObjectFormatter(State.class, new Messages.ObjectFormatter<State>() {
+				//
 
-					@Override
-					public String format(int type, State obj) {
-						// TODO Auto-generated method stub
-						return obj.getName();
-					}
-				});
-				
 				ContextItem statemachine_context = messages.pushContext(smg);
 
 				if (!nameValidate(smg)) {
-					getNameErrorMess(smg.getName());
+					setNameErrorMess(smg.getName());
 					valid = false;
 				}
 
 				// event validation
 				else if (smg.getEvents().keySet().size() > 0) {
 					for (String event : smg.getEvents().keySet())
-						if (!evNameValidate(smg, event))
+						if (!evNameValidate(event, smg.getEvents().get(event),
+								smg))
 							valid = false;
 
 				} else if (!typeCheckAndValidate(smg.getStates(), smg))
@@ -166,6 +164,7 @@ public class Validator {
 		boolean valid = true;
 
 		for (State state : s) {
+			ContextItem state_context = messages.pushContext(state);
 
 			if (state instanceof InitialState)
 				if (!initalValidate(state, smg))
@@ -180,8 +179,6 @@ public class Validator {
 					valid = false;
 
 			if (state instanceof SuperState) {
-				ContextItem superstate_context = messages
-						.pushContext((SuperState) state);
 
 				if (!normSupValidate(state, smg))
 					valid = false;
@@ -192,8 +189,8 @@ public class Validator {
 					typeCheckAndValidate(region.getStates(), smg);
 					region_context.pop();
 				}
-				superstate_context.pop();
 			}
+			state_context.pop();
 		}
 
 		// check number of initial states for each parent
@@ -233,7 +230,7 @@ public class Validator {
 
 				if (initialcount > 1) {
 					messages.error("%s has more than 1 start states",
-							state.getName()).formatForCode(new StringBuffer());
+							state.getName());
 					valid = false;
 				}
 			}
@@ -242,6 +239,7 @@ public class Validator {
 		for (State s : states) {
 			if (s instanceof SuperState) {
 				ContextItem superstate_context = messages.pushContext(s);
+
 				for (Region region : ((SuperState) s).getRegions()) {
 					ContextItem region_context = messages.pushContext(region);
 					initialCount(region.getStates());
@@ -324,12 +322,11 @@ public class Validator {
 
 	public boolean nameValidate(StateMachineForGeneration smg) {
 		if (emptyOrNull(smg.getName())) {
-			messages.error("Statemachine name is empty or null!", smg)
-					.formatForCode(new StringBuffer());
+			messages.error("Statemachine name is empty or null!", smg);
 			return false;
 
 		} else if (!isNameValid(smg.getName())) {
-			getNameErrorMess(smg.getName());
+			setNameErrorMess(smg.getName());
 			return false;
 
 		} else
@@ -343,7 +340,7 @@ public class Validator {
 		if (emptyOrNull(name) || isNameValid(name))
 			return true;
 		else {
-			getNameErrorMess(name);
+			setNameErrorMess(smg.getName(state));
 			return false;
 		}
 	}
@@ -355,18 +352,22 @@ public class Validator {
 
 	// event name validator
 	// TODO pass Transition to this method and use it in the error message.
-	private boolean evNameValidate(StateMachineForGeneration smg, String event) {
+	private boolean evNameValidate(String event, Set<Transition> trans,
+			StateMachineForGeneration smg) {
 		if (emptyOrNull(event) || isNameValid(event))
 			return true;
 		else {
-			getNameErrorMess(event);
+			for (Transition t : trans) {
+				ContextItem transition_context = messages.pushContext(t);
+				setNameErrorMess(event);
+				transition_context.pop();
+			}
 			return false;
 		}
 	}
 
-	private void getNameErrorMess(Object name) {
-		messages.error("%s is not a valid C identifier!", name).formatForCode(
-				new StringBuffer());
+	private void setNameErrorMess(Object name) {
+		messages.error("%s is not a valid C identifier!", name);
 	}
 
 	// validate initial state transitions
@@ -376,24 +377,22 @@ public class Validator {
 		boolean valid = true;
 		for (Transition trans : state.getOutgoingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
-
+			ContextItem trans_context = messages.pushContext(trans);
+			
 			if (ti.isWaitTransition()) {
-				getTransitionErrorMessage(trans.getSource(),
-						trans.getDestination(), "waiting transition");
+				setTransitionErrorMessage("waiting transition");
 				valid = false;
 
 			} else if (!emptyOrNull(ti.getEventName())) {
-
-				getTransitionErrorMessage(trans.getSource(),
-						trans.getDestination(), "events");
+				setTransitionErrorMessage("events");
 				valid = false;
 
 			} else if (!emptyOrNull(ti.getCondition())) {
-
-				getTransitionErrorMessage(trans.getSource(),
-						trans.getDestination(), "conditions");
+				setTransitionErrorMessage("conditions");
 				valid = false;
 			}
+			
+			trans_context.pop();
 		}
 		return valid;
 	}
@@ -405,25 +404,26 @@ public class Validator {
 		boolean valid = true;
 		for (Transition trans : state.getIncomingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
-
+			ContextItem trans_context = messages.pushContext(trans);
+			
 			if (!(trans.getSource() instanceof InitialState)) {
 				if (!emptyOrNull(ti.getCondition())
 						|| !emptyOrNull(ti.getEventName())) {
 
 					if (ti.getWaitType() == "wait")
 
-						getTransitionErrorMessage(trans.getSource(),
-								trans.getDestination(), "waitType wait");
+						setTransitionErrorMessage("waitType wait");
 					valid = false;
 
 				} else if (ti.getWaitType() == "before") {
 					if (ti.getCondition().isEmpty()
 							&& ti.getEventName().isEmpty())
 
-						getTransitionErrorMessage(trans.getSource(),
-								trans.getDestination(), "no condition/event");
+						setTransitionErrorMessage("no condition/event");
 					valid = false;
 				}
+				
+				trans_context.pop();
 			}
 		}
 		return valid;
@@ -435,9 +435,11 @@ public class Validator {
 		boolean hasincoming = true;
 
 		if (state.getIncomingTransitions().size() != 0) {
-			for (Transition trans : state.getIncomingTransitions())
-				getTransitionErrorMessage(trans.getSource(),
-						trans.getDestination(), "no incoming");
+			for (Transition trans : state.getIncomingTransitions()) {
+				ContextItem trans_context = messages.pushContext(trans);
+				setTransitionErrorMessage("no incoming");
+				trans_context.pop();
+			}
 		} else
 			hasincoming = false;
 
@@ -450,7 +452,7 @@ public class Validator {
 		boolean hasoutgoing = true;
 
 		if (state.getOutgoingTransitions().size() > 1) {
-			getStateTransitionError("more than 1 outgoing");
+			setStateTransitionError("more than 1 outgoing");
 			hasoutgoing = false;
 		}
 		return hasoutgoing;
@@ -461,7 +463,7 @@ public class Validator {
 		boolean outgoing = false;
 
 		if (state.getOutgoingTransitions().size() != 0) {
-			getStateTransitionError("outgoing");
+			setStateTransitionError("outgoing");
 			outgoing = true;
 		}
 		return outgoing;
@@ -473,19 +475,101 @@ public class Validator {
 		boolean incoming = true;
 
 		if (state.getIncomingTransitions().size() == 0) {
-			getStateTransitionError("no incoming");
+			setStateTransitionError("no incoming");
 			incoming = false;
 		}
 		return incoming;
 	}
 
-	private void getTransitionErrorMessage(Object... args) {
-		messages.error(" Transition -> Source : %s Destination %s has %s!",
-				args).formatForCode(new StringBuffer());
+	private void setTransitionErrorMessage(Object... args) {
+		messages.error("Transition has %s!", args);
 	}
 
-	private void getStateTransitionError(String s) {
-		messages.error(" State has %s transitions!", s).formatForCode(
-				new StringBuffer());
+	private void setStateTransitionError(String s) {
+		messages.error(" State has %s transitions!", s);
+	}
+
+	private void initFormatters() {
+		messages.addObjectFormatter(StateMachineForGeneration.class,
+				new Messages.ObjectFormatter<StateMachineForGeneration>() {
+					public String format(int type, StateMachineForGeneration obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " StateMachine -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(InitialState.class,
+				new Messages.ObjectFormatter<InitialState>() {
+					public String format(int type, InitialState obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Start State -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(FinalState.class,
+				new Messages.ObjectFormatter<FinalState>() {
+					public String format(int type, FinalState obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Final State -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(NormalState.class,
+				new Messages.ObjectFormatter<NormalState>() {
+					public String format(int type, NormalState obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Normal State -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(NormalState.class,
+				new Messages.ObjectFormatter<NormalState>() {
+					public String format(int type, NormalState obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Normal State -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(SuperState.class,
+				new Messages.ObjectFormatter<SuperState>() {
+					public String format(int type, SuperState obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Super State -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(Region.class,
+				new Messages.ObjectFormatter<Region>() {
+					public String format(int type, Region obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " Region -> " + obj.getName();
+
+					}
+				});
+
+		messages.addObjectFormatter(Transition.class,
+				new Messages.ObjectFormatter<Transition>() {
+					public String format(int type, Transition obj) {
+						if (type == SHORT)
+							return "from State " + obj.getSource();
+						else
+							return " Transition: Source -> " + obj.getSource()
+									+ " Destination -> " + obj.getDestination();
+					}
+				});
 	}
 }
