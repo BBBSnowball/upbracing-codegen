@@ -1,0 +1,51 @@
+
+
+#error There were 7 warnings and/or errors
+/*
+ERROR: %state is not a valid C identifier!
+	in  StateMachine -> test
+ERROR: st_ate- is not a valid C identifier!
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+ERROR:  state is not a valid C identifier!
+	in  Region -> region_1
+	in  Super State -> super_1
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+ERROR: 2state is not a valid C identifier!
+	in  Region -> region_1
+	in  Super State -> super_1
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+ERROR: st ate is not a valid C identifier!
+	in  Region -> region_2
+	in  Super State -> super_2
+	in  Region -> region_1
+	in  Super State -> super_1
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+ERROR: st\ate is not a valid C identifier!
+	in  Region -> region_3
+	in  Super State -> super_3
+	in  Region -> region_2
+	in  Super State -> super_2
+	in  Region -> region_1
+	in  Super State -> super_1
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+ERROR: state$ is not a valid C identifier!
+	in  Region -> region_3
+	in  Super State -> super_3
+	in  Region -> region_2
+	in  Super State -> super_2
+	in  Region -> region_1
+	in  Super State -> super_1
+	in  Region -> region_0
+	in  Super State -> super_0
+	in  StateMachine -> test
+*/

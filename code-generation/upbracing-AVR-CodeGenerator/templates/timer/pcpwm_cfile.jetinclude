@@ -18,15 +18,17 @@ void timer_<%=m.getName()%>_init(void) {
     %>
 	// Input Capture Register (Top) -> <%=m.getIcrPeriod()%>s
 	ICR<%=m.getTimer().ordinal()%> = <%=validator.calculateRegisterValue(m.getIcrPeriod())%>;<% 
-	} %>
+	} 
+	if (validator.calculateRegisterValue(m.getOcrAPeriod()) != -1) { %>
 	// Output Compare Register A <% if (m.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA)) { %>(Top)<% } %> -> <%=m.getOcrAPeriod()%>s
-	OCR<%=m.getTimer().ordinal()%>A = <%=validator.calculateRegisterValue(m.getOcrAPeriod())%>;<%
+	OCR<%=m.getTimer().ordinal()%>A = <%=validator.calculateRegisterValue(m.getOcrAPeriod())%>;<% }
     if (m.getTimer().equals(TimerEnum.TIMER1) || m.getTimer().equals(TimerEnum.TIMER3)) {
-	%>
+	if (validator.calculateRegisterValue(m.getOcrBPeriod()) != -1) { %>
 	// Output Compare Register B -> <%=m.getOcrBPeriod()%>s
-	OCR<%=m.getTimer().ordinal()%>B = <%=validator.calculateRegisterValue(m.getOcrBPeriod())%>;
+	OCR<%=m.getTimer().ordinal()%>B = <%=validator.calculateRegisterValue(m.getOcrBPeriod())%>; <% }
+	if (validator.calculateRegisterValue(m.getOcrCPeriod()) != -1) { %>
 	// Output Compare Register C -> <%=m.getOcrCPeriod()%>s
-	OCR<%=m.getTimer().ordinal()%>C = <%=validator.calculateRegisterValue(m.getOcrCPeriod())%>;<% 
+	OCR<%=m.getTimer().ordinal()%>C = <%=validator.calculateRegisterValue(m.getOcrCPeriod())%>;<% }
 	} %>
 	<% 
 	/* PIN MODES */
