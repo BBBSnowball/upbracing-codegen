@@ -57,9 +57,11 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 			// parse actions
 			smg.update();
 			
-			if (i == 0) {
+			if (i == 2) {
 				try {
-					StatemachineBuilder.exportStep(smw, 0, "smw_" + seed + "_step" + 0 + ".dot");
+					int step = 10;
+					boolean ignore_other_states = true;
+					StatemachineBuilder.exportStep(smw, step, "smw_" + seed + "_step" + step + ".dot", ignore_other_states);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
