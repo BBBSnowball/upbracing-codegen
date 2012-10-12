@@ -3,11 +3,9 @@
  *
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
- */ 
-//#include "Os.h"
-#include "Platform_Types.h"
-#include "Os_config.h"
-#include "Os_cfg_application.h"
+ */
+#include "datatypes/Platform_Types.h"
+#include "config/Os_config.h"
 
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
@@ -57,7 +55,7 @@ typedef struct {
 #define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
 #define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), OS_NUMBER_OF_TCBS_DEFINE, 0, 0, (queue_capacity) } }
+		{ { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
 #define SEMAPHORE(sem, initial_value, queue_capacity) \
 		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
@@ -88,7 +86,7 @@ typedef struct Semaphore_n{
 
 #define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
 	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), OS_NUMBER_OF_TCBS_DEFINE, 0, 0, (queue_capacity) } }
+		= { { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
 #define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
 
 /* Synchronous wait and signal */

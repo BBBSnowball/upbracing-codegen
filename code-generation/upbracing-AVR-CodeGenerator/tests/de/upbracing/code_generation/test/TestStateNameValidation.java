@@ -2,7 +2,6 @@ package de.upbracing.code_generation.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -23,8 +22,7 @@ public class TestStateNameValidation {
 	Validator validate = new Validator(messages);
 	
 	@Test
-	public void testNameValidate() throws IOException {
-		// TODO We should use them in some tests.
+	public void testNameValidate() {
 		StateMachine statemachine = JRubyHelpers.getStatemachineFactory()
 				.createStateMachine();
 
@@ -90,7 +88,6 @@ public class TestStateNameValidation {
 
 		StateMachineForGeneration smg = new StateMachineForGeneration("test",
 				statemachine);
-
 
 		ContextItem statm_context = messages.pushContext(smg);
 		evaluteNormalStates(smg.getStates(), smg);

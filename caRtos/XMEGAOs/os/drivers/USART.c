@@ -6,8 +6,8 @@
  */ 
 
 #include <avr/interrupt.h>
+#include "internal/Os_Task.h"
 #include "USART.h"
-#include "Os.h"
 
 // This is the queue for the USART Transmit buffer
 // Name: usart

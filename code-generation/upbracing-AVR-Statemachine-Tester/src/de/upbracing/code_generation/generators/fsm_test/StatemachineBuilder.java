@@ -568,6 +568,10 @@ public class StatemachineBuilder {
 				// apply the transitions to find the next waypoint
 				waypoint = applyTransitions(waypoint, activation);
 				
+				//DEBUG
+				if (!(waypoint.active_state.getParent() instanceof StateMachine))
+					throw new RuntimeException("waypoint should be for the whole statemachine!");
+				
 				// add it to the lists
 				waypoints.add(waypoint);
 				transitions.add(activation);
@@ -775,11 +779,16 @@ public class StatemachineBuilder {
 				Waypoint updated_child = applyTransitions(child, activation);
 				
 				if (updated_child.active_state.getParent() != child.active_state.getParent()) {
-					// This transition has led us outside of this state. Therefore, all the states that
-					// we may have entered here, have been left now.
-					//TODO We should still make sure that those states have been entered briefly. We have
-					//      to pass that information to the tests in some way.
-					return updated_child;
+					if (isParentOf(child.active_state.getParent(), updated_child.active_state.getParent())) {
+						// supply missing parents and return it
+						updated_child = copyLayersUpTo(updated_child, child);
+					} else {
+						// This transition has led us outside of this state. Therefore, all the states that
+						// we may have entered here, have been left now.
+						//TODO We should still make sure that those states have been entered briefly. We have
+						//      to pass that information to the tests in some way.
+						return updated_child;
+					}
 				}
 				
 				updated_children.add(updated_child);
@@ -939,24 +948,37 @@ public class StatemachineBuilder {
 	    resource.getContents().add(sm);
 	    resource.save(Collections.emptyMap());
 	}
+	
+	public interface ExportFilter {
+		boolean include(State state);
+		boolean include(Transition transition);
+	}
 
 	private static void exportDot(StateMachine sm, String filename,
 			Map<Transition, String> transition_attrs, Map<State, String> state_attrs) throws FileNotFoundException {
+		exportDot(sm, filename, transition_attrs, state_attrs, null);
+	}
+
+	private static void exportDot(StateMachine sm, String filename,
+			Map<Transition, String> transition_attrs, Map<State, String> state_attrs, ExportFilter filter) throws FileNotFoundException {
 		PrintStream w = new PrintStream(filename);
 		w.println("digraph mygraph {");
 		
 		for (State state : sm.getStates())
-			exportDot(w, "\t", state, state_attrs);
+			exportDot(w, "\t", state, state_attrs, filter);
 		
 		for (Transition t : sm.getTransitions())
-			exportDot(w, "\t", t, transition_attrs);
+			exportDot(w, "\t", t, transition_attrs, filter);
 		
 		w.println("}");
 		w.close();
 	}
 
 	private static void exportDot(PrintStream w, String indent, State state,
-			Map<State, String> state_attrs) {
+			Map<State, String> state_attrs, ExportFilter filter) {
+		if (filter != null && !filter.include(state))
+			return;
+			
 		String statename = getStateNameForDot(state);
 		String style = state_attrs.get(state);
 		
@@ -975,7 +997,7 @@ public class StatemachineBuilder {
 				w.println(indent + "\tstyle=dashed;");
 				
 				for (State child : region.getStates())
-					exportDot(w, indent+"\t\t", child, state_attrs);
+					exportDot(w, indent+"\t\t", child, state_attrs, filter);
 				
 				w.println(indent + "\t}");
 			}
@@ -995,7 +1017,10 @@ public class StatemachineBuilder {
 	}
 
 	private static void exportDot(PrintStream w, String indent, Transition transition,
-			Map<Transition, String> transition_attrs) {
+			Map<Transition, String> transition_attrs, ExportFilter filter) {
+		if (filter != null && (!filter.include(transition) || !filter.include(transition.getSource()) || !filter.include(transition.getDestination())))
+			return;
+		
 		String style = transition_attrs.get(transition);
 		String source = getStateNameForDot(transition.getSource());
 		String destination = getStateNameForDot(transition.getDestination());
@@ -1091,16 +1116,32 @@ public class StatemachineBuilder {
 			Map<Transition, String> transition_attrs) {
 		transition_attrs.put(transition, style);
 	}
-	
+
 	public static void exportStep(StatemachineWithWay smw, int step, String dot_file) throws IOException {
+		exportStep(smw, step, dot_file, false);
+	}
+	
+	public static void exportStep(StatemachineWithWay smw, int step, String dot_file, boolean ignore_other_states) throws IOException {
 		StateMachine sm = smw.statemachine;
 		
-		Map<State, String> state_attrs = highlight("color=red,style=bold", smw.waypoints.get(step+1));
+		final Map<State, String> state_attrs = highlight("color=red,style=bold", smw.waypoints.get(step+1));
 		highlight("color=blue,style=bold", smw.waypoints.get(step), state_attrs);
 		highlight("color=purple,style=bold", getCommonStates(smw.waypoints.get(step), smw.waypoints.get(step+1)), state_attrs);
 		Map<Transition, String> transition_attrs = highlight("color=red,style=bold", smw.transitions.get(step));
+		
+		ExportFilter filter = new ExportFilter() {
+			@Override
+			public boolean include(Transition transition) {
+				return true;
+			}
+			
+			@Override
+			public boolean include(State state) {
+				return state_attrs.containsKey(state);
+			}
+		};
 
-		exportDot(sm, dot_file, transition_attrs, state_attrs);
+		exportDot(sm, dot_file, transition_attrs, state_attrs, filter);
 		Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
 	}
 
