@@ -1,5 +1,7 @@
 package de.upbracing.shared.timer.model;
 
+import java.util.ArrayList;
+
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
@@ -17,10 +19,10 @@ import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 public class UseCaseModel {
 	
 	// Private Fields (General):
-	private String name = "default";
-	private TimerOperationModes mode = TimerOperationModes.OVERFLOW;
-	private TimerEnum timer = TimerEnum.TIMER0;
-	private PrescaleFactors prescale = PrescaleFactors.ONE;
+	private String name;
+	private TimerOperationModes mode;
+	private TimerEnum timer;
+	private PrescaleFactors prescale;
 	private double icrPeriod;
 	private double ocrAPeriod;
 	private double ocrBPeriod;
@@ -30,7 +32,7 @@ public class UseCaseModel {
 	private boolean overflowInterrupt;
 	
 	// Private Fields (CTC):
-	private CTCTopValues ctcTop = CTCTopValues.ICR;
+	private CTCTopValues ctcTop;
 	private boolean compareInterruptA;
 	private boolean compareInterruptB;
 	private boolean compareInterruptC;
@@ -39,15 +41,40 @@ public class UseCaseModel {
 	private CTCOutputPinMode comparePinModeC;
 	
 	// Private Fields (PWM):
-	private PWMTopValues fastPWMTop = PWMTopValues.BIT8;	
-	private PWMTopValues phaseCorrectPWMTop = PWMTopValues.BIT8;
-	private PhaseAndFrequencyCorrectPWMTopValues phaseAndFrequencyCorrectPWMTop = PhaseAndFrequencyCorrectPWMTopValues.ICR;
+	private PWMTopValues fastPWMTop;	
+	private PWMTopValues phaseCorrectPWMTop;
+	private PhaseAndFrequencyCorrectPWMTopValues phaseAndFrequencyCorrectPWMTop;
 	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeA;
 	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeB;
 	private PWMSingleSlopeOutputPinMode singleSlopePWMPinModeC;
 	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeA;
 	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeB;
 	private PWMDualSlopeOutputPinMode dualSlopePWMPinModeC;
+	
+	// Constructor:
+	/**
+	 * Creates a new instance of this class.
+	 */
+	public UseCaseModel() {
+		// Set default values:
+		name = "newTimerConfiguration";
+		mode = TimerOperationModes.OVERFLOW;
+		timer = TimerEnum.TIMER0;
+		prescale = PrescaleFactors.ONE;
+		ctcTop = CTCTopValues.OCRnA;
+		fastPWMTop = PWMTopValues.BIT8;
+		phaseCorrectPWMTop = PWMTopValues.BIT8;
+		phaseAndFrequencyCorrectPWMTop = PhaseAndFrequencyCorrectPWMTopValues.OCRnA;
+		comparePinModeA = CTCOutputPinMode.NORMAL;
+		comparePinModeB = CTCOutputPinMode.NORMAL;
+		comparePinModeC = CTCOutputPinMode.NORMAL;
+		singleSlopePWMPinModeA = PWMSingleSlopeOutputPinMode.NORMAL;
+		singleSlopePWMPinModeB = PWMSingleSlopeOutputPinMode.NORMAL;
+		singleSlopePWMPinModeC = PWMSingleSlopeOutputPinMode.NORMAL;
+		dualSlopePWMPinModeA = PWMDualSlopeOutputPinMode.NORMAL;
+		dualSlopePWMPinModeB = PWMDualSlopeOutputPinMode.NORMAL;
+		dualSlopePWMPinModeC = PWMDualSlopeOutputPinMode.NORMAL;
+	}
 	
 	// Public Getters (General):
 	/**
