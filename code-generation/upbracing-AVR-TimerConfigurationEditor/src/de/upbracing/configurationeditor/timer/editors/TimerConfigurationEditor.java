@@ -1,7 +1,6 @@
 package de.upbracing.configurationeditor.timer.editors;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
@@ -35,10 +33,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 
 import de.upbracing.code_generation.ITemplate;
-import de.upbracing.code_generation.TimerCFileTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.generators.TimerGenerator;
-import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.eculist.ECUDefinition;
