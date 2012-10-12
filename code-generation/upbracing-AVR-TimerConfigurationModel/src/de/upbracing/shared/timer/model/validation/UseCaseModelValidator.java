@@ -752,16 +752,16 @@ public class UseCaseModelValidator extends AValidatorBase {
 		if (model.getMode().equals(TimerOperationModes.CTC))
 		{
 			if (model.getCtcTop().equals(CTCTopValues.ICR))
-				return model.getIcrPeriod();
+				return calculateQuantizedPeriod(model.getIcrPeriod());
 			if (model.getCtcTop().equals(CTCTopValues.OCRnA))
-				return model.getOcrAPeriod();
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
 		}
 		if (model.getMode().equals(TimerOperationModes.PWM_FAST))
 		{
 			if (model.getFastPWMTop().equals(PWMTopValues.ICR))
-				return model.getIcrPeriod();
+				return calculateQuantizedPeriod(model.getIcrPeriod());
 			if (model.getFastPWMTop().equals(PWMTopValues.OCRnA))
-				return model.getOcrAPeriod();
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
 			if (model.getFastPWMTop().equals(PWMTopValues.BIT8))
 				return calculatePeriodForRegisterValue(255);
 			if (model.getFastPWMTop().equals(PWMTopValues.BIT9))
@@ -772,9 +772,9 @@ public class UseCaseModelValidator extends AValidatorBase {
 		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
 		{
 			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
-				return model.getIcrPeriod();
+				return calculateQuantizedPeriod(model.getIcrPeriod());
 			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
-				return model.getOcrAPeriod();
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
 			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
 				return calculatePeriodForRegisterValue(255);
 			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT9))
@@ -785,9 +785,9 @@ public class UseCaseModelValidator extends AValidatorBase {
 		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
 		{
 			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
-				return model.getIcrPeriod();
+				return calculateQuantizedPeriod(model.getIcrPeriod());
 			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
-				return model.getOcrAPeriod();
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
 		}
 		
 		return 0.0;
