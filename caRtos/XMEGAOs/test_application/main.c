@@ -8,7 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "OSEK.h"
+#include "Os.h"
 
 volatile uint8_t j = 10;
 

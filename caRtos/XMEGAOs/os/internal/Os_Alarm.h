@@ -8,7 +8,7 @@
 #ifndef OS_ALARM_H_
 #define OS_ALARM_H_
 
-#include "Os_AlarmTypes.h"
+#include "datatypes/Os_AlarmTypes.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  RunAlarm                                                  //

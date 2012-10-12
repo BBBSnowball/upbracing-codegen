@@ -3,10 +3,9 @@
  *
  * Created: 16-Jul-12 7:19:01 PM
  *  Author: Krishna (s.krishna1989@gmail.com)
- */ 
-#include "Os.h"
-#include "semaphore.h"
-#include "Platform_Types.h"
+ */
+#include "datatypes/Platform_Types.h"
+#include "semaphores/semaphore.h"
 
 #ifndef QUEUE_H_
 #define QUEUE_H_
@@ -128,6 +127,6 @@ sem_token_t _queue_start_wait(Semaphore* sem);
 bool _queue_continue_wait(Semaphore* sem, sem_token_t token);
 
 #define queue_stop_wait(que, token) _queue_stop_wait(QUEUE_SEM_REF(que), token)
-_queue_stop_wait(Semaphore* sem, sem_token_t token);
+void _queue_stop_wait(Semaphore* sem, sem_token_t token);
 
 #endif /* QUEUE_H_ */
