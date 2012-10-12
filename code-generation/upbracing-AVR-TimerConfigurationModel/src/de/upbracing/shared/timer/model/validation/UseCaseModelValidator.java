@@ -320,17 +320,18 @@ public class UseCaseModelValidator extends AValidatorBase {
 	public String getOcrAPeriodErrorText() {
 		if (getOcrAPeriodError() == ValidationResult.ERROR)
 			return getPeriodTooHighErrorText(model.getOcrAPeriod());
+		
+		// Check, if greater or equal top value period
+		if (!isOcrATopRegister()) 
+		{
+			// Furthermore, this test is unnecessary, if this is the TOP value register
+			if (model.getOcrAPeriod() > getTopPeriod())
+				return getPeriodAboveTopValueWarningText(model.getOcrAPeriod());
+		}
+		
 		if (getOcrAPeriodError() == ValidationResult.WARNING) 
 		{
-			// Check, if greater or equal top value period
-			if (!isOcrATopRegister()) 
-			{
-				// Furthermore, this test is unnecessary, if this is the TOP value register
-				if (model.getOcrAPeriod() > getTopPeriod())
-					return getPeriodAboveTopValueWarningText(model.getOcrAPeriod());
-			}
-			else
-				return "The desired period " + formatPeriod(model.getOcrAPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrAPeriod())) + ".";
+			return "The desired period " + formatPeriod(model.getOcrAPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrAPeriod())) + ".";
 		}
 		return "";
 	}
@@ -516,7 +517,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		int registerValue = (int) Math.floor((period / timerPeriod) + 0.5d) - 1;
 		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)
 				|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
-			registerValue = (int) Math.floor((period / (2 * timerPeriod)) + 0.5d) - 1;
+			registerValue = (int) Math.floor(((period * frequency) / (2 * prescale)) + 0.5d);
 		
 		return registerValue;
 	}
@@ -528,7 +529,8 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 */
 	public double calculateQuantizedPeriod(double period) {
 		int regValue = calculateRegisterValue(period);
-		return calculatePeriodForRegisterValue(regValue);
+		double quantizedValue = calculatePeriodForRegisterValue(regValue);
+		return quantizedValue;
 	}
 
 	/**
@@ -610,10 +612,13 @@ public class UseCaseModelValidator extends AValidatorBase {
 		double timerFreq = ((double) frequency / (double) prescale);
 		
 		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)
-				|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
-			return (2 * (registerValue + 1)) / timerFreq;
+				|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) 
+		{
+			double dualSlopePeriod = (double) (2 * registerValue * prescale) / frequency;
+			return dualSlopePeriod;
+		}
 		else
-			return (registerValue + 1) / timerFreq;
+			return (double) (registerValue + 1) / timerFreq;
 	}
 	
 	private int getMaximumValue() {
