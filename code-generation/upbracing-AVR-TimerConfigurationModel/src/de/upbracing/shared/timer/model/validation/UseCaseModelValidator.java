@@ -122,7 +122,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return ValidationResult.ERROR;
 		
 		// Check, if greater or equal top value period
-		if (model.getOcrBPeriod() > getTopPeriod())
+		if (model.getOcrCPeriod() > getTopPeriod())
 			return ValidationResult.WARNING;
 		
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrCPeriod());
@@ -674,7 +674,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		if (isOcrATopRegister())
 			topReg = "OCRnA: ";
 		
-		return "The desired period " + formatPeriod(period) + " is smaller than the top period value "
+		return "The desired period " + formatPeriod(period) + " is longer than the top period value "
 				+ "(" + topReg + formatPeriod(getTopPeriod()) + ").";
 	}
 	
