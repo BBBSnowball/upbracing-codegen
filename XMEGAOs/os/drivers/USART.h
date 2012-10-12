@@ -9,7 +9,7 @@
 #ifndef USART_H_
 #define USART_H_
 
-#include "queue.h"
+#include "IPC/queue.h"
 
 void USARTInit(uint16_t ubrr_value);
 void USARTEnqueue(uint8_t length, const char * text);

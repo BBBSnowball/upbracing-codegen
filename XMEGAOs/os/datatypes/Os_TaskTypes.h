@@ -17,6 +17,7 @@
 // Assumption: no more than 256 tasks
 // TaskType (just the id)
 typedef uint8_t TaskType;
+#define OS_TASKTYPE_MAX 0xff
 
 // TaskRefType
 typedef TaskType * TaskRefType;

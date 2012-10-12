@@ -9,8 +9,8 @@
 #ifndef OS_TASK_H_
 #define OS_TASK_H_
 
-#include "Os_StatusTypes.h"
-#include "Os_TaskTypes.h"
+#include "datatypes/Os_StatusTypes.h"
+#include "datatypes/Os_TaskTypes.h"
 
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];

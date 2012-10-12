@@ -7,7 +7,7 @@
 
 #include "config/Os_config.h"
 #include "Os.h"
-#include "Timer.h"
+#include "drivers/Timer.h"
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
