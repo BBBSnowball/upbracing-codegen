@@ -2,9 +2,12 @@ package de.upbracing.configurationeditor.timer.editors;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -29,8 +32,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 
+import de.upbracing.code_generation.ITemplate;
+import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.generators.TimerGenerator;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
+import de.upbracing.eculist.ECUDefinition;
 
 /**
  * This is the graphical timer configuration editor, which is loaded by Eclipse.
@@ -194,13 +201,14 @@ public class TimerConfigurationEditor extends EditorPart {
 		Button newConfigButton = new Button(arg0, SWT.BORDER);
 		newConfigButton.setText("Add new configuration");
 		GridData d = new GridData();
+		d.grabExcessHorizontalSpace = true;
 		d.horizontalAlignment = SWT.RIGHT;
 		newConfigButton.setLayoutData(d);
 		
 		// Generate Code Button
-		Button generateCodeButton = new Button(arg0, SWT.BORDER);
+		final Button generateCodeButton = new Button(arg0, SWT.BORDER);
 		generateCodeButton.setText("Generate Code");
-		generateCodeButton.setEnabled(false);
+		generateCodeButton.setEnabled(true);
 		d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
 		generateCodeButton.setLayoutData(d);
@@ -242,6 +250,39 @@ public class TimerConfigurationEditor extends EditorPart {
 
 			@Override
 			public void handleEvent(Event arg0) {
+				MCUConfiguration mcu = new MCUConfiguration();
+				mcu.setEcus(new ArrayList<ECUDefinition>());
+				
+				mcu.setTimerConfig(model.getModel());
+				
+				TimerGenerator gen = new TimerGenerator();
+				ITemplate cTemp = gen.getFiles().get("timer.c");
+				ITemplate hTemp = gen.getFiles().get("timer.h");
+				String cFileContents = cTemp.generate(mcu, null);
+				String headerContents = hTemp.generate(mcu, null);
+				
+				String pathPrefix = ((IPath) file.getRawLocation().clone()).removeLastSegments(1).toOSString();
+				if (pathPrefix != null) {
+					// Write out both files:
+					try {
+						PrintWriter w = new PrintWriter(pathPrefix + "/timer.c");
+						w.print(cFileContents);
+						w.flush();
+						w.close();
+						w = new PrintWriter(pathPrefix + "/timer.h");
+						w.print(headerContents);
+						w.flush();
+						w.close();
+						file.getParent().refreshLocal(1, null);
+					} catch (FileNotFoundException e) {
+						// TODO Give useful error message here!
+						e.printStackTrace();
+					} catch (CoreException e) {
+						// TODO Handle refresh error
+						e.printStackTrace();
+					}
+				}
+				
 //				CodeGenerator gen = new CodeGenerator(model.getModel());
 //				gen.generateCode("/Users/peer/timertest", "/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/code-generation/upbracing-AVR-TimerConfigurationEditor/templates/");
 			}});

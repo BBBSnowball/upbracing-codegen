@@ -191,7 +191,7 @@ public class MCUConfiguration {
 	 * 
 	 * @return the config object
 	 */
-	public ConfigurationModel getTimer() {
+	public ConfigurationModel getTimerConfig() {
 		return timer;
 	}
 
@@ -237,12 +237,21 @@ public class MCUConfiguration {
 	}
 	
 	/**
-	 * Loads the timer configuration for this MCU
+	 * Loads the timer configuration for this MCU from disk
 	 * 
 	 * @param path to configuration file
 	 * @throws FileNotFoundException
 	 */
 	public void loadTimerConfiguration(String path) throws FileNotFoundException {
 		timer = ConfigurationModel.Load(path);
+	}
+	
+	/** 
+	 * Sets the timer configuration for this MCU
+	 * 
+	 * @param m new configuration model
+	 */
+	public void setTimerConfig(ConfigurationModel m) {
+		timer = m;
 	}
 }

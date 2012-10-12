@@ -593,8 +593,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		List<StateWithActions> parents = new LinkedList<StateWithActions>();
 		StateScope state2 = state;
 		while (state2 != null && state2 != common_parent) {
-			if (state instanceof StateWithActions)
-				parents.add((StateWithActions)state);
+			if (state2 instanceof StateWithActions)
+				parents.add((StateWithActions)state2);
 			
 			state2 = state2.getParent();
 		}

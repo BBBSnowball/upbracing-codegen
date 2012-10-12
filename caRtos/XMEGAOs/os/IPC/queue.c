@@ -2,7 +2,7 @@
  * queue.c
  *
  * Created: 16-Jul-12 7:20:31 PM
- *  Author: Krishna
+ *  Author: Krishna (s.krishna1989@gmail.com)
  */ 
 #include "queue.h"
 #include "semaphore.h"
@@ -21,6 +21,7 @@ void _queue_enqueue(Queue* q, uint8_t data )
 	if (q->queue_end == q->capacity)
 		q->queue_end = 0;
 	q->occupied++;
+	
 }
 
 
@@ -33,6 +34,8 @@ void _queue_enqueue(Queue* q, uint8_t data )
 void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 {
 	uint8_t i;
+	
+	
 	for (i=0;i<bytes;i++)
 	{
 		q->q_queue[q->queue_end] = data[i];
@@ -43,6 +46,8 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 	q->occupied = q->occupied + bytes;
 }
 
+
+
 /*	@brief	Returns data from the queue.
 
 	@return				First data in the queue
@@ -51,6 +56,8 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 void _queue_dequeue(Queue* q, uint8_t* output)
 {
 	uint8_t ret;
+	
+	
 	ret = q->q_queue[q->queue_front];
 	q->queue_front = (q->queue_front==(q->capacity-1))? 0 : q->queue_front +1;
 	q->occupied--;
@@ -67,10 +74,11 @@ void _queue_dequeue(Queue* q, uint8_t* output)
 void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out )
 {
 	uint8_t i;
+	
 	for (i=0;i<bytes;i++)
 	{
 		data_out[i] = q->q_queue[q->queue_front];
-		q->queue_front = (q->queue_front==q->capacity)? 0 : q->queue_front +1;
+		q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
 	}
 	q->occupied = q->occupied - bytes;
 }
@@ -152,9 +160,9 @@ bool _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token
 	
 	The token must not be used after this.
 */
-void _queue_stop_wait_data_available(Semaphore_n* sem , sem_token_t token )
+void _queue_stop_wait_data_available(Semaphore_n* sem , uint8_t n, sem_token_t token )
 {
-	_sem_start_wait_n(sem, token);
+	_sem_stop_wait_n(sem, n, token);
 	
 }
 
@@ -202,9 +210,24 @@ bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t t
 	
 	The token must not be used after this.
 */
-void _queue_stop_wait_data_free_space(Semaphore_n* sem , sem_token_t token )
+void _queue_stop_wait_data_free_space(Semaphore_n* sem , uint8_t n, sem_token_t token )
 {
-	_sem_stop_wait_n(sem,token);
+	_sem_stop_wait_n(sem, n, token);
+}
+
+sem_token_t _queue_start_wait( Semaphore* sem )
+{
+	return _sem_start_wait(sem);
+}
+
+bool _queue_continue_wait( Semaphore* sem, sem_token_t token )
+{
+	return _sem_continue_wait(sem,token);
+}
+
+ _queue_stop_wait( Semaphore* sem, sem_token_t token )
+{
+	_sem_stop_wait(sem,token);
 }
 
 

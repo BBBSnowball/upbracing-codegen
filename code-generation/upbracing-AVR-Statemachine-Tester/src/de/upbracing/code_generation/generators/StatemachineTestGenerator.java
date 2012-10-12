@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.generators;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,14 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 			
 			// parse actions
 			smg.update();
+			
+			if (i == 0) {
+				try {
+					StatemachineBuilder.exportStep(smw, 0, "smw_" + seed + "_step" + 0 + ".dot");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		return ways;

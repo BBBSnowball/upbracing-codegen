@@ -19,10 +19,10 @@ public class TimerGenerator extends AbstractGenerator {
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
 		// if we don't have a model, there is nothing to do
-		if (config.getTimer() == null)
+		if (config.getTimerConfig() == null)
 			return true;
 		
-		ConfigurationModelValidator modelValidator = new ConfigurationModelValidator(config.getTimer());
+		ConfigurationModelValidator modelValidator = new ConfigurationModelValidator(config.getTimerConfig());
 		
 		// 1) Check UseCaseModel Container (ConfigurationModel)
 		if (modelValidator.validate().equals(ValidationResult.ERROR)) {
@@ -32,9 +32,9 @@ public class TimerGenerator extends AbstractGenerator {
 		
 		// 2) Check each UseCaseConfiguration 
 		ArrayList<UseCaseModel> faultyModels = new ArrayList<UseCaseModel>();		
-		for (UseCaseModel m: config.getTimer().getConfigurations()) {
+		for (UseCaseModel m: config.getTimerConfig().getConfigurations()) {
 
-			UseCaseModelValidator ucValidator = new UseCaseModelValidator(config.getTimer(), m);
+			UseCaseModelValidator ucValidator = new UseCaseModelValidator(config.getTimerConfig(), m);
 			if (ucValidator.validate().equals(ValidationResult.ERROR)) {
 				// This is not really a showstopper, but the user should be warned,
 				// that this particular UseCaseConfiguration cannot be generated.
@@ -46,7 +46,7 @@ public class TimerGenerator extends AbstractGenerator {
 		
 		// Remove the faulty models from code generation process (Part 2)
 		for (UseCaseModel m: faultyModels) {
-			config.getTimer().getConfigurations().remove(m);
+			config.getTimerConfig().getConfigurations().remove(m);
 		}
 		
 		return true;

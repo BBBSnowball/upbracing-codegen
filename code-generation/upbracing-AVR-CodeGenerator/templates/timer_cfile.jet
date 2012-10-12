@@ -11,7 +11,7 @@
  * NOTE: This file was generated and should not be altered manually!
  */
 
-<% if (config.getTimer() == null) { %>
+<% if (config.getTimerConfig() == null) { %>
 // no timer config present
 <% } else { %>
 
@@ -19,9 +19,9 @@
 #include "timer.h"
 
 <%
-for (UseCaseModel m : config.getTimer().getConfigurations()) {
+for (UseCaseModel m : config.getTimerConfig().getConfigurations()) {
 
-UseCaseModelValidator validator = new UseCaseModelValidator(config.getTimer(), m);
+UseCaseModelValidator validator = new UseCaseModelValidator(config.getTimerConfig(), m);
 %>
 /* Timer Configuration: <%=m.getName()%> */
 <%@ include file="timer/normal_cfile.jetinclude" %>
@@ -59,4 +59,4 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 }
 %>
 
-<% } // config.getTimer() == null %>
+<% } // config.getTimerConfig() == null %>

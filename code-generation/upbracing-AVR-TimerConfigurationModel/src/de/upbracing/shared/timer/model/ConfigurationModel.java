@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class ConfigurationModel {
 	
 	// Private fields:
-	private int frequency = 8000000;					// Each CPU runs at a specific frequency :)
+	private int frequency;								// Each CPU runs at a specific frequency :)
 	private ArrayList<UseCaseModel>	configurations;		// Each ConfigurationModel has an arbitrary
 														// number of UseCaseConfigurations
 	// Constructor:
@@ -23,6 +23,7 @@ public class ConfigurationModel {
 	 * Creates a new instance of this class and initializes the list of {@link UseCaseModel} objects.
 	 */
 	public ConfigurationModel() {
+		frequency = 8000000;
 		configurations = new ArrayList<UseCaseModel>();
 	}
 	
