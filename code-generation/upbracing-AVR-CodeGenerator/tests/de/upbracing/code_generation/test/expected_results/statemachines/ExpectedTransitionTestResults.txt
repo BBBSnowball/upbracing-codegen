@@ -1,0 +1,57 @@
+
+
+#error There were 12 warnings and/or errors
+/*
+ERROR: More than 1 start states
+	in  StateMachine -> Testtransitions
+ERROR: State has more than 1 outgoing transitions!
+	in  Start State -> Stmach_start1
+	in  StateMachine -> Testtransitions
+ERROR: Transition has events!
+	in  Transition: Source -> Stmach_start1 Destination -> normal_1
+	in  Start State -> Stmach_start1
+	in  StateMachine -> Testtransitions
+ERROR: Transition has waitType 'wait' but condition/event not empty!
+	in  Transition: Source -> super_1 Destination -> normal_1
+	in  Normal State -> normal_1
+	in  StateMachine -> Testtransitions
+ERROR: Transition has waitType 'wait' but condition/event not empty!
+	in  Transition: Source -> normal_1 Destination -> super_1
+	in  StateMachine -> Testtransitions
+ERROR: State has incoming transitions!
+	in  Transition: Source -> Sup2_normal1 Destination -> Sup2_start
+	in  Start State -> Sup2_start
+	in  Region -> reg_2
+	in  Super State -> super_2
+	in  StateMachine -> Testtransitions
+ERROR: Transition has waiting transition!
+	in  Transition: Source -> Sup2_start Destination -> Sup2_normal1
+	in  Start State -> Sup2_start
+	in  Region -> reg_2
+	in  Super State -> super_2
+	in  StateMachine -> Testtransitions
+ERROR: Transition has events!
+	in  Transition: Source -> Sup2_start Destination -> Sup2_normal1
+	in  Start State -> Sup2_start
+	in  Region -> reg_2
+	in  Super State -> super_2
+	in  StateMachine -> Testtransitions
+ERROR: Transition has conditions!
+	in  Transition: Source -> Sup2_start Destination -> Sup2_normal1
+	in  Start State -> Sup2_start
+	in  Region -> reg_2
+	in  Super State -> super_2
+	in  StateMachine -> Testtransitions
+ERROR: State has No incoming transitions!
+	in  Normal State -> Sup2_normal2
+	in  Region -> reg_2
+	in  Super State -> super_2
+	in  StateMachine -> Testtransitions
+ERROR: State has outgoing transitions!
+	in  Final State -> finalstate
+	in  StateMachine -> Testtransitions
+ERROR: Transition has waitType 'before' but no condition/event!
+	in  Transition: Source -> super_2 Destination -> finalstate
+	in  Final State -> finalstate
+	in  StateMachine -> Testtransitions
+*/
