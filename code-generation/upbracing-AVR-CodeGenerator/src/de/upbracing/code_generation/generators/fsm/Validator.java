@@ -141,13 +141,14 @@ public class Validator {
 				}
 
 				// event validation
-				else if (smg.getEvents().keySet().size() > 0) {
+				if (smg.getEvents().keySet().size() > 0) {
 					for (String event : smg.getEvents().keySet())
 						if (!evNameValidate(event, smg.getEvents().get(event),
 								smg))
 							valid = false;
-
-				} else if (!typeCheckAndValidate(smg.getStates(), smg))
+				} 
+				
+				if (!typeCheckAndValidate(smg.getStates(), smg))
 					valid = false;
 
 				statemachine_context.pop();
@@ -201,26 +202,26 @@ public class Validator {
 	}
 
 	// perform validation of initial state
-	private boolean initalValidate(State state, StateMachineForGeneration smg) {
+	public boolean initalValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
 
 		if (!nameValidate(state, smg))
 			valid = false;
 
-		else if (initialHasInTransValidate(state, smg))
+		if (initialHasInTransValidate(state, smg))
 			valid = false;
 
-		else if (!initialOutValidate(state, smg))
+		if (!initialOutValidate(state, smg))
 			valid = false;
 
-		else if (!initialTransValidate(state, smg))
+		if (initialTransValidate(state, smg)) {
 			valid = false;
-
+		}
 		return valid;
 	}
 
 	// count number of initial states
-	private boolean initialCount(List<State> states) {
+	public boolean initialCount(List<State> states) {
 		int initialcount = 0;
 		boolean valid = true;
 
@@ -229,8 +230,7 @@ public class Validator {
 				initialcount++;
 
 				if (initialcount > 1) {
-					messages.error("%s has more than 1 start states",
-							state.getName());
+					messages.error("More than 1 start states");
 					valid = false;
 				}
 			}
@@ -253,35 +253,35 @@ public class Validator {
 	}
 
 	// validate all final states
-	private boolean finalValidate(State state, StateMachineForGeneration smg) {
+	public boolean finalValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
-
+		
 		if (!nameValidate(state, smg))
 			valid = false;
 
-		else if (!finalOutValidate(state, smg))
+		if (!finalOutValidate(state, smg))
 			valid = false;
 
-		else if (!stateInTransValidate(state, smg))
+		if (!stateInTransValidate(state, smg))
 			valid = false;
 
-		else if (!normalTransValidate(state, smg))
+		if (!normalTransValidate(state, smg))
 			valid = false;
 
 		return valid;
 	}
 
 	// validate normal and super states
-	private boolean normSupValidate(State state, StateMachineForGeneration smg) {
+	public boolean normSupValidate(State state, StateMachineForGeneration smg) {
 		boolean valid = true;
 
 		if (!nameValidate(state, smg))
 			valid = false;
 
-		else if (!stateInTransValidate(state, smg))
+		if (!stateInTransValidate(state, smg))
 			valid = false;
 
-		else if (!normalTransValidate(state, smg))
+		if (!normalTransValidate(state, smg))
 			valid = false;
 
 		return valid;
@@ -316,7 +316,7 @@ public class Validator {
 		return true;
 	}
 
-	public static boolean emptyOrNull(String obj) {
+	private static boolean emptyOrNull(String obj) {
 		return obj == null || obj.isEmpty();
 	}
 
@@ -377,21 +377,24 @@ public class Validator {
 		boolean valid = true;
 		for (Transition trans : state.getOutgoingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
+
 			ContextItem trans_context = messages.pushContext(trans);
-			
+
 			if (ti.isWaitTransition()) {
 				setTransitionErrorMessage("waiting transition");
 				valid = false;
+			}
 
-			} else if (!emptyOrNull(ti.getEventName())) {
+			if (!emptyOrNull(ti.getEventName())) {
 				setTransitionErrorMessage("events");
-				valid = false;
-
-			} else if (!emptyOrNull(ti.getCondition())) {
-				setTransitionErrorMessage("conditions");
 				valid = false;
 			}
 			
+			if (!emptyOrNull(ti.getCondition())) {
+				setTransitionErrorMessage("conditions");
+				valid = false;
+			}
+
 			trans_context.pop();
 		}
 		return valid;
@@ -405,26 +408,25 @@ public class Validator {
 		for (Transition trans : state.getIncomingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
 			ContextItem trans_context = messages.pushContext(trans);
-			
+
 			if (!(trans.getSource() instanceof InitialState)) {
 				if (!emptyOrNull(ti.getCondition())
 						|| !emptyOrNull(ti.getEventName())) {
+					
+					if (ti.getWaitType().equals("wait"))
+						setTransitionErrorMessage("waitType 'wait' but condition/event not empty");
 
-					if (ti.getWaitType() == "wait")
-
-						setTransitionErrorMessage("waitType wait");
 					valid = false;
 
-				} else if (ti.getWaitType() == "before") {
-					if (ti.getCondition().isEmpty()
-							&& ti.getEventName().isEmpty())
+				} else if (ti.getWaitType().equals("before")) {
+					if (emptyOrNull(ti.getCondition())
+							&& emptyOrNull(ti.getEventName()))
 
-						setTransitionErrorMessage("no condition/event");
+						setTransitionErrorMessage("waitType 'before' but no condition/event");
 					valid = false;
 				}
-				
-				trans_context.pop();
 			}
+			trans_context.pop();
 		}
 		return valid;
 	}
@@ -437,7 +439,7 @@ public class Validator {
 		if (state.getIncomingTransitions().size() != 0) {
 			for (Transition trans : state.getIncomingTransitions()) {
 				ContextItem trans_context = messages.pushContext(trans);
-				setTransitionErrorMessage("no incoming");
+				setStateTransitionError("incoming");
 				trans_context.pop();
 			}
 		} else
@@ -447,8 +449,7 @@ public class Validator {
 	}
 
 	// perform checks for outgoing transitions from initial state
-	private boolean initialOutValidate(State state,
-			StateMachineForGeneration smg) {
+	private boolean initialOutValidate(State state, StateMachineForGeneration smg) {
 		boolean hasoutgoing = true;
 
 		if (state.getOutgoingTransitions().size() > 1) {
@@ -475,18 +476,18 @@ public class Validator {
 		boolean incoming = true;
 
 		if (state.getIncomingTransitions().size() == 0) {
-			setStateTransitionError("no incoming");
+			setStateTransitionError("No incoming");
 			incoming = false;
 		}
 		return incoming;
 	}
 
-	private void setTransitionErrorMessage(Object... args) {
-		messages.error("Transition has %s!", args);
+	private void setTransitionErrorMessage(String s) {
+		messages.error("Transition has %s!", s);
 	}
 
 	private void setStateTransitionError(String s) {
-		messages.error(" State has %s transitions!", s);
+		messages.error("State has %s transitions!", s);
 	}
 
 	private void initFormatters() {
@@ -497,6 +498,16 @@ public class Validator {
 							return obj.getName();
 						else
 							return " StateMachine -> " + obj.getName();
+					}
+				});
+
+		messages.addObjectFormatter(State.class,
+				new Messages.ObjectFormatter<State>() {
+					public String format(int type, State obj) {
+						if (type == SHORT)
+							return obj.getName();
+						else
+							return " State -> " + obj.getName();
 					}
 				});
 
@@ -567,8 +578,10 @@ public class Validator {
 						if (type == SHORT)
 							return "from State " + obj.getSource();
 						else
-							return " Transition: Source -> " + obj.getSource()
-									+ " Destination -> " + obj.getDestination();
+							return " Transition: Source -> "
+									+ obj.getSource().getName()
+									+ " Destination -> "
+									+ obj.getDestination().getName();
 					}
 				});
 	}
