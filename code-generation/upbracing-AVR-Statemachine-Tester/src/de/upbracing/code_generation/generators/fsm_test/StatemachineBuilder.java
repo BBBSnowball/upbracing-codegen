@@ -568,6 +568,10 @@ public class StatemachineBuilder {
 				// apply the transitions to find the next waypoint
 				waypoint = applyTransitions(waypoint, activation);
 				
+				//DEBUG
+				if (!(waypoint.active_state.getParent() instanceof StateMachine))
+					throw new RuntimeException("waypoint should be for the whole statemachine!");
+				
 				// add it to the lists
 				waypoints.add(waypoint);
 				transitions.add(activation);
@@ -775,11 +779,16 @@ public class StatemachineBuilder {
 				Waypoint updated_child = applyTransitions(child, activation);
 				
 				if (updated_child.active_state.getParent() != child.active_state.getParent()) {
-					// This transition has led us outside of this state. Therefore, all the states that
-					// we may have entered here, have been left now.
-					//TODO We should still make sure that those states have been entered briefly. We have
-					//      to pass that information to the tests in some way.
-					return updated_child;
+					if (isParentOf(child.active_state.getParent(), updated_child.active_state.getParent())) {
+						// supply missing parents and return it
+						updated_child = copyLayersUpTo(updated_child, child);
+					} else {
+						// This transition has led us outside of this state. Therefore, all the states that
+						// we may have entered here, have been left now.
+						//TODO We should still make sure that those states have been entered briefly. We have
+						//      to pass that information to the tests in some way.
+						return updated_child;
+					}
 				}
 				
 				updated_children.add(updated_child);
