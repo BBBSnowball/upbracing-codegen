@@ -13,6 +13,9 @@
 
 #include "eeprom_accessors.h"
 
+<% if (config.getEeprom().isEmpty()) { %>
+// no EEPROM variables found
+<% } else { %>
 EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
 <%
 Table t = new Table(stringBuffer);
@@ -28,3 +31,6 @@ for (EEPROMVariable var : config.getEeprom()) {
 t.finish();
 %>
 };
+<%
+}	// if there is at least one EEPROM variable
+%>
