@@ -5,4 +5,3 @@ de.upbracing.code_generation.generators.CanGenerator
 de.upbracing.code_generation.generators.RTOSGenerator
 de.upbracing.code_generation.generators.TimerGenerator
 de.upbracing.code_generation.generators.StatemachineGenerator
-de.upbracing.code_generation.generators.CommonHeaderGenerator
