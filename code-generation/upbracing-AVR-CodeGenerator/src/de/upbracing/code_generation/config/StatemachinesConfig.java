@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
+import de.upbracing.code_generation.generators.fsm.Helpers;
 
 import Statecharts.StateMachine;
 import Statecharts.StatechartsFactory;
@@ -196,5 +197,7 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 
 	public void setMessages(Messages messages) {
 		this.messages = messages;
+		
+		Helpers.addStatemachineFormatters(messages, this);
 	}
 }

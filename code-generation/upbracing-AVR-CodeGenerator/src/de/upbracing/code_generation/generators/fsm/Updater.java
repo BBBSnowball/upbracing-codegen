@@ -107,60 +107,62 @@ public class Updater {
 		state.get(0).getParent().getStates().remove(state.get(0));
 	}
 
-	// assign names to unnamed states
+	
+	// TODO for Rishab: Make sure that there is at most one final state
+	// in each region
+	// and top-level of a statemachine. If there is more than one final
+	// state, remove it and update the transitions accordingly. There
+	// can be more than one final state in a statemachine (e.g. one is
+	// in a region and the other one on the top-level), so be careful
+	// to set each transition to the right one.
+	
+	
+	// assign names to unnamed states and regions
+	
+	private int assignNamesCounter;
+	private String getNextName(String prefix) {
+		return prefix + Integer.toHexString(++assignNamesCounter).toUpperCase();
+	}
+	
 	private void assignNames(MCUConfiguration config) {
-		int runningCounter = 0;
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			// TODO for Rishab: Assign a name to each state and region that
-			// doesn't have a
-			// name, yet. You can generate unique names like this:
-			// ("state" + (++runningCounter))
-
-			// TODO for Rishab: Make sure that there is at most one final state
-			// in each region
-			// and top-level of a statemachine. If there is more than one final
-			// state, remove it and update the transitions accordingly. There
-			// can be more than one final state in a statemachine (e.g. one is
-			// in a region and the other one on the top-level), so be careful
-			// to set each transition to the right one.
-
-			List<State> unnamed = new ArrayList<State>();
-
-			unnamed.addAll(assignNames(smg.getStates(), smg.getStateMachine(),
-					unnamed));
-
-			for (State state : unnamed) {
-
-				if (state instanceof InitialState)
-					((InitialState) state).setName("Initial_"
-							+ runningCounter++);
-
-				else if (state instanceof FinalState)
-					((FinalState) state).setName("Final_" + runningCounter++);
-
-				else if (state instanceof NormalState)
-					((NormalState) state).setName("Normal_" + runningCounter++);
-
-				else if (state instanceof SuperState)
-					((SuperState) state).setName("Super_" + runningCounter++);
-			}
+			assignNamesCounter = 0;
+			
+			assignNames(smg.getStateMachine());
 		}
 	}
 
-	// get list of unnamed states
-	private List<State> assignNames(Iterable<State> states, StateParent parent,
-			List<State> unnamed) {
-		for (State state : states) {
-			if (state instanceof SuperState) {
-				if (emptyOrNull(state.getName()))
-					unnamed.add(state);
-				for (Region reg : ((SuperState) state).getRegions())
-					assignNames(reg.getStates(), reg, unnamed);
-			} else if (!(state instanceof SuperState))
-				if (emptyOrNull(state.getName()))
-					unnamed.add(state);
+	private void assignNames(StateParent state_parent) {
+		if (state_parent instanceof SuperState) {
+			for (Region region : ((SuperState) state_parent).getRegions()) {
+				if (emptyOrNull(region.getName()))
+					region.setName(getNextName("region"));
+			}
+		} else {
+			for (State state : state_parent.getStates())
+				assignNames(state);
 		}
-		return unnamed;
+	}
+
+	private void assignNames(State state) {
+		String name = state.getName();
+		
+		if (emptyOrNull(name)) {
+			if (state instanceof InitialState)
+				((InitialState) state).setName(getNextName("initial"));
+	
+			else if (state instanceof FinalState)
+				((FinalState) state).setName(getNextName("final"));
+	
+			else if (state instanceof NormalState)
+				((NormalState) state).setName(getNextName("state"));
+	
+			else if (state instanceof SuperState)
+				((SuperState) state).setName(getNextName("superstate"));
+			
+			else
+				throw new IllegalArgumentException("unexpected type");
+		}
 	}
 
 	public static boolean emptyOrNull(String obj) {
@@ -240,7 +242,7 @@ public class Updater {
 				} else {
 					messages.error(
 							"Transition with wait condition starts at state '%s', which doesn't support actions\n",
-							smg.getName(source_));
+							source_);
 				}
 			}
 

@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.generators.fsm;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -10,9 +11,6 @@ import Statecharts.NamedItem;
 import Statecharts.NormalState;
 import Statecharts.Region;
 import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
 import Statecharts.SuperState;
 import Statecharts.Transition;
 import de.upbracing.code_generation.Messages;
@@ -38,7 +36,6 @@ public class Validator {
 		this.after_update_config = after_update_config;
 		this.generator_data = generator_data;
 		this.messages = config.getStatemachines().getMessages();
-		initFormatters();
 	}
 
 	/**
@@ -49,7 +46,7 @@ public class Validator {
 	 */
 	public Validator(Messages messages) {
 		this.messages = messages;
-		initFormatters();
+		Helpers.addStatemachineFormatters(messages, Collections.<StateMachineForGeneration>emptyList());
 	}
 
 	public Messages getMessages() {
@@ -401,105 +398,5 @@ public class Validator {
 		if (!state.getOutgoingTransitions().isEmpty()) {
 			messages.error("Final states cannot have outgoing transitions!");
 		}
-	}
-
-	private static String escapeString(String name) {
-		if (Pattern.matches("^[a-zA-Z0-9_-]+$", name))
-			return name;
-		else
-			return "'" + name.replaceAll("([\\'\"])", "\\\\$1").replace("\n", "\\n").replace("\t", "\\t") + "'";
-	}
-	
-	private <STATE extends StateScope> void addStateFormatter(Class<STATE> cls, final String type_name) {
-		messages.addObjectFormatter(cls,
-				new Messages.ObjectFormatter<STATE>() {
-					public String format(int type, STATE obj) {
-						String name = escapeString(StateMachineForGeneration.getName(obj));
-						
-						switch (type) {
-						case SHORT:
-							return name;
-						case NORMAL:
-							String self = type_name + " " + name;
-							
-							StateParent parent = obj.getParent();
-							if (parent != null)
-								return messages.format(type, parent) + " -> " + self;
-							else
-								return self;
-						case LONG:
-							return type_name + " " + name;
-						default:
-							throw new IllegalArgumentException("unexpected type");
-						}
-					}
-				});
-	}
-	
-	private void initFormatters() {
-		messages.addObjectFormatter(StateMachineForGeneration.class,
-				new Messages.ObjectFormatter<StateMachineForGeneration>() {
-					public String format(int type, StateMachineForGeneration obj) {
-						switch (type) {
-						case SHORT:
-							return obj.getName();
-						case NORMAL:
-						case LONG:
-							return "StateMachineForGeneration " + obj.getName();
-						default:
-							throw new IllegalArgumentException("unexpected type");
-						}
-					}
-				});
-
-		messages.addObjectFormatter(StateMachine.class,
-				new Messages.ObjectFormatter<StateMachine>() {
-					public String format(int type, StateMachine obj) {
-						StateMachineForGeneration smg = null;
-						for (StateMachineForGeneration smg2 : config.getStatemachines()) {
-							if (smg2.getStateMachine() == obj) {
-								smg = smg2;
-								break;
-							}
-						}
-						
-						String name = (smg != null ? escapeString(smg.getName()) : "?");
-						
-						switch (type) {
-						case SHORT:
-							return name;
-						case NORMAL:
-						case LONG:
-							return "StateMachine " + name;
-						default:
-							throw new IllegalArgumentException("unexpected type");
-						}
-					}
-				});
-		
-		addStateFormatter(State.class, "unknown kind of state");
-		addStateFormatter(InitialState.class, "initial state");
-		addStateFormatter(FinalState.class, "final state");
-		addStateFormatter(NormalState.class, "normal state");
-		addStateFormatter(SuperState.class, "super state");
-		addStateFormatter(Region.class, "region");
-		
-		messages.addObjectFormatter(Transition.class,
-				new Messages.ObjectFormatter<Transition>() {
-					public String format(int type, Transition obj) {
-						StringBuffer sb = new StringBuffer();
-						if (type >= NORMAL)
-							sb.append("transition: ");
-						
-						sb.append(messages.format(type, obj.getSource()));
-						sb.append(" --> ");
-						sb.append(messages.format(type, obj.getDestination()));
-						
-						if (type >= LONG)
-							sb.append(" (" + obj.getTransitionInfo() + ")");
-						
-						return sb.toString();
-					}
-				});
 	}
 }
