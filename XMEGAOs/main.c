@@ -48,7 +48,7 @@ int main(void)
 TASK(Task_Update)
 {
 	sem_token_t led_token1, free_token1, queue_token1;
-	bool see, look;
+	BOOL see, look;
 	
 	// Enqueue something for USART
 	// -> demonstration of Queues and Semaphores
@@ -98,7 +98,7 @@ TASK(Task_Update)
 TASK(Task_Increment)
 {
 	sem_token_t led_token2;
-	bool check;
+	BOOL check;
 	// Increment global counter for leds
 	
 	

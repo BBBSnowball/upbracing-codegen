@@ -183,7 +183,7 @@ sem_token_t _sem_start_wait(Semaphore* sem)
 	//if no need of waiting what to return ?
 }
 
-bool _sem_continue_wait(Semaphore* sem , sem_token_t token)
+BOOL _sem_continue_wait(Semaphore* sem , sem_token_t token)
 {
 	uint8_t tok;
 	tok = token;
@@ -291,7 +291,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 	return tok;
 }
 
-bool _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token)
+BOOL _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token)
 {
 	if (token == 0)
 	{

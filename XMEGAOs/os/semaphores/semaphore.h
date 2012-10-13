@@ -140,7 +140,7 @@ sem_token_t _sem_start_wait (Semaphore* sem);
 			If false (or zero ) is returned , you must try again later. It returns true without further action, if the token is zero.
 */
 #define sem_continue_wait(sem, token) _sem_continue_wait(SEMAPHORE_REF(sem), (token))
-bool _sem_continue_wait (Semaphore* sem , sem_token_t token );
+BOOL _sem_continue_wait (Semaphore* sem , sem_token_t token );
 
 /*	@brief	Stop waiting on semaphore
 
@@ -160,7 +160,7 @@ sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
  
 //Continue waiting for queue
 #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
-bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
+BOOL _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
 //Stop waiting for queue
 #define sem_stop_wait_n(sem, n, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), n, token)
