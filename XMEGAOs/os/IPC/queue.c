@@ -6,7 +6,7 @@
  */ 
 #include "queue.h"
 #include "semaphore.h"
-#include "Os.h"
+//#include "Os.h"
 #include <avr/interrupt.h>
 
 /*	@brief	Writes a byte of data into the queue passed as the parameter
@@ -142,11 +142,13 @@ bool _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token
 	bool ret = _sem_continue_wait_n(sem,token);
 	if (ret == TRUE)
 	{
+		OS_ENTER_CRITICAL();
 		n = sem->queue[sem->queue_front].n;
 		if (n > que->occupied)
 		{
 			ret = FALSE;
 		}
+		OS_EXIT_CRITICAL();
 	}
 	
 	return ret;
@@ -194,11 +196,13 @@ bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t t
 	
 	if (ret == TRUE)
 	{
+		OS_ENTER_CRITICAL();
 		n = sem->queue[sem->queue_front].n;
 		if (n > (que->capacity - que->occupied))
 		{
 			ret = FALSE;
 		}
+		OS_EXIT_CRITICAL();
 	}
 	return ret;
 }
