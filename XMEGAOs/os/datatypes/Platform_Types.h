@@ -21,7 +21,7 @@ typedef uint8_t StackPointerType;
 typedef uint8_t TaskPriorityType;
 typedef void (*TaskFunctionPointerType)(void);
 typedef void (*AlarmFunctionPointerType)(void);
-typedef uint8_t bool;
+typedef uint8_t BOOL;
 #define TRUE 1
 #define FALSE 0
 

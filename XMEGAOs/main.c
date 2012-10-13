@@ -49,7 +49,7 @@ int main(void)
 TASK(Task_Update)
 {
 	sem_token_t led_token1, read_token, queue_token2 ;
-	bool see, look;
+	BOOL see, look;
 	
 	
 	char data[2];
@@ -103,7 +103,7 @@ TASK(Task_Update)
 TASK(Task_Increment)
 {
 	sem_token_t led_token2, free_token1, queue_token1;
-	bool check;
+	BOOL check;
 	
 	// Increment global counter for leds
 	

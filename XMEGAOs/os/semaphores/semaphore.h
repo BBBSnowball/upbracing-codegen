@@ -3,10 +3,9 @@
  *
  * Created: 10-Jul-12 12:18:04 PM
  *  Author: Krishna
- */ 
-//#include "Os.h"
-#include "Platform_Types.h"
-#include "Os_config.h"
+ */
+#include "datatypes/Platform_Types.h"
+#include "config/Os_config.h"
 
 
 #ifndef SEMAPHORE_H_
@@ -58,7 +57,7 @@ typedef struct {
 #define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
 #define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), OS_NUMBER_OF_TCBS, (initial_value), 0, 0, (queue_capacity) } }
+		{ { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
 #define SEMAPHORE(sem, initial_value, queue_capacity) \
 		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
 			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
@@ -90,7 +89,7 @@ typedef struct Semaphore_n{
 
 #define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
 	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), OS_NUMBER_OF_TCBS, (initial_value), 0, 0, (queue_capacity) } }
+		= { { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
 #define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
 
 /* Synchronous wait and signal */
@@ -144,7 +143,7 @@ sem_token_t _sem_start_wait (Semaphore* sem);
 			If false (or zero ) is returned , you must try again later. It returns true without further action, if the token is zero.
 */
 #define sem_continue_wait(sem, token) _sem_continue_wait(SEMAPHORE_REF(sem), (token))
-bool _sem_continue_wait (Semaphore* sem , sem_token_t token );
+BOOL _sem_continue_wait (Semaphore* sem , sem_token_t token );
 
 /*	@brief	Stop waiting on semaphore
 
@@ -181,7 +180,7 @@ sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
  
 //Continue waiting for queue
 #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
-bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
+BOOL _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
 //Stop waiting for queue
 #define sem_stop_wait_n(sem, n, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), n, token)

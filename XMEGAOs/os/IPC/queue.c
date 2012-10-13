@@ -90,7 +90,7 @@ void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out )
 	@return		True, if data available. False, if otherwise.
 	
 */
-bool _queue_is_data_available(Queue* q, uint8_t number_of_bytes )
+BOOL _queue_is_data_available(Queue* q, uint8_t number_of_bytes )
 {
 	if (q->occupied >= number_of_bytes)
 	{
@@ -106,7 +106,7 @@ bool _queue_is_data_available(Queue* q, uint8_t number_of_bytes )
 	@return		True, if space available. False, if otherwise.
 
 */
-bool _queue_has_free_space(Queue* q, uint8_t number_of_bytes )
+BOOL _queue_has_free_space(Queue* q, uint8_t number_of_bytes )
 {
 	if ((q->capacity - q->occupied) >= number_of_bytes)
 	{
@@ -136,10 +136,10 @@ sem_token_t _queue_start_wait_data_available(Semaphore_n* sem , uint8_t n )
 				If returned true, the token must not be used further.
 
 */
-bool _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token_t token )
+BOOL _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token_t token )
 {
 	uint8_t n;
-	bool ret = _sem_continue_wait_n(sem,token);
+	BOOL ret = _sem_continue_wait_n(sem,token);
 	if (ret == TRUE)
 	{
 		OS_ENTER_CRITICAL();
@@ -189,10 +189,10 @@ sem_token_t _queue_start_wait_free_space(Semaphore_n* sem , uint8_t n )
 				If returned true, the token must not be used further.
 
 */
-bool _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t token )
+BOOL _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t token )
 {
 	uint8_t n;
-	bool ret = _sem_continue_wait_n(sem, token);
+	BOOL ret = _sem_continue_wait_n(sem, token);
 	
 	if (ret == TRUE)
 	{
@@ -224,7 +224,7 @@ sem_token_t _queue_start_wait( Semaphore* sem )
 	return _sem_start_wait(sem);
 }
 
-bool _queue_continue_wait( Semaphore* sem, sem_token_t token )
+BOOL _queue_continue_wait( Semaphore* sem, sem_token_t token )
 {
 	return _sem_continue_wait(sem,token);
 }
