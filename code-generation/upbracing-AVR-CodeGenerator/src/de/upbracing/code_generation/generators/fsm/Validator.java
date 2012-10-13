@@ -424,7 +424,7 @@ public class Validator {
 				if (!emptyOrNull(ti.getCondition())
 						|| !emptyOrNull(ti.getEventName())) {
 					
-					if (ti.getWaitType().equals("wait"))
+					if (ti.getWaitType() != null && ti.getWaitType().equals("wait"))
 						setTransitionErrorMessage("waitType 'wait' but condition/event not empty");
 
 					valid = false;
