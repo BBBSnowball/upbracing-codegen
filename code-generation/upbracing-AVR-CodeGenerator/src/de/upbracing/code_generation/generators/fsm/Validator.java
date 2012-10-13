@@ -62,7 +62,10 @@ public class Validator {
 		boolean valid = true;
 
 		// make sure that we don't have any unexpected null values
+		ContextItem task_context = messages.pushContext("check for null values in inappropiate places");
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			ContextItem smg_context = messages.pushContext(smg);
+			
 			if (!validateNotNull(smg.getGlobalCodeBoxes(), "global code boxes"))
 				return false;
 
@@ -77,18 +80,21 @@ public class Validator {
 
 			for (Transition t : smg.getTransitions()) {
 				if (t.getSource() == null || t.getDestination() == null) {
-					System.err
-							.println("FATAL: Each transition must have a valid source and destination. Invalid transition: "
-									+ t);
+					messages.fatal("FATAL: Each transition must have a valid source and destination. Invalid transition: %s", t);
 					return false;
 				}
 			}
+			
+			smg_context.pop();
 		}
+		task_context.pop();
 
 		// make sure that we have the appropiate values on the root object
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			ContextItem smg_context = messages.pushContext(smg);
+			
 			if (smg.getBasePeriodAsString() == null) {
-				System.err.println("ERROR: Statemachine needs a base rate");
+				messages.error("ERROR: Statemachine needs a base rate");
 
 				// set some rate because the program will crash, if it finds a
 				// null in there
@@ -98,11 +104,13 @@ public class Validator {
 			try {
 				smg.getBasePeriod();
 			} catch (ParserException e) {
-				System.err.println("Cannot parse time ('"
-						+ smg.getBasePeriodAsString() + "'): " + e.toString());
+				messages.error("Cannot parse time ('%s'): %s",
+						smg.getBasePeriodAsString(), e.toString());
 
 				smg.setBasePeriod("1s");
 			}
+
+			smg_context.pop();
 		}
 
 		if (!after_update_config) {
@@ -289,10 +297,12 @@ public class Validator {
 
 	private boolean validateStatesNotNull(Iterable<State> states) {
 		for (State state : states) {
+			ContextItem state_context = messages.pushContext(state);
+			
 			validateNotNull(state.getIncomingTransitions(),
-					"incoming transitions of " + state);
+					"incoming transitions");
 			validateNotNull(state.getOutgoingTransitions(),
-					"outgoing transitions of " + state);
+					"outgoing transitions");
 
 			if (state instanceof SuperState) {
 				for (Region region : ((SuperState) state).getRegions()) {
@@ -300,6 +310,8 @@ public class Validator {
 						return false;
 				}
 			}
+			
+			state_context.pop();
 		}
 		return true;
 	}
@@ -307,8 +319,7 @@ public class Validator {
 	private boolean validateNotNull(Iterable<?> xs, String list_name) {
 		for (Object x : xs) {
 			if (x == null) {
-				System.err
-						.println("FATAL: At least one element in the list of "
+				messages.fatal("FATAL: At least one element in the list of "
 								+ list_name + " is null");
 				return false;
 			}
