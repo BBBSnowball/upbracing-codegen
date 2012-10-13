@@ -1,5 +1,6 @@
 package de.upbracing.configurationeditor.timer.editors;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -255,25 +256,33 @@ public class TimerConfigurationEditor extends EditorPart {
 				
 				mcu.setTimerConfig(model.getModel());
 				
-				TimerGenerator gen = new TimerGenerator();
-				ITemplate cTemp = gen.getFiles().get("timer.c");
-				ITemplate hTemp = gen.getFiles().get("timer.h");
-				String cFileContents = cTemp.generate(mcu, null);
-				String headerContents = hTemp.generate(mcu, null);
+				// Get the configuration file name:
+				String projectFileName = file.getRawLocation().toFile().getName();
+				projectFileName = projectFileName.substring(0, projectFileName.indexOf("."));
+				
+				// Generate code:
+				TimerGenerator gen = new TimerGenerator(projectFileName);
+				ITemplate cTemp = gen.getFiles().get(projectFileName + ".c");
+				ITemplate hTemp = gen.getFiles().get(projectFileName + ".h");
+				String cFileContents = cTemp.generate(mcu, projectFileName);
+				String headerContents = hTemp.generate(mcu, projectFileName);
 				
 				String pathPrefix = ((IPath) file.getRawLocation().clone()).removeLastSegments(1).toOSString();
 				if (pathPrefix != null) {
 					// Write out both files:
 					try {
-						PrintWriter w = new PrintWriter(pathPrefix + "/timer.c");
+						// Store the generated code on disk:
+						PrintWriter w = new PrintWriter(pathPrefix + "/" + projectFileName + ".c");
 						w.print(cFileContents);
 						w.flush();
 						w.close();
-						w = new PrintWriter(pathPrefix + "/timer.h");
+						w = new PrintWriter(pathPrefix + "/" + projectFileName + ".h");
 						w.print(headerContents);
 						w.flush();
 						w.close();
-						file.getParent().refreshLocal(1, null);
+						// Refresh files in workspace
+						file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".c").refreshLocal(0, null);
+						file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".h").refreshLocal(0, null);
 					} catch (FileNotFoundException e) {
 						// TODO Give useful error message here!
 						e.printStackTrace();

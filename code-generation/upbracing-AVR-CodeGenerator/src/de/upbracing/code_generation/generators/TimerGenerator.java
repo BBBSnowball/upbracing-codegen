@@ -11,9 +11,15 @@ import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 import de.upbracing.shared.timer.model.validation.ValidationResult;
 
 public class TimerGenerator extends AbstractGenerator {
+	
 	public TimerGenerator() {
 		super("timer.h", new TimerHeaderTemplate(),
 				"timer.c", new TimerCFileTemplate());
+	}
+	
+	public TimerGenerator(String filePrefix) {
+		super(filePrefix + ".h", new TimerHeaderTemplate(),
+				filePrefix + ".c", new TimerCFileTemplate());
 	}
 	
 	@Override

@@ -5,6 +5,13 @@ import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
 
 public class TimerGeneratorHelper {
+	
+	public static String getFilePrefix(Object generator_data) {
+		if (generator_data != null && generator_data instanceof String)
+			return (String)generator_data;
+		return "timer";
+	}
+	
 	public static String getPrescaleCode(int timer, int prescale) {
 		
 		if (timer == 2) {

@@ -4,7 +4,7 @@
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.* de.upbracing.shared.timer.model.validation.*" %>
 /*
- * Timer.c
+ * <%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.c
  *
  * This file implements the features of the Timers.
  * 
@@ -14,9 +14,8 @@
 <% if (config.getTimerConfig() == null) { %>
 // no timer config present
 <% } else { %>
-
 #include <avr/io.h>
-#include "timer.h"
+#include "<%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.h"
 
 <%
 for (UseCaseModel m : config.getTimerConfig().getConfigurations()) {

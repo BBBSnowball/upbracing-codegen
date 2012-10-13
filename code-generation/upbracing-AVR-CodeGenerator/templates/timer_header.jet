@@ -4,7 +4,7 @@
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.*" %>
 /*
- * Timer.h
+ * <%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.h
  *
  * This file defines the features the the Timers should have.
  * 
@@ -14,9 +14,8 @@
 <% if (config.getTimerConfig() == null) { %>
 // no timer config present
 <% } else { %>
-
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_
+#define <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_
 
 <%
 for (UseCaseModel m : config.getTimerConfig().getConfigurations()) {
@@ -33,6 +32,6 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 <%
 }
 %>
-#endif /* TIMER_H_ */
+#endif /* <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_ */
 
 <% } // config.getTimerConfig() == null %>
