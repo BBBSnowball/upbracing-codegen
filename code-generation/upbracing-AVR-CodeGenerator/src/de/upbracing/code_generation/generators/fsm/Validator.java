@@ -401,7 +401,8 @@ public class Validator {
 				valid = false;
 			}
 			
-			if (!emptyOrNull(ti.getCondition())) {
+			if (!emptyOrNull(ti.getCondition()) && !ti.getCondition().equals("1")
+					&& !ti.getCondition().equals("true")) {
 				setTransitionErrorMessage("conditions");
 				valid = false;
 			}
