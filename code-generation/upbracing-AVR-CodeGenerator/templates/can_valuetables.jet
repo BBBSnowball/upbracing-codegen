@@ -27,6 +27,8 @@ if (run_generator) {
 #ifndef CAN_VALUETABLES_H_
 #define CAN_VALUETABLES_H_
 
+#include <common.h>
+
 #ifndef DONT_SET_VALUE_TABLES
 <%
 for (java.util.Map.Entry<String, DBCValueTable> e : config.getCan().getValueTables().entrySet()) {

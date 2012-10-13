@@ -14,12 +14,27 @@
 #ifndef EEPROM_DATA_H_
 #define EEPROM_DATA_H_
 
+<% if (config.getEeprom().isEmpty()) { %>
+// no EEPROM variables found
+// You need to load an ECU configuration and select
+// an ECU in your config file (config.rb).
+// 
+// #DEPENDS ON:
+// ecu_list_file = "../../ecu-list.xml"
+// 
+// require 'parse-ecu-list.rb'
+// 
+// ecus = read_ecu_list(ecu_list_file)
+// $config.ecus = ecus
+// 
+// $config.selectEcu("NAME")
+<% } else { %>
+#include <avr/eeprom.h>
+#include "common.h"
+
 /////////////////////////
 ///    EEPROM data    ///
 /////////////////////////
-
-// only define EEPROM stuff, if avr/eeprom.h has been included
-#ifdef EEMEM
 
 //#pragma pack(push, 1)
 typedef struct {
@@ -77,8 +92,8 @@ for (EEPROMVariable var : config.getEeprom()) {
 #define WRITE_<%=NAME%>(value) eeprom_write_block(EEPROM_POINTER(<%=name%>), value, <%=size%>)
 <% 	}
 }
-%>
 
-#endif	// defined EEMEM
+}	// if we have EEPROM variables
+%>
 
 #endif	// not defined EEPROM_DATA_H_

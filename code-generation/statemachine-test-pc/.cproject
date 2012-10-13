@@ -50,8 +50,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.82294448.1212645809" name="timer.c" rcbsApplicability="disable" resourcePath="gen/timer.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.50513385.449734697">
+						<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.50513385.449734697" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.50513385"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="gen/eeprom_accessors.c|gen/timer.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -101,8 +104,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.477193364.1761197475" name="timer.c" rcbsApplicability="disable" resourcePath="gen/timer.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.release.39080185.112206754">
+						<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.39080185.112206754" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release.39080185"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="gen/eeprom_accessors.c|gen/timer.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

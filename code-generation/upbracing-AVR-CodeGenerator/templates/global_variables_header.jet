@@ -14,6 +14,18 @@
 #ifndef GLOBAL_VARIABLES_H_
 #define GLOBAL_VARIABLES_H_
 
+<%
+
+if (config.getGlobalVariables().getDeclarations().isEmpty()
+	&& config.getGlobalVariables().isEmpty()) {
+
+%>
+
+// no global variables
+// You can define some in config.rb
+
+<% } else { %>
+
 #include <stdint.h>
 #include <Os.h>
 
@@ -83,6 +95,10 @@ inline static void <%= var.getSetterName() %>(<%= var.getType() %> value) {
 <% } %>
 }
 
-<% } %>
+<%
+}
+
+} // if there are some global variables
+%>
 
 #endif	// not defined GLOBAL_VARIABLES_H_

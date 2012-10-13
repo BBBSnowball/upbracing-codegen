@@ -2,6 +2,8 @@
 #ifndef CAN_VALUETABLES_H_
 #define CAN_VALUETABLES_H_
 
+#include <common.h>
+
 #ifndef DONT_SET_VALUE_TABLES
 #ifndef SKIP_VT_BootloaderNode
 typedef enum _BootloaderNode {
