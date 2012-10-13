@@ -358,7 +358,7 @@ public class StateMachineForGeneration {
 	}
 
 
-	public String getName(Object state) {
+	public static String getName(Object state) {
 		if (state instanceof NamedItem)
 			return ((NamedItem) state).getName();
 		else if (state instanceof StateMachine)

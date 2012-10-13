@@ -6,9 +6,13 @@ import java.util.regex.Pattern;
 
 import Statecharts.FinalState;
 import Statecharts.InitialState;
+import Statecharts.NamedItem;
 import Statecharts.NormalState;
 import Statecharts.Region;
 import Statecharts.State;
+import Statecharts.StateMachine;
+import Statecharts.StateParent;
+import Statecharts.StateScope;
 import Statecharts.SuperState;
 import Statecharts.Transition;
 import de.upbracing.code_generation.Messages;
@@ -57,37 +61,8 @@ public class Validator {
 	}
 
 	public boolean validate() {
-
-		@SuppressWarnings("unused")
-		boolean valid = true;
-
-		// make sure that we don't have any unexpected null values
-		ContextItem task_context = messages.pushContext("check for null values in inappropiate places");
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			ContextItem smg_context = messages.pushContext(smg);
-			
-			if (!validateNotNull(smg.getGlobalCodeBoxes(), "global code boxes"))
-				return false;
-
-			if (!validateNotNull(smg.getStates(), "states"))
-				return false;
-
-			if (!validateNotNull(smg.getTransitions(), "transitions"))
-				return false;
-
-			if (!validateStatesNotNull(smg.getStates()))
-				return false;
-
-			for (Transition t : smg.getTransitions()) {
-				if (t.getSource() == null || t.getDestination() == null) {
-					messages.fatal("FATAL: Each transition must have a valid source and destination. Invalid transition: %s", t);
-					return false;
-				}
-			}
-			
-			smg_context.pop();
-		}
-		task_context.pop();
+		if (!validateNull())
+			return false;
 
 		// make sure that we have the appropiate values on the root object
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
@@ -115,49 +90,23 @@ public class Validator {
 
 		if (!after_update_config) {
 			for (StateMachineForGeneration smg : config.getStatemachines()) {
-				// TODO for Rishab: validate state machines
-				// - statemachine names, regions and event names are valid C
-				// identifiers; however, all
-				// of them except the statemachine name can be empty
-				// done // - no edges going to initial states or starting at
-				// final states
-				// done // - initial states have exactly one transition
-				// done // - edges from initial states cannot have events, wait
-				// conditions or conditions
-				// - if an edge has a condition or an event, the waitType cannot
-				// be "wait" ("after" and all the others are ok)
-				// - if an edge has waitType=="before", it must have a condition
-				// or an event (or both)
-				// Probably, you will find some more things to check.
-
-				// If an error is detected, the validator should continue and
-				// display all
-				// other errors.
-
-				// For each error, print a meaningful message and the location.
-				// The location could
-				// look like this: "SuperState abc -> Region x -> State foo"
-
 				// statemachine validation
-				//
 
 				ContextItem statemachine_context = messages.pushContext(smg);
 
+				// check whether the statemachine has a valid name
 				if (!nameValidate(smg)) {
 					setNameErrorMess(smg.getName());
-					valid = false;
 				}
 
-				// event validation
-				if (smg.getEvents().keySet().size() > 0) {
+				// event name validation
+				if (!smg.getEvents().isEmpty()) {
 					for (String event : smg.getEvents().keySet())
-						if (!evNameValidate(event, smg.getEvents().get(event),
-								smg))
-							valid = false;
+						evNameValidate(event, smg.getEvents().get(event), smg);
 				} 
 				
-				if (!typeCheckAndValidate(smg.getStates(), smg))
-					valid = false;
+				// traverse all states and regions and run various validators for them
+				typeCheckAndValidate(smg.getStates(), smg);
 
 				statemachine_context.pop();
 			}
@@ -168,133 +117,87 @@ public class Validator {
 	}
 
 	// check all the state types and perform validation
-	private boolean typeCheckAndValidate(List<State> s,
+	private void typeCheckAndValidate(List<State> s,
 			StateMachineForGeneration smg) {
-		boolean valid = true;
-
 		for (State state : s) {
 			ContextItem state_context = messages.pushContext(state);
 
 			if (state instanceof InitialState)
-				if (!initalValidate(state, smg))
-					valid = false;
+				initalValidate(state, smg);
 
-			if (state instanceof FinalState)
-				if (!finalValidate(state, smg))
-					valid = false;
+			else if (state instanceof FinalState)
+				finalValidate(state, smg);
 
-			if (state instanceof NormalState)
-				if (!normSupValidate(state, smg))
-					valid = false;
+			else if (state instanceof NormalState)
+				normSupValidate((NormalState)state, smg);
 
-			if (state instanceof SuperState) {
+			else if (state instanceof SuperState) {
+				SuperState sstate = (SuperState) state;
 
-				if (!normSupValidate(state, smg))
-					valid = false;
+				normSupValidate(sstate, smg);
 
-				for (Region region : ((SuperState) state).getRegions()) {
+				for (Region region : sstate.getRegions()) {
 					ContextItem region_context = messages.pushContext(region);
 
+					nameValidate(region);
+
 					typeCheckAndValidate(region.getStates(), smg);
+					
 					region_context.pop();
 				}
 			}
+			
 			state_context.pop();
 		}
 
 		// check number of initial states for each parent
-		if (!initialCount(smg.getStates()))
-			valid = false;
-
-		return valid;
+		checkInitialCount(smg.getStates());
 	}
 
 	// perform validation of initial state
-	public boolean initalValidate(State state, StateMachineForGeneration smg) {
-		boolean valid = true;
+	public void initalValidate(State state, StateMachineForGeneration smg) {
+		nameValidate(state);
 
-		if (!nameValidate(state, smg))
-			valid = false;
+		initialHasInTransValidate(state);
 
-		if (initialHasInTransValidate(state, smg))
-			valid = false;
+		initialOutValidate(state);
 
-		if (!initialOutValidate(state, smg))
-			valid = false;
-
-		if (initialTransValidate(state, smg)) {
-			valid = false;
-		}
-		return valid;
+		initialTransValidate(state, smg);
 	}
 
 	// count number of initial states
-	public boolean initialCount(List<State> states) {
+	public void checkInitialCount(List<State> states) {
 		int initialcount = 0;
-		boolean valid = true;
-
 		for (State state : states) {
 			if (state instanceof InitialState) {
 				initialcount++;
 
-				if (initialcount > 1) {
-					messages.error("More than 1 start states");
-					valid = false;
-				}
 			}
 		}
 
-		for (State s : states) {
-			if (s instanceof SuperState) {
-				ContextItem superstate_context = messages.pushContext(s);
-
-				for (Region region : ((SuperState) s).getRegions()) {
-					ContextItem region_context = messages.pushContext(region);
-					initialCount(region.getStates());
-					region_context.pop();
-				}
-				superstate_context.pop();
-			}
-		}
-
-		return valid;
+		if (initialcount > 1)
+			messages.error("More than 1 start states");
+		else if (initialcount < 1 && !states.isEmpty())
+			messages.error("No initial state");
 	}
 
 	// validate all final states
-	public boolean finalValidate(State state, StateMachineForGeneration smg) {
-		boolean valid = true;
-		
-		if (!nameValidate(state, smg))
-			valid = false;
+	public void finalValidate(State state, StateMachineForGeneration smg) {
+		nameValidate(state);
 
-		if (!finalOutValidate(state, smg))
-			valid = false;
+		finalOutValidate(state);
 
-		if (!stateInTransValidate(state, smg))
-			valid = false;
-
-		if (!normalTransValidate(state, smg))
-			valid = false;
-
-		return valid;
+		normalTransValidate(state, smg);
 	}
 
 	// validate normal and super states
-	public boolean normSupValidate(State state, StateMachineForGeneration smg) {
-		boolean valid = true;
+	public void normSupValidate(State state, StateMachineForGeneration smg) {
+		nameValidate(state);
 
-		if (!nameValidate(state, smg))
-			valid = false;
-
-		if (!stateInTransValidate(state, smg))
-			valid = false;
-
-		if (!normalTransValidate(state, smg))
-			valid = false;
-
-		return valid;
+		normalTransValidate(state, smg);
 	}
 
+	/** return whether we have any null values in inappropiate places */
 	private boolean validateStatesNotNull(Iterable<State> states) {
 		for (State state : states) {
 			ContextItem state_context = messages.pushContext(state);
@@ -316,6 +219,14 @@ public class Validator {
 		return true;
 	}
 
+	/** print fatal error, if there are any null values in the list
+	 * 
+	 * @param xs the items that shouldn't be null
+	 * @param list_name a description of the items in the list to
+	 *         use in the error message (should be in plural, e.g.
+	 *         "states")
+	 * @return true, if there isn't any null value
+	 */
 	private boolean validateNotNull(Iterable<?> xs, String list_name) {
 		for (Object x : xs) {
 			if (x == null) {
@@ -324,6 +235,39 @@ public class Validator {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	/** return whether we have any null values in inappropiate places */
+	private boolean validateNull() {
+		// make sure that we don't have any unexpected null values
+		ContextItem task_context = messages.pushContext("check for null values in inappropiate places");
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			ContextItem smg_context = messages.pushContext(smg);
+			
+			if (!validateNotNull(smg.getGlobalCodeBoxes(), "global code boxes"))
+				return false;
+
+			if (!validateNotNull(smg.getStates(), "states"))
+				return false;
+
+			if (!validateNotNull(smg.getTransitions(), "transitions"))
+				return false;
+
+			if (!validateStatesNotNull(smg.getStates()))
+				return false;
+
+			for (Transition t : smg.getTransitions()) {
+				if (t.getSource() == null || t.getDestination() == null) {
+					messages.fatal("FATAL: Each transition must have a valid source and destination. Invalid transition: %s", t);
+					return false;
+				}
+			}
+			
+			smg_context.pop();
+		}
+		task_context.pop();
+		
 		return true;
 	}
 
@@ -345,13 +289,13 @@ public class Validator {
 	}
 
 	// validate state name
-	public boolean nameValidate(State state, StateMachineForGeneration smg) {
+	public boolean nameValidate(NamedItem state) {
 		String name = state.getName();
 
 		if (emptyOrNull(name) || isNameValid(name))
 			return true;
 		else {
-			setNameErrorMess(smg.getName(state));
+			setNameErrorMess(name);
 			return false;
 		}
 	}
@@ -362,7 +306,6 @@ public class Validator {
 	}
 
 	// event name validator
-	// TODO pass Transition to this method and use it in the error message.
 	private boolean evNameValidate(String event, Set<Transition> trans,
 			StateMachineForGeneration smg) {
 		if (emptyOrNull(event) || isNameValid(event))
@@ -377,223 +320,185 @@ public class Validator {
 		}
 	}
 
-	private void setNameErrorMess(Object name) {
-		messages.error("%s is not a valid C identifier!", name);
+	private void setNameErrorMess(String name) {
+		messages.error("'%s' is not a valid C identifier!", name);
 	}
 
 	// validate initial state transitions
-	private boolean initialTransValidate(State state,
+	private void initialTransValidate(State state,
 			StateMachineForGeneration smg) {
-
-		boolean valid = true;
 		for (Transition trans : state.getOutgoingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
 
 			ContextItem trans_context = messages.pushContext(trans);
 
-			if (ti.isWaitTransition()) {
-				setTransitionErrorMessage("waiting transition");
-				valid = false;
-			}
+			if (ti.isWaitTransition())
+				messages.error("Initial transitions cannot be waiting transitions");
 
-			if (!emptyOrNull(ti.getEventName())) {
-				setTransitionErrorMessage("events");
-				valid = false;
-			}
+			if (!emptyOrNull(ti.getEventName()))
+				messages.error("Initial transitions cannot be triggered by an event");
 			
 			if (!emptyOrNull(ti.getCondition()) && !ti.getCondition().equals("1")
-					&& !ti.getCondition().equals("true")) {
-				setTransitionErrorMessage("conditions");
-				valid = false;
-			}
+					&& !ti.getCondition().equals("true"))
+				messages.error("Initial transitions cannot have a condition");
 
 			trans_context.pop();
 		}
-		return valid;
 	}
 
 	// validate normal/super state transition
-	private boolean normalTransValidate(State state,
+	private void normalTransValidate(State state,
 			StateMachineForGeneration smg) {
-
-		boolean valid = true;
 		for (Transition trans : state.getIncomingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
+
+			// initial transitions are checked somewhere else
+			if (trans.getSource() instanceof InitialState)
+				continue;
+
 			ContextItem trans_context = messages.pushContext(trans);
-
-			if (!(trans.getSource() instanceof InitialState)) {
-				if (!emptyOrNull(ti.getCondition())
-						|| !emptyOrNull(ti.getEventName())) {
-					
-					if (ti.getWaitType() != null && ti.getWaitType().equals("wait"))
-						setTransitionErrorMessage("waitType 'wait' but condition/event not empty");
-
-					valid = false;
-
-				} else if (ti.getWaitType().equals("before")) {
-					if (emptyOrNull(ti.getCondition())
-							&& emptyOrNull(ti.getEventName()))
-
-						setTransitionErrorMessage("waitType 'before' but no condition/event");
-					valid = false;
+			
+			String condition = ti.getCondition();
+			String eventname = ti.getEventName();
+			String waitType = ti.getWaitType();
+			
+			if (waitType != null) {
+				if (waitType.equals("wait")) {
+					// If an edge has a condition or an event, the waitType cannot
+					// be "wait" ("after" and all the others are ok).
+					if (!emptyOrNull(condition) || !emptyOrNull(eventname))
+						messages.error("Transition has waitType 'wait', but condition or event not empty");
+				} else if (waitType.equals("before")) {
+					// If an edge has waitType=="before", it must have a condition
+					// or an event (or both)
+					if (emptyOrNull(condition) && emptyOrNull(eventname))
+						messages.error("Transition has waitType 'before' but neither condition nor event");
 				}
 			}
+			
 			trans_context.pop();
 		}
-		return valid;
 	}
 
 	// check whether initial state has incoming transitions
-	private boolean initialHasInTransValidate(State state,
-			StateMachineForGeneration smg) {
-		boolean hasincoming = true;
-
-		if (state.getIncomingTransitions().size() != 0) {
-			for (Transition trans : state.getIncomingTransitions()) {
-				ContextItem trans_context = messages.pushContext(trans);
-				setStateTransitionError("incoming");
-				trans_context.pop();
-			}
-		} else
-			hasincoming = false;
-
-		return hasincoming;
+	private void initialHasInTransValidate(State state) {
+		for (Transition trans : state.getIncomingTransitions()) {
+			ContextItem trans_context = messages.pushContext(trans);
+			messages.error("Initial states cannot have incoming transitions!");
+			trans_context.pop();
+		}
 	}
 
 	// perform checks for outgoing transitions from initial state
-	private boolean initialOutValidate(State state, StateMachineForGeneration smg) {
-		boolean hasoutgoing = true;
-
-		if (state.getOutgoingTransitions().size() > 1) {
-			setStateTransitionError("more than 1 outgoing");
-			hasoutgoing = false;
+	private void initialOutValidate(State state) {
+		if (state.getOutgoingTransitions().size() != 1) {
+			messages.error("Initial state must have exactly one outgoing transition");
 		}
-		return hasoutgoing;
 	}
 
 	// check whether final has any outgoing transitions
-	private boolean finalOutValidate(State state, StateMachineForGeneration smg) {
-		boolean outgoing = false;
-
-		if (state.getOutgoingTransitions().size() != 0) {
-			setStateTransitionError("outgoing");
-			outgoing = true;
+	private void finalOutValidate(State state) {
+		if (!state.getOutgoingTransitions().isEmpty()) {
+			messages.error("Final states cannot have outgoing transitions!");
 		}
-		return outgoing;
 	}
 
-	// check whether state has incoming transitions
-	private boolean stateInTransValidate(State state,
-			StateMachineForGeneration smg) {
-		boolean incoming = true;
-
-		if (state.getIncomingTransitions().size() == 0) {
-			setStateTransitionError("No incoming");
-			incoming = false;
-		}
-		return incoming;
+	private static String escapeString(String name) {
+		if (Pattern.matches("^[a-zA-Z0-9_-]+$", name))
+			return name;
+		else
+			return "'" + name.replaceAll("([\\'\"])", "\\\\$1").replace("\n", "\\n").replace("\t", "\\t") + "'";
 	}
-
-	private void setTransitionErrorMessage(String s) {
-		messages.error("Transition has %s!", s);
+	
+	private <STATE extends StateScope> void addStateFormatter(Class<STATE> cls, final String type_name) {
+		messages.addObjectFormatter(cls,
+				new Messages.ObjectFormatter<STATE>() {
+					public String format(int type, STATE obj) {
+						String name = escapeString(StateMachineForGeneration.getName(obj));
+						
+						switch (type) {
+						case SHORT:
+							return name;
+						case NORMAL:
+							String self = type_name + " " + name;
+							
+							StateParent parent = obj.getParent();
+							if (parent != null)
+								return messages.format(type, parent) + " -> " + self;
+							else
+								return self;
+						case LONG:
+							return type_name + " " + name;
+						default:
+							throw new IllegalArgumentException("unexpected type");
+						}
+					}
+				});
 	}
-
-	private void setStateTransitionError(String s) {
-		messages.error("State has %s transitions!", s);
-	}
-
+	
 	private void initFormatters() {
 		messages.addObjectFormatter(StateMachineForGeneration.class,
 				new Messages.ObjectFormatter<StateMachineForGeneration>() {
 					public String format(int type, StateMachineForGeneration obj) {
-						if (type == SHORT)
+						switch (type) {
+						case SHORT:
 							return obj.getName();
-						else
-							return " StateMachine -> " + obj.getName();
+						case NORMAL:
+						case LONG:
+							return "StateMachineForGeneration " + obj.getName();
+						default:
+							throw new IllegalArgumentException("unexpected type");
+						}
 					}
 				});
 
-		messages.addObjectFormatter(State.class,
-				new Messages.ObjectFormatter<State>() {
-					public String format(int type, State obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " State -> " + obj.getName();
+		messages.addObjectFormatter(StateMachine.class,
+				new Messages.ObjectFormatter<StateMachine>() {
+					public String format(int type, StateMachine obj) {
+						StateMachineForGeneration smg = null;
+						for (StateMachineForGeneration smg2 : config.getStatemachines()) {
+							if (smg2.getStateMachine() == obj) {
+								smg = smg2;
+								break;
+							}
+						}
+						
+						String name = (smg != null ? escapeString(smg.getName()) : "?");
+						
+						switch (type) {
+						case SHORT:
+							return name;
+						case NORMAL:
+						case LONG:
+							return "StateMachine " + name;
+						default:
+							throw new IllegalArgumentException("unexpected type");
+						}
 					}
 				});
-
-		messages.addObjectFormatter(InitialState.class,
-				new Messages.ObjectFormatter<InitialState>() {
-					public String format(int type, InitialState obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Start State -> " + obj.getName();
-					}
-				});
-
-		messages.addObjectFormatter(FinalState.class,
-				new Messages.ObjectFormatter<FinalState>() {
-					public String format(int type, FinalState obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Final State -> " + obj.getName();
-					}
-				});
-
-		messages.addObjectFormatter(NormalState.class,
-				new Messages.ObjectFormatter<NormalState>() {
-					public String format(int type, NormalState obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Normal State -> " + obj.getName();
-					}
-				});
-
-		messages.addObjectFormatter(NormalState.class,
-				new Messages.ObjectFormatter<NormalState>() {
-					public String format(int type, NormalState obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Normal State -> " + obj.getName();
-					}
-				});
-
-		messages.addObjectFormatter(SuperState.class,
-				new Messages.ObjectFormatter<SuperState>() {
-					public String format(int type, SuperState obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Super State -> " + obj.getName();
-					}
-				});
-
-		messages.addObjectFormatter(Region.class,
-				new Messages.ObjectFormatter<Region>() {
-					public String format(int type, Region obj) {
-						if (type == SHORT)
-							return obj.getName();
-						else
-							return " Region -> " + obj.getName();
-
-					}
-				});
-
+		
+		addStateFormatter(State.class, "unknown kind of state");
+		addStateFormatter(InitialState.class, "initial state");
+		addStateFormatter(FinalState.class, "final state");
+		addStateFormatter(NormalState.class, "normal state");
+		addStateFormatter(SuperState.class, "super state");
+		addStateFormatter(Region.class, "region");
+		
 		messages.addObjectFormatter(Transition.class,
 				new Messages.ObjectFormatter<Transition>() {
 					public String format(int type, Transition obj) {
-						if (type == SHORT)
-							return "from State " + obj.getSource();
-						else
-							return " Transition: Source -> "
-									+ obj.getSource().getName()
-									+ " Destination -> "
-									+ obj.getDestination().getName();
+						StringBuffer sb = new StringBuffer();
+						if (type >= NORMAL)
+							sb.append("transition: ");
+						
+						sb.append(messages.format(type, obj.getSource()));
+						sb.append(" --> ");
+						sb.append(messages.format(type, obj.getDestination()));
+						
+						if (type >= LONG)
+							sb.append(" (" + obj.getTransitionInfo() + ")");
+						
+						return sb.toString();
 					}
 				});
 	}

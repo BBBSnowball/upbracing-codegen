@@ -167,7 +167,7 @@ public class TestStateTransitions {
 	private void evaluteTransitions(List<State> states,
 			StateMachineForGeneration smg) {
 		
-		validate.initialCount(states);
+		validate.checkInitialCount(states);
 		
 		for (State s : states) {
 			if (s instanceof InitialState) {

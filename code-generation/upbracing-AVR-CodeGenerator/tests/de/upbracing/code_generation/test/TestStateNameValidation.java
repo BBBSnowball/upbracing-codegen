@@ -105,7 +105,7 @@ public class TestStateNameValidation {
 	
 	private void evaluteNormalStates(List<State> states, StateMachineForGeneration smg) {
 		for(State s : states) {
-			validate.nameValidate(s, smg);
+			validate.nameValidate(s);
 			
 			if(s instanceof SuperState)
 				evalutateInnerStates((SuperState) s, smg);

@@ -14,7 +14,6 @@ import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.Gaus
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.StatemachineWithWay;
 
 import Statecharts.GlobalCode;
-import Statecharts.NamedItem;
 import Statecharts.Region;
 import Statecharts.State;
 import Statecharts.StateMachine;
