@@ -1,0 +1,17 @@
+eclipse.preferences.version=1
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CARTOS_DIRECTORY/delimiter=\:
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CARTOS_DIRECTORY/operation=append
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CARTOS_DIRECTORY/value=${CARTOS_DIRECTORY_VARIABLE}
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CODE_GENERATOR_DIR/delimiter=\:
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CODE_GENERATOR_DIR/operation=append
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/CODE_GENERATOR_DIR/value=${CODE_GENERATOR_DIR_VARIABLE}
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/append=true
+environment/project/de.innot.avreclipse.configuration.app.debug.2059647910/appendContributed=true
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CARTOS_DIRECTORY/delimiter=\:
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CARTOS_DIRECTORY/operation=append
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CARTOS_DIRECTORY/value=${CARTOS_DIRECTORY_VARIABLE}
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CODE_GENERATOR_DIR/delimiter=\:
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CODE_GENERATOR_DIR/operation=append
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/CODE_GENERATOR_DIR/value=${CODE_GENERATOR_DIR_VARIABLE}
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/append=true
+environment/project/de.innot.avreclipse.configuration.app.release.885629806/appendContributed=true
