@@ -84,7 +84,7 @@ public class Updater {
 	// to set each transition to the right one.
 	
 	
-	public void collapseFinalStates(MCUConfiguration config) {
+	private void collapseFinalStates(MCUConfiguration config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			collapseFinalStates(smg.getStateMachine());
 		}
@@ -140,114 +140,46 @@ public class Updater {
 		return prefix + Integer.toHexString(++assignNamesCounter).toUpperCase();
 	}
 	
-//	public void assignNames(MCUConfiguration config) {
-//		for (StateMachineForGeneration smg : config.getStatemachines()) {
-//			assignNamesCounter = 0;
-//			
-//			assignNames(smg.getStateMachine());
-//		}
-//	}
-	
-	public void assignNames(MCUConfiguration config) {
+	private void assignNames(MCUConfiguration config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			// TODO for Rishab: Assign a name to each state and region that
-			// doesn't have a
-			// name, yet. You can generate unique names like this:
-			// ("state" + (++runningCounter))
-
-			// TODO for Rishab: Make sure that there is at most one final state
-			// in each region
-			// and top-level of a statemachine. If there is more than one final
-			// state, remove it and update the transitions accordingly. There
-			// can be more than one final state in a statemachine (e.g. one is
-			// in a region and the other one on the top-level), so be careful
-			// to set each transition to the right one.
-
-			List<State> unnamed = new ArrayList<State>();
-
-			unnamed = assignNames(smg.getStates(), smg.getStateMachine(),
-					unnamed);
-				
-			for (State state : unnamed) {
-				if (state instanceof InitialState) {
-					InitialState init = (InitialState) state;
-					init.setName(getNextName("Initial_"));
-				}
-				
-				if (state instanceof FinalState) {
-					FinalState fin = (FinalState) state;
-					fin.setName(getNextName("Final_"));
-				}
-				
-				if (state instanceof NormalState) {
-					NormalState norm = (NormalState) state;
-					norm.setName(getNextName("Normal_"));
-				}
-				
-				if (state instanceof SuperState) {
-					SuperState sup = (SuperState) state;
-					sup.setName(getNextName("Super_"));
-				}
-			}
-		}
-	}
-
-	// get list of unnamed states
-	private List<State> assignNames(Iterable<State> states, StateParent parent,
-			List<State> unnamed) {
-		
-		for (State state : states) {
-			if (state instanceof SuperState) {
-				if (emptyOrNull(state.getName())) {
-					unnamed.add(state);
-				}
-				
-				for (Region reg : ((SuperState) state).getRegions())
-					assignNames(reg.getStates(), reg, unnamed);
-			}
+			assignNamesCounter = 0;
 			
-			if (!(state instanceof SuperState))
-				if (emptyOrNull(state.getName())) {
-					unnamed.add(state);
-				}
+			assignNames(smg.getStateMachine());
 		}
-		return unnamed;
 	}
-//	private void assignNames(StateParent state_parent) {
-//		if (state_parent instanceof SuperState) {
-//			for (Region region : ((SuperState) state_parent).getRegions()) {
-//				if (emptyOrNull(region.getName()))
-//					region.setName(getNextName("region"));
-//				
-//				for (State state : region.getStates())
-//					assignNames(state);
-//			}
-//		} else {
-//			for (State state : state_parent.getStates())
-//				assignNames(state);
-//		}
-//	}
-//
-//	private void assignNames(State state) {
-//		String name = state.getName();
-//		
-//		if (emptyOrNull(name)) {
-//			if (state instanceof InitialState)
-//				((InitialState) state).setName(getNextName("initial"));
-//	
-//			else if (state instanceof FinalState)
-//				((FinalState) state).setName(getNextName("final"));
-//	
-//			else if (state instanceof NormalState)
-//				((NormalState) state).setName(getNextName("state"));
-//	
-//			else if (state instanceof SuperState)
-//				((SuperState) state).setName(getNextName("superstate"));
-//			
-//			else
-//				throw new IllegalArgumentException("unexpected type");
-//		}
-//	}
+
+	private void assignNames(StateParent state_parent) {
+		if (state_parent instanceof SuperState) {
+			for (Region region : ((SuperState) state_parent).getRegions()) {
+				if (emptyOrNull(region.getName()))
+					region.setName(getNextName("region"));
+			}
+		} else {
+			for (State state : state_parent.getStates())
+				assignNames(state);
+		}
+	}
+
+	private void assignNames(State state) {
+		String name = state.getName();
+		
+		if (emptyOrNull(name)) {
+			if (state instanceof InitialState)
+				((InitialState) state).setName(getNextName("initial"));
+	
+			else if (state instanceof FinalState)
+				((FinalState) state).setName(getNextName("final"));
+	
+			else if (state instanceof NormalState)
+				((NormalState) state).setName(getNextName("state"));
+	
+			else if (state instanceof SuperState)
+				((SuperState) state).setName(getNextName("superstate"));
+			
+			else
+				throw new IllegalArgumentException("unexpected type");
+		}
+	}
 
 	public static boolean emptyOrNull(String obj) {
 		return obj == null || obj.isEmpty();

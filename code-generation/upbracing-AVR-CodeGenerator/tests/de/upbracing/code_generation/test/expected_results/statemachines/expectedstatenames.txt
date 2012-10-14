@@ -1,7 +1,51 @@
-ERROR: %state is not a valid C identifier!
-ERROR: st_ate- is not a valid C identifier!
-ERROR:  state is not a valid C identifier!
-ERROR: 2state is not a valid C identifier!
-ERROR: st ate is not a valid C identifier!
-ERROR: st\ate is not a valid C identifier!
-ERROR: state$ is not a valid C identifier!
+
+
+#error There were 7 warnings and/or errors
+/*
+ERROR: '%state' is not a valid C identifier!
+	in StateMachineForGeneration test
+ERROR: 'st_ate-' is not a valid C identifier!
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+ERROR: ' state' is not a valid C identifier!
+	in region region_1
+	in super state super_1
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+ERROR: '2state' is not a valid C identifier!
+	in region region_1
+	in super state super_1
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+ERROR: 'st ate' is not a valid C identifier!
+	in region region_2
+	in super state super_2
+	in region region_1
+	in super state super_1
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+ERROR: 'st\ate' is not a valid C identifier!
+	in region region_3
+	in super state super_3
+	in region region_2
+	in super state super_2
+	in region region_1
+	in super state super_1
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+ERROR: 'state$' is not a valid C identifier!
+	in region region_3
+	in super state super_3
+	in region region_2
+	in super state super_2
+	in region region_1
+	in super state super_1
+	in region region_0
+	in super state super_0
+	in StateMachineForGeneration test
+*/
