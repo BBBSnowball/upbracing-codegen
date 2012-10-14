@@ -24,6 +24,11 @@ public class DBCMessageConfig extends DBCMessage {
 	private String txHandlerData = null;
 	private String beforeTx = null;
 	private String afterTx = null;
+	
+	private String taskAll = null;
+	private String beforeTask = null;
+	private String afterTask = null;
+	
 	private List<String> aliases = new LinkedList<String>();
 	private boolean usingGeneralTransmitter = false;
 	private boolean noSendMessage = false;
@@ -176,6 +181,30 @@ public class DBCMessageConfig extends DBCMessage {
 		this.afterTx = afterTx;
 	}
 
+	public String getTaskAll() {
+		return taskAll;
+	}
+
+	public void setTaskAll(String taskAll) {
+		this.taskAll = taskAll;
+	}
+
+	public String getBeforeTask() {
+		return beforeTask;
+	}
+
+	public void setBeforeTask(String beforeTask) {
+		this.beforeTask = beforeTask;
+	}
+
+	public String getAfterTask() {
+		return afterTask;
+	}
+
+	public void setAfterTask(String afterTask) {
+		this.afterTask = afterTask;
+	}
+
 	public List<String> getAliases() {
 		return aliases;
 	}
@@ -238,6 +267,14 @@ public class DBCMessageConfig extends DBCMessage {
 
 	public void setRtr(boolean rtr) {
 		this.rtr = rtr;
+	}
+	
+	public DBCSignalConfig getSignal(String name) {
+		if (getSignals().containsKey(name))
+			return (DBCSignalConfig)getSignals().get(name);
+		
+		throw new RuntimeException("Unknown Signal \"" + name + "\""); //TODO replace with special exception
+
 	}
 	
 	/**

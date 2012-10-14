@@ -20,6 +20,13 @@ public class DBCSignalConfig extends DBCSignal {
 	private String getValue = null;
 	private String param = null;
 	
+	//Code replacements for periodic tasks
+	private String beforeTask = null;
+	private String afterTask = null;
+	private String beforeReadValueTask = null;
+	private String afterReadValueTask = null;
+	private String readValueTask = null;
+	
 	private boolean noGlobalVar = false;
 	private String globalVarName = null;
 
@@ -142,6 +149,46 @@ public class DBCSignalConfig extends DBCSignal {
 
 	public void setParam(String param) {
 		this.param = param;
+	}
+
+	public String getBeforeTask() {
+		return beforeTask;
+	}
+
+	public void setBeforeTask(String beforeTask) {
+		this.beforeTask = beforeTask;
+	}
+
+	public String getAfterTask() {
+		return afterTask;
+	}
+
+	public void setAfterTask(String afterTask) {
+		this.afterTask = afterTask;
+	}
+
+	public String getBeforeReadValueTask() {
+		return beforeReadValueTask;
+	}
+
+	public void setBeforeReadValueTask(String beforeReadValueTask) {
+		this.beforeReadValueTask = beforeReadValueTask;
+	}
+
+	public String getAfterReadValueTask() {
+		return afterReadValueTask;
+	}
+
+	public void setAfterReadValueTask(String afterReadValueTask) {
+		this.afterReadValueTask = afterReadValueTask;
+	}
+
+	public String getReadValueTask() {
+		return readValueTask;
+	}
+
+	public void setReadValueTask(String readValueTask) {
+		this.readValueTask = readValueTask;
 	}
 
 	public boolean isNoGlobalVar() {
