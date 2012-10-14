@@ -59,9 +59,9 @@ typedef enum {
 	simple_pc_on_state,
 } simple_pc_state__state_t;
 typedef enum {
-	simple_pc_on_Desktop_running_null_Desktop1_state,
-	simple_pc_on_Desktop_running_null_Desktop2_state,
-} simple_pc_state__on__Desktop__running__null__state_t;
+	simple_pc_on_Desktop_running_region1_Desktop1_state,
+	simple_pc_on_Desktop_running_region1_Desktop2_state,
+} simple_pc_state__on__Desktop__running__region1__state_t;
 
 typedef struct {
 	simple_pc_state__on__Browser__state_t on__Browser__state;
@@ -71,7 +71,7 @@ typedef struct {
 	simple_pc_state__state_t state;
 	union {
 		uint8_t loading__wait_time;
-		simple_pc_state__on__Desktop__running__null__state_t running__null__state;
+		simple_pc_state__on__Desktop__running__region1__state_t running__region1__state;
 	} on__Desktop;
 } simple_pc_state_var_t;
 
@@ -172,7 +172,7 @@ void simple_pc_tick() {
 				if (simple_pc_state.on__Desktop.loading__wait_time >= 150) {  // wait(1.5 sec)
 					// loading -> running
 					simple_pc_state.on__Desktop__state = simple_pc_on_Desktop_running_state;
-					simple_pc_state.on__Desktop.running__null__state = simple_pc_on_Desktop_running_null_Desktop1_state;
+					simple_pc_state.on__Desktop.running__region1__state = simple_pc_on_Desktop_running_region1_Desktop1_state;
 				}
 
 				break;
@@ -190,12 +190,12 @@ void simple_pc_tick() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -271,12 +271,12 @@ void simple_pc_event_cosmic_ray() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -353,12 +353,12 @@ void simple_pc_event_home() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -430,12 +430,12 @@ void simple_pc_event_open_search() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -507,12 +507,12 @@ void simple_pc_event_open_tab() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -584,12 +584,12 @@ void simple_pc_event_start_browser() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -656,15 +656,15 @@ void simple_pc_event_swich_desktop() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						if (1) {
 							// Desktop2 -> Desktop1
-							simple_pc_state.on__Desktop.running__null__state = simple_pc_on_Desktop_running_null_Desktop1_state;
+							simple_pc_state.on__Desktop.running__region1__state = simple_pc_on_Desktop_running_region1_Desktop1_state;
 						}
 
 						break;
@@ -733,17 +733,17 @@ void simple_pc_event_switch_desktop() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						if (1) {
 							// Desktop1 -> Desktop2
-							simple_pc_state.on__Desktop.running__null__state = simple_pc_on_Desktop_running_null_Desktop2_state;
+							simple_pc_state.on__Desktop.running__region1__state = simple_pc_on_Desktop_running_region1_Desktop2_state;
 						}
 
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -806,12 +806,12 @@ void simple_pc_event_turn_off() {
 				break;
 
 			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
 					break;
 
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
 					break;
 
 				}
@@ -854,12 +854,12 @@ void simple_pc_event_turn_off() {
 				break;
 
 			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
 					break;
 
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
 					break;
 
 				}
@@ -903,60 +903,12 @@ void simple_pc_event_turn_off() {
 				break;
 
 			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
 					break;
 
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
-					break;
-
-				}
-				break;
-
-			}
-			switch (simple_pc_state.on__Kernel__state) {
-
-			case simple_pc_on_Kernel_booting_state:
-				break;
-
-			case simple_pc_on_Kernel_oops_state:
-				break;
-
-			case simple_pc_on_Kernel_running_state:
-				break;
-
-			}
-			switch (simple_pc_state.on__Browser__state) {
-
-			case simple_pc_on_Browser_empty_state:
-				break;
-
-			case simple_pc_on_Browser_google_state:
-				break;
-
-			case simple_pc_on_Browser_home_state:
-				break;
-
-			case simple_pc_on_Browser_not_running_state:
-				break;
-
-			}
-			switch (simple_pc_state.on__Desktop__state) {
-
-			case simple_pc_on_Desktop_loading_state:
-				break;
-
-			case simple_pc_on_Desktop_not_running_state:
-				break;
-
-			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
-
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
-					break;
-
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
 					break;
 
 				}
@@ -999,12 +951,12 @@ void simple_pc_event_turn_off() {
 				break;
 
 			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
 					break;
 
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
 					break;
 
 				}
@@ -1047,12 +999,60 @@ void simple_pc_event_turn_off() {
 				break;
 
 			case simple_pc_on_Desktop_running_state:
-				switch (simple_pc_state.on__Desktop.running__null__state) {
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-				case simple_pc_on_Desktop_running_null_Desktop1_state:
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
 					break;
 
-				case simple_pc_on_Desktop_running_null_Desktop2_state:
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
+					break;
+
+				}
+				break;
+
+			}
+			switch (simple_pc_state.on__Kernel__state) {
+
+			case simple_pc_on_Kernel_booting_state:
+				break;
+
+			case simple_pc_on_Kernel_oops_state:
+				break;
+
+			case simple_pc_on_Kernel_running_state:
+				break;
+
+			}
+			switch (simple_pc_state.on__Browser__state) {
+
+			case simple_pc_on_Browser_empty_state:
+				break;
+
+			case simple_pc_on_Browser_google_state:
+				break;
+
+			case simple_pc_on_Browser_home_state:
+				break;
+
+			case simple_pc_on_Browser_not_running_state:
+				break;
+
+			}
+			switch (simple_pc_state.on__Desktop__state) {
+
+			case simple_pc_on_Desktop_loading_state:
+				break;
+
+			case simple_pc_on_Desktop_not_running_state:
+				break;
+
+			case simple_pc_on_Desktop_running_state:
+				switch (simple_pc_state.on__Desktop.running__region1__state) {
+
+				case simple_pc_on_Desktop_running_region1_Desktop1_state:
+					break;
+
+				case simple_pc_on_Desktop_running_region1_Desktop2_state:
 					break;
 
 				}
@@ -1103,12 +1103,12 @@ void simple_pc_event_turn_off() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}
@@ -1184,12 +1184,12 @@ void simple_pc_event_turn_on() {
 
 				// execute transitions for the children, unless some transition has changed the state
 				if (simple_pc_state.on__Desktop__state == simple_pc_on_Desktop_running_state) {
-					switch (simple_pc_state.on__Desktop.running__null__state) {
+					switch (simple_pc_state.on__Desktop.running__region1__state) {
 
-					case simple_pc_on_Desktop_running_null_Desktop1_state:
+					case simple_pc_on_Desktop_running_region1_Desktop1_state:
 						break;
 
-					case simple_pc_on_Desktop_running_null_Desktop2_state:
+					case simple_pc_on_Desktop_running_region1_Desktop2_state:
 						break;
 
 					}

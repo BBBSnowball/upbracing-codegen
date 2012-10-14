@@ -2,19 +2,11 @@ package de.upbracing.code_generation.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
-
 import org.junit.Test;
 
 import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.SuperState;
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
-import de.upbracing.code_generation.Messages.ContextItem;
-import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Validator;
 
 public class TestStateNameValidation {
@@ -91,11 +83,11 @@ public class TestStateNameValidation {
 		
 		
 		for(int i=0; i<7; i++) {
-			assertEquals(false, Validator.nameValidate(state[i]));
+			assertEquals(false, validate.nameValidate(state[i]));
 		}
 		
 		for(int i=7; i<state.length; i++)
-			assertEquals(true, Validator.nameValidate(state[i]));
+			assertEquals(true, validate.nameValidate(state[i]));
 			
 //		StringBuffer sb = new StringBuffer();
 //		messages.summarizeForCode(sb);

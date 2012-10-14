@@ -42,8 +42,6 @@ public class Updater {
 		convertWaitToActionsAndConditions(config);
 		
 		context.pop();
-		Validator val = new Validator(config, true, null);
-		val.validate();
 		
 		return null;
 	}
@@ -115,6 +113,9 @@ public class Updater {
 	}
 
 	private void collapseFinalStates(List<FinalState> states) {
+		// copy the list to avoid ConcurrentModificationException
+		states = new ArrayList<FinalState>(states);
+		
 		// choose one state that will not be removed
 		FinalState surviving_state = states.get(0);
 		
@@ -125,7 +126,10 @@ public class Updater {
 				continue;
 			
 			// rewrite all transitions to point to the surviving state instead of the removed states
-			for (Transition transition : state.getIncomingTransitions())
+			// Again, we have to copy the list to avoid exceptions.
+			List<Transition> incomingTransitions = new ArrayList<Transition>(
+					state.getIncomingTransitions());
+			for (Transition transition : incomingTransitions)
 				transition.setDestination(surviving_state);
 	
 			// remove the state
@@ -153,6 +157,8 @@ public class Updater {
 			for (Region region : ((SuperState) state_parent).getRegions()) {
 				if (emptyOrNull(region.getName()))
 					region.setName(getNextName("region"));
+				
+				assignNames(region);
 			}
 		} else {
 			for (State state : state_parent.getStates())
@@ -179,6 +185,9 @@ public class Updater {
 			else
 				throw new IllegalArgumentException("unexpected type");
 		}
+		
+		if (state instanceof StateParent)
+			assignNames((StateParent)state);
 	}
 
 	public static boolean emptyOrNull(String obj) {

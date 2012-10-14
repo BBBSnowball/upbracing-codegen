@@ -66,7 +66,7 @@ public class Validator {
 			ContextItem smg_context = messages.pushContext(smg);
 			
 			if (smg.getBasePeriodAsString() == null) {
-				messages.error("ERROR: Statemachine needs a base rate");
+				messages.error("Statemachine needs a base rate");
 
 				// set some rate because the program will crash, if it finds a
 				// null in there

@@ -16,13 +16,10 @@ import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
+import de.upbracing.code_generation.generators.fsm.Helpers;
 import de.upbracing.code_generation.generators.fsm.Validator;
 
 public class TestStateTransitions {
-
-	Messages messages = new Messages();
-	Validator validate = new Validator(messages);
-
 	@Test
 	public void test() {
 		StateMachine statemachine = JRubyHelpers.getStatemachineFactory()
@@ -153,20 +150,20 @@ public class TestStateTransitions {
 		config.getStatemachines().add(smg);
 		final StringBuffer sb = new StringBuffer();
 		
+		Messages messages = new Messages();
+		Helpers.addStatemachineFormatters(messages, config.getStatemachines());
+		
 		messages.addMessageListener(new MessageListener() {
-			
 			@Override
 			public void message(Message msg) {
 				msg.format(sb);
 			}
 		});
 		
-		messages.summarizeForCode(sb);
-		System.out.println(sb);
-		
-		Validator validate1 = new Validator(config, false, null);
-		validate1.setMessages(messages);
-		assertEquals(false, validate1.validate());
-		assertEquals(TestHelpers.loadResource("/expected_results/statemachines/ExpectedTransitionTestResults.txt"),sb.toString());
+		Validator validator = new Validator(config, false, null);
+		validator.setMessages(messages);
+		assertEquals(false, validator.validate());
+		assertEquals(TestHelpers.loadResource("/expected_results/statemachines/ExpectedTransitionTestResults.txt"),
+				sb.toString());
 	}
 }

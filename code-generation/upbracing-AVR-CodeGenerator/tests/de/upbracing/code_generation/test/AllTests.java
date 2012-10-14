@@ -10,7 +10,8 @@ import org.junit.runners.Suite.SuiteClasses;
 		TestRTOSGenerator.class, TestStatemachineGenerator.class,
 		TestTable.class, TestStateNameValidation.class,
 		TestMessages.class, TestUtils.class,
-		TestStateTransitions.class })
+		TestStateTransitions.class, TestCollapseFinalStates.class,
+		TestAssignNames.class })
 public class AllTests {
 
 }
