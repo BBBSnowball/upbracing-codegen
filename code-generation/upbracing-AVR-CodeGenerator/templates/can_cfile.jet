@@ -56,6 +56,19 @@ if (run_generator) {
 #include <avr/interrupt.h>
 
 <%
+String cdecls = config.getCan().getCFileDeclarations();
+if (cdecls != null && !cdecls.isEmpty()) {
+%>
+
+/////////////////////////
+/// user declarations ///
+/////////////////////////
+
+<%= cdecls %>
+
+<%
+}
+
 GlobalVariableConfig globVars = config.getGlobalVariables();
 
 

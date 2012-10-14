@@ -55,6 +55,17 @@ if (run_generator) {
 
 #define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
 
+<%
+String hdecls = config.getCan().getHeaderDeclarations();
+if (hdecls != null && !hdecls.isEmpty()) {
+%>
+/////////////////////////
+/// user declarations ///
+/////////////////////////
+
+<%= hdecls %>
+
+<% } %>
 
 /////////////////////////
 ///  CAN definitions  ///
