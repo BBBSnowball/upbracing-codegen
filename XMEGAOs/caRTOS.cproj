@@ -180,65 +180,65 @@
     <OutputFileExtension>.elf</OutputFileExtension>
     <ToolchainSettings>
       <AvrGcc>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>F_CPU=8000000UL</Value>
-    </ListValues>
-  </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>../os</Value>
-      <Value>../os/internal</Value>
-      <Value>../os/datatypes</Value>
-      <Value>../os/generated</Value>
-      <Value>../os/drivers</Value>
-      <Value>../src/asf/xmega/drivers/cpu</Value>
-      <Value>../src/asf/xmega/drivers/pmic</Value>
-      <Value>../src/asf/xmega/drivers/sleep</Value>
-      <Value>../src/asf/xmega/drivers/ebi</Value>
-      <Value>../src/asf/common/utils</Value>
-      <Value>../src/asf/xmega/utils/preprocessor</Value>
-      <Value>../src/asf/xmega/utils</Value>
-      <Value>../src/asf/common/services/sleepmgr</Value>
-      <Value>../src/config/</Value>
-      <Value>../src/asf/common/services/clock</Value>
-      <Value>../os/semaphores</Value>
-      <Value>../os/IPC</Value>
-      <Value>../os/config</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.compiler.warnings.Pedantic>True</avrgcc.compiler.warnings.Pedantic>
-  <avrgcc.linker.libraries.Libraries>
-    <ListValues>
-      <Value>m</Value>
-    </ListValues>
-  </avrgcc.linker.libraries.Libraries>
-  <avrgcc.linker.memorysettings.InitialStack>0x01ff</avrgcc.linker.memorysettings.InitialStack>
-  <avrgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>../src/asf/xmega/drivers/cpu</Value>
-      <Value>../src/asf/xmega/drivers/pmic</Value>
-      <Value>../src/asf/xmega/drivers/sleep</Value>
-      <Value>../src/asf/xmega/drivers/ebi</Value>
-      <Value>../src/asf/common/utils</Value>
-      <Value>../src/asf/xmega/utils/preprocessor</Value>
-      <Value>../src/asf/xmega/utils</Value>
-      <Value>../src/asf/common/services/sleepmgr</Value>
-      <Value>../src/config/</Value>
-      <Value>../src/asf/common/services/clock</Value>
-    </ListValues>
-  </avrgcc.assembler.general.IncludePaths>
-  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-</AvrGcc>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>F_CPU=8000000UL</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>../os</Value>
+            <Value>../os/internal</Value>
+            <Value>../os/datatypes</Value>
+            <Value>../os/generated</Value>
+            <Value>../os/drivers</Value>
+            <Value>../src/asf/xmega/drivers/cpu</Value>
+            <Value>../src/asf/xmega/drivers/pmic</Value>
+            <Value>../src/asf/xmega/drivers/sleep</Value>
+            <Value>../src/asf/xmega/drivers/ebi</Value>
+            <Value>../src/asf/common/utils</Value>
+            <Value>../src/asf/xmega/utils/preprocessor</Value>
+            <Value>../src/asf/xmega/utils</Value>
+            <Value>../src/asf/common/services/sleepmgr</Value>
+            <Value>../src/config/</Value>
+            <Value>../src/asf/common/services/clock</Value>
+            <Value>../os/semaphores</Value>
+            <Value>../os/IPC</Value>
+            <Value>../os/config</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcc.compiler.warnings.Pedantic>True</avrgcc.compiler.warnings.Pedantic>
+        <avrgcc.linker.libraries.Libraries>
+          <ListValues>
+            <Value>m</Value>
+          </ListValues>
+        </avrgcc.linker.libraries.Libraries>
+        <avrgcc.linker.memorysettings.InitialStack>0x01ff</avrgcc.linker.memorysettings.InitialStack>
+        <avrgcc.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>../src/asf/xmega/drivers/cpu</Value>
+            <Value>../src/asf/xmega/drivers/pmic</Value>
+            <Value>../src/asf/xmega/drivers/sleep</Value>
+            <Value>../src/asf/xmega/drivers/ebi</Value>
+            <Value>../src/asf/common/utils</Value>
+            <Value>../src/asf/xmega/utils/preprocessor</Value>
+            <Value>../src/asf/xmega/utils</Value>
+            <Value>../src/asf/common/services/sleepmgr</Value>
+            <Value>../src/config/</Value>
+            <Value>../src/asf/common/services/clock</Value>
+          </ListValues>
+        </avrgcc.assembler.general.IncludePaths>
+        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+      </AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
@@ -306,6 +306,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\internal\Os_Alarm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\Os_error.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\internal\Os_error.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os\internal\Os_Kernel.c">
