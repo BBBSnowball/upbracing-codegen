@@ -97,7 +97,17 @@ File.open("run", "w") do |f|
 DIR="$(dirname "$0")"
 java -cp "} + unix_classpath + %{" de.upbracing.code_generation.Main "$@"
 })
-end 
+end
+
+File.open("jruby", "w") do |f|
+  f.chmod(0755)
+  f.write(%{
+#!/bin/sh
+
+DIR="$(dirname "$0")"
+java -cp "} + unix_classpath + %{" org.jruby.Main "$@"
+})
+end
 
 File.open("run.bat", "w") do |f|
   f.write(%{rem Meaning of %~dp0 -> see http://weblogs.asp.net/whaggard/archive/2005/01/28/get-directory-path-of-an-executing-batch-file.aspx

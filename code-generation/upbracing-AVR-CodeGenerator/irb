@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./jruby -S irb -r "config-helpers.rb" "$@"
