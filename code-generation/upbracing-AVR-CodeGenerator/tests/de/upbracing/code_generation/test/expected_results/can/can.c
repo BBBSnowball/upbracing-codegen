@@ -320,16 +320,22 @@ TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
 
 	//Sending message Launch
 	{
+		//Test comment before task message
+		//Test comment before task signal
 		boolean par1;
-		par1 = getLaunch(); //read value from global variable
+		par1 = getLaunch(); //read value
 		send_Launch_nowait(par1);
+		//Test comment after task signal
+		//Test comment after task message
 	}
 
 	//Sending message Radio
 	{
+		//Another test comment before task
 		boolean par1;
-		par1 = getRadio(); //read value from global variable
+		par1 = getRadio(); //read value
 		send_Radio_nowait(par1);
+		//Another test comment after task
 	}
 	TerminateTask();
 }
@@ -338,9 +344,7 @@ TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kuppl
 
 	//Sending message Kupplung_Calibration_Control
 	{
-		boolean par1;
-		par1 = getKupplungKalibrationActive(); //read value from global variable
-		send_Kupplung_Calibration_Control_nowait(par1);
+		//Test replacement of entire task handler for this message
 	}
 	TerminateTask();
 }
@@ -349,10 +353,12 @@ TASK(Task_CockpitBrightness) { //period: 0.3333333333333333s. Task for message C
 
 	//Sending message CockpitBrightness
 	{
+		//Test before read value
 		uint8_t par1;
-		par1 = getCockpitRPMBrightness(); //read value from global variable
+		par1 = 34; //read value
+		//Test after read value
 		uint8_t par2;
-		par2 = getCockpitGangBrightness(); //read value from global variable
+		par2 = getCockpitGangBrightness(); //read value
 		send_CockpitBrightness_nowait(par1, par2);
 	}
 	TerminateTask();

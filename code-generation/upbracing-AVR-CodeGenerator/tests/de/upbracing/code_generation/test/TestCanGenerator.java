@@ -323,9 +323,9 @@ public class TestCanGenerator {
 		canconfig.getMessage("CockpitBrightness").setUsingGeneralTransmitter(true);
 
 		//Set Value Tables for signals
-		canconfig.getMessage("Kupplung_Calibration_Control").getSignals().get("KupplungKalibrationActive").setValueTable("boolean");
-		canconfig.getMessage("Radio").getSignals().get("Radio").setValueTable("boolean");
-		canconfig.getMessage("Launch").getSignals().get("Launch").setValueTable("boolean");
+		canconfig.getMessage("Kupplung_Calibration_Control").getSignal("KupplungKalibrationActive").setValueTable("boolean");
+		canconfig.getMessage("Radio").getSignal("Radio").setValueTable("boolean");
+		canconfig.getMessage("Launch").getSignal("Launch").setValueTable("boolean");
 
 		
 		//Message without send method
@@ -333,14 +333,25 @@ public class TestCanGenerator {
 
 		//set periodic sending for some messages
 
-		//Group with same period:
-		canconfig.getMessage("Radio").setPeriod("3ms");
-		canconfig.getMessage("Launch").setPeriod(0.003);
-
-		//TODO Code replacements for message and signals
+		//Group with same period and code replacement
+		canconfig.getMessage("Launch").setPeriod("3ms");
+		canconfig.getMessage("Launch").setBeforeTask("//Test comment before task message");
+		canconfig.getMessage("Launch").getSignal("Launch").setBeforeTask("//Test comment before task signal");
+		canconfig.getMessage("Launch").getSignal("Launch").setAfterTask("//Test comment after task signal");
+		canconfig.getMessage("Launch").setAfterTask("//Test comment after task message");
+		canconfig.getMessage("Radio").setPeriod(0.003);
+		canconfig.getMessage("Radio").setBeforeTask("//Another test comment before task");
+		canconfig.getMessage("Radio").setAfterTask("//Another test comment after task");
+		
 		canconfig.getMessage("Kupplung_Calibration_Control").setPeriod("0.5s");
+		canconfig.getMessage("Kupplung_Calibration_Control").setTaskAll("//Test replacement of entire task handler for this message");
+		canconfig.getMessage("Kupplung_Calibration_Control").setBeforeTask("#error This should not be visible!");
+		canconfig.getMessage("Kupplung_Calibration_Control").setAfterTask("#error This should not be visible!");
 
 		canconfig.getMessage("CockpitBrightness").setPeriod(1.0/3.0);
+		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setBeforeReadValueTask("//Test before read value");
+		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setReadValueTask("34");
+		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setAfterReadValueTask("//Test after read value");
 
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");

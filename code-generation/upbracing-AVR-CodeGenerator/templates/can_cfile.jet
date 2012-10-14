@@ -203,19 +203,46 @@ TASK(Task_<%= list.get(0).getName() %>) { //<%= taskDescription %>
 	//Sending message <%= msg.getName() %>
 	{
 <%
-			
-			for (DBCSignal signal : msg.getSignalOrder()) {
-				DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
-				parNo++;
-				if (parNo > 1) params += ", ";
-				params += "par" + parNo;
+			if (!CanGeneratorHelper.printCode(stringBuffer, msg.getTaskAll(), "\t\t")) {
+				
+				CanGeneratorHelper.printCode(stringBuffer, msg.getBeforeTask(), "\t\t");
+				
+				for (DBCSignal signal : msg.getSignalOrder()) {
+					DBCSignalConfig signalconfig = (DBCSignalConfig)signal;
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getBeforeTask(), "\t\t");
+				}
+				
+				for (DBCSignal signal : msg.getSignalOrder()) {
+					DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+					parNo++;
+					if (parNo > 1) params += ", ";
+					params += "par" + parNo;
+					
+					String readValue;
+					if (signalconfig.getReadValueTask() != null) 
+						readValue = signalconfig.getReadValueTask();
+					else
+						readValue = globVars.get(signalconfig.getGlobalVarName()).getGetterName() + "()";
+						
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getBeforeReadValueTask(), "\t\t");
 %>
 		<%= signalconfig.getCType() %> par<%= parNo %>;
-		par<%= parNo %> = <%= globVars.get(signalconfig.getGlobalVarName()).getGetterName() %>(); //read value from global variable
+		par<%= parNo %> = <%= readValue %>; //read value
 <%
-			}
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getAfterReadValueTask(), "\t\t");
+				}
 %>
 		send_<%=msg.getName()%>_nowait(<%= params %>);
+<%
+
+				for (DBCSignal signal : msg.getSignalOrder()) {
+					DBCSignalConfig signalconfig = (DBCSignalConfig)signal;
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getAfterTask(), "\t\t");
+				}
+
+				CanGeneratorHelper.printCode(stringBuffer, msg.getAfterTask(), "\t\t");
+			}
+%>
 	}
 <%
 		}
