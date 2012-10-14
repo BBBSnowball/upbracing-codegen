@@ -14,7 +14,21 @@
 #ifndef GLOBAL_VARIABLES_H_
 #define GLOBAL_VARIABLES_H_
 
-#include "Os.h"
+<%
+
+if (config.getGlobalVariables().getDeclarations().isEmpty()
+	&& config.getGlobalVariables().isEmpty()) {
+
+%>
+
+// no global variables
+// You can define some in config.rb
+
+<% } else { %>
+
+#include <stdint.h>
+#include <Os.h>
+
 <%
 
 if (config.getGlobalVariables().getDeclarations().size() > 0) {
@@ -56,7 +70,7 @@ for (GlobalVariable var : config.getGlobalVariables()) {
 	if (size < 0) {
 		size = CType.getSizeOf(var.getType());
 		if (size < 0)
-			warn(stringBuffer, "Couldn't determine size of type '" + var.getType() + "'. Will use a critical section, although this may be unnecessary.");
+			warn(stringBuffer, "Could not determine size of type '" + var.getType() + "'. Will use a critical section, although this may be unnecessary.");
 	}
 	boolean needs_critical_section = (size != 1);
 %>
@@ -81,6 +95,10 @@ inline static void <%= var.getSetterName() %>(<%= var.getType() %> value) {
 <% } %>
 }
 
-<% } %>
+<%
+}
+
+} // if there are some global variables
+%>
 
 #endif	// not defined GLOBAL_VARIABLES_H_

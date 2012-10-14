@@ -9,12 +9,12 @@
 #ifndef EEPROM_DATA_H_
 #define EEPROM_DATA_H_
 
+#include <avr/eeprom.h>
+#include "common.h"
+
 /////////////////////////
 ///    EEPROM data    ///
 /////////////////////////
-
-// only define EEPROM stuff, if avr/eeprom.h has been included
-#ifdef EEMEM
 
 //#pragma pack(push, 1)
 typedef struct {
@@ -48,7 +48,5 @@ extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
 #define WRITE_ABC(value) eeprom_write_block(EEPROM_POINTER(abc), value, 16)
 #define READ_DEF(dst) (struct PointD)eeprom_read_block(dst, EEPROM_POINTER(def), 16)
 #define WRITE_DEF(value) eeprom_write_block(EEPROM_POINTER(def), value, 16)
-
-#endif	// defined EEMEM
 
 #endif	// not defined EEPROM_DATA_H_

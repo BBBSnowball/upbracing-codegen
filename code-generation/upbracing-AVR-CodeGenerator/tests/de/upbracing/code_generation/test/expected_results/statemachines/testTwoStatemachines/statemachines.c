@@ -315,6 +315,8 @@ void simple_pc_tick() {
 			switch (simple_pc_state.on__Kernel__state) {
 
 			case simple_pc_on_Kernel_booting_state:
+				simple_pc_on_Kernel_booting_during();
+
 				if (simple_pc_state.on__Kernel__booting__wait_time >= 1000) {  // wait(10 sec)
 					// booting -> running
 					simple_pc_state.on__Kernel__state = simple_pc_on_Kernel_running_state;
@@ -347,6 +349,8 @@ void simple_pc_tick() {
 			switch (simple_pc_state.on__Desktop__state) {
 
 			case simple_pc_on_Desktop_loading_state:
+				simple_pc_on_Desktop_loading_during();
+
 				if (simple_pc_state.on__Desktop.loading__wait_time >= 150) {  // wait(1.5 sec)
 					// loading -> running
 					simple_pc_state.on__Desktop__state = simple_pc_on_Desktop_running_state;
@@ -359,6 +363,7 @@ void simple_pc_tick() {
 				if ($:Kernel is running) {
 					// not_running -> loading
 					simple_pc_state.on__Desktop__state = simple_pc_on_Desktop_loading_state;
+					simple_pc_on_Desktop_loading_enter();
 				}
 
 				break;
@@ -1313,6 +1318,7 @@ void simple_pc_event_turn_on() {
 			simple_pc_state.on__Kernel__state = simple_pc_on_Kernel_booting_state;
 			simple_pc_state.on__Browser__state = simple_pc_on_Browser_not_running_state;
 			simple_pc_state.on__Desktop__state = simple_pc_on_Desktop_not_running_state;
+			simple_pc_on_Kernel_booting_enter();
 		}
 
 		break;

@@ -37,7 +37,7 @@ public class Updater {
 		
 		updateParents(config);
 		assignNames(config);
-		removeFinalStates(config);
+		collapseFinalStates(config);
 		addStateVariables(config);
 		convertWaitToActionsAndConditions(config);
 		
@@ -75,92 +75,110 @@ public class Updater {
 	}
 
 	// remove final states
-	private void removeFinalStates(MCUConfiguration config) {
+
+	// Make sure that there is at most one final state in each region
+	// and top-level of a statemachine. If there is more than one final
+	// state, remove it and update the transitions accordingly. There
+	// can be more than one final state in a statemachine (e.g. one is
+	// in a region and the other one on the top-level), so be careful
+	// to set each transition to the right one.
+	
+	
+	private void collapseFinalStates(MCUConfiguration config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			removeFinalStates(smg.getStates(), smg.getStateMachine());
+			collapseFinalStates(smg.getStateMachine());
 		}
 	}
 
-	private void removeFinalStates(Iterable<State> states, StateParent parent) {
+	private void collapseFinalStates(StateParent parent) {
+		// collect final states
 		List<FinalState> final_list = new ArrayList<FinalState>();
-		for (State state : states) {
+		for (State state : parent.getStates()) {
 			if (state instanceof FinalState) {
 				final_list.add((FinalState) state);
-				if (final_list.size() > 1)
-					removeFinalStates(final_list);
 			}
 		}
-		for (State state : states) {
+		
+		// collapse them into one final state, if we have more than one
+		if (final_list.size() > 1)
+			collapseFinalStates(final_list);
+		
+		// do the same for children
+		for (State state : parent.getStates()) {
 			if (state instanceof SuperState) {
 				SuperState superstate = (SuperState) state;
 				for (Region region : superstate.getRegions()) {
-					removeFinalStates(region.getStates(), region);
+					collapseFinalStates(region);
 				}
 			}
 		}
 	}
 
-	private void removeFinalStates(List<FinalState> state) {
-		for (Transition transition : state.get(0).getIncomingTransitions())
-			transition.setDestination(state.get(1));
-
-		state.get(0).getParent().getStates().remove(state.get(0));
+	private void collapseFinalStates(List<FinalState> states) {
+		// choose one state that will not be removed
+		FinalState surviving_state = states.get(0);
+		
+		// remove all other states
+		for (FinalState state : states) {
+			// do not remove the surviving state
+			if (state == surviving_state)
+				continue;
+			
+			// rewrite all transitions to point to the surviving state instead of the removed states
+			for (Transition transition : state.getIncomingTransitions())
+				transition.setDestination(surviving_state);
+	
+			// remove the state
+			state.getParent().getStates().remove(state);
+		}
 	}
 
-	// assign names to unnamed states
+	// assign names to unnamed states and regions
+	
+	private int assignNamesCounter;
+	private String getNextName(String prefix) {
+		return prefix + Integer.toHexString(++assignNamesCounter).toUpperCase();
+	}
+	
 	private void assignNames(MCUConfiguration config) {
-		int runningCounter = 0;
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			// TODO for Rishab: Assign a name to each state and region that
-			// doesn't have a
-			// name, yet. You can generate unique names like this:
-			// ("state" + (++runningCounter))
-
-			// TODO for Rishab: Make sure that there is at most one final state
-			// in each region
-			// and top-level of a statemachine. If there is more than one final
-			// state, remove it and update the transitions accordingly. There
-			// can be more than one final state in a statemachine (e.g. one is
-			// in a region and the other one on the top-level), so be careful
-			// to set each transition to the right one.
-
-			List<State> unnamed = new ArrayList<State>();
-
-			unnamed.addAll(assignNames(smg.getStates(), smg.getStateMachine(),
-					unnamed));
-
-			for (State state : unnamed) {
-
-				if (state instanceof InitialState)
-					((InitialState) state).setName("Initial_"
-							+ runningCounter++);
-
-				else if (state instanceof FinalState)
-					((FinalState) state).setName("Final_" + runningCounter++);
-
-				else if (state instanceof NormalState)
-					((NormalState) state).setName("Normal_" + runningCounter++);
-
-				else if (state instanceof SuperState)
-					((SuperState) state).setName("Super_" + runningCounter++);
-			}
+			assignNamesCounter = 0;
+			
+			assignNames(smg.getStateMachine());
 		}
 	}
 
-	// get list of unnamed states
-	private List<State> assignNames(Iterable<State> states, StateParent parent,
-			List<State> unnamed) {
-		for (State state : states) {
-			if (state instanceof SuperState) {
-				if (emptyOrNull(state.getName()))
-					unnamed.add(state);
-				for (Region reg : ((SuperState) state).getRegions())
-					assignNames(reg.getStates(), reg, unnamed);
-			} else if (!(state instanceof SuperState))
-				if (emptyOrNull(state.getName()))
-					unnamed.add(state);
+	private void assignNames(StateParent state_parent) {
+		if (state_parent instanceof SuperState) {
+			for (Region region : ((SuperState) state_parent).getRegions()) {
+				if (emptyOrNull(region.getName()))
+					region.setName(getNextName("region"));
+			}
+		} else {
+			for (State state : state_parent.getStates())
+				assignNames(state);
 		}
-		return unnamed;
+	}
+
+	private void assignNames(State state) {
+		String name = state.getName();
+		
+		if (emptyOrNull(name)) {
+			if (state instanceof InitialState)
+				((InitialState) state).setName(getNextName("initial"));
+	
+			else if (state instanceof FinalState)
+				((FinalState) state).setName(getNextName("final"));
+	
+			else if (state instanceof NormalState)
+				((NormalState) state).setName(getNextName("state"));
+	
+			else if (state instanceof SuperState)
+				((SuperState) state).setName(getNextName("superstate"));
+			
+			else
+				throw new IllegalArgumentException("unexpected type");
+		}
 	}
 
 	public static boolean emptyOrNull(String obj) {
@@ -240,7 +258,7 @@ public class Updater {
 				} else {
 					messages.error(
 							"Transition with wait condition starts at state '%s', which doesn't support actions\n",
-							smg.getName(source_));
+							source_);
 				}
 			}
 

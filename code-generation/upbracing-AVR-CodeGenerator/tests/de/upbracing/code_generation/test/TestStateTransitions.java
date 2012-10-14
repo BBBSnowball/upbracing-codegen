@@ -1,21 +1,20 @@
 package de.upbracing.code_generation.test;
 
 import static org.junit.Assert.*;
-import java.util.List;
-
 import org.junit.Test;
 
 import Statecharts.FinalState;
 import Statecharts.InitialState;
 import Statecharts.NormalState;
 import Statecharts.Region;
-import Statecharts.State;
 import Statecharts.StateMachine;
 import Statecharts.SuperState;
 import Statecharts.Transition;
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
-import de.upbracing.code_generation.Messages.ContextItem;
+import de.upbracing.code_generation.Messages.Message;
+import de.upbracing.code_generation.Messages.MessageListener;
+import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Validator;
 
@@ -143,66 +142,31 @@ public class TestStateTransitions {
 		trans[11].setSource(norm[3]);
 		trans[11].setDestination(init[3]);
 		trans[11].setTransitionInfo("push : before(10ms) [b=c]");
-		
 
 		for(int i=0; i<trans.length; i++)
-			statemachine.getTransitions().add(trans[i]);
-		
+			statemachine.getTransitions().add(trans[i]);	
 
 		StateMachineForGeneration smg = new StateMachineForGeneration(
 				"Testtransitions", statemachine);
 		
-		ContextItem statm_context = messages.pushContext(smg);
-		evaluteTransitions(smg.getStates(), smg);
-		statm_context.pop();
-
-		StringBuffer sb = new StringBuffer();
+		MCUConfiguration config = new MCUConfiguration();
+		config.getStatemachines().add(smg);
+		final StringBuffer sb = new StringBuffer();
+		
+		messages.addMessageListener(new MessageListener() {
+			
+			@Override
+			public void message(Message msg) {
+				msg.format(sb);
+			}
+		});
+		
 		messages.summarizeForCode(sb);
+		System.out.println(sb);
 		
-		assertEquals(TestHelpers
-				.loadResource("expected_results/statemachines/ExpectedTransitionTestResults.txt"), sb.toString());
-
-	}
-
-	private void evaluteTransitions(List<State> states,
-			StateMachineForGeneration smg) {
-		
-		validate.initialCount(states);
-		
-		for (State s : states) {
-			if (s instanceof InitialState) {
-				ContextItem initial_context = messages.pushContext(s);
-				validate.initalValidate(s, smg);
-				initial_context.pop();
-			}
-			
-			if (s instanceof FinalState) {
-				ContextItem final_context = messages.pushContext(s);
-				validate.finalValidate(s, smg);
-				final_context.pop();
-			}
-			
-			if (s instanceof NormalState) {
-				ContextItem normal_context = messages.pushContext(s);
-				validate.normSupValidate(s, smg);
-				normal_context.pop();
-			}
-			
-			if (s instanceof SuperState) {
-				validate.normSupValidate(s, smg);
-				evalutateInnerTransitions((SuperState) s, smg);
-			}
-		}
-	}
-
-	private void evalutateInnerTransitions(SuperState st,
-			StateMachineForGeneration smg) {
-		ContextItem super_context = messages.pushContext(st);
-		for (Region r : ((SuperState) st).getRegions()) {
-			ContextItem region_context = messages.pushContext(r);
-			evaluteTransitions(r.getStates(), smg);
-			region_context.pop();
-		}
-		super_context.pop();
+		Validator validate1 = new Validator(config, false, null);
+		validate1.setMessages(messages);
+		assertEquals(false, validate1.validate());
+		assertEquals(TestHelpers.loadResource("/expected_results/statemachines/ExpectedTransitionTestResults.txt"),sb.toString());
 	}
 }
