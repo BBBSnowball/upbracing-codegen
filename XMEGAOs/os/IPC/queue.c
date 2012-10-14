@@ -7,6 +7,7 @@
 #include "queue.h"
 #include "semaphore.h"
 //#include "Os.h"
+#include "Os_Kernel.h"
 #include <avr/interrupt.h>
 
 /*	@brief	Writes a byte of data into the queue passed as the parameter

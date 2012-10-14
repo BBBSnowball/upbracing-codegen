@@ -33,7 +33,7 @@ void _sem_wait(Semaphore* sem)
 	}
 	
 	sem->count--;	
-	sem->ready_count--;
+	
 	if (sem->count < 1) 
 	{
 		sem->queue[sem->queue_end] = t; 
@@ -48,7 +48,7 @@ void _sem_wait(Semaphore* sem)
 		
 		OS_ENTER_CRITICAL();
 	}	
-	
+	sem->ready_count--;
 	
 	OS_EXIT_CRITICAL();
 }
@@ -70,7 +70,7 @@ void _sem_signal(Semaphore* sem)
 	//}
 		
 	sem->count++;
-	
+	sem->ready_count++;
 	// Only continue, if tasks are waiting AND the resource is free
 	if (sem->queue_end != sem->queue_front && sem->count > 0 && sem->queue[sem->queue_front] < OS_NUMBER_OF_TCBS)
 	{
@@ -105,6 +105,7 @@ void _sem_wait_n(Semaphore_n* sem , uint8_t n)
 	
 	TaskType t;
 	GetTaskID(&t);
+	int8_t temp;
 	
 	OS_ENTER_CRITICAL();
 	temp = sem->queue_end + 1;
@@ -193,12 +194,11 @@ sem_token_t _sem_start_wait(Semaphore* sem)
 {
 	uint8_t tok = 0;
 	tok = sem->token_count++;
-	if(sem->token_count == 0) sem->token_count = OS_NUMBER_OF_TCBS_DEFINE;
+	if(sem->token_count == 0) sem->token_count = OS_TASKTYPE_MAX;
 		
 	OS_ENTER_CRITICAL();
 	sem->count--;
-	if (sem->count < 0)
-	{
+	
 		
 		sem->queue[sem->queue_end] = tok;
 		
@@ -208,7 +208,7 @@ sem_token_t _sem_start_wait(Semaphore* sem)
 			sem->queue_end = 0;
 		}
 			
-	}
+	
 	OS_EXIT_CRITICAL();
 	return tok;
 	
@@ -231,6 +231,7 @@ BOOL _sem_continue_wait(Semaphore* sem , sem_token_t token)
 	{
 		if (tok == sem->queue[check] && sem->ready_count > 0)
 		{
+			sem->ready_count--;
 			return TRUE;
 		}
 		if (check == sem->queue_cap - 1)
@@ -271,7 +272,7 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token)
 		//if front is not token, activate task
 		check = sem->queue[sem->queue_front + sem->ready_count - 1];
 		OS_EXIT_CRITICAL();
-		if (check < OS_NUMBER_OF_TCBS_DEFINE && sem->ready_count > 0)
+		if (check < OS_TASKTYPE_MAX && sem->ready_count > 0)
 		{
 			ResumeTask(check);
 		}
@@ -313,6 +314,8 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token)
 
 void _sem_finish_wait( Semaphore* sem, sem_token_t token )
 {
+	sem_token_t tok;
+	uint8_t i,j,k;
 	
 	if (tok == 0)
 	{
@@ -363,6 +366,65 @@ void _sem_finish_wait( Semaphore* sem, sem_token_t token )
 
 void _sem_abort_wait( Semaphore* sem, sem_token_t token )
 {
+	uint8_t i,j,k,tok,check;
+	tok = token;
+	
+	if (tok == 0)
+	{
+		OS_FATAL_ERROR(INVALID_TOKEN);
+	}
+	
+	OS_ENTER_CRITICAL();
+	if (sem->queue[sem->queue_front] == tok)
+	{
+		sem->count++;
+		sem->queue_front++;
+		if (sem->queue_front == sem->queue_cap)
+		{
+			sem->queue_front = 0;
+		}
+		
+		
+		//if front is not token, activate task
+		check = sem->queue[sem->queue_front + sem->ready_count - 1];
+		OS_EXIT_CRITICAL();
+		if (check < OS_TASKTYPE_MAX && sem->ready_count > 0)
+		{
+			ResumeTask(check);
+		}
+		
+		return;
+	}
+	OS_EXIT_CRITICAL();
+	OS_ENTER_CRITICAL();
+	i = sem->queue_front;
+	while(i != sem->queue_end)
+	{
+		if (sem->queue[i]==tok)
+		{
+			j=i;
+			k=j;
+			while (k != sem->queue_end)
+			{
+				k = j+1;
+			if (k == sem->queue_cap){k=0;}
+			
+			sem->queue[j]=sem->queue[k];
+			j=k;
+		}
+		sem->queue_end--;
+		if (sem->queue_end < 0)
+		{
+			sem->queue_end = sem->queue_cap-1;
+		}
+		sem->count++;
+		
+		
+	}
+if (i==sem->queue_cap){i=0;}else{i++;}
+
+	}
+	OS_EXIT_CRITICAL();
 	
 }
 
@@ -373,7 +435,7 @@ sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n)
 	
 	uint8_t tok = 0;
 	tok = sem->token_count++;
-	if(sem->token_count == 0) sem->token_count = OS_NUMBER_OF_TCBS_DEFINE;
+	if(sem->token_count == 0) sem->token_count = OS_TASKTYPE_MAX;
 	
 	
 	OS_ENTER_CRITICAL();
@@ -446,7 +508,7 @@ void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token)
 		//if front is not token, activate task
 		check = sem->queue[sem->queue_front].pid;
 		OS_EXIT_CRITICAL();
-		if (check < OS_NUMBER_OF_TCBS_DEFINE)
+		if (check < OS_TASKTYPE_MAX)
 		{
 			ResumeTask(sem->queue[sem->queue_front].pid);
 		}
