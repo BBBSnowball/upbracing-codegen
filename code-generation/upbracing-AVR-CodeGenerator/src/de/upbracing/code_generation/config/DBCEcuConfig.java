@@ -46,6 +46,18 @@ public class DBCEcuConfig extends DBCEcu {
 		return sendingTasks;
 	}
 
+	public DBCMessageConfig getMessage(String name) {
+		for (DBCMessage msg : getRxMsgs())
+			if (msg.getName().equals(name))
+				return (DBCMessageConfig)msg;
+
+		for (DBCMessage msg : getTxMsgs())
+			if (msg.getName().equals(name))
+				return (DBCMessageConfig)msg;
+		
+		throw new IllegalArgumentException("Unknown Message \"" + name + "\"");
+	}
+	
 	public void replaceMessageObjectsAndSignals(Map<DBCMessage, DBCMessageConfig> messageMap) {
 		//Replace RX and TX Messages
 		

@@ -17,7 +17,8 @@ import de.upbracing.dbc.DBCMessage;
  * @author sven
  */
 public class DBCConfig extends DBC {
-
+	private String header_declarations;
+	private String cfile_declarations;
 
 	public DBCConfig(DBC dbc) {
 		super(dbc.getVersion());
@@ -90,5 +91,40 @@ public class DBCConfig extends DBC {
 		
 		throw new RuntimeException("Unknown ECU \"" + name + "\""); //TODO replace with special exception
 	}
+	
+	/** alias for {@link #getMessage} */
+	public DBCMessageConfig msg(String name) {
+		return getMessage(name);
+	}
 
+	public String getHeaderDeclarations() {
+		return header_declarations;
+	}
+
+	public void setHeaderDeclarations(String header_declarations) {
+		this.header_declarations = header_declarations;
+	}
+
+	public String getCFileDeclarations() {
+		return cfile_declarations;
+	}
+
+	public void setCFileDeclarations(String cfile_declarations) {
+		this.cfile_declarations = cfile_declarations;
+	}
+
+	private String combineDeclarations(String a, String b) {
+		if (a != null)
+			return a + "\n" + b;
+		else
+			return b;
+	}
+
+	public void addDeclarations(String decls) {
+		header_declarations = combineDeclarations(header_declarations, decls);
+	}
+	
+	public void addDeclarationsInCFile(String decls) {
+		cfile_declarations = combineDeclarations(cfile_declarations, decls);
+	}
 }

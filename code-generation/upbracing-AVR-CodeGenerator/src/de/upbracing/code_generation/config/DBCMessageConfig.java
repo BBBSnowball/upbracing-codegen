@@ -41,6 +41,13 @@ public class DBCMessageConfig extends DBCMessage {
 		setSignals(message.getSignals());
 		setSignalOrder(message.getSignalOrder());
 	}
+	
+	public DBCSignalConfig getSignal(String name) {
+		DBCSignal signal = getSignals().get(name);
+		if (signal == null)
+			throw new IllegalArgumentException("Couldn't find this signal: " + name);
+		return (DBCSignalConfig) signal;
+	}
 
 	public void replaceSignalObjects(Map<DBCEcu, DBCEcuConfig> ecuMap) {
 		//Convert the signals to signalConfig objects

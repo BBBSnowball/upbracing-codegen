@@ -24,7 +24,6 @@ import de.upbracing.shared.timer.model.ConfigurationModel;
 public class MCUConfiguration {
 	private List<ECUDefinition> ecus;
 	private ECUDefinition currentEcu;
-	private DBC can;
 	private DBCConfig canConfig;
 	private EEPROMConfig eeprom = new EEPROMConfig();
 	private PinConfig pins = new PinConfig();
@@ -106,8 +105,8 @@ public class MCUConfiguration {
 	 * 
 	 * @return the CAN configuration object
 	 */
-	public DBC getCan() {
-		return can;
+	public DBCConfig getCan() {
+		return canConfig;
 	}
 	
 	/**
@@ -118,8 +117,7 @@ public class MCUConfiguration {
 	 * @param can the CAN config
 	 */
 	public void setCan(DBC can) {
-		this.can = can;
-		setCanConfig(new DBCConfig(can));
+		setCan(new DBCConfig(can));
 	}
 	
 	/**
@@ -129,15 +127,14 @@ public class MCUConfiguration {
 	 * 
 	 * @param can the CAN config
 	 */
-	public void setCanConfig(DBCConfig canConfig) {
+	public void setCan(DBCConfig canConfig) {
 		this.canConfig = canConfig;
 	}
 	
 	/**
-	 * Get CAN configuration
-	 * 
-	 * @return the CAN configuration object
+	 * @deprecated Use {@link #getCan()} instead
 	 */
+	@Deprecated
 	public DBCConfig getCanConfig() {
 		return canConfig;
 	}
