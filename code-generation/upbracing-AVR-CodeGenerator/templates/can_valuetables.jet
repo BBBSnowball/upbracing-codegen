@@ -40,7 +40,7 @@ for (java.util.Map.Entry<String, DBCValueTable> e : config.getCan().getValueTabl
 <%	
 	if (name.equals("boolean")) {
 %>
-typedef _Bool boolean;
+typedef bool boolean;
 <%
 	} else {
 %>

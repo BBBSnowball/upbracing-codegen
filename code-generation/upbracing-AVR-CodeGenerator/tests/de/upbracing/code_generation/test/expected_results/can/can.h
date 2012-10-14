@@ -78,9 +78,6 @@ typedef enum {
 	MOB_GENERAL_MESSAGE_TRANSMITTER = 14
 } MessageObjectID;
 
-#include "datatypes/Platform_Types.h"
-#define true 1
-#define false 0
 #include "can_at90.h"
 
 inline static void can_init_MOB_Bootloader_SelectNode(void) { can_mob_init_receive2(MOB_Bootloader_SelectNode, CAN_Bootloader_SelectNode, false); }

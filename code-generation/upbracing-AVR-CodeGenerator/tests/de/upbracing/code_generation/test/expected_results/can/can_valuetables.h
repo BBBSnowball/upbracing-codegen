@@ -14,7 +14,7 @@ typedef enum _BootloaderNode {
 } BootloaderNode;
 #endif	// not defined SKIP_VT_BootloaderNode
 #ifndef SKIP_VT_boolean
-typedef _Bool boolean;
+typedef bool boolean;
 #endif	// not defined SKIP_VT_boolean
 #ifndef SKIP_VT_main2display
 typedef enum _main2display {

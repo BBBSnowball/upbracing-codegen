@@ -331,6 +331,17 @@ public class TestCanGenerator {
 		//Message without send method
 		//config.getCanConfig().getMessage("CockpitBrightness").setNoSendMessage(true);
 
+		//set periodic sending for some messages
+
+		//Group with same period:
+		canconfig.getMessage("Radio").setPeriod("3ms");
+		canconfig.getMessage("Launch").setPeriod(0.003);
+
+		//TODO Code replacements for message and signals
+		canconfig.getMessage("Kupplung_Calibration_Control").setPeriod("0.5s");
+
+		canconfig.getMessage("CockpitBrightness").setPeriod(1.0/3.0);
+
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");
 		

@@ -182,9 +182,6 @@ t.finish(" ");
 	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size() + 1%>
 } MessageObjectID;
 
-#include "datatypes/Platform_Types.h"
-#define true 1
-#define false 0
 #include "can_at90.h"
 
 <%

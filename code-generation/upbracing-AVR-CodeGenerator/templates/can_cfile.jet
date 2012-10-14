@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="CanCFileTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.*" %>
+	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.* java.util.List" %>
 
 <%
 
