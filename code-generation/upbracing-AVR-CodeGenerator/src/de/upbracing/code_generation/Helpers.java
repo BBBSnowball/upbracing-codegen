@@ -25,7 +25,7 @@ public class Helpers {
 	 * @return the configuration object
 	 * @throws ScriptException if the config script contains errors or raises an exception
 	 */
-	public static MCUConfiguration loadConfig(InputStream stream, String directory) throws ScriptException {
+	public static MCUConfiguration loadConfig(InputStream stream, String script_filename, String directory) throws ScriptException {
 		// use JSR 223 API to invoke JRuby
 		ScriptEngineManager factory = new ScriptEngineManager();
 		ScriptEngine engine = factory.getEngineByName("jruby");
@@ -51,6 +51,7 @@ public class Helpers {
 		}
 		
 		// execute the script
+		engine.put(ScriptEngine.FILENAME, script_filename);
 		Reader script_reader = new InputStreamReader(stream, Charset.forName("utf-8"));
 		engine.eval(script_reader);
 		try {
@@ -81,6 +82,7 @@ public class Helpers {
 	public static MCUConfiguration loadConfig(String file) throws FileNotFoundException, ScriptException {
 		return loadConfig(
 				new FileInputStream(file),
+				file,
 				new File(file).getParentFile().getAbsolutePath());
 	}
 }
