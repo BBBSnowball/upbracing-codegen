@@ -31,15 +31,39 @@ public class CanGenerator extends AbstractGenerator {
 	
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
-		if (!after_update_config) {
-			//Test C Types
-				
-			
-		} else {
-			//Check MOBs
-			
+		if (after_update_config) {
+			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
+
 			//Check if combined RX TX mob exists (not allowed)
-		
+			for(Mob mob : dbcEcu.getMobs()) {
+				if (mob.getRxMessages().size() > 0 && mob.getTxMessages().size() > 0) {
+					System.err.println("ERROR: Found MOB with Rx and Tx messages which is not allowed.");
+					return false;
+				}
+			}		
+			
+			//Check if there are periodic tasks with signals without global variable
+			for(List<DBCMessageConfig> list : dbcEcu.getSendingTasks()) {
+				for (DBCMessageConfig msg : list) {
+					
+					boolean signalWithoutVar = false;
+					
+					for (DBCSignal signal : msg.getSignalOrder()) {
+						DBCSignalConfig signalconfig = (DBCSignalConfig)signal;
+						if (signalconfig.isNoGlobalVar() && signalconfig.getReadValueTask() == null) {
+							//Signal has no global variable and no read value code replacement
+							signalWithoutVar = true;
+						}
+					}
+					
+					if(signalWithoutVar && (msg.getTaskAll() == null)) {
+						System.err.println("ERROR: CAN message " + msg.getName() + 
+								" set to periodic sending, but at least one signal doesn't have a global variable or" + 
+								" readValue code replacement");
+						return false;
+					}
+				}
+			}
 		}
 		
 		return true;
@@ -50,7 +74,7 @@ public class CanGenerator extends AbstractGenerator {
 		if (config.getCan() == null)
 			return null;
 		
-		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCanConfig().getEcu(config.getCurrentEcu().getName());
+		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
 		
 		//Create MOBs		
 		Map<String, Mob> mobs = new HashMap<String, Mob>();
@@ -151,25 +175,16 @@ public class CanGenerator extends AbstractGenerator {
 			if (msgconfig.isNoSendMessage()) continue;
 
 			//Create global variables
-			boolean signalWithoutVar = false;
-			
 			for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
 				DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
 				
-				if (signal.isNoGlobalVar()) {
-					signalWithoutVar = true;
-					continue;
-				}
-				
+				if (signal.isNoGlobalVar()) continue;
+
 				addGlobalVariable(config, signal);
 			}
 			
 			//Create OS task for periodic sending
-			if (msgconfig.isPeriodic()) {
-				if(signalWithoutVar) { //Also check if alternatively a code replacement has been specified
-					//TODO generate Warning	
-				}
-				
+			if (msgconfig.isPeriodic()) {		
 				//Check if another message already had the same period
 				boolean foundMessage = false;
 				for(List<DBCMessageConfig> list : dbcEcu.getSendingTasks()) {

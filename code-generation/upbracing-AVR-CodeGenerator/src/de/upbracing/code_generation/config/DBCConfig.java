@@ -83,7 +83,7 @@ public class DBCConfig extends DBC {
 		if (getMessages().containsKey(name))
 			return (DBCMessageConfig)getMessages().get(name);
 		
-		throw new RuntimeException("Unknown Message \"" + name + "\""); //TODO replace with special exception
+		throw new IllegalArgumentException("Couldn't find this message: " + name);
 
 	}
 	
@@ -91,7 +91,7 @@ public class DBCConfig extends DBC {
 		if (getEcus().containsKey(name))
 			return getEcus().get(name);
 		
-		throw new RuntimeException("Unknown ECU \"" + name + "\""); //TODO replace with special exception
+		throw new IllegalArgumentException("Couldn't find this ecu: " + name);
 	}
 	
 	/** alias for {@link #getMessage} */

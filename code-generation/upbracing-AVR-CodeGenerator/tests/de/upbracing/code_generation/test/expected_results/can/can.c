@@ -1,6 +1,7 @@
 
 #include "can.h"
 #include "can_at90.h"
+#include "global_variables.h"
 #include <avr/interrupt.h>
 
 // CAN receive interrupt
@@ -312,7 +313,6 @@ void can_init_mobs(void) {
 }
 
 #include "Os.h"
-#include "global_variables.h"
 
 //OS Tasks for periodic sending of messages:
 

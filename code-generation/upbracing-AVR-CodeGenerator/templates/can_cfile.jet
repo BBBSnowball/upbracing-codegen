@@ -53,6 +53,7 @@ if (run_generator) {
 %>
 #include "can.h"
 #include "can_at90.h"
+#include "global_variables.h"
 #include <avr/interrupt.h>
 
 <%
@@ -190,7 +191,6 @@ if (dbcEcu.getSendingTasks().size() > 0) {
 %>
 
 #include "Os.h"
-#include "global_variables.h"
 
 //OS Tasks for periodic sending of messages:
 <%

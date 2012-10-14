@@ -1,11 +1,14 @@
 package de.upbracing.code_generation.test;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.script.ScriptException;
 import org.junit.Test;
 
+import de.upbracing.code_generation.Helpers;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -19,26 +22,22 @@ import de.upbracing.eculist.ECUDefinition;
 
 public class TestCanGenerator {
 
-	/*@Test
+	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
 
-		MCUConfiguration config = Helpers.loadConfig("config.rb");
+		MCUConfiguration config = Helpers.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
 		
-		config.selectEcu("Cockpit");
-		
-		String expected = loadRessource("TestCanGenerator.testGenerate.result1.txt");
-		String result = new CanTemplate().generate(config);
-		assertEquals(expected, result);	
-		
-	}*/
+		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
+		gen.testTemplates("expected_results/can");
+	}
 	
 	@Test
 	public void testGenerate() {
-
+		
 		MCUConfiguration config = new MCUConfiguration();
 		config.setEcus(new ArrayList<ECUDefinition>());
 		
-		DBC dbc = new DBC("???"); //TODO What DBC version?
+		DBC dbc = new DBC("");
 		dbc.setEcus(new HashMap<String, DBCEcu>());
 		dbc.setEcuNames(new ArrayList<String>());
 		dbc.setValueTables(new HashMap<String, DBCValueTable>());
@@ -69,14 +68,14 @@ public class TestCanGenerator {
 		
 		
 		//Ecu
-		DBCEcu ecu = new DBCEcu("Display"); //Cockpit?
+		DBCEcu ecu = new DBCEcu("Display");
 		ecu.setComment("Test Comment");
 		ecu.setRxMsgs(new ArrayList<DBCMessage>());
 		ecu.setRxSignals(new ArrayList<DBCSignal>());
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
 		dbc.getEcus().put("Display", ecu);
 		dbc.getEcuNames().add("Display");
-		config.getEcus().add(new ECUDefinition("Display", "", "", "", "0x43", ""));
+		config.getEcus().add(new ECUDefinition("Display", "", "", "", "0x43", "Display"));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));
@@ -89,13 +88,15 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Bootloader_SelectNode", message);
+		dbc.getMessages().put("0", message);
 		
 		message = new DBCMessage(0x1, "1", false, "Bootloader_1", 8, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Bootloader_1", message);
-		
+		dbc.getMessages().put("1", message);
+
 		message = new DBCMessage(0x5ff, "1535", false, "ClutchGetPos", 8, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -117,7 +118,8 @@ public class TestCanGenerator {
 		//ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("ClutchGetPos", message);
-		
+		dbc.getMessages().put("1535", message);
+
 		message = new DBCMessage(0x10, "2147483664", true, "Kupplung_Soll", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -127,7 +129,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Kupplung_Soll", message);
-		
+		dbc.getMessages().put("2147483664", message);
+
 		message = new DBCMessage(0x71, "2147483761", true, "Gear", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -137,6 +140,7 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Gear", message);
+		dbc.getMessages().put("2147483761", message);
 
 		message = new DBCMessage(0x80, "2147483776", true, "Sensoren", 6, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
@@ -151,6 +155,7 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Sensoren", message);
+		dbc.getMessages().put("2147483776", message);
 
 		message = new DBCMessage(0x81, "2147483777", true, "Sensoren_2", 2, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
@@ -161,7 +166,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Sensoren_2", message);
-		
+		dbc.getMessages().put("2147483777", message);
+
 		message = new DBCMessage(0x88, "2147483784", true, "OpenSquirt_Engine", 8, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -183,7 +189,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("OpenSquirt_Engine", message);
-		
+		dbc.getMessages().put("2147483784", message);
+
 		message = new DBCMessage(0x101, "2147483905", true, "Kupplung_Calibration", 2, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -193,7 +200,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Kupplung_Calibration", message);
-		
+		dbc.getMessages().put("2147483905", message);
+
 		message = new DBCMessage(0x108, "2147483912", true, "OpenSquirt_Sensoren1", 6, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -211,7 +219,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("OpenSquirt_Sensoren1", message);
-		
+		dbc.getMessages().put("2147483912", message);
+
 		message = new DBCMessage(0x110, "2147483920", true, "Geschwindigkeit", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -221,7 +230,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Geschwindigkeit", message);
-		
+		dbc.getMessages().put("2147483920", message);
+
 		message = new DBCMessage(0x4201, "2147500545", true, "Lenkrad_main2display", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -231,7 +241,8 @@ public class TestCanGenerator {
 		ecu.getRxSignals().add(signal);
 		ecu.getRxMsgs().add(message);
 		dbc.getMessages().put("Lenkrad_main2display", message);
-		
+		dbc.getMessages().put("2147500545", message);
+
 		//TX Messages
 		message = new DBCMessage(0x60, "2147483744", true, "Launch", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
@@ -241,7 +252,8 @@ public class TestCanGenerator {
 		message.getSignalOrder().add(signal);
 		ecu.getTxMsgs().add(message);
 		dbc.getMessages().put("Launch", message);
-		
+		dbc.getMessages().put("2147483744", message);
+
 		message = new DBCMessage(0x90, "2147483792", true, "Radio", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -250,7 +262,8 @@ public class TestCanGenerator {
 		message.getSignalOrder().add(signal);
 		ecu.getTxMsgs().add(message);
 		dbc.getMessages().put("Radio", message);
-		
+		dbc.getMessages().put("2147483792", message);
+
 		message = new DBCMessage(0x250, "2147484240", true, "Kupplung_Calibration_Control", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -259,7 +272,8 @@ public class TestCanGenerator {
 		message.getSignalOrder().add(signal);
 		ecu.getTxMsgs().add(message);
 		dbc.getMessages().put("Kupplung_Calibration_Control", message);
-		
+		dbc.getMessages().put("2147484240", message);
+
 		message = new DBCMessage(0x4242, "2147500610", true, "CockpitBrightness", 3, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -271,14 +285,14 @@ public class TestCanGenerator {
 		message.getSignalOrder().add(signal);
 		ecu.getTxMsgs().add(message);
 		dbc.getMessages().put("CockpitBrightness", message);
+		dbc.getMessages().put("2147500610", message);
 
 		config.setCan(dbc);
 		config.selectEcu("Display");
 		
 		
-		
 		//Configuration:
-		DBCConfig canconfig = config.getCanConfig();
+		DBCConfig canconfig = config.getCan();
 		
 		//Alias
 		canconfig.getMessage("Bootloader_1").addAlias("RS232_FORWARD_DATA");
