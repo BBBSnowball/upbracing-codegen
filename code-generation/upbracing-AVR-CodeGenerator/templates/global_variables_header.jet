@@ -69,13 +69,23 @@ for (GlobalVariable var : config.getGlobalVariables()) {
 	int size = var.getSize();
 	if (size < 0) {
 		size = CType.getSizeOf(var.getType());
-		if (size < 0)
-			warn(stringBuffer, "Could not determine size of type '" + var.getType() + "'. Will use a critical section, although this may be unnecessary.");
 	}
 	boolean needs_critical_section = (size != 1);
+	boolean may_need_critical_section = (size < 0);
 %>
 inline static <%= var.getType() %> <%= var.getGetterName() %>() {
-<% if (needs_critical_section) { %>
+<% if (may_need_critical_section) { %>
+	// couldn't determine size of type -> let the compiler decide
+	if (sizeof(<%= var.getType() %>) > 1)
+		OS_ENTER_CRITICAL();
+	
+	volatile <%= var.getType() %> tmp = <%= varname %>;
+	
+	if (sizeof(<%= var.getType() %>) > 1)
+		OS_EXIT_CRITICAL();
+		
+	return tmp;
+<% } else if (needs_critical_section) { %>
 	OS_ENTER_CRITICAL();
 	volatile <%= var.getType() %> tmp = <%= varname %>;
 	OS_EXIT_CRITICAL();
@@ -86,7 +96,16 @@ inline static <%= var.getType() %> <%= var.getGetterName() %>() {
 }
 
 inline static void <%= var.getSetterName() %>(<%= var.getType() %> value) {
-<% if (needs_critical_section) { %>
+<% if (may_need_critical_section) { %>
+	// couldn't determine size of type -> let the compiler decide
+	if (sizeof(<%= var.getType() %>) > 1)
+		OS_ENTER_CRITICAL();
+	
+	<%= varname %> = value;
+	
+	if (sizeof(<%= var.getType() %>) > 1)
+		OS_EXIT_CRITICAL();
+<% } else if (needs_critical_section) { %>
 	OS_ENTER_CRITICAL();
 	<%= varname %> = value;
 	OS_EXIT_CRITICAL();
