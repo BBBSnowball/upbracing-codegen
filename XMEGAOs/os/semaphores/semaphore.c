@@ -72,7 +72,7 @@ void _sem_signal(Semaphore* sem)
 	sem->count++;
 	sem->ready_count++;
 	// Only continue, if tasks are waiting AND the resource is free
-	if (sem->queue_end != sem->queue_front && sem->count > 0 && sem->queue[sem->queue_front] < OS_NUMBER_OF_TCBS)
+	if (sem->queue_end != sem->queue_front && sem->count > 0)
 	{
 		uint8_t tId = sem->queue[sem->queue_front];
 		
