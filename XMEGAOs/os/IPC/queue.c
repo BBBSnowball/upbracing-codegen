@@ -9,18 +9,49 @@
 #include "Os.h"
 #include <avr/interrupt.h>
 
+void queue_enqueue_internal(uint8_t count, const uint8_t* data) {
+	//TODO This is VERY inefficient!
+	for (i=0;i<bytes;i++)
+	{
+		q->q_queue[q->queue_end] = data[i];
+		q->queue_end++;
+		if (q->queue_end == q->capacity)
+			q->queue_end = 0;
+	}
+	q->occupied = q->occupied + count;
+}
+
+void queue_dequeue_internal(uint8_t count, uint8_t* data) {
+	//TODO This is VERY inefficient!
+	for (i=0;i<bytes;i++)
+	{
+		data_out[i] = q->q_queue[q->queue_front];
+		q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
+	}
+	q->occupied = q->occupied - bytes;
+}
+
+
+
 /*	@brief	Writes a byte of data into the queue passed as the parameter
 
 	@param[in] data		Data to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* q, uint8_t data )
+void _queue_enqueue(Queue* sem, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q, uint8_t data)
 {
+	_sem_wait_n(sem_prod, 1);
+	_sem_wait(sem_q);
+
 	q->q_queue[q->queue_end] = data;
 	q->queue_end++;
 	if (q->queue_end == q->capacity)
 		q->queue_end = 0;
 	q->occupied++;
+
+	_sem_signal(sem_q);
+	_sem_signal_n(sem_cons, 1);
 	
 }
 
@@ -31,19 +62,19 @@ void _queue_enqueue(Queue* q, uint8_t data )
 	@param[in] *data	Pointer to data, to be placed on the queue
 	
 */
-void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
+void _queue_enqueue_many(Queue* q, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q,
+		uint8_t count, const uint8_t* data)
 {
 	uint8_t i;
+
+	_sem_wait_n(sem_prod, count);
+	_sem_wait(sem_q);
 	
-	
-	for (i=0;i<bytes;i++)
-	{
-		q->q_queue[q->queue_end] = data[i];
-		q->queue_end++;
-		if (q->queue_end == q->capacity)
-			q->queue_end = 0;
-	}
-	q->occupied = q->occupied + bytes;
+	queue_enqueue_internal(count, data);
+
+	_sem_signal(sem_q);
+	_sem_signal_n(sem_cons, count);
 }
 
 
@@ -53,16 +84,22 @@ void _queue_enqueue2(Queue* q, uint8_t bytes, const uint8_t* data )
 	@return				First data in the queue
 	
 */
-void _queue_dequeue(Queue* q, uint8_t* output)
+uint8_t _queue_dequeue(Queue* sem, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q)
 {
 	uint8_t ret;
-	
+
+	_sem_wait_n(sem_cons, 1);
+	_sem_wait(sem_q);
 	
 	ret = q->q_queue[q->queue_front];
 	q->queue_front = (q->queue_front==(q->capacity-1))? 0 : q->queue_front +1;
 	q->occupied--;
+
+	_sem_wait(sem_q);
+	_sem_wait_n(sem_prod, 1);
 	
-	*output = ret;
+	return ret;
 }
 
 /*	@brief	Returns large data from the queue. 
@@ -71,163 +108,78 @@ void _queue_dequeue(Queue* q, uint8_t* output)
 	@param[in] *data_out	Pointer to memory where data is to be stored
 	
 */
-void _queue_dequeue2(Queue* q, uint8_t bytes, uint8_t* data_out )
+void _queue_dequeue_many(Queue* q, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q,
+		uint8_t count, uint8_t* data)
 {
 	uint8_t i;
+
+	_sem_wait_n(sem_cons, count);
+	_sem_wait(sem_q);
 	
-	for (i=0;i<bytes;i++)
-	{
-		data_out[i] = q->q_queue[q->queue_front];
-		q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
+	queue_dequeue_internal(count, data);
+
+	_sem_wait(sem_q);
+	_sem_wait_n(sem_prod, count);
+}
+
+
+void _queue_finish_enqueue(Queue* sem, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q, sem_token_t token,
+		uint8_t no_of_bytes, const uint8_t* data)
+{
+	// the token must be ready
+	if (!_sem_continue_wait_n(sem_prod, token)) {
+		OS_report_error(OS_ERROR_NOT_READY);
+		_sem_abort_wait_n(sem_prod, token);
+		return;
 	}
-	q->occupied = q->occupied - bytes;
-}
 
-/*	@brief	Checks if there is data available to be read, in the queue
-
-	@param[in] number_of_bytes		the number of bytes which has to be written in the queue
-	
-	@return		True, if data available. False, if otherwise.
-	
-*/
-BOOL _queue_is_data_available(Queue* q, uint8_t number_of_bytes )
-{
-	if (q->occupied >= number_of_bytes)
-	{
-		return TRUE;
+	// remove token from waiting queue
+	uint8_t reserved = _sem_finish_wait_n(sem_prod, token);
+	if (reserved < no_of_bytes) {
+		// we don't have enough space -> error
+		OS_report_error(OS_ERROR_SMALL_RESERVATION);
+		// we can only insert part of the data
+		no_of_bytes = reserved;
+	} else if (reserved > no_of_bytes) {
+		// we have reserved to much space -> free superfluous space
+		_sem_signal_n(sem_prod, reserved - no_of_bytes);
 	}
-	return FALSE;
+
+	// enqueue the data
+	queue_enqueue_internal(no_of_bytes, data);
+
+	// notify consumers
+	_sem_signal_n(sem_cons, no_of_bytes);
 }
 
-/*	@brief	Checks if there is space available to write into the queue
-
-	@param[in] number_of_bytes		the number of bytes which has to be read from the queue
-	
-	@return		True, if space available. False, if otherwise.
-
-*/
-BOOL _queue_has_free_space(Queue* q, uint8_t number_of_bytes )
+void _queue_finish_dequeue(Queue* sem, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q, sem_token_t token,
+		uint8_t no_of_bytes, uint8_t* data)
 {
-	if ((q->capacity - q->occupied) >= number_of_bytes)
-	{
-		return TRUE;
+	// the token must be ready
+	if (!_sem_continue_wait_n(sem_cons, token)) {
+		OS_report_error(OS_ERROR_NOT_READY);
+		_sem_abort_wait_n(sem_cons, token);
+		return;
 	}
-	return FALSE;
-}
 
-/*	@brief	Starts asynchronous waiting for data to be available in the queue
-
-	@param[in] name		Name of the queue to be waited on
-	@param[in] n		Number of requests
-	
-	@return		Token to be used for continue wait operation
-*/
-sem_token_t _queue_start_wait_data_available(Semaphore_n* sem , uint8_t n )
-{
-	return _sem_start_wait_n(sem, n);
-}
-
-/*	@brief	Checks if the data is available to be read
-
-	@param[in] name		Name of the queue being waited on
-	@param[in] token	Token for the queue
-	
-	@return		True, if data is available. False, if data is not available.
-				If returned true, the token must not be used further.
-
-*/
-BOOL _queue_continue_wait_data_available(Semaphore_n* sem ,Queue* que, sem_token_t token )
-{
-	uint8_t n;
-	BOOL ret = _sem_continue_wait_n(sem,token);
-	if (ret == TRUE)
-	{
-		n = sem->queue[sem->queue_front].n;
-		if (n > que->occupied)
-		{
-			ret = FALSE;
-		}
+	// remove token from waiting queue
+	uint8_t reserved = _sem_finish_wait_n(sem_cons, token);
+	if (reserved < no_of_bytes) {
+		// we don't have enough data -> error
+		OS_report_error(OS_ERROR_SMALL_RESERVATION);
+		// we can only insert part of the data
+		no_of_bytes = reserved;
+	} else if (reserved > no_of_bytes) {
+		// we have reserved to much space -> free superfluous space
+		_sem_signal_n(sem_cons, reserved - no_of_bytes);
 	}
-	
-	return ret;
-	
+
+	// enqueue the data
+	queue_dequeue_internal(no_of_bytes, data);
+
+	// notify producers
+	_sem_signal_n(sem_prod, no_of_bytes);
 }
-
-/*	@brief	Stops waiting for data to be available
-
-	@param[in] name		Name of the queue being waited on
-	@param[in] token	Token for the queue
-	
-	The token must not be used after this.
-*/
-void _queue_stop_wait_data_available(Semaphore_n* sem , uint8_t n, sem_token_t token )
-{
-	_sem_stop_wait_n(sem, n, token);
-	
-}
-
-/*	@brief	Starts asynchronous waiting for free space to be available in the queue
-
-	@param[in] name		Name of the queue to be waited on
-	@param[in] n		Number of requests
-	
-	@return		Token to be used for continue wait operation
-*/
-sem_token_t _queue_start_wait_free_space(Semaphore_n* sem , uint8_t n )
-{
-	return _sem_start_wait_n(sem, n);
-}
-
-/*	@brief	Checks if the space is available to write
-
-	@param[in] name		Name of the queue being waited on
-	@param[in] token	Token for the queue
-	
-	@return		True, if space is available. False, if space is not available.
-				If returned true, the token must not be used further.
-
-*/
-BOOL _queue_continue_wait_free_space(Semaphore_n* sem ,Queue* que, sem_token_t token )
-{
-	uint8_t n;
-	BOOL ret = _sem_continue_wait_n(sem, token);
-	
-	if (ret == TRUE)
-	{
-		n = sem->queue[sem->queue_front].n;
-		if (n > (que->capacity - que->occupied))
-		{
-			ret = FALSE;
-		}
-	}
-	return ret;
-}
-
-/*	@brief	Stops waiting for space to be available
-
-	@param[in] name		Name of the queue being waited on
-	@param[in] token	Token for the queue
-	
-	The token must not be used after this.
-*/
-void _queue_stop_wait_data_free_space(Semaphore_n* sem , uint8_t n, sem_token_t token )
-{
-	_sem_stop_wait_n(sem, n, token);
-}
-
-sem_token_t _queue_start_wait( Semaphore* sem )
-{
-	return _sem_start_wait(sem);
-}
-
-BOOL _queue_continue_wait( Semaphore* sem, sem_token_t token )
-{
-	return _sem_continue_wait(sem,token);
-}
-
- _queue_stop_wait( Semaphore* sem, sem_token_t token )
-{
-	_sem_stop_wait(sem,token);
-}
-
-
