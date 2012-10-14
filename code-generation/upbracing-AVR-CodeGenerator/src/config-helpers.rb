@@ -192,7 +192,7 @@ def find_can_object(objspec, search_global = false)
       return $config.can.getMessage(msg_name).getSignal(name)
     else
       #messages = $config.can.messages
-      messages = ecu.rx_msgs + ecu.tx_msgs
+      messages = ecu.rx_msgs.to_a + ecu.tx_msgs.to_a
       signals = messages.collect { |msg|
         msg.signals[name]
       }.select {|x| x}.uniq
