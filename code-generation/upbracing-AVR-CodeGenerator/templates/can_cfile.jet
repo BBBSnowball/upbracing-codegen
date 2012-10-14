@@ -104,8 +104,8 @@ for (Mob mob : dbcEcu.getMobs()) {
 	} else if (can_caused_interrupt(MOB_<%= mob.getName() %>)) {		// <%= mobdesc %>
 		CANPAGE = (MOB_<%= mob.getName() %><<4);
 <%
-	if (mob.getRxMessages().size() == 1) {
-		//Only one Message in MOB
+		if (mob.getRxMessages().size() == 1) {
+			//Only one Message in MOB
 			readMessageCode(stringBuffer, messages, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
 		} else {
 		//Multiple Message in MOB
@@ -276,20 +276,20 @@ TASK(Task_<%= list.get(0).getName() %>) { //<%= taskDescription %>
 }	// end of method generate(...)
 
 void readMessageCode(StringBuffer stringBuffer, Messages messages, GlobalVariableConfig globVars, DBCMessageConfig msg, DBCEcu currentEcu, String indent) {
-
 	CanGeneratorHelper.printCode(stringBuffer, msg.getBeforeRx(), indent);
 	for(DBCSignal signal : msg.getSignalOrder()) {
-		if (signal.getRxEcus().contains(currentEcu)) 
+		if (signal.getRxEcus().contains(currentEcu))
 			CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeRx(), indent);
 	}
 	
 	if (!CanGeneratorHelper.printCode(stringBuffer, msg.getRxHandler(), indent)) {
 		int addr = 0;
-		
+
 		for(DBCSignal sig : msg.getSignalOrder()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;
+
 			if (signal.getRxEcus().contains(currentEcu)) {
-								
+
 				int start = signal.getStart();
 				int len = signal.getLength();
 				String name = signal.getName();

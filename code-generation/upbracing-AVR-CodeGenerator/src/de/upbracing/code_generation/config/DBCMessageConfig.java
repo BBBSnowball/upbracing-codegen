@@ -62,9 +62,10 @@ public class DBCMessageConfig extends DBCMessage {
 		for(Map.Entry<String, DBCSignal> entry : oldSignals.entrySet()) {
 			//Convert the rxEcu list to a list with the DBCEcuConfig objects
 			List<DBCEcu> newrxecus = new LinkedList<DBCEcu>();
-			for ( Iterator<DBCEcu> ecu = entry.getValue().getRxEcus().iterator(); ecu.hasNext(); )
+
+			for (DBCEcu ecu : entry.getValue().getRxEcus())
 			{
-				newrxecus.add(ecuMap.get(ecu.next()));
+				newrxecus.add(ecuMap.get(ecu));
 			}
 			
 			DBCSignalConfig newSignal = new DBCSignalConfig(entry.getValue(), newrxecus, 
@@ -274,14 +275,6 @@ public class DBCMessageConfig extends DBCMessage {
 
 	public void setRtr(boolean rtr) {
 		this.rtr = rtr;
-	}
-	
-	public DBCSignalConfig getSignal(String name) {
-		if (getSignals().containsKey(name))
-			return (DBCSignalConfig)getSignals().get(name);
-		
-		throw new RuntimeException("Unknown Signal \"" + name + "\""); //TODO replace with special exception
-
 	}
 	
 	/**

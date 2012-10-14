@@ -66,7 +66,9 @@ public class DBCConfig extends DBC {
 		
 		//For all messages, replace the signals with signalConfig objects
 		for(Map.Entry<String, DBCMessage> entry : getMessages().entrySet()) {
-			((DBCMessageConfig)entry.getValue()).replaceSignalObjects(ecuMap);
+			if (entry.getKey().equals(entry.getValue().getName())) { //Check to not replace it twice
+				((DBCMessageConfig)entry.getValue()).replaceSignalObjects(ecuMap);
+			}
 		}
 
 		//For all ecus, replace the signals with signalConfig objects and messages with messageConfig objects
