@@ -13,6 +13,8 @@
 
 #ifndef GLOBAL_VARIABLES_H_
 #define GLOBAL_VARIABLES_H_
+
+#include "Os.h"
 <%
 
 if (config.getGlobalVariables().getDeclarations().size() > 0) {

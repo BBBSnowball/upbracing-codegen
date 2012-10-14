@@ -3,6 +3,7 @@ package de.upbracing.code_generation.config;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import de.upbracing.dbc.DBCSignal;
 public class DBCEcuConfig extends DBCEcu {
 
 	private List<Mob> mobs = new ArrayList<Mob>();
+	private List<List<DBCMessageConfig>> sendingTasks = new LinkedList<List<DBCMessageConfig>>();
 	
 	public DBCEcuConfig(DBCEcu ecu) {
 		super(ecu.getName());
@@ -38,6 +40,10 @@ public class DBCEcuConfig extends DBCEcu {
 			if (mob.getName().equals(name)) return mob;
 		}
 		return null;
+	}
+
+	public List<List<DBCMessageConfig>> getSendingTasks() {
+		return sendingTasks;
 	}
 
 	public void replaceMessageObjectsAndSignals(Map<DBCMessage, DBCMessageConfig> messageMap) {

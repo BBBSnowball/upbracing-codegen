@@ -53,6 +53,7 @@ if (run_generator) {
 %>
 #include "can.h"
 #include "can_at90.h"
+#include <avr/interrupt.h>
 
 <%
 GlobalVariableConfig globVars = config.getGlobalVariables();
@@ -150,7 +151,7 @@ for (Mob mob : dbcEcu.getMobs()) {
     CANPAGE = saved_canpage;
 }
 
-static void can_init_mobs(void) {
+void can_init_mobs(void) {
 <%
 //for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 for(Mob mob : dbcEcu.getMobs()) {
@@ -171,6 +172,60 @@ for(Mob mob : dbcEcu.getMobs()) {
 
 %>
 }
+<%
+if (dbcEcu.getSendingTasks().size() > 0) {
+%>
+
+#include "Os.h"
+#include "global_variables.h"
+
+//OS Tasks for periodic sending of messages:
+<%
+	for (List<DBCMessageConfig> list : dbcEcu.getSendingTasks()) {
+		
+	String taskDescription;
+	if (list.size() == 1) {
+		taskDescription = "period: " + list.get(0).getPeriod() + "s. Task for message " + list.get(0).getName();
+	} else {
+		taskDescription = "period: " + list.get(0).getPeriod() + "s. Shared task for messages " + 
+		                  CanGeneratorHelper.implodeMessages(list);
+	}
+	
+%>
+
+TASK(Task_<%= list.get(0).getName() %>) { //<%= taskDescription %>
+<%
+		for (DBCMessageConfig msg : list) {
+			String params = "";
+			int parNo = 0;
+%>
+
+	//Sending message <%= msg.getName() %>
+	{
+<%
+			
+			for (DBCSignal signal : msg.getSignalOrder()) {
+				DBCSignalConfig signalconfig = (DBCSignalConfig) signal;
+				parNo++;
+				if (parNo > 1) params += ", ";
+				params += "par" + parNo;
+%>
+		<%= signalconfig.getCType() %> par<%= parNo %>;
+		par<%= parNo %> = <%= globVars.get(signalconfig.getGlobalVarName()).getGetterName() %>(); //read value from global variable
+<%
+			}
+%>
+		send_<%=msg.getName()%>_nowait(<%= params %>);
+	}
+<%
+		}
+%>
+	TerminateTask();
+}
+<%
+	}
+}
+%>
 <% messages.summarizeForCode(stringBuffer); %>
 
 <%

@@ -1,7 +1,9 @@
 package de.upbracing.code_generation.generators;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.List;
 
 import de.upbracing.code_generation.CanHeaderTemplate;
 import de.upbracing.code_generation.CanCFileTemplate;
@@ -140,24 +142,63 @@ public class CanGenerator extends AbstractGenerator {
 			
 			addGlobalVariable(config, signal);
 		}
-
+		
 		//Create a global variable for all signals in all TX messages
+		//Also create OS tasks for messages with periodic sending
 		for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 			DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 			
 			if (msgconfig.isNoSendMessage()) continue;
 
+			//Create global variables
+			boolean signalWithoutVar = false;
+			
 			for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
 				DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
 				
-				if (signal.isNoGlobalVar()) continue;
+				if (signal.isNoGlobalVar()) {
+					signalWithoutVar = true;
+					continue;
+				}
 				
 				addGlobalVariable(config, signal);
 			}
+			
+			//Create OS task for periodic sending
+			if (msgconfig.isPeriodic()) {
+				if(signalWithoutVar) { //Also check if alternatively a code replacement has been specified
+					//TODO generate Warning	
+				}
+				
+				//Check if another message already had the same period
+				boolean foundMessage = false;
+				for(List<DBCMessageConfig> list : dbcEcu.getSendingTasks()) {
+					if (list.get(0).getPeriod() == msgconfig.getPeriod()) {
+						//Found a message with the same period, we simply add this message to the list
+						list.add(msgconfig);
+						foundMessage = true;
+					}
+				}
+				
+				if (!foundMessage) {
+					//Create new task
+					int ticksPerBase = (int)(msgconfig.getPeriod() * ((double)config.getRtos().getTickFrequency()));
+					config.getRtos().addTask(msgconfig.getName(), ticksPerBase);
+
+					//Add this task in a new list to the task list
+					List<DBCMessageConfig> list = new LinkedList<DBCMessageConfig>();
+					list.add(msgconfig);
+					dbcEcu.getSendingTasks().add(list);
+				}
+				
+			}
+			
+			
 		}
 		
 		//Add declaration for value tables to global variables
 		config.getGlobalVariables().addDeclaration("#include \"can_valuetables.h\"");
+		
 		
 		return null;
 	}

@@ -1,6 +1,7 @@
 
 #include "can.h"
 #include "can_at90.h"
+#include <avr/interrupt.h>
 
 // CAN receive interrupt
 ISR(SIG_CAN_INTERRUPT1) {
@@ -294,7 +295,7 @@ ISR(SIG_CAN_INTERRUPT1) {
     CANPAGE = saved_canpage;
 }
 
-static void can_init_mobs(void) {
+void can_init_mobs(void) {
 	can_init_MOB_Bootloader_SelectNode();
 	// not initialising disabled MOB MOB_Bootloader_1 for messages 
 	can_init_MOB_ClutchGetPos();
@@ -308,6 +309,53 @@ static void can_init_mobs(void) {
 	can_init_MOB_Lenkrad_main2display();
 	can_init_MOB_Launch();
 	can_init_MOB_Radio();
+}
+
+#include "Os.h"
+#include "global_variables.h"
+
+//OS Tasks for periodic sending of messages:
+
+TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
+
+	//Sending message Launch
+	{
+		boolean par1;
+		par1 = getLaunch(); //read value from global variable
+		send_Launch_nowait(par1);
+	}
+
+	//Sending message Radio
+	{
+		boolean par1;
+		par1 = getRadio(); //read value from global variable
+		send_Radio_nowait(par1);
+	}
+	TerminateTask();
+}
+
+TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kupplung_Calibration_Control
+
+	//Sending message Kupplung_Calibration_Control
+	{
+		boolean par1;
+		par1 = getKupplungKalibrationActive(); //read value from global variable
+		send_Kupplung_Calibration_Control_nowait(par1);
+	}
+	TerminateTask();
+}
+
+TASK(Task_CockpitBrightness) { //period: 0.3333333333333333s. Task for message CockpitBrightness
+
+	//Sending message CockpitBrightness
+	{
+		uint8_t par1;
+		par1 = getCockpitRPMBrightness(); //read value from global variable
+		uint8_t par2;
+		par2 = getCockpitGangBrightness(); //read value from global variable
+		send_CockpitBrightness_nowait(par1, par2);
+	}
+	TerminateTask();
 }
 
 #warning There were 6 warnings and/or errors

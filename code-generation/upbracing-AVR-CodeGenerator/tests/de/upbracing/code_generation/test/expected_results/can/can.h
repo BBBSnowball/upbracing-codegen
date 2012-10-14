@@ -78,6 +78,9 @@ typedef enum {
 	MOB_GENERAL_MESSAGE_TRANSMITTER = 14
 } MessageObjectID;
 
+#include "datatypes/Platform_Types.h"
+#define true 1
+#define false 0
 #include "can_at90.h"
 
 inline static void can_init_MOB_Bootloader_SelectNode(void) { can_mob_init_receive2(MOB_Bootloader_SelectNode, CAN_Bootloader_SelectNode, false); }
@@ -114,7 +117,7 @@ inline static void can_init_MOB_Lenkrad_main2display(void) { can_mob_init_receiv
 inline static void can_init_MOB_Launch(void) { can_mob_init_transmit2(MOB_Launch, CAN_Launch, true); }
 inline static void can_init_MOB_Radio(void) { can_mob_init_transmit2(MOB_Radio, CAN_Radio, true); }
 
-static void can_init_mobs(void);
+void can_init_mobs(void);
 
 // we use interrupts - polling isn't necessary
 inline static void can_poll(void) { }

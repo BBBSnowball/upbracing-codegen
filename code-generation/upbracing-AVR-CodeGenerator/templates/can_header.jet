@@ -182,6 +182,9 @@ t.finish(" ");
 	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size() + 1%>
 } MessageObjectID;
 
+#include "datatypes/Platform_Types.h"
+#define true 1
+#define false 0
 #include "can_at90.h"
 
 <%
@@ -239,7 +242,7 @@ inline static void can_init_MOB_<%= mob.getName() %>(void) {<%
 	
 %>
 
-static void can_init_mobs(void);
+void can_init_mobs(void);
 
 // we use interrupts - polling isn't necessary
 inline static void can_poll(void) { }

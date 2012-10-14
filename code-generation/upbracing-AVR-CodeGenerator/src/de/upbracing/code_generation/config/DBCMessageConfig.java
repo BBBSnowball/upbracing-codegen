@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import de.upbracing.code_generation.fsm.model.FSMParsers;
 import de.upbracing.dbc.DBCEcu;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
@@ -27,7 +28,9 @@ public class DBCMessageConfig extends DBCMessage {
 	private boolean usingGeneralTransmitter = false;
 	private boolean noSendMessage = false;
 	private boolean mobDisabled = false;
-	private boolean rtr = false; //Not sure what this does? (needed for can_id_for_mob function)
+	private boolean rtr = false; //Remote Flag
+	private double period = 0.0; //in seconds
+	private boolean periodic = false;
 	
 	public DBCMessageConfig(DBCMessage message, List<DBCEcu> newtxecus) {
 		super(message.getId(), message.getRawId(), message.isExtended(),
@@ -181,6 +184,54 @@ public class DBCMessageConfig extends DBCMessage {
 		aliases.add(alias);
 	}
 
+	/**
+	 * Returns the period for periodic sending of this message in seconds
+	 * @return period in seconds
+	 */
+	public double getPeriod() {
+		return period;
+	}
+
+	/**
+	 * Sets the period for periodic sending of this message in seconds.
+	 * Also calls setPeriodic(true);
+	 * 
+	 * @param period in seconds
+	 */
+	public void setPeriod(double period) {
+		this.period = period;
+		setPeriodic(true);
+	}
+	
+	/**
+	 * Sets the period for periodic sending of this message.
+	 * It can parse a time like "1.7ms", "1:30:02.7" or even "1/3 day"
+	 * Also calls setPeriodic(true);
+	 * 
+	 * @param period String of period
+	 */
+	public void setPeriod(String period) {
+		setPeriod(FSMParsers.parseTime(period));
+	}
+
+	
+	/**
+	 * Returns if periodic sending is enabled for this message
+	 * @return true if periodic
+	 */
+	public boolean isPeriodic() {
+		return periodic;
+	}
+
+	/**
+	 * Enabled or Disables periodic sending of this message.
+	 * Periodic sending is also enabled by setPeriod().
+	 * @param periodic
+	 */
+	public void setPeriodic(boolean periodic) {
+		this.periodic = periodic;
+	}
+	
 	public boolean isRtr() {
 		return rtr;
 	}
