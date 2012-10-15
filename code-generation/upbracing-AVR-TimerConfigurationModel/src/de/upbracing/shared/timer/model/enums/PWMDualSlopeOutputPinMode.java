@@ -36,9 +36,11 @@ public enum PWMDualSlopeOutputPinMode {
 		if (this.equals(PWMDualSlopeOutputPinMode.TOGGLE))
 			return "Toggle Output on Compare Match";
 		if (this.equals(PWMDualSlopeOutputPinMode.CLEAR_SET))
-			return "Clear Output while upcounting, set while downcounting";
+//			return "Clear Output while upcounting, set while downcounting";
+			return "Output PWM signal";
 		if (this.equals(PWMDualSlopeOutputPinMode.SET_CLEAR))
-			return "Set Output while upcounting, clear while downcounting";
+//			return "Set Output while upcounting, clear while downcounting";
+			return "Output inverted PWM signal";
 		return "Disconnected";
 	}
 }

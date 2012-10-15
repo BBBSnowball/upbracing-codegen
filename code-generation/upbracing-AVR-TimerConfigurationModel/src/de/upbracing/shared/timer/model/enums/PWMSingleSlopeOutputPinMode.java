@@ -34,9 +34,11 @@ public enum PWMSingleSlopeOutputPinMode {
 		if (this.equals(PWMSingleSlopeOutputPinMode.TOGGLE))
 			return "Toggle Output on Compare Match";
 		if (this.equals(PWMSingleSlopeOutputPinMode.CLEAR))
-			return "Clear Output on Compare Match, Set on Top";
+//			return "Clear Output on Compare Match, Set on Top";
+			return "Output PWM signal";
 		if (this.equals(PWMSingleSlopeOutputPinMode.SET))
-			return "Set Output on Compare Match, Clear on Top";
+//			return "Set Output on Compare Match, Clear on Top";
+			return "Output inverted PWM signal";
 		return "Disconnected";
 	}
 }
