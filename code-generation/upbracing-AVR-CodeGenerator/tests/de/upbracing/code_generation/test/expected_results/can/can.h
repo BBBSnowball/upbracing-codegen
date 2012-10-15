@@ -1,6 +1,6 @@
 
-#ifndef CAN_DISPLAY_DEFS_H_
-#define CAN_DISPLAY_DEFS_H_
+#ifndef CAN_LENKRADDISPLAY_DEFS_H_
+#define CAN_LENKRADDISPLAY_DEFS_H_
 
 #define ECU_NODE_ID 0x43
 
@@ -24,9 +24,9 @@ typedef enum uint32_t {
 	CAN_OpenSquirt_Sensoren1         = 0x108,  // receive
 	CAN_Geschwindigkeit              = 0x110,  // receive
 	CAN_Lenkrad_main2display         = 0x4201, // receive
+	CAN_Kupplung_Calibration_Control = 0x250,  // send
 	CAN_Launch                       = 0x60,   // send
 	CAN_Radio                        = 0x90,   // send
-	CAN_Kupplung_Calibration_Control = 0x250,  // send
 	CAN_CockpitBrightness            = 0x4242, // send
 } CAN_msgID;
 
@@ -45,14 +45,14 @@ typedef enum {
 	CAN_OpenSquirt_Sensoren1_IsExtended         = 1,
 	CAN_Geschwindigkeit_IsExtended              = 1,
 	CAN_Lenkrad_main2display_IsExtended         = 1,
+	CAN_Kupplung_Calibration_Control_IsExtended = 1,
 	CAN_Launch_IsExtended                       = 1,
 	CAN_Radio_IsExtended                        = 1,
-	CAN_Kupplung_Calibration_Control_IsExtended = 1,
 	CAN_CockpitBrightness_IsExtended            = 1,
 } CAN_isExtended;
 
 /*
-tx_msgs: Launch Radio Kupplung_Calibration_Control CockpitBrightness
+tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness
 rx_msgs: Bootloader_SelectNode Bootloader_1 ClutchGetPos Kupplung_Soll Gear Sensoren Sensoren_2 OpenSquirt_Engine Kupplung_Calibration OpenSquirt_Sensoren1 Geschwindigkeit Lenkrad_main2display
 rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel Druck_Oel Druck_Kraftstoff Drehzahl Druck_Ansaug Lambda ThrottlePosition Kupplung_RAW Temp_Wasser Temp_Ansaug Boardspannung Geschwindigkeit Lenkrad_main2display
 */
@@ -119,6 +119,39 @@ void can_init_mobs(void);
 // we use interrupts - polling isn't necessary
 inline static void can_poll(void) { }
 
+// 0x250x
+inline static void send_Kupplung_Calibration_Control(bool wait, boolean KupplungKalibrationActive) {
+	// select MOB
+	CANPAGE = (MOB_GENERAL_MESSAGE_TRANSMITTER<<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_Kupplung_Calibration_Control, CAN_Kupplung_Calibration_Control_IsExtended);
+
+	// disable mob, as it would be retransmitted otherwise
+	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+
+		// writing signal KupplungKalibrationActive
+		{
+			boolean value;
+			value = KupplungKalibrationActive;
+			CANMSG = (uint8_t) value;
+		}
+	if (wait)
+		can_mob_transmit_wait(MOB_GENERAL_MESSAGE_TRANSMITTER);
+	else
+		can_mob_transmit_nowait(MOB_GENERAL_MESSAGE_TRANSMITTER);
+}
+inline static void send_Kupplung_Calibration_Control_wait(boolean KupplungKalibrationActive) {
+	send_Kupplung_Calibration_Control(true, KupplungKalibrationActive);
+}
+inline static void send_Kupplung_Calibration_Control_nowait(boolean KupplungKalibrationActive) {
+	send_Kupplung_Calibration_Control(false, KupplungKalibrationActive);
+}
 // 0x60x
 inline static void send_Launch(bool wait, boolean Launch) {
 	// select MOB
@@ -185,41 +218,8 @@ inline static void send_Radio_wait(boolean Radio) {
 inline static void send_Radio_nowait(boolean Radio) {
 	send_Radio(false, Radio);
 }
-// 0x250x
-inline static void send_Kupplung_Calibration_Control(bool wait, boolean KupplungKalibrationActive) {
-	// select MOB
-	CANPAGE = (MOB_GENERAL_MESSAGE_TRANSMITTER<<4);
-
-	// wait for an ongoing transmission to finish
-	can_mob_wait_for_transmission_of_current_mob();
-
-	// reset transmission status
-	CANSTMOB = 0;
-
-	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_Kupplung_Calibration_Control, CAN_Kupplung_Calibration_Control_IsExtended);
-
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
-
-		// writing signal KupplungKalibrationActive
-		{
-			boolean value;
-			value = KupplungKalibrationActive;
-			CANMSG = (uint8_t) value;
-		}
-	if (wait)
-		can_mob_transmit_wait(MOB_GENERAL_MESSAGE_TRANSMITTER);
-	else
-		can_mob_transmit_nowait(MOB_GENERAL_MESSAGE_TRANSMITTER);
-}
-inline static void send_Kupplung_Calibration_Control_wait(boolean KupplungKalibrationActive) {
-	send_Kupplung_Calibration_Control(true, KupplungKalibrationActive);
-}
-inline static void send_Kupplung_Calibration_Control_nowait(boolean KupplungKalibrationActive) {
-	send_Kupplung_Calibration_Control(false, KupplungKalibrationActive);
-}
 // 0x4242x
-inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness) {
+inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness, uint8_t CockpitShiftLightPeriod, uint8_t CockpitShiftLightAlwaysFlash) {
 	// select MOB
 	CANPAGE = (MOB_GENERAL_MESSAGE_TRANSMITTER<<4);
 
@@ -232,7 +232,7 @@ inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightnes
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_CockpitBrightness, CAN_CockpitBrightness_IsExtended);
 
 	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((3&0xf)<<DLC0);
+	CANCDMOB = (CANCDMOB&0x30) | ((4&0xf)<<DLC0);
 
 		// writing signal CockpitRPMBrightness
 		{
@@ -247,16 +247,30 @@ inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightnes
 			value = CockpitGangBrightness;
 			CANMSG = value;
 		}
+
+		// writing signal CockpitShiftLightPeriod
+		{
+			uint8_t value;
+			value = CockpitShiftLightPeriod;
+			CANMSG = value;
+		}
+
+		// writing signal CockpitShiftLightAlwaysFlash
+		{
+			uint8_t value;
+			value = CockpitShiftLightAlwaysFlash;
+			CANMSG = value;
+		}
 	if (wait)
 		can_mob_transmit_wait(MOB_GENERAL_MESSAGE_TRANSMITTER);
 	else
 		can_mob_transmit_nowait(MOB_GENERAL_MESSAGE_TRANSMITTER);
 }
-inline static void send_CockpitBrightness_wait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness) {
-	send_CockpitBrightness(true, CockpitRPMBrightness, CockpitGangBrightness);
+inline static void send_CockpitBrightness_wait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness, uint8_t CockpitShiftLightPeriod, uint8_t CockpitShiftLightAlwaysFlash) {
+	send_CockpitBrightness(true, CockpitRPMBrightness, CockpitGangBrightness, CockpitShiftLightPeriod, CockpitShiftLightAlwaysFlash);
 }
-inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness) {
-	send_CockpitBrightness(false, CockpitRPMBrightness, CockpitGangBrightness);
+inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness, uint8_t CockpitShiftLightPeriod, uint8_t CockpitShiftLightAlwaysFlash) {
+	send_CockpitBrightness(false, CockpitRPMBrightness, CockpitGangBrightness, CockpitShiftLightPeriod, CockpitShiftLightAlwaysFlash);
 }
 
-#endif	// defined CAN_DISPLAY_DEFS_H_
+#endif	// defined CAN_LENKRADDISPLAY_DEFS_H_

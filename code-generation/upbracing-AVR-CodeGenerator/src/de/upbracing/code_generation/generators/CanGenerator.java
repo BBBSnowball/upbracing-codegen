@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.generators;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -75,6 +76,25 @@ public class CanGenerator extends AbstractGenerator {
 			return null;
 		
 		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
+
+		//Sort messages and signals by raw id
+		java.util.Collections.sort((List<DBCMessage>)dbcEcu.getRxMsgs(), new Comparator<DBCMessage>() {
+			@Override
+			public int compare( DBCMessage a, DBCMessage b ) {
+				return a.getRawId().compareTo(b.getRawId());
+			}
+		});
+		java.util.Collections.sort((List<DBCSignal>)dbcEcu.getRxSignals(), new Comparator<DBCSignal>() {
+			@Override
+			public int compare( DBCSignal a, DBCSignal b ) {
+				int result = a.getMessage().getRawId().compareTo(b.getMessage().getRawId());
+				if (result == 0) {
+					if(a.getStart() < b.getStart()) result = -1;
+					if(a.getStart() > b.getStart()) result = 1;
+				}
+				return result;
+			}
+		});
 		
 		//Create MOBs		
 		Map<String, Mob> mobs = new HashMap<String, Mob>();
@@ -158,7 +178,7 @@ public class CanGenerator extends AbstractGenerator {
 				}
 			}
 		}
-					
+		
 		//Create a global variable for all RX signals
 		for (DBCSignal sig : dbcEcu.getRxSignals()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;

@@ -13,6 +13,12 @@ typedef enum _BootloaderNode {
 	Sensorboard = 71,
 } BootloaderNode;
 #endif	// not defined SKIP_VT_BootloaderNode
+#ifndef SKIP_VT_Dunkermotor_CANOPEN_Index
+typedef enum _Dunkermotor_CANOPEN_Index {
+	DUNKER_VPOS_ActualPosition_cnt = 14194,
+	DUNKER_MovA = 14224,
+} Dunkermotor_CANOPEN_Index;
+#endif	// not defined SKIP_VT_Dunkermotor_CANOPEN_Index
 #ifndef SKIP_VT_boolean
 typedef bool boolean;
 #endif	// not defined SKIP_VT_boolean

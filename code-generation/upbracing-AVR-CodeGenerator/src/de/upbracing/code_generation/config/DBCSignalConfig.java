@@ -56,7 +56,7 @@ public class DBCSignalConfig extends DBCSignal {
 		if (getValueTable() != null && !getValueTable().isEmpty())
 			return getValueTable();
 		else {
-			if (getSign() == "+")
+			if (getSign().equals("+"))
 				return "uint" + getLength() + "_t";
 			else
 				return "int" + getLength() + "_t";

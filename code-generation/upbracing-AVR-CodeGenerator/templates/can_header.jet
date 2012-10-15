@@ -50,8 +50,8 @@ if (run_generator) {
 	Messages messages = new Messages().withOutputTo(System.err);
 	
 %>
-#ifndef CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
-#define CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
+#ifndef CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
+#define CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
 
 #define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
 
@@ -515,7 +515,7 @@ inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
 }
 %>
 
-#endif	// defined CAN_<%= config.getCurrentEcu().getName().toUpperCase() %>_DEFS_H_
+#endif	// defined CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
 <% messages.summarizeForCode(stringBuffer); %>
 
 <%

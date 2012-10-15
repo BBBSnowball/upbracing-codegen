@@ -316,6 +316,15 @@ void can_init_mobs(void) {
 
 //OS Tasks for periodic sending of messages:
 
+TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kupplung_Calibration_Control
+
+	//Sending message Kupplung_Calibration_Control
+	{
+		//Test replacement of entire task handler for this message
+	}
+	TerminateTask();
+}
+
 TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
 
 	//Sending message Launch
@@ -340,15 +349,6 @@ TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
 	TerminateTask();
 }
 
-TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kupplung_Calibration_Control
-
-	//Sending message Kupplung_Calibration_Control
-	{
-		//Test replacement of entire task handler for this message
-	}
-	TerminateTask();
-}
-
 TASK(Task_CockpitBrightness) { //period: 0.3333333333333333s. Task for message CockpitBrightness
 
 	//Sending message CockpitBrightness
@@ -359,7 +359,11 @@ TASK(Task_CockpitBrightness) { //period: 0.3333333333333333s. Task for message C
 		//Test after read value
 		uint8_t par2;
 		par2 = getCockpitGangBrightness(); //read value
-		send_CockpitBrightness_nowait(par1, par2);
+		uint8_t par3;
+		par3 = getCockpitShiftLightPeriod(); //read value
+		uint8_t par4;
+		par4 = getCockpitShiftLightAlwaysFlash(); //read value
+		send_CockpitBrightness_nowait(par1, par2, par3, par4);
 	}
 	TerminateTask();
 }

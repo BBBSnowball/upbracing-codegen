@@ -45,16 +45,16 @@ public class TestCanGenerator {
 		
 		//Value Tables
 		DBCValueTable valTable = new DBCValueTable();
-		valTable.put("1", "true");
-		valTable.put("0", "false");
-		dbc.getValueTables().put("boolean", valTable);
-
-		valTable = new DBCValueTable();
 		valTable.put("3", "BOOTLOADER_ACTIVE");
 		valTable.put("2", "START_FLIPPER");
 		valTable.put("1", "START_TETRIS");
 		valTable.put("0", "MAIN_ACK");
 		dbc.getValueTables().put("main2display", valTable);
+		
+		valTable = new DBCValueTable();
+		valTable.put("14194", "DUNKER_VPOS_ActualPosition_cnt");
+		valTable.put("14224", "DUNKER_MovA");
+		dbc.getValueTables().put("Dunkermotor_CANOPEN_Index", valTable);
 		
 		valTable = new DBCValueTable();
 		valTable.put("68", "LenkradCANtoRS232");
@@ -63,19 +63,20 @@ public class TestCanGenerator {
 		valTable.put("71", "Sensorboard");
 		dbc.getValueTables().put("BootloaderNode", valTable);
 		
-
-		
-		
+		valTable = new DBCValueTable();
+		valTable.put("1", "true");
+		valTable.put("0", "false");
+		dbc.getValueTables().put("boolean", valTable);		
 		
 		//Ecu
-		DBCEcu ecu = new DBCEcu("Display");
+		DBCEcu ecu = new DBCEcu("Lenkrad-Display");
 		ecu.setComment("Test Comment");
 		ecu.setRxMsgs(new ArrayList<DBCMessage>());
 		ecu.setRxSignals(new ArrayList<DBCSignal>());
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
-		dbc.getEcus().put("Display", ecu);
-		dbc.getEcuNames().add("Display");
-		config.getEcus().add(new ECUDefinition("Display", "", "", "", "0x43", "Display"));
+		dbc.getEcus().put("LenkradDisplay", ecu);
+		dbc.getEcuNames().add("LenkradDisplay");
+		config.getEcus().add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));
@@ -244,6 +245,16 @@ public class TestCanGenerator {
 		dbc.getMessages().put("2147500545", message);
 
 		//TX Messages
+		message = new DBCMessage(0x250, "2147484240", true, "Kupplung_Calibration_Control", 1, Arrays.asList(ecu));
+		message.setSignals(new HashMap<String, DBCSignal>());
+		message.setSignalOrder(new ArrayList<DBCSignal>());
+		signal = new DBCSignal("KupplungKalibrationActive", "+", "1", 0, 8, message, 1, 0, 0, 1, "bool", Arrays.asList(ecu));
+		message.getSignals().put("KupplungKalibrationActive", signal);
+		message.getSignalOrder().add(signal);
+		ecu.getTxMsgs().add(message);
+		dbc.getMessages().put("Kupplung_Calibration_Control", message);
+		dbc.getMessages().put("2147484240", message);
+		
 		message = new DBCMessage(0x60, "2147483744", true, "Launch", 1, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
@@ -264,17 +275,7 @@ public class TestCanGenerator {
 		dbc.getMessages().put("Radio", message);
 		dbc.getMessages().put("2147483792", message);
 
-		message = new DBCMessage(0x250, "2147484240", true, "Kupplung_Calibration_Control", 1, Arrays.asList(ecu));
-		message.setSignals(new HashMap<String, DBCSignal>());
-		message.setSignalOrder(new ArrayList<DBCSignal>());
-		signal = new DBCSignal("KupplungKalibrationActive", "+", "1", 0, 8, message, 1, 0, 0, 1, "bool", Arrays.asList(ecu));
-		message.getSignals().put("KupplungKalibrationActive", signal);
-		message.getSignalOrder().add(signal);
-		ecu.getTxMsgs().add(message);
-		dbc.getMessages().put("Kupplung_Calibration_Control", message);
-		dbc.getMessages().put("2147484240", message);
-
-		message = new DBCMessage(0x4242, "2147500610", true, "CockpitBrightness", 3, Arrays.asList(ecu));
+		message = new DBCMessage(0x4242, "2147500610", true, "CockpitBrightness", 4, Arrays.asList(ecu));
 		message.setSignals(new HashMap<String, DBCSignal>());
 		message.setSignalOrder(new ArrayList<DBCSignal>());
 		signal = new DBCSignal("CockpitRPMBrightness", "+", "1", 0, 8, message, 1, 0, 0, 0, "", Arrays.asList(ecu));
@@ -283,12 +284,18 @@ public class TestCanGenerator {
 		signal = new DBCSignal("CockpitGangBrightness", "+", "1", 8, 8, message, 1, 0, 0, 0, "", Arrays.asList(ecu));
 		message.getSignals().put("CockpitGangBrightness", signal);
 		message.getSignalOrder().add(signal);
+		signal = new DBCSignal("CockpitShiftLightPeriod", "+", "1", 16, 8, message, 1, 0, 0, 0, "", Arrays.asList(ecu));
+		message.getSignals().put("CockpitShiftLightPeriod", signal);
+		message.getSignalOrder().add(signal);
+		signal = new DBCSignal("CockpitShiftLightAlwaysFlash", "+", "1", 24, 8, message, 1, 0, 0, 0, "", Arrays.asList(ecu));
+		message.getSignals().put("CockpitShiftLightAlwaysFlash", signal);
+		message.getSignalOrder().add(signal);
 		ecu.getTxMsgs().add(message);
 		dbc.getMessages().put("CockpitBrightness", message);
 		dbc.getMessages().put("2147500610", message);
 
 		config.setCan(dbc);
-		config.selectEcu("Display");
+		config.selectEcu("Lenkrad-Display");
 		
 		
 		//Configuration:

@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="CanValueTablesTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.*" %>
+	imports="de.upbracing.code_generation.config.* de.upbracing.dbc.* java.util.List java.util.ArrayList" %>
 
 <%
 
@@ -10,7 +10,7 @@
 
 boolean run_generator = true;
 
-DBCConfig can_config = config.getCanConfig();
+DBCConfig can_config = config.getCan();
 
 if (can_config == null) {
 	run_generator = false;
@@ -31,10 +31,14 @@ if (run_generator) {
 
 #ifndef DONT_SET_VALUE_TABLES
 <%
-for (java.util.Map.Entry<String, DBCValueTable> e : config.getCan().getValueTables().entrySet()) {
-	String name = e.getKey();
-	DBCValueTable table = e.getValue();
-	
+//Sort the hashmap of ValueTables to make unit tests easier
+List<String> list = new ArrayList<String>(can_config.getValueTables().size()); 
+list.addAll(can_config.getValueTables().keySet());
+java.util.Collections.sort(list);
+
+for(String name : list) {
+	DBCValueTable table = can_config.getValueTables().get(name);
+
 %>
 #ifndef SKIP_VT_<%=name%>
 <%	
