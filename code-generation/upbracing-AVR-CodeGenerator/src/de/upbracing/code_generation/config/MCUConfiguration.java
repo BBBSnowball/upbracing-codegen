@@ -117,7 +117,7 @@ public class MCUConfiguration {
 	 * @param can the CAN config
 	 */
 	public void setCan(DBC can) {
-		setCan(new DBCConfig(can));
+		setCan(new DBCConfig(can, this));
 	}
 	
 	/**

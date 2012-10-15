@@ -19,9 +19,11 @@ import de.upbracing.dbc.DBCMessage;
 public class DBCConfig extends DBC {
 	private String header_declarations;
 	private String cfile_declarations;
+	private MCUConfiguration config;
 
-	public DBCConfig(DBC dbc) {
+	public DBCConfig(DBC dbc, MCUConfiguration config) {
 		super(dbc.getVersion());
+		this.config = config;
 		
 		setEcuNames(dbc.getEcuNames());
 		
@@ -83,6 +85,12 @@ public class DBCConfig extends DBC {
 		if (getMessages().containsKey(name))
 			return (DBCMessageConfig)getMessages().get(name);
 		
+		//Also look for aliases
+		for(Map.Entry<String, DBCMessage> entry : getMessages().entrySet()) {
+			if (((DBCMessageConfig)entry.getValue()).getAliases().contains(name)) 
+				return (DBCMessageConfig)entry.getValue();
+		}
+		
 		throw new IllegalArgumentException("Couldn't find this message: " + name);
 
 	}
@@ -97,6 +105,42 @@ public class DBCConfig extends DBC {
 	/** alias for {@link #getMessage} */
 	public DBCMessageConfig msg(String name) {
 		return getMessage(name);
+	}
+	
+	/**
+	 * Messages without signals cannot be assigned to ecus in the dbc file.
+	 * Therefore they can be added manually. 
+	 * This method is called by addRx(String)
+	 * 
+	 * @param msg DBCMessageConfig object
+	 */
+	public void addRx(DBCMessageConfig msg) {
+		DBCEcuConfig ecu = null;
+		
+		if (config.getCurrentEcu() != null) {
+			ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getNodeName());
+		
+			//If it fails, try with normal name
+			if (ecu == null)
+				ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getName());
+		}
+		
+		if (ecu == null) {
+			throw new IllegalArgumentException("Couldn't determine the currect ecu ");
+		}
+		
+		ecu.getRxMsgs().add(msg);
+	}
+	
+	/**
+	 * Messages without signals cannot be assigned to ecus in the dbc file.
+	 * Therefore they can be added here manually. 
+	 * This method can be called by the config script
+	 * 
+	 * @param msgname a string with the message name
+	 */
+	public void addRx(String msgname) {
+		addRx(getMessage(msgname));
 	}
 
 	public String getHeaderDeclarations() {
