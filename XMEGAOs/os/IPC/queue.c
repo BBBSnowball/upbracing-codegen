@@ -148,7 +148,9 @@ void _queue_finish_enqueue(Queue* sem, Semaphore_n* sem_prod,
 	}
 
 	// enqueue the data
+	_sem_wait(sem_q);
 	queue_enqueue_internal(no_of_bytes, data);
+	_sem_signal(sem_q);
 
 	// notify consumers
 	_sem_signal_n(sem_cons, no_of_bytes);
@@ -178,7 +180,9 @@ void _queue_finish_dequeue(Queue* sem, Semaphore_n* sem_prod,
 	}
 
 	// enqueue the data
+	_sem_wait(sem_q);
 	queue_dequeue_internal(no_of_bytes, data);
+	_sem_signal(sem_q);
 
 	// notify producers
 	_sem_signal_n(sem_prod, no_of_bytes);
