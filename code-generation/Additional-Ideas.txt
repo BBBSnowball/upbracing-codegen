@@ -17,17 +17,59 @@ Put RTOS specific stuff (e.g. make a task for ...) into an object that the other
 
 = Statemachines =
 
+- parsers (especially the time parser) are useful for other program parts (RTOS generator, CAN)
+  -> split parser, make time parser a core function to be used by all generators
+
 == extensions, e.g. for transition conditions (instead of the event name) ==
 
 - make wait(100ms) an extension instead of a built-in feature
-- sem_wait(name) -> rewritten to use start_wait, continue_wait and stop_wait
-- similar for queues
+- sem_wait(name)
+  - rewritten to use start_wait, continue_wait and {finish,abort}_wait
+  - we need to add abort_wait on all transitions EXCEPT the successful one which uses finish_wait
+    - just add it to each transition it applies to -> problems: waste of flash, code duplication; will break, if
+      another updateConfig part adds a transition => NOT a valid solution
+    - EXIT actions that are run after the transition action -> transition calls sem_finish_wait and sets token to 0
+    - transition action that is run early (before EXIT) -> similar to previous solution; I'd prefer this variant
+    - give name or tag to state actions; transition can suppress an action
+- similar for queues (start_enqueue and start_dequeue)
+- similar for ISRs: isr(TIMER0) -> event ISR_TIMER0, automatically called in ISR(TIMER0) { ... }
+- events with arguments -> TODO how/where do we declare the types? -> intelligent code boxes (see below) ?
+- 'intelligent' code boxes:
+  - start with "header:" or "cfile:" instead of using boolean
+  - support more features, e.g. declare events with arguments
+- statemachines call each other
+  - possible right now - as long as it doesn't end up in a nesting call back to original
+    statemachine (or another one in the chain)
+  - do we have to test this? Rishab has asked that - I can't see any reason for that because the callee
+    doesn't care about the caller.
+- nested calls in statemachines -> statemachine triggers an event for itself
+  - VERY hard to do
+  - can happen despite critical section
+  - forbidden at the moment, but would be useful
+  - NOT detected, at the moment !!!
+  - either:
+    - detect and fail (OS_report_error...); probably also warn at generation time (search for string)
+    - allow nested calls to event functions (and tick?) -> how? how do we test it?
+    - store events in queue (either detect at runtime or provide special syntax like '$raise event;')
+  => VERY hard problem (if you want an efficient solution -> we DO want that *g*)
+- provide access to the variables framework:
+  - scope of the state variables
+    - specify in superstate action text (with region name) or add text to region
+    - history states (in addition to or instead of an initial state); user can choose scope state in property view
+    - scope state is property of an initial state
+    - scope state is property of a region
+  - declare variables
+    - e.g. in intelligent code boxes (see above)
+    - with scope
+    - with visibility
+    - provide access syntax (with text replacement), e.g. $VAR and $:blub.VAR or $../blub/VAR for variables in parent
 
 Interface:
 - use Services framework to find extensions
 - let them extend the parser (add alternatives in certain places; they can use things like the grammar for times)
 - called after parser to create their own condition objects, etc.
 - called in updateConfig -> they must transform all custom objects into normal actions and conditions
+
 
 
 = RTOS =
