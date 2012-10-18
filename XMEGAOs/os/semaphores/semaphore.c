@@ -3,7 +3,7 @@
  */
 #include "semaphore.h"
 #include "internal/Os_Kernel.h"
-#include "internal/Os_error.h"
+#include "internal/Os_Error.h"
 #include <avr/interrupt.h>
 
 // return (x+1), but wrap around for semaphore waiting queue length
@@ -24,7 +24,7 @@ inline static int8_t inc_wrapping_n(Semaphore_n* sem, int8_t x) {
 static void _sem_enqueue(Semaphore* sem, sem_token_t t) {
 	int8_t temp = inc_wrapping(sem, sem->queue_end);
 	if (temp == sem->queue_front) {
-		OS_FATAL_ERROR(QUEUE_FULL);
+		OS_report_fatal(OS_ERROR_SEM_QUEUE_FULL);
 	}
 
 	sem->queue[sem->queue_end] = t;
@@ -35,7 +35,7 @@ static void _sem_enqueue(Semaphore* sem, sem_token_t t) {
 static void _sem_enqueue_n(Semaphore_n* sem, sem_token_t t, uint8_t n) {
 	int8_t temp = inc_wrapping_n(sem, sem->queue_end);
 	if (temp == sem->queue_front) {
-		OS_FATAL_ERROR(QUEUE_FULL);
+		OS_report_fatal(OS_ERROR_SEM_QUEUE_FULL);
 	}
 
 	sem->queue[sem->queue_end].pid = t;
@@ -211,7 +211,8 @@ BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
 	uint8_t check;
 	tok = token;
 	if (tok < OS_NUMBER_OF_TCBS) {
-		OS_ERROR(INVALID_TOKEN);
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+		return FALSE;
 	}
 
 	check = sem->queue_front;
@@ -232,12 +233,15 @@ BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
 
 }
 
+//TODO remove this function -> put code into 'static BOOL sem_remove_id(...)' which
+//     returns whether the token was ready and decrements ready_count, if it was
 void _sem_stop_wait(Semaphore* sem, sem_token_t token) {
 	uint8_t i, j, k, tok, check;
 	tok = token;
 
 	if (tok == 0) {
-		OS_FATAL_ERROR(INVALID_TOKEN);
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+		return;
 	}
 
 	OS_ENTER_CRITICAL();
@@ -295,7 +299,7 @@ void _sem_finish_wait(Semaphore* sem, sem_token_t token) {
 	uint8_t i, j, k;
 
 	if (isTaskID(token)) {
-		OS_report_error(INVALID_TOKEN);
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return ;
 	}
 
@@ -344,7 +348,8 @@ void _sem_abort_wait(Semaphore* sem, sem_token_t token) {
 	tok = token;
 
 	if (tok == 0) {
-		OS_FATAL_ERROR(INVALID_TOKEN);
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+		return;
 	}
 
 	OS_ENTER_CRITICAL();
