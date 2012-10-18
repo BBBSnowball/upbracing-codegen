@@ -55,6 +55,9 @@
 							<tool id="de.innot.avreclipse.tool.avrdude.app.debug.1302443955" name="AVRDude" superClass="de.innot.avreclipse.tool.avrdude.app.debug"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="de.innot.avreclipse.configuration.app.debug.1588283416.740951942" name="USART.c" rcbsApplicability="disable" resourcePath="drivers/USART.c" toolsToInvoke="de.innot.avreclipse.tool.compiler.winavr.app.debug.1862471956.334053908">
+						<tool id="de.innot.avreclipse.tool.compiler.winavr.app.debug.1862471956.334053908" name="AVR Compiler" superClass="de.innot.avreclipse.tool.compiler.winavr.app.debug.1862471956"/>
+					</fileInfo>
 					<folderInfo id="de.innot.avreclipse.configuration.app.debug.1588283416.1641541037" name="/" resourcePath="Debug">
 						<toolChain id="de.innot.avreclipse.toolchain.winavr.app.debug.899392555" name="AVR-GCC Toolchain" superClass="de.innot.avreclipse.toolchain.winavr.app.debug" unusedChildren="">
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objcopy.flash.app.debug.1298636890.386837765" name="Generate HEX file for Flash memory" superClass="de.innot.avreclipse.toolchain.options.toolchain.objcopy.flash.app.debug.1298636890"/>
@@ -81,7 +84,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="config/Os_application_dependent_code.c|IPC/queue.c|semaphores/semaphore.c|Debug|os/IPC/queue.c|os/semaphores/semaphore.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/USART.c|config/Os_application_dependent_code.c|IPC/queue.c|Debug|os/IPC/queue.c|os/semaphores/semaphore.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

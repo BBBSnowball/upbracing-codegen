@@ -40,7 +40,7 @@
 
 typedef struct { 
 	int8_t count;
-	uint8_t token_count; // = OS_NUMBER_OF_TCBS
+	uint8_t token_count; // = OS_TASKTYPE_MAX
 	uint8_t ready_count; // = count, to see how many tasks are marked ready
 	int8_t queue_front;
 	int8_t queue_end;
@@ -54,8 +54,11 @@ typedef struct {
 
 /* Defining a semaphore with macro */
 
+//NOTE semaphore queue is one place bigger than the user requests because we
+//     cannot allow queue_front==queue_end for empty AND full queue
+//     -> queue will never be full / will be considered full, if one place is left
 #define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
-		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
+		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1+1]; } sem##_SEM
 #define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
 		{ { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity) } }
 #define SEMAPHORE(sem, initial_value, queue_capacity) \
