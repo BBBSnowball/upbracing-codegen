@@ -63,6 +63,8 @@ typedef struct {
 			= SEMAPHORE_INIT(name, initial_value, queue_capacity)
 #define SEMAPHORE_REF(name) (&((name##_SEM).sem))
 
+#define SEMAPHORE_EXTERNAL(name) extern SEMAPHORE_DECL(name, 0, 1)
+
 /* Semaphores for Queue Synchronization */
 typedef TaskType sem_token_t;
 // entry in the queue of a Semaphore_n
@@ -91,6 +93,8 @@ typedef struct Semaphore_n{
 	struct type_for_##name##_SEM_n { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1+1]; } name##_SEM \
 		= { { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
 #define SEMAPHORE_REF_N(name) SEMAPHORE_REF(name)
+
+#define SEMAPHORE_EXTERNAL_N(name) extern struct type_for_##name##_SEM_n { Semaphore_n sem; } name##_SEM
 
 /* Synchronous wait and signal */
 /*	@brief Performs wait operation on semaphore

@@ -13,9 +13,23 @@
 // Name: usart
 // Capacity: 10 Bytes
 // Receivers: 1 (This driver)
-// Senders: arbitrary number (2 in this TEST! case. How can we automate this?)
-//TODO use a number that works in all cases -> number of tasks
-QUEUE(usart,10,1,3);
+// Senders: number of tasks
+
+// will be compiled in Os_application_dependent_code.c:
+#ifdef APPLICATION_DEPENDENT_CODE
+#include "IPC/queue.h"
+
+#ifndef USART_QUEUE_LENGTH
+#	warning USART_QUEUE_LENGTH not set, using default value of 10
+#	define USART_QUEUE_LENGTH 10
+#endif
+
+// reserve waiting places for "writers" for all
+// tasks except the USART transmitter
+QUEUE(usart,USART_QUEUE_LENGTH,1,OS_NUMBER_OF_TCBS_DEFINE-1);
+#else	// end of APPLICATION_DEPENDENT_CODE
+QUEUE_EXTERNAL(usart);
+#endif
 
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)
