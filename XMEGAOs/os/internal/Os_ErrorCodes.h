@@ -37,6 +37,11 @@ typedef enum {
 
 	// The token must be ready, but it isn't.
 	OS_ERROR_NOT_READY,
+	
+	// You tried to read/write more data than you
+	// have reserved in your call to
+	// queue_start_{en,de}queue
+	OS_ERROR_SMALL_RESERVATION,
 
 	// error codes between OS_ERROR_NORMAL_MIN and
 	// OS_ERROR_NORMAL_MAX are fatal

@@ -1,8 +1,5 @@
 /*
  * semaphore.h
- *
- * Created: 10-Jul-12 12:18:04 PM
- *  Author: Krishna
  */
 #include "datatypes/Platform_Types.h"
 #include "config/Os_config.h"
@@ -57,14 +54,14 @@ typedef struct {
 //NOTE semaphore queue is one place bigger than the user requests because we
 //     cannot allow queue_front==queue_end for empty AND full queue
 //     -> queue will never be full / will be considered full, if one place is left
-#define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
-		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1+1]; } sem##_SEM
-#define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity) } }
-#define SEMAPHORE(sem, initial_value, queue_capacity) \
-		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
-			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
-#define SEMAPHORE_REF(sem) (&(sem##_SEM).sem)
+#define SEMAPHORE_DECL(name, initial_value, queue_capacity) \
+		struct type_for_##name##_SEM { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1+1]; } name##_SEM
+#define SEMAPHORE_INIT(name, initial_value, queue_capacity) \
+		{ { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
+#define SEMAPHORE(name, initial_value, queue_capacity) \
+		SEMAPHORE_DECL(name, initial_value, queue_capacity) \
+			= SEMAPHORE_INIT(name, initial_value, queue_capacity)
+#define SEMAPHORE_REF(name) (&((name##_SEM).sem))
 
 /* Semaphores for Queue Synchronization */
 typedef TaskType sem_token_t;
@@ -90,10 +87,10 @@ typedef struct Semaphore_n{
 	Semaphore_n_queue_entry queue [1];
 } Semaphore_n;
 
-#define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
-	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity) } }
-#define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
+#define SEMAPHORE_N(name , queue_capacity, initial_value ) \
+	struct type_for_##name##_SEM_n { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1+1]; } name##_SEM \
+		= { { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
+#define SEMAPHORE_REF_N(name) SEMAPHORE_REF(name)
 
 /* Synchronous wait and signal */
 /*	@brief Performs wait operation on semaphore
@@ -185,15 +182,11 @@ sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
 #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
 BOOL _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
-//Stop waiting for queue
-#define sem_stop_wait_n(sem, n, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), n, token)
-void _sem_stop_wait_n (Semaphore_n* sem, uint8_t n, sem_token_t token );
+#define sem_finish_wait_n(sem, token) _sem_finish_wait_n(SEMAPHORE_REF(sem), (token))
+uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token);
 
-#define sem_finish_wait_n(sem, n, token) _sem_finish_wait_n(SEMAPHORE_REF(sem), n, (token))
-void _sem_finish_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token);
-
-#define sem_abort_wait_n(sem, n, token) _sem_abort_wait_n(SEMAPHORE_REF(sem), n, (token))
-void _sem_abort_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token);
+#define sem_abort_wait_n(sem, token) _sem_abort_wait_n(SEMAPHORE_REF(sem), (token))
+void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token);
 
 
 #endif /* SEMAPHORE_H_ */

@@ -5,6 +5,8 @@
  *  Author: peer
  */ 
 
+#define PROGRAM_MODE TEST_SYNC_QUEUE
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Os.h"
@@ -48,9 +50,14 @@ int main(void)
 
 TASK(Task_Update)
 {
+	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+
+	USARTEnqueue(6, "Update");
+
+	#else
+	
 	sem_token_t led_token1, read_token, queue_token2 ;
 	BOOL see, look;
-	
 	
 	char data[2];
 	// Enqueue something for USART
@@ -96,12 +103,20 @@ TASK(Task_Update)
 	}
 	sem_stop_wait_n(led,1,led_token1);
 	
+	#endif
+	
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Task_Increment)
 {
+	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+
+	USARTEnqueue(10, "Increment\n");
+
+	#else
+	
 	sem_token_t led_token2, free_token1, queue_token1;
 	BOOL check;
 	
@@ -149,12 +164,21 @@ TASK(Task_Increment)
 	
 	//USARTEnqueue(5, "First");
 	
+	#endif
+	
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Task_Shift)
 {
+	
+	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+
+	USARTEnqueue(5,"Shift");
+
+	#else
+	
 	sem_token_t free_token2,queue_token2;
 	
 	//USARTEnqueue(5,"Shift");
@@ -178,11 +202,14 @@ TASK(Task_Shift)
 	
 	queue_stop_wait_data_free_space(ipc,1,queue_token2);
 	
+	#endif
+	
 	// Terminate this task
 	TerminateTask();
 }
 
-extern void OS_ERROR( ERROR_CODES error )
+void OS_error(OS_ERROR_CODE error)
 {
+	//TODO DO NOT use OS function to report the error!
 	USARTEnqueue(5,"error");
 }

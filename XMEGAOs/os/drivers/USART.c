@@ -14,7 +14,8 @@
 // Capacity: 10 Bytes
 // Receivers: 1 (This driver)
 // Senders: arbitrary number (2 in this TEST! case. How can we automate this?)
-QUEUE(usart,10,1,2);
+//TODO use a number that works in all cases -> number of tasks
+QUEUE(usart,10,1,3);
 
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)
@@ -34,9 +35,7 @@ void USARTInit(uint16_t ubrr_value)
 void USARTEnqueue(uint8_t length, const char * text) 
 {
 	// This blocks, if there is not enough space available!
-	
-	
-	queue_enqueue2(usart, length, text);
+	queue_enqueue_many(usart, length, (const uint8_t *) text);
 }
 
 TASK(Task_UsartTransmit)
@@ -46,7 +45,7 @@ TASK(Task_UsartTransmit)
 	{
 		char c;
 		// This blocks, if there is no char ready to read!
-		queue_dequeue(usart, (uint8_t*) &c);
+		c = queue_dequeue(usart);
 		UDR0 = c;
 	}
 	TerminateTask();

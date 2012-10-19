@@ -1,34 +1,47 @@
 /*
  * queue.c
- *
- * Created: 16-Jul-12 7:20:31 PM
- *  Author: Krishna (s.krishna1989@gmail.com)
  */ 
 #include "queue.h"
 #include "semaphore.h"
-#include "Os.h"
+#include "Os_Error.h"
 #include <avr/interrupt.h>
 
-void queue_enqueue_internal(uint8_t count, const uint8_t* data) {
+// return (x+1), but wrap around for semaphore waiting queue length
+inline static int8_t inc_wrapping(Queue* q, int8_t x) {
+	++x;
+	if (x == q->capacity)
+		x = 0;
+	return x;
+}
+#define INC_WRAPPING(q, which) { \
+	Queue* some_unguessable_long_name_blablub = (q); \
+	some_unguessable_long_name_blablub->queue_##which = \
+		inc_wrapping(some_unguessable_long_name_blablub, \
+		some_unguessable_long_name_blablub->queue_##which); \
+	}
+
+void queue_enqueue_internal(Queue* q, uint8_t count, const uint8_t* data) {
+	uint8_t i;
+	
 	//TODO This is VERY inefficient!
-	for (i=0;i<bytes;i++)
+	for (i=0;i<count;i++)
 	{
 		q->q_queue[q->queue_end] = data[i];
-		q->queue_end++;
-		if (q->queue_end == q->capacity)
-			q->queue_end = 0;
+		INC_WRAPPING(q, end);
 	}
 	q->occupied = q->occupied + count;
 }
 
-void queue_dequeue_internal(uint8_t count, uint8_t* data) {
+void queue_dequeue_internal(Queue* q, uint8_t count, uint8_t* data) {
+	uint8_t i;
+	
 	//TODO This is VERY inefficient!
-	for (i=0;i<bytes;i++)
+	for (i=0;i<count;i++)
 	{
-		data_out[i] = q->q_queue[q->queue_front];
-		q->queue_front = (q->queue_front==q->capacity-1)? 0 : q->queue_front +1;
+		data[i] = q->q_queue[q->queue_front];
+		INC_WRAPPING(q, front);
 	}
-	q->occupied = q->occupied - bytes;
+	q->occupied = q->occupied - count;
 }
 
 
@@ -38,16 +51,13 @@ void queue_dequeue_internal(uint8_t count, uint8_t* data) {
 	@param[in] data		Data to be placed on the queue
 	
 */
-void _queue_enqueue(Queue* sem, Semaphore_n* sem_prod,
-		Semaphore_n* sem_cons, Semaphore* sem_q, uint8_t data)
-{
+void _queue_enqueue(Queue* q, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q, uint8_t data) {
 	_sem_wait_n(sem_prod, 1);
 	_sem_wait(sem_q);
 
 	q->q_queue[q->queue_end] = data;
-	q->queue_end++;
-	if (q->queue_end == q->capacity)
-		q->queue_end = 0;
+	INC_WRAPPING(q, end);
 	q->occupied++;
 
 	_sem_signal(sem_q);
@@ -64,14 +74,11 @@ void _queue_enqueue(Queue* sem, Semaphore_n* sem_prod,
 */
 void _queue_enqueue_many(Queue* q, Semaphore_n* sem_prod,
 		Semaphore_n* sem_cons, Semaphore* sem_q,
-		uint8_t count, const uint8_t* data)
-{
-	uint8_t i;
-
+		uint8_t count, const uint8_t* data) {
 	_sem_wait_n(sem_prod, count);
 	_sem_wait(sem_q);
 	
-	queue_enqueue_internal(count, data);
+	queue_enqueue_internal(q, count, data);
 
 	_sem_signal(sem_q);
 	_sem_signal_n(sem_cons, count);
@@ -84,20 +91,19 @@ void _queue_enqueue_many(Queue* q, Semaphore_n* sem_prod,
 	@return				First data in the queue
 	
 */
-uint8_t _queue_dequeue(Queue* sem, Semaphore_n* sem_prod,
-		Semaphore_n* sem_cons, Semaphore* sem_q)
-{
+uint8_t _queue_dequeue(Queue* q, Semaphore_n* sem_prod,
+		Semaphore_n* sem_cons, Semaphore* sem_q) {
 	uint8_t ret;
 
 	_sem_wait_n(sem_cons, 1);
 	_sem_wait(sem_q);
 	
 	ret = q->q_queue[q->queue_front];
-	q->queue_front = (q->queue_front==(q->capacity-1))? 0 : q->queue_front +1;
+	INC_WRAPPING(q, front);
 	q->occupied--;
 
-	_sem_wait(sem_q);
-	_sem_wait_n(sem_prod, 1);
+	_sem_signal(sem_q);
+	_sem_signal_n(sem_prod, 1);
 	
 	return ret;
 }
@@ -110,24 +116,20 @@ uint8_t _queue_dequeue(Queue* sem, Semaphore_n* sem_prod,
 */
 void _queue_dequeue_many(Queue* q, Semaphore_n* sem_prod,
 		Semaphore_n* sem_cons, Semaphore* sem_q,
-		uint8_t count, uint8_t* data)
-{
-	uint8_t i;
-
+		uint8_t count, uint8_t* data) {
 	_sem_wait_n(sem_cons, count);
 	_sem_wait(sem_q);
 	
-	queue_dequeue_internal(count, data);
+	queue_dequeue_internal(q, count, data);
 
-	_sem_wait(sem_q);
-	_sem_wait_n(sem_prod, count);
+	_sem_signal(sem_q);
+	_sem_signal_n(sem_prod, count);
 }
 
 
-void _queue_finish_enqueue(Queue* sem, Semaphore_n* sem_prod,
+void _queue_finish_enqueue(Queue* q, Semaphore_n* sem_prod,
 		Semaphore_n* sem_cons, Semaphore* sem_q, sem_token_t token,
-		uint8_t no_of_bytes, const uint8_t* data)
-{
+		uint8_t no_of_bytes, const uint8_t* data) {
 	// the token must be ready
 	if (!_sem_continue_wait_n(sem_prod, token)) {
 		OS_report_error(OS_ERROR_NOT_READY);
@@ -149,14 +151,14 @@ void _queue_finish_enqueue(Queue* sem, Semaphore_n* sem_prod,
 
 	// enqueue the data
 	_sem_wait(sem_q);
-	queue_enqueue_internal(no_of_bytes, data);
+	queue_enqueue_internal(q, no_of_bytes, data);
 	_sem_signal(sem_q);
 
 	// notify consumers
 	_sem_signal_n(sem_cons, no_of_bytes);
 }
 
-void _queue_finish_dequeue(Queue* sem, Semaphore_n* sem_prod,
+void _queue_finish_dequeue(Queue* q, Semaphore_n* sem_prod,
 		Semaphore_n* sem_cons, Semaphore* sem_q, sem_token_t token,
 		uint8_t no_of_bytes, uint8_t* data)
 {
@@ -181,7 +183,7 @@ void _queue_finish_dequeue(Queue* sem, Semaphore_n* sem_prod,
 
 	// enqueue the data
 	_sem_wait(sem_q);
-	queue_dequeue_internal(no_of_bytes, data);
+	queue_dequeue_internal(q, no_of_bytes, data);
 	_sem_signal(sem_q);
 
 	// notify producers

@@ -16,7 +16,7 @@
 // or reset the processor.
 // The OS will never call this directly. It must use
 // OS_report_error.
-void OS_error(OS_ERROR_CODE error);
+extern void OS_error(OS_ERROR_CODE error);
 
 // Report an error (of any severity). Used by the OS.
 // It will disable interrupts before it calls OS_error.

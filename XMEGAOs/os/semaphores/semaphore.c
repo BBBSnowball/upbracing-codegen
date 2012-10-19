@@ -74,10 +74,13 @@ void _sem_wait(Semaphore* sem) {
 		// Another operation is going on: wait
 		WaitTask(t);
 		//TODO interrupts active? -> probably corruption of ready_count!
-		OS_ENTER_CRITICAL();
-		//TODO problem with stack cleanup!
-	}
-	sem->ready_count--; //TODO move up to make sure it is in critical section (in signal and in else)
+		
+		// we disable interrupts here to avoid corruption (still in critical section)
+		//TODO they shouldn't be enabled at all (even in WaitTask)
+		//NOTE not using OS_ENTER_CRITICAL because that must only be used in pairs
+		cli();
+	} else
+		sem->ready_count--;
 
 	OS_EXIT_CRITICAL();
 }
@@ -137,9 +140,13 @@ void _sem_wait_n(Semaphore_n* sem, uint8_t n) {
 
 		// 2) Block this task since there is not enough free space
 		WaitTask(t);
-
-		OS_ENTER_CRITICAL();
-	}
+		
+		// we disable interrupts here to avoid corruption (still in critical section)
+		//TODO they shouldn't be enabled at all (even in WaitTask)
+		//NOTE not using OS_ENTER_CRITICAL because that must only be used in pairs
+		cli();
+	} else
+		sem->ready_count -= n;
 
 	// If we got here, no blocking was necessary.
 	OS_EXIT_CRITICAL();
@@ -158,6 +165,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n) {
 	if (_sem_not_empty_n(sem)
 			&& sem->ready_count >= sem->queue[sem->queue_front].n) {
 		uint8_t tId = sem->queue[sem->queue_front].pid;
+		uint8_t task_n = sem->queue[sem->queue_front].n;
 
 		// Wake the task waiting for this semaphore:
 		// TODO: Replace ActivateTask() with ImmediatelyResumeTask()
@@ -170,7 +178,7 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n) {
 			sem->queue_front = inc_wrapping_n(sem, sem->queue_front);
 
 			// decrease ready count for tokens because we use it for the task
-			sem->ready_count -= n;
+			sem->ready_count -= task_n;
 
 			// resume the task
 			//TODO see commit in _sem_signal
@@ -505,10 +513,10 @@ void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
 	OS_EXIT_CRITICAL();
 }
 
-void _sem_finish_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
-
+uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token) {
+	//TODO
 }
 
-void _sem_abort_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
-
+void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token) {
+	//TODO
 }
