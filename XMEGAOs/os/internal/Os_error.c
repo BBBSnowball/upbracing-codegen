@@ -6,10 +6,21 @@
  */ 
 #include "Os_error.h"
 
-void OS_FATAL_ERROR( ERROR_CODES error )
+void OS_report_fatal( OS_ERROR_CODE error )
 {
-	OS_ERROR(error);
-	while (1)
-	{
-	}
+	OS_error(error);
+	OS_error_reset_processor();
+}
+
+void OS_report_error ( OS_ERROR_CODE error )
+{
+	//Disable interrupts
+	
+	//error handling by application
+	OS_error(error);
+}
+
+void OS_error_reset_processor( void )
+{
+	//reset the processor
 }

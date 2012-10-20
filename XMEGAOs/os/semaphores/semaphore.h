@@ -41,7 +41,7 @@
 typedef struct { 
 	int8_t count;
 	uint8_t token_count; // = OS_NUMBER_OF_TCBS
-	uint8_t ready_count; // = count, to see how many tasks are marked ready
+	uint8_t ready_count; // = count, to see how many resources are free
 	int8_t queue_front;
 	int8_t queue_end;
 	int8_t queue_cap;
@@ -79,7 +79,7 @@ typedef struct Semaphore_n{
 	int8_t count;
 	
 	uint8_t token_count; //= OS_NUMBER_OF_TCBS
-	uint8_t ready_count; // = count, to see how many tasks are marked ready
+	uint8_t ready_count; // = count, to see how many resources are free
 	int8_t queue_front;
 	int8_t queue_end;
 	uint8_t queue_cap;
