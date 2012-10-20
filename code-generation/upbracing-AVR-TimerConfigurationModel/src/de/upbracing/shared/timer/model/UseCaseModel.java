@@ -1,7 +1,5 @@
 package de.upbracing.shared.timer.model;
 
-import java.util.ArrayList;
-
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;

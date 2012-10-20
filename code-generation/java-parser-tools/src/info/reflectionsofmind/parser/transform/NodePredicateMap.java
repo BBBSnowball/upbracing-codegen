@@ -2,6 +2,7 @@ package info.reflectionsofmind.parser.transform;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,21 @@ public class NodePredicateMap<V> {
 
 	public void add(NodePredicate predicate, V value) {
 		add(predicate, value, true);
+	}
+
+	public void add(NodePredicateMap<V> transformers) {
+		values_for_any_id.addAll(transformers.values_for_any_id);
+		
+		HashSet<Entry> added = new HashSet<Entry>();
+		for (java.util.Map.Entry<String, LinkedList<Entry>> entry : transformers.values.entrySet()) {
+			for (Entry e2 : entry.getValue()) {
+				if (added.contains(e2))
+					continue;
+				added.add(e2);
+				
+				add(e2.predicate, e2.value);
+			}
+		}
 	}
 	
 	public List<V> get(AbstractNode node) {
@@ -141,6 +157,30 @@ public class NodePredicateMap<V> {
 			super();
 			this.predicate = predicate;
 			this.value = value;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((predicate == null) ? 0 : predicate.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			
+			@SuppressWarnings("unchecked")
+			Entry other = (Entry) obj;
+			return other.predicate == predicate && other.value == value;
 		}
 	}
 }

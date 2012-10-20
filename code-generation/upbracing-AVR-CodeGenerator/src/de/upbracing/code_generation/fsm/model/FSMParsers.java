@@ -1,35 +1,28 @@
 package de.upbracing.code_generation.fsm.model;
 
+import static de.upbracing.code_generation.common.TransformHelpers.transformCopyValueFromChild;
+import static de.upbracing.code_generation.common.TransformHelpers.transformToList;
+import static de.upbracing.code_generation.common.TransformHelpers.transformUseTextAsValue;
 import static info.reflectionsofmind.parser.Matchers.cho;
-import static info.reflectionsofmind.parser.Matchers.str;
 import static info.reflectionsofmind.parser.Matchers.strI;
-import info.reflectionsofmind.parser.Grammar;
-import info.reflectionsofmind.parser.Matchers;
 import info.reflectionsofmind.parser.ResultTree;
 import info.reflectionsofmind.parser.exception.GrammarParsingException;
 import info.reflectionsofmind.parser.matcher.Matcher;
 import info.reflectionsofmind.parser.matcher.NamedMatcher;
 import info.reflectionsofmind.parser.node.AbstractNode;
-import info.reflectionsofmind.parser.node.NamedNode;
-import info.reflectionsofmind.parser.node.Navigation;
 import info.reflectionsofmind.parser.node.Nodes;
 import info.reflectionsofmind.parser.transform.AbstractTransformer;
-import info.reflectionsofmind.parser.transform.ChildTransformer1;
 import info.reflectionsofmind.parser.transform.ChildTransformer2;
 import info.reflectionsofmind.parser.transform.ChildTransformer5;
 import info.reflectionsofmind.parser.transform.ITransform;
-import info.reflectionsofmind.parser.transform.NodePredicate;
-import info.reflectionsofmind.parser.transform.NodePredicates;
 import info.reflectionsofmind.parser.transform.Transform;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import de.upbracing.code_generation.utils.Util;
+import de.upbracing.code_generation.common.Parser;
+import de.upbracing.code_generation.common.Times;
 
 /** parsers for parts of the statemachine model: transition text and state actions
  * 
@@ -53,7 +46,7 @@ public final class FSMParsers {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
 		
-		return (List<Action>)parse("state-actions", text + "\n");
+		return (List<Action>)getParser().parse("state-actions", text + "\n");
 	}
 
 	/** parse transition text
@@ -77,159 +70,7 @@ public final class FSMParsers {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
 
-		return (TransitionInfo)parse("transition-info", text);
-	}
-	
-	/** parse a time like "1.7ms", "1:30:02.7" or even "1/3 day"
-	 * 
-	 * @param time text to parse
-	 * @return parsed time in seconds
-	 */
-	public static double parseTime(String time) {
-		return (Double)parse("time", time.trim());
-	}
-
-	/** format a time value
-	 * 
-	 * The value is meaningful for a user, e.g. it could be "100ms". The value can also
-	 * be parsed with {@link #parseTime(String)} which yields the almost same value as
-	 * before. There can be a round-off error and the textual representation is less
-	 * exact than the double value.
-	 * 
-	 * @param time time to format for the user
-	 * @return the time as a string
-	 */
-	public static String formatTime(double time) {
-		final Map<String, Double> factors = new HashMap<String, Double>();
-		factors.put("ms", 1e-3);
-		factors.put("us", 1e-6);
-		factors.put("ns", 1e-9);
-		factors.put("ps", 1e-12);
-		factors.put("fs", 1e-15);
-		
-		String sign = "";
-		if (time < 0) {
-			sign = "-";
-			time = -time;
-		}
-		
-		// big numbers are handled specially because for times the factors are quite weird...
-		if (time > 60) {
-			if (time < 60*60*24 * 5) {
-				int mins = ((int)time) / 60 % 60;
-				int hours = ((int)time) / 60 / 60;
-				double secs = time - mins*60 - hours*60*60;
-				return String.format("%s%02d:%02d:%06.3f", sign, hours, mins, secs);
-			} else {
-				return String.format("%4.2f days", time / (60*60*24));
-			}
-		}
-		
-		// shift it in the range 1 to 10
-		int e = 0;
-		double t = time;
-		while (t >= 10) {
-			t /= 10;
-			e += 1;
-		}
-		while (t < 1) {
-			t *= 10;
-			e -= 1;
-		}
-		
-		// now: time == t*10^e
-		
-		// find out how many digits we need, so we won't ignore a non-zero one
-		int significant_digits = 1;
-		int factor = 10;
-		for (int i=2;i<6;i++) {
-			if (Math.round(t * factor) % 10 != 0)
-				significant_digits = i;
-			factor *= 10;
-		}
-		
-		// for more than 5s we always write it in seconds, but with adjusted precision
-		if (time > 5 || e > 0) {
-			// significant digits without the ones before the point (e+1)
-			int precision = significant_digits - (e+1);
-			if (precision < 0)
-				precision = 0;
-			
-			return String.format("%1." + precision + "f sec", time);
-		}
-		
-		// we have two possibilities: use the suffix that makes the number short or the one below
-		e = -e;	// make it positive
-		int unit = (e+2) / 3;
-		int digitsBeforePoint = e % 3 + 1;
-		int digitsAfterPoint = significant_digits - digitsBeforePoint;
-		
-		if (digitsAfterPoint > 2 && unit < 5) {
-			unit++;
-			digitsBeforePoint += 3;
-			digitsAfterPoint -= 3;
-		}
-		
-		if (digitsAfterPoint < 0)
-			digitsAfterPoint = 0;
-		
-		if (unit > 5)
-			// I won't implement anything smaller than femto-seconds. No ato-seconds... sorry ;-)
-			// Don't adjust digitsAfterPoint because it is quite already too much.
-			unit = 5;
-		
-		for (int i=0;i<unit;i++)
-			time *= 1e3;
-		
-		String number = String.format("%s%1." + digitsAfterPoint + "f", sign, time);
-		
-		switch (unit) {
-		case 0:
-			return number + " sec";
-		case 1:
-			return number + " ms";
-		case 2:
-			return number + " us";
-		case 3:
-			return number + " ns";
-		case 4:
-			return number + " ps";
-		case 5:
-			return number + " fs";
-		default:
-			throw new RuntimeException("Should never get here!");
-		}
-		
-	}
-	
-	private static Map<String, Double> getTimeFactors() {
-		final Map<String, Double> factors = new HashMap<String, Double>();
-		factors.put("days", 24*60*60.0);
-		factors.put("day",  24*60*60.0);
-		factors.put("hours",   60*60.0);
-		factors.put("hour",    60*60.0);
-		factors.put("h",       60*60.0);
-		factors.put("min",        60.0);
-		factors.put("m",          60.0);
-		factors.put("sec",         1.0);
-		factors.put("s",           1.0);
-		factors.put("ms", 1e-3);
-		factors.put("us", 1e-6);
-		factors.put("ns", 1e-9);
-		factors.put("ps", 1e-12);
-		factors.put("fs", 1e-15);
-		return factors;
-	}
-
-	private static Matcher getTimeSuffixMatcher() {
-		Set<String> suffixes = getTimeFactors().keySet();
-		
-		Matcher options[] = new Matcher[suffixes.size()];
-		int i = 0;
-		for (String suffix : suffixes)
-			options[i++] = str(suffix);
-		
-		return new NamedMatcher("time-suffix").define(cho(options));
+		return (TransitionInfo)getParser().parse("transition-info", text);
 	}
 	
 	private static Matcher getStateActionTypeMatcher() {
@@ -243,136 +84,32 @@ public final class FSMParsers {
 		
 		return new NamedMatcher("state-action-type").define(cho(options));
 	}
-
-	private static Map<String, Matcher> createGrammarDefinition()
-			throws GrammarParsingException {
-		Map<String, Matcher> previous_defs = new HashMap<String, Matcher>();
-		previous_defs.put("time-suffix", getTimeSuffixMatcher());
-		previous_defs.put("state-action-type", getStateActionTypeMatcher());
-		
-		Map<String, Matcher> matchers = Grammar.generateDefinitions(
-				Util.loadResource(FSMParsers.class, "fsm-grammar.g"), previous_defs);
-		return matchers;
-	}
-
-	private static Map<String, Matcher> cached_grammar_definition;
-	private static Map<String, Matcher> getGrammarDefinition() {
-		if (cached_grammar_definition == null) {
+	
+	private static Parser parser = null;
+	public static Parser getParser() {
+		if (parser == null) {
 			try {
-				cached_grammar_definition = createGrammarDefinition();
+				parser = createParser();
 			} catch (GrammarParsingException e) {
-				throw new ParserException(e);
+				throw new RuntimeException(e);
 			}
 		}
-		return cached_grammar_definition;
+		
+		return parser;
 	}
 
-	private static void transformChoice(Transform transform, String... ids) {
-		transform.add(new AbstractTransformer(ids) {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				transform.transform(node.children);
-				
-				List<NamedNode> children = Navigation.getNamedChildren(node);
-				assert children.size() == 1;
-				
-				node.value = children.get(0).value;
-			}
-		});
-	}
-
-	private static void transformUseTextAsValue(Transform transform, String... ids) {
-		transform.add(new AbstractTransformer(ids) {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				node.value = node.getText();
-			}
-		});
-	}
-
-	private static void transformToList(Transform transform, String node_id,
-			String... children_ids) {
-		final NodePredicate predicate = NodePredicates.withID(children_ids);
-		transform.add(new AbstractTransformer(node_id) {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				transform.transform(node.children);
-				
-				List<AbstractNode> children = node.findChildren(predicate);
-				ArrayList<Object> values = new ArrayList<Object>();
-				for (AbstractNode child : children)
-					values.add(child.value);
-				
-				node.value = values;
-			}
-		});
-	}
-
-	private static void transformCopyValueFromChild(Transform transform, String... node_and_child_ids) {
-		transform.add(new ChildTransformer1<Object>(Object.class, (Object[])node_and_child_ids) {
-			@Override
-			protected Object transform(Object child_value) {
-				return child_value;
-			}
-		});
+	private static Parser createParser() throws GrammarParsingException {
+		Map<String, Matcher> previous_defs = new HashMap<String, Matcher>();
+		previous_defs.put("state-action-type", getStateActionTypeMatcher());
+		
+		return new Parser(FSMParsers.class, "fsm-grammar.g", createTransform(),
+				Parser.getCommonParser(),
+				Times.getParser(),
+				new Parser(previous_defs, null));
 	}
 
 	private static Transform createTransform() {
 		Transform transform = new Transform();
-		
-		transform.add(new AbstractTransformer("positive-number") {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				node.value = Integer.parseInt(node.getText());
-			}
-		});
-		
-		transform.add(new AbstractTransformer("float-number", "simple-unsigned-float-number") {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				node.value = Double.parseDouble(node.getText());
-			}
-		});
-		
-		transform.add(new ChildTransformer2<Integer, Double>(Integer.class, Double.class, "ratio-number") {
-			protected Object transform(Integer num, Double denom) {
-				return num / denom;
-			}
-		});
-		
-		transform.add(new AbstractTransformer("clock-time") {
-			@Override
-			public void transform(AbstractNode node, ITransform transform) {
-				transform.transform(node.children);
-				
-				List<AbstractNode> xs = node.findNamedChildren();
-				Collections.reverse(xs);
-
-				double time = 0;
-				double factor = 1;
-				for (AbstractNode node2 : xs) {
-					double x;
-					if (node2.value instanceof Integer)
-						x = (Integer)node2.value;
-					else
-						x = (Double)node2.value;
-					
-					time += factor * x;
-					factor *= 60;
-				}
-				
-				node.value = time;
-			}
-		});
-		
-		transform.add(new ChildTransformer2<Double, String>(Double.class, String.class, "time-with-suffix", "~ws", "*", "#text") {
-			@Override
-			protected Object transform(Double time, String factor_name) {
-				return time * getTimeFactors().get(factor_name);
-			}
-		});
-		
-		transformChoice(transform, "time");
 		
 		transformUseTextAsValue(transform, "wait-event-type");
 		
@@ -427,60 +164,7 @@ public final class FSMParsers {
 		return transform;
 	}
 
-	private static Transform cached_transform;
-	private static Transform getTransform() {
-		if (cached_transform == null)
-			cached_transform = createTransform();
-		return cached_transform;
-	}
 	
-	private static Object parse(String parserName, String text) {
-		ResultTree result = parseToTree(parserName, text);
-		
-		return result.root.value;
-	}
-
-	private static ResultTree parseToTree(String parserName, String text) {
-		List<ResultTree> results = parseToTrees(parserName, text);
-		
-		if (results.size() < 1)
-			//TODO include some helpful information, see the parser in Grammar
-			throw new ParserException("no result");
-		
-		ResultTree result;
-		boolean accept_ambiguous = false;
-		if (accept_ambiguous) {
-			if (results.size() > 1)
-				System.err.println("WARN: We got " + results.size() + " trees instead of one.");
-			
-			result = results.get(0);
-			for (ResultTree tree : results) {
-				if (tree.rest > result.rest)
-					result = tree;
-			}
-		} else {
-			if (results.size() > 1)
-				//TODO include some helpful information, see the parser in Grammar
-				throw new ParserException(results);
-			
-			result = results.get(0);
-		}
-
-		Transform transform = getTransform();
-		transform.transform(result.root);
-		return result;
-	}
-
-	private static List<ResultTree> parseToTrees(String parserName, String text) {
-		Map<String, Matcher> matchers = getGrammarDefinition();
-		
-		Matcher matcher = matchers.get(parserName);
-		if (matcher == null)
-			throw new IllegalArgumentException("parser definition not found: " + parserName);
-		List<ResultTree> results = Matchers.fullMatch(matcher, text);
-		return results;
-	}
-
 	public static void main(String args[]) throws Exception {
 		String parserName, text;
 		
@@ -496,7 +180,7 @@ public final class FSMParsers {
 		parserName = "state-actions"; text = "ENTER/DDRB = 0xff \n ENTER/PORTB++ \n ALWAYS/wdt_reset()\n";
 		//parserName = "state-actions"; text = "ENTER/DDRB = 0xff \n \n"; //ENTER/PORTB++ \n ALWAYS/wdt_reset()\n";
 		
-		List<ResultTree> result = parseToTrees(parserName, text);
+		List<ResultTree> result = getParser().parseToTrees(parserName, text);
 		
 		System.out.println("We have " + result.size() + " trees.");
 		if (!result.isEmpty()) {
@@ -510,7 +194,7 @@ public final class FSMParsers {
 			System.out.println("Used " + longest.rest + " of " + text.length() + " chars");
 			System.out.println();
 			
-			Transform transform = getTransform();
+			ITransform transform = getParser().getTransform();
 			
 			transform.transform(longest.root);
 			System.out.println(Nodes.toStringWithValue(longest.root));

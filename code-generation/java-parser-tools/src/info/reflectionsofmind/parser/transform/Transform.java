@@ -16,6 +16,10 @@ public class Transform implements ITransform {
 	public void add(Transformer transformer) {
 		this.transformers.add(transformer.getPredicate(), transformer);
 	}
+	
+	public void add(Transform transform) {
+		this.transformers.add(transform.transformers);
+	}
 
 	private void addAll(List<Transformer> transformers) {
 		for (Transformer transformer : transformers)
@@ -48,5 +52,9 @@ public class Transform implements ITransform {
 			transformer.transform(node, immutable_self);
 		else
 			transform(node.children);
+	}
+	
+	public ITransform asImmutable() {
+		return immutable_self;
 	}
 }

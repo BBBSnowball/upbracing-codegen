@@ -16,10 +16,10 @@ import Statecharts.SuperState;
 import Statecharts.Transition;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
+import de.upbracing.code_generation.common.Times;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.Action;
 import de.upbracing.code_generation.fsm.model.ActionType;
-import de.upbracing.code_generation.fsm.model.FSMParsers;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.StateVariable;
 import de.upbracing.code_generation.fsm.model.StateVariablePurposes;
@@ -314,8 +314,8 @@ public class Updater {
 		if (Math.abs((ticks - ticksD) / ticksD) > 0.1)
 			messages.warn("Actual wait time is off by %1.2f%% (%s instead of %s)\n",
 							error * 100,
-							FSMParsers.formatTime(ticks * basePeriod),
-							FSMParsers.formatTime(waitTime));
+							Times.formatTime(ticks * basePeriod),
+							Times.formatTime(waitTime));
 
 		String operator;
 		if (waitType.equals("wait") || waitType.equals("after"))

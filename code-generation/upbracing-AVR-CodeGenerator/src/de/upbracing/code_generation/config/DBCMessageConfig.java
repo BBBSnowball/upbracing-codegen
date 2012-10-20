@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import de.upbracing.code_generation.fsm.model.FSMParsers;
+import de.upbracing.code_generation.common.Times;
 import de.upbracing.dbc.DBCEcu;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
@@ -248,7 +248,7 @@ public class DBCMessageConfig extends DBCMessage {
 	 * @param period String of period
 	 */
 	public void setPeriod(String period) {
-		setPeriod(FSMParsers.parseTime(period));
+		setPeriod(Times.parseTime(period));
 	}
 
 	

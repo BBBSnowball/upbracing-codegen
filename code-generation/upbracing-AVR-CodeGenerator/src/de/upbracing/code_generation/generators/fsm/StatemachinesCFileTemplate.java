@@ -11,6 +11,8 @@ import de.upbracing.code_generation.fsm.model.StateVariables.AllOf;
 import de.upbracing.code_generation.fsm.model.StateVariables.VariableContainer;
 import de.upbracing.code_generation.utils.Util;
 import Statecharts.*;
+import static de.upbracing.code_generation.common.Times.formatTime;
+import static de.upbracing.code_generation.fsm.model.StateMachineForGeneration.*;
 
 //NOTE This used to be a JET template, but I was using stringBuffer.append(...) anyway and with code completion it's MUCH easier :-)
 public class StatemachinesCFileTemplate implements ITemplate {
@@ -457,14 +459,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 	}
 
-	public String getName(Object state) {
-		return smg.getName(state);
-	}
-	
-	public String describe(Object state) {
-		return smg.describe(state);
-	}
-
 	private List<Action> filterActionsByType(List<Action> actions,
 			ActionType type) {
 		List<Action> actions2 = new LinkedList<Action>();
@@ -723,10 +717,6 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 	private boolean printCode(String indent, String code) {
 		return printCode(indent, code, false);
-	}
-
-	private String formatTime(double time) {
-		return FSMParsers.formatTime(time);
 	}
 
 	private void generateEventFunction(String event, StateParent parent, Iterable<Transition> transitions) {

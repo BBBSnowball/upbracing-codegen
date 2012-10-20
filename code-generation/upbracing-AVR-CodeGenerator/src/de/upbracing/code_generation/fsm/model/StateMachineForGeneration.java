@@ -16,6 +16,8 @@ import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
 
+import de.upbracing.code_generation.common.Times;
+
 import Statecharts.FinalState;
 import Statecharts.GlobalCode;
 import Statecharts.InitialState;
@@ -97,7 +99,7 @@ public class StateMachineForGeneration {
 	
 	
 	public double getBasePeriod() {
-		return FSMParsers.parseTime(getBasePeriodAsString());
+		return Times.parseTime(getBasePeriodAsString());
 	}
 	
 
