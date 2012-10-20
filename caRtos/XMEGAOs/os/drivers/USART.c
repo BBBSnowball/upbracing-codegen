@@ -13,8 +13,23 @@
 // Name: usart
 // Capacity: 10 Bytes
 // Receivers: 1 (This driver)
-// Senders: arbitrary number (2 in this TEST! case. How can we automate this?)
-QUEUE(usart,10,1,2);
+// Senders: number of tasks
+
+// will be compiled in Os_application_dependent_code.c:
+#ifdef APPLICATION_DEPENDENT_CODE
+#include "IPC/queue.h"
+
+#ifndef USART_QUEUE_LENGTH
+#	warning USART_QUEUE_LENGTH not set, using default value of 10
+#	define USART_QUEUE_LENGTH 10
+#endif
+
+// reserve waiting places for "writers" for all
+// tasks except the USART transmitter
+QUEUE(usart,USART_QUEUE_LENGTH,1,OS_NUMBER_OF_TCBS_DEFINE-1);
+#else	// end of APPLICATION_DEPENDENT_CODE
+QUEUE_EXTERNAL(usart);
+#endif
 
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)
@@ -34,9 +49,7 @@ void USARTInit(uint16_t ubrr_value)
 void USARTEnqueue(uint8_t length, const char * text) 
 {
 	// This blocks, if there is not enough space available!
-	
-	
-	queue_enqueue2(usart, length, text);
+	queue_enqueue_many(usart, length, (const uint8_t *) text);
 }
 
 TASK(Task_UsartTransmit)
@@ -46,7 +59,7 @@ TASK(Task_UsartTransmit)
 	{
 		char c;
 		// This blocks, if there is no char ready to read!
-		queue_dequeue(usart, (uint8_t*) &c);
+		c = queue_dequeue(usart);
 		UDR0 = c;
 	}
 	TerminateTask();

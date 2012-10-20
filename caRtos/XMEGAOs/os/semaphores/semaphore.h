@@ -1,11 +1,9 @@
 /*
  * semaphore.h
- *
- * Created: 10-Jul-12 12:18:04 PM
- *  Author: Krishna
  */
 #include "datatypes/Platform_Types.h"
 #include "config/Os_config.h"
+
 
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
@@ -39,7 +37,8 @@
 
 typedef struct { 
 	int8_t count;
-	uint8_t token_count; // = 65280, will roll over to 0 when tokens exhausted. then reset to 65280.
+	uint8_t token_count; // = OS_TASKTYPE_MAX
+	uint8_t ready_count; // = count, to see how many resources are free
 	int8_t queue_front;
 	int8_t queue_end;
 	int8_t queue_cap;
@@ -52,17 +51,22 @@ typedef struct {
 
 /* Defining a semaphore with macro */
 
-#define SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
-		struct { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1]; } sem##_SEM
-#define SEMAPHORE_INIT(sem, initial_value, queue_capacity) \
-		{ { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
-#define SEMAPHORE(sem, initial_value, queue_capacity) \
-		SEMAPHORE_DECL(sem, initial_value, queue_capacity) \
-			= SEMAPHORE_INIT(sem, initial_value, queue_capacity)
-#define SEMAPHORE_REF(sem) (&(sem##_SEM).sem)
+//NOTE semaphore queue is one place bigger than the user requests because we
+//     cannot allow queue_front==queue_end for empty AND full queue
+//     -> queue will never be full / will be considered full, if one place is left
+#define SEMAPHORE_DECL(name, initial_value, queue_capacity) \
+		struct type_for_##name##_SEM { Semaphore sem; uint8_t rest_of_queue[(queue_capacity)-1+1]; } name##_SEM
+#define SEMAPHORE_INIT(name, initial_value, queue_capacity) \
+		{ { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
+#define SEMAPHORE(name, initial_value, queue_capacity) \
+		SEMAPHORE_DECL(name, initial_value, queue_capacity) \
+			= SEMAPHORE_INIT(name, initial_value, queue_capacity)
+#define SEMAPHORE_REF(name) (&((name##_SEM).sem))
+
+#define SEMAPHORE_EXTERNAL(name) extern SEMAPHORE_DECL(name, 0, 1)
 
 /* Semaphores for Queue Synchronization */
-typedef uint8_t sem_token_t;
+typedef TaskType sem_token_t;
 // entry in the queue of a Semaphore_n
 typedef struct {
 	// the waiting process or token
@@ -76,7 +80,8 @@ typedef struct {
 typedef struct Semaphore_n{ 
 	int8_t count;
 	
-	uint8_t token_count; //= 65280, will roll over to 0 when tokens exhausted. then reset to 65280. 
+	uint8_t token_count; //= OS_NUMBER_OF_TCBS
+	uint8_t ready_count; // = count, to see how many resources are free
 	int8_t queue_front;
 	int8_t queue_end;
 	uint8_t queue_cap;
@@ -84,10 +89,12 @@ typedef struct Semaphore_n{
 	Semaphore_n_queue_entry queue [1];
 } Semaphore_n;
 
-#define SEMAPHORE_N(sem , queue_capacity, initial_value ) \
-	struct { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1]; } sem##_SEM_n \
-		= { { (initial_value), OS_TASKTYPE_MAX, 0, 0, (queue_capacity) } }
-#define SEMAPHORE_REF_N(sem) (&(sem##_SEM_n).sem)
+#define SEMAPHORE_N(name , queue_capacity, initial_value ) \
+	struct type_for_##name##_SEM_n { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1+1]; } name##_SEM \
+		= { { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
+#define SEMAPHORE_REF_N(name) SEMAPHORE_REF(name)
+
+#define SEMAPHORE_EXTERNAL_N(name) extern struct type_for_##name##_SEM_n { Semaphore_n sem; } name##_SEM
 
 /* Synchronous wait and signal */
 /*	@brief Performs wait operation on semaphore
@@ -140,7 +147,7 @@ sem_token_t _sem_start_wait (Semaphore* sem);
 			If false (or zero ) is returned , you must try again later. It returns true without further action, if the token is zero.
 */
 #define sem_continue_wait(sem, token) _sem_continue_wait(SEMAPHORE_REF(sem), (token))
-bool _sem_continue_wait (Semaphore* sem , sem_token_t token );
+BOOL _sem_continue_wait (Semaphore* sem , sem_token_t token );
 
 /*	@brief	Stop waiting on semaphore
 
@@ -153,6 +160,23 @@ bool _sem_continue_wait (Semaphore* sem , sem_token_t token );
 */
 #define sem_stop_wait(sem, token) _sem_stop_wait(SEMAPHORE_REF(sem), (token))
 void _sem_stop_wait (Semaphore* sem , sem_token_t token );
+
+/*  @brief Finish waiting on a semaphore after using resource
+
+	@param[in]name		Semaphore which is used
+	@param[in]token		Semaphore token of the corresponding semaphore
+*/
+#define sem_finish_wait(sem, token) _sem_finish_wait(SEMAPHORE_REF(sem), (token))
+void _sem_finish_wait(Semaphore* sem, sem_token_t token);
+
+/*	@brief Abort waiting for a semaphore
+
+	@param[in]name		Semaphore for which abort is called
+	@param[in]token		Semaphore token which has to be aborted
+
+*/
+#define sem_abort_wait(sem, token) _sem_abort_wait(SEMAPHORE_REF(sem),(token))
+void _sem_abort_wait(Semaphore* sem, sem_token_t token);
  
 //Start waiting for queue
 #define sem_start_wait_n(sem,n) _sem_start_wait_n(SEMAPHORE_REF_N(sem), n)
@@ -160,11 +184,13 @@ sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
  
 //Continue waiting for queue
 #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
-bool _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
+BOOL _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
-//Stop waiting for queue
-#define sem_stop_wait_n(sem, n, token) _sem_stop_wait_n(SEMAPHORE_REF_N(sem), n, token)
-void _sem_stop_wait_n (Semaphore_n* sem, uint8_t n, sem_token_t token );
+#define sem_finish_wait_n(sem, token) _sem_finish_wait_n(SEMAPHORE_REF(sem), (token))
+uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token);
+
+#define sem_abort_wait_n(sem, token) _sem_abort_wait_n(SEMAPHORE_REF(sem), (token))
+void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token);
 
 
 #endif /* SEMAPHORE_H_ */
