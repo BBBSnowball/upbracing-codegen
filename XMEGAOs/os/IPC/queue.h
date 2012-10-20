@@ -36,12 +36,6 @@ typedef struct
 		SEMAPHORE_EXTERNAL_N(name##_QUEUE_AVAILABLE)
 		/* add the other semaphores here */
 
-// what is the max length of queue ?
-//NOTE(Benjamin): I'm not sure whether I understand this question...
-//                The maximum count of items in the waiting queue is queue_capacity. It
-//                can be different for each semaphore instance. The maximum value of
-//                queue_capacity is 255. You can reduce it a bit, if you have to. You
-//                should note that in the documentation.
 
 #define QUEUE_REF(name)       &name##_QUEUE.q
 #define QUEUE_MUTEX_REF(name) SEMAPHORE_REF(name##_QUEUE_MUTEX)
@@ -102,10 +96,10 @@ void _queue_dequeue_many(Queue* q, Semaphore_n* sem_prod,
 // longer than necessary (including forever).
 #define queue_finish_enqueue(name, token, no_of_bytes, data) \
 		_queue_finish_enqueue(QUEUE_REF(name), QUEUE_PROD_REF(name), \
-				QUEUE_CONS_REF(name), QUEUE_MUTEX_REF(name), count, data)
+				QUEUE_CONS_REF(name), QUEUE_MUTEX_REF(name), token, no_of_bytes, data)
 #define queue_finish_dequeue(name, token, no_of_bytes, data) \
 		_queue_finish_dequeue(QUEUE_REF(name), QUEUE_PROD_REF(name), \
-				QUEUE_CONS_REF(name), QUEUE_MUTEX_REF(name), count, data)
+				QUEUE_CONS_REF(name), QUEUE_MUTEX_REF(name), token, no_of_bytes, data)
 void _queue_finish_enqueue(Queue* sem, Semaphore_n* sem_prod,
 		Semaphore_n* sem_cons, Semaphore* sem_q, sem_token_t token,
 		uint8_t no_of_bytes, const uint8_t* data);

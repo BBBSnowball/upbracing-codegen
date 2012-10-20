@@ -198,17 +198,14 @@ sem_token_t _sem_start_wait(Semaphore* sem) {
 		sem->token_count = OS_NUMBER_OF_TCBS;
 
 	//TODO error, if queue is full
+	
+	
 
 	OS_ENTER_CRITICAL();
 	sem->count--;
-
-	sem->queue[sem->queue_end] = tok;
-
-	sem->queue_end++;
-	if (sem->queue_end == sem->queue_cap) {
-		sem->queue_end = 0;
-	}
-
+	_sem_enqueue(sem,tok);
+	
+	
 	OS_EXIT_CRITICAL();
 	return tok;
 
@@ -227,14 +224,11 @@ BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
 
 	while (check < sem->queue_front + sem->ready_count) {
 		if (tok == sem->queue[check] && sem->ready_count > 0) {
-			sem->ready_count--;
+			
 			return TRUE;
 		}
-		if (check == sem->queue_cap - 1) {
-			check = 0;
-		} else {
-			check++;
-		}
+		check = inc_wrapping(sem,check);
+		
 	}
 
 	return FALSE;
@@ -243,9 +237,10 @@ BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
 
 //TODO remove this function -> put code into 'static BOOL sem_remove_id(...)' which
 //     returns whether the token was ready and decrements ready_count, if it was
-void _sem_stop_wait(Semaphore* sem, sem_token_t token) {
-	uint8_t i, j, k, tok, check;
+static BOOL _sem_remove_id(Semaphore* sem, sem_token_t token) {
+	uint8_t i, j, k, tok, pos;
 	tok = token;
+	BOOL check = FALSE;
 
 	if (tok == 0) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
@@ -254,26 +249,22 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token) {
 
 	OS_ENTER_CRITICAL();
 	if (sem->queue[sem->queue_front] == tok) {
-		sem->count++;
-		sem->queue_front++;
-		if (sem->queue_front == sem->queue_cap) {
-			sem->queue_front = 0;
-		}
+		
+		sem->queue_front = inc_wrapping(sem,sem->queue_front);
+		sem->ready_count--;
 
-		//if front is not token, activate task
-		check = sem->queue[sem->queue_front + sem->ready_count - 1];
-		OS_EXIT_CRITICAL();
-		if (check < OS_TASKTYPE_MAX && sem->ready_count > 0) {
-			ResumeTask(check);
-		}
-
-		return;
+		return TRUE;
 	}
 	OS_EXIT_CRITICAL();
 	OS_ENTER_CRITICAL();
 	i = sem->queue_front;
 	while (i != sem->queue_end) {
 		if (sem->queue[i] == tok) {
+			pos = i - sem->queue_front;
+			if (pos < sem->ready_count)
+			{
+				check = TRUE;
+			}
 			j = i;
 			k = j;
 			while (k != sem->queue_end) {
@@ -285,129 +276,59 @@ void _sem_stop_wait(Semaphore* sem, sem_token_t token) {
 				sem->queue[j] = sem->queue[k];
 				j = k;
 			}
-			sem->queue_end--;
-			if (sem->queue_end < 0) {
+			
+			if (sem->queue_end == 0) {
 				sem->queue_end = sem->queue_cap - 1;
-			}
-			sem->count++;
+			}else{sem->queue_end--;}
+			
 
 		}
-		if (i == sem->queue_cap) {
-			i = 0;
-		} else {
-			i++;
-		}
-
+		i = inc_wrapping(sem,i);
 	}
 	OS_EXIT_CRITICAL();
-
+	
+	if (check == TRUE)
+	{
+		sem->ready_count--;
+	}
+	return check;
 }
 
 void _sem_finish_wait(Semaphore* sem, sem_token_t token) {
 	uint8_t i, j, k;
+	BOOL check;
 
 	if (isTaskID(token)) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return ;
 	}
 
-	sem->ready_count++;
-	if (sem->queue[sem->queue_front] == token) {
-
-		sem->queue_front++;
-		if (sem->queue_front == sem->queue_cap) {
-			sem->queue_front = 0;
-		}
-
-		return;
+	check = _sem_remove_id(sem,token);
+	if (check == FALSE)
+	{
+		OS_report_error(OS_ERROR_NOT_READY);
 	}
 
-	i = sem->queue_front + sem->ready_count;
-	while (i != sem->queue_front) {
-		if (sem->queue[i] == token) {
-			j = i;
-			k = j;
-			while (k != sem->queue_front) {
-				k = j - 1;
-				if (k == 0) {
-					k = sem->queue_cap;
-				}
-
-				sem->queue[j] = sem->queue[k];
-				j = k;
-			}
-			sem->queue_front++;
-			if (sem->queue_front >= sem->queue_cap) {
-				sem->queue_front = 0;
-			}
-		}
-		if (i == 0) {
-			i = sem->queue_cap;
-		} else {
-			i--;
-		}
-
-	}
 
 }
 
 void _sem_abort_wait(Semaphore* sem, sem_token_t token) {
-	uint8_t i, j, k, tok, check;
+	uint8_t tok;
 	tok = token;
+	BOOL check;
 
 	if (tok == 0) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return;
 	}
 
-	OS_ENTER_CRITICAL();
-	if (sem->queue[sem->queue_front] == tok) {
-		sem->count++;
-		sem->queue_front++;
-		if (sem->queue_front == sem->queue_cap) {
-			sem->queue_front = 0;
-		}
-
-		//if front is not token, activate task
-		check = sem->queue[sem->queue_front + sem->ready_count - 1];
-		OS_EXIT_CRITICAL();
-		if (check < OS_TASKTYPE_MAX && sem->ready_count > 0) {
-			ResumeTask(check);
-		}
-
-		return;
+	check = _sem_remove_id(sem,token);
+	if (check == FALSE)
+	{
+		sem->ready_count--;
 	}
-	OS_EXIT_CRITICAL();
-	OS_ENTER_CRITICAL();
-	i = sem->queue_front;
-	while (i != sem->queue_end) {
-		if (sem->queue[i] == tok) {
-			j = i;
-			k = j;
-			while (k != sem->queue_end) {
-				k = j + 1;
-				if (k == sem->queue_cap) {
-					k = 0;
-				}
-
-				sem->queue[j] = sem->queue[k];
-				j = k;
-			}
-			sem->queue_end--;
-			if (sem->queue_end < 0) {
-				sem->queue_end = sem->queue_cap - 1;
-			}
-			sem->count++;
-
-		}
-		if (i == sem->queue_cap) {
-			i = 0;
-		} else {
-			i++;
-		}
-
-	}
-	OS_EXIT_CRITICAL();
+	_sem_signal(sem);
+	
 
 }
 
@@ -453,40 +374,37 @@ BOOL _sem_continue_wait_n(Semaphore_n* sem, sem_token_t token) {
 	return FALSE;
 }
 
-void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
-	uint8_t i, j, k, tok, check;
+static BOOL _sem_remove_id_n(Semaphore_n* sem, uint8_t* n, sem_token_t token) {
+	uint8_t i, j, k, tok, pos;
+	BOOL check = FALSE;
+	
 	tok = token;
 
 	if (tok == 0) {
-		OS_ENTER_CRITICAL();
-		sem->count += n;
-		OS_EXIT_CRITICAL();
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return;
 	}
 
 	OS_ENTER_CRITICAL();
 	if (sem->queue[sem->queue_front].pid == tok) {
-		sem->count = sem->count + sem->queue[sem->queue_front].n;
-		if (sem->queue_front == sem->queue_cap - 1) {
-			sem->queue_front = 0;
-		} else {
-			sem->queue_front++;
-		}
-
-		//if front is not token, activate task
-		check = sem->queue[sem->queue_front].pid;
-		OS_EXIT_CRITICAL();
-		if (check < OS_TASKTYPE_MAX) {
-			ResumeTask(sem->queue[sem->queue_front].pid);
-		}
-		return;
+		
+		sem->ready_count = sem->ready_count - sem->queue[sem->queue_front].n;
+		*n = sem->queue[sem->queue_front].n;
+		sem->queue_front = inc_wrapping_n(sem,sem->queue_front);
+		
+		return TRUE;
 	}
 	OS_EXIT_CRITICAL();
 	OS_ENTER_CRITICAL();
 	i = sem->queue_front;
 	while (i != sem->queue_end) {
 		if (sem->queue[i].pid == tok) {
-			sem->count = sem->count + sem->queue[i].n;
+			*n = sem->queue[i].n;
+			pos = i - sem->queue_front;
+			if (pos < sem->ready_count)
+			{
+				check = TRUE;
+			}
 			j = i;
 			k = j;
 			while (k != sem->queue_end) {
@@ -494,7 +412,8 @@ void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
 				if (k == sem->queue_cap)
 					k = 0;
 
-				sem->queue[j] = sem->queue[k];
+				sem->queue[j].pid = sem->queue[k].pid;
+				sem->queue[j].n = sem->queue[k].n;
 				j = k;
 			}
 			if (sem->queue_end == 0) {
@@ -504,19 +423,50 @@ void _sem_stop_wait_n(Semaphore_n* sem, uint8_t n, sem_token_t token) {
 			}
 
 		}
-		if (i == sem->queue_cap) {
-			i = 0;
-		} else {
-			i++;
-		}
+		i = inc_wrapping_n(sem,i);
 	}
 	OS_EXIT_CRITICAL();
+	
+	if (check == TRUE)
+	{
+		sem->ready_count = sem->ready_count - *n;
+	}
+	return check;
 }
 
-uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token) {
-	//TODO
+uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token)
+{
+	BOOL check;
+	uint8_t n;
+	
+	if (isTaskID(token)) {
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+		return ;
+	}
+	
+	check = _sem_remove_id_n(sem,&n,token);
+	if (check == FALSE)
+	{
+		OS_report_error(OS_ERROR_NOT_READY);
+	}
+	return n;
 }
 
-void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token) {
-	//TODO
+void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token) 
+{
+	uint8_t tok, n;
+	BOOL check;
+	
+	tok = token;
+	if (tok == 0) {
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+		return;
+	}
+
+	check = _sem_remove_id_n(sem, &n, token);
+	if (check == FALSE)
+	{
+		sem->ready_count = sem->ready_count - n;
+	}
+	_sem_signal_n(sem,n);
 }
