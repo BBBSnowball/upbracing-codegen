@@ -32,8 +32,24 @@ public class CanGenerator extends AbstractGenerator {
 	
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
+		if (config.getCan() == null)
+			return true;
+		
+		if (config.getCurrentEcu() == null) {
+			System.err.println("ERROR: Ecu not set.");
+			return false;
+		}
+		
 		if (after_update_config) {
 			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
+
+			if (dbcEcu == null) //If node name fails, try normal name
+				dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getName());
+			
+			if (dbcEcu == null) {
+				System.err.println("ERROR: Could not find the ecu.");
+				return false;
+			}
 
 			//Check if combined RX TX mob exists (not allowed)
 			for(Mob mob : dbcEcu.getMobs()) {
