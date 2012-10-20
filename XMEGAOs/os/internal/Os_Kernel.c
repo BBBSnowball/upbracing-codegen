@@ -43,13 +43,22 @@ uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
 
 void Os_StartFirstTask(void)
 {
-	OS_RESTORE_CONTEXT();
+    // mark OS as started
 	os_isStarted = 1;
+    
+    // select first task to start
+    Os_Schedule();
+    
+    // restore context of selected task
+	OS_RESTORE_CONTEXT();
 	
-	// Start scheduler:
+	// enable interrupts
+    // -> scheduler is active
 	sei();
-	for(;;);
-	//asm volatile("reti");
+	
+    // finish this task and "return" to
+    // selected task (probably Idle)
+	asm volatile("reti");
 }
 
 void Os_TimerIncrement(void) 
