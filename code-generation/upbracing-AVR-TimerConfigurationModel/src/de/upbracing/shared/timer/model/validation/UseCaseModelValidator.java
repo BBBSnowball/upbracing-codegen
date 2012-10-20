@@ -690,7 +690,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		else if (period > 1e-3)
 			return f.format(period * 1e3) + " ms";
 		else if (period > 1e-6)
-			return f.format(period * 1e6) + " µs";
+			return f.format(period * 1e6) + " us";
 		else
 			return f.format(period * 1e9) + " ns";
 	}
