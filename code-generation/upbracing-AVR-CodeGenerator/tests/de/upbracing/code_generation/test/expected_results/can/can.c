@@ -316,7 +316,7 @@ void can_init_mobs(void) {
 
 //OS Tasks for periodic sending of messages:
 
-TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kupplung_Calibration_Control
+TASK(Task_Kupplung_Calibration_Control) { //period: 500 ms. Task for message Kupplung_Calibration_Control
 
 	//Sending message Kupplung_Calibration_Control
 	{
@@ -325,7 +325,7 @@ TASK(Task_Kupplung_Calibration_Control) { //period: 0.5s. Task for message Kuppl
 	TerminateTask();
 }
 
-TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
+TASK(Task_Launch) { //period: 3 ms. Shared task for messages Launch, Radio
 
 	//Sending message Launch
 	{
@@ -349,7 +349,7 @@ TASK(Task_Launch) { //period: 0.0030s. Shared task for messages Launch, Radio
 	TerminateTask();
 }
 
-TASK(Task_CockpitBrightness) { //period: 0.3333333333333333s. Task for message CockpitBrightness
+TASK(Task_CockpitBrightness) { //period: 333333 us. Task for message CockpitBrightness
 
 	//Sending message CockpitBrightness
 	{

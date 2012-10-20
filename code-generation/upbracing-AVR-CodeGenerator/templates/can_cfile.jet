@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="CanCFileTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.* java.util.List" %>
+	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.* java.util.List  de.upbracing.code_generation.common.Times" %>
 
 <%
 
@@ -198,9 +198,9 @@ if (dbcEcu.getSendingTasks().size() > 0) {
 		
 	String taskDescription;
 	if (list.size() == 1) {
-		taskDescription = "period: " + list.get(0).getPeriod() + "s. Task for message " + list.get(0).getName();
+		taskDescription = "period: " + Times.formatTime(list.get(0).getPeriod()) + ". Task for message " + list.get(0).getName();
 	} else {
-		taskDescription = "period: " + list.get(0).getPeriod() + "s. Shared task for messages " + 
+		taskDescription = "period: " + Times.formatTime(list.get(0).getPeriod()) + ". Shared task for messages " + 
 		                  CanGeneratorHelper.implodeMessages(list);
 	}
 	
