@@ -20,6 +20,21 @@ inline static int8_t inc_wrapping_n(Semaphore_n* sem, int8_t x) {
 	return x;
 }
 
+// return (x-1), but wrap around for semaphore waiting queue length
+inline static int8_t dec_wrapping(Semaphore* sem, int8_t x) {
+	if (x == 0)
+		return sem->queue_cap - 1;
+	else
+		return x-1;
+}
+inline static int8_t dec_wrapping_n(Semaphore_n* sem, int8_t x) {
+	if (x == 0)
+		return sem->queue_cap - 1;
+	else
+		return x-1;
+}
+
+
 // put token or task id at the end of the waiting queue
 static void _sem_enqueue(Semaphore* sem, sem_token_t t) {
 	int8_t temp = inc_wrapping(sem, sem->queue_end);
@@ -191,20 +206,17 @@ void _sem_signal_n(Semaphore_n* sem, uint8_t n) {
 }
 
 sem_token_t _sem_start_wait(Semaphore* sem) {
-	uint8_t tok = 0;
+	uint8_t tok;
+
+	OS_ENTER_CRITICAL();
+
 	tok = sem->token_count;
 	sem->token_count++;
 	if (sem->token_count == 0)
 		sem->token_count = OS_NUMBER_OF_TCBS;
 
-	//TODO error, if queue is full
-	
-	
-
-	OS_ENTER_CRITICAL();
 	sem->count--;
 	_sem_enqueue(sem,tok);
-	
 	
 	OS_EXIT_CRITICAL();
 	return tok;
@@ -212,24 +224,27 @@ sem_token_t _sem_start_wait(Semaphore* sem) {
 }
 
 BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
-	uint8_t tok;
 	uint8_t check;
-	tok = token;
-	if (tok < OS_NUMBER_OF_TCBS) {
+
+	if (token < OS_NUMBER_OF_TCBS) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return FALSE;
 	}
 
+	OS_ENTER_CRITICAL();
+
 	check = sem->queue_front;
 
 	while (check < sem->queue_front + sem->ready_count) {
-		if (tok == sem->queue[check] && sem->ready_count > 0) {
-			
+		if (token == sem->queue[check] && sem->ready_count > 0) {
+			OS_EXIT_CRITICAL();
 			return TRUE;
 		}
+
 		check = inc_wrapping(sem,check);
-		
 	}
+
+	OS_EXIT_CRITICAL();
 
 	return FALSE;
 
@@ -238,99 +253,127 @@ BOOL _sem_continue_wait(Semaphore* sem, sem_token_t token) {
 //TODO remove this function -> put code into 'static BOOL sem_remove_id(...)' which
 //     returns whether the token was ready and decrements ready_count, if it was
 static BOOL _sem_remove_id(Semaphore* sem, sem_token_t token) {
-	uint8_t i, j, k, tok, pos;
-	tok = token;
-	BOOL check = FALSE;
+	//TODO Please find better names for i, j and k.
+	uint8_t i, j, k, pos;
+	BOOL was_ready = FALSE;
+	BOOL found = FALSE;
 
-	if (tok == 0) {
+	if (token == 0) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return;
 	}
 
 	OS_ENTER_CRITICAL();
-	if (sem->queue[sem->queue_front] == tok) {
-		
-		sem->queue_front = inc_wrapping(sem,sem->queue_front);
+
+	if (sem->queue[sem->queue_front] == token) {
+		sem->queue_front = inc_wrapping(sem, sem->queue_front);
 		sem->ready_count--;
 
+		OS_EXIT_CRITICAL();
 		return TRUE;
 	}
-	OS_EXIT_CRITICAL();
-	OS_ENTER_CRITICAL();
+
 	i = sem->queue_front;
 	while (i != sem->queue_end) {
-		if (sem->queue[i] == tok) {
+		// have we found the ID that we want to remove?
+		if (sem->queue[i] == token) {
+			// got it -> remove
+			found = TRUE;
+
+			//NOTE(Benjamin): We have two options here:
+			// a) Move all items after i to the left.
+			// b) Move all items before i to the right.
+			// Here, we implement option (a), but in practice the token
+			// will be near the front of the queue in most cases, so
+			// option (b) would be faster.
+			//TODO implement both of them and choose the one that is
+			//     faster (depends on the position of the token, can
+			//     be determined at runtime)
+
+			//NOTE(Benjamin): This will fail, if i has wrapped around the end!!!
 			pos = i - sem->queue_front;
-			if (pos < sem->ready_count)
-			{
-				check = TRUE;
-			}
-			j = i;
-			k = j;
+			was_ready = (pos < sem->ready_count);
+
+			// move all items towards the front
+			k = j = i;
 			while (k != sem->queue_end) {
-				k = j + 1;
-				if (k == sem->queue_cap) {
-					k = 0;
-				}
+				k = inc_wrapping(sem, j);
 
 				sem->queue[j] = sem->queue[k];
 				j = k;
 			}
 			
-			if (sem->queue_end == 0) {
-				sem->queue_end = sem->queue_cap - 1;
-			}else{sem->queue_end--;}
-			
-
+			// decrement queue
+			sem->queue_end = dec_wrapping(sem, sem->queue_end);
 		}
+
 		i = inc_wrapping(sem,i);
 	}
-	OS_EXIT_CRITICAL();
 	
-	if (check == TRUE)
+	if (was_ready)
 	{
 		sem->ready_count--;
 	}
-	return check;
+
+	OS_EXIT_CRITICAL();
+
+	if (!found) {
+		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
+	}
+
+	return was_ready;
 }
 
 void _sem_finish_wait(Semaphore* sem, sem_token_t token) {
-	uint8_t i, j, k;
-	BOOL check;
+	BOOL was_ready;
 
 	if (isTaskID(token)) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return ;
 	}
 
-	check = _sem_remove_id(sem,token);
-	if (check == FALSE)
+	was_ready = _sem_remove_id(sem,token);
+	if (was_ready == FALSE)
 	{
 		OS_report_error(OS_ERROR_NOT_READY);
 	}
-
-
 }
 
 void _sem_abort_wait(Semaphore* sem, sem_token_t token) {
-	uint8_t tok;
-	tok = token;
-	BOOL check;
+	BOOL was_ready;
 
-	if (tok == 0) {
+	if (isTaskID(token)) {
 		OS_report_error(OS_ERROR_SEM_INVALID_TOKEN);
 		return;
 	}
 
-	check = _sem_remove_id(sem,token);
-	if (check == FALSE)
+	was_ready = _sem_remove_id(sem,token);
+
+	// We need to restore the value of ready_count. If the
+	// token was ready, _sem_remove_id has already decremented
+	// it. Otherwise, we need to do that now.
+	//TODO The description matches the code ^^
+	//      However, I'm not sure that it is correct. The call
+	//      to signal will wake up a task, but this should only
+	//      be done, if the token was ready. I think we don't
+	//      have to change ready_count (except by sem_signal)
+	//      and we shouldn't call sem_signal, if the token was
+	//      not ready. In that case, we should manually
+	//      increment count and not call sem_signal.
+	//  => Before we change that: This is different from our
+	//     previous ideas and plans. I think it is correct, but
+	//     we should think about that in detail.
+	//     If we change it, we should make sure that the spec
+	//     is still right (it shouldn't mention such details,
+	//     but we should check that).
+	if (was_ready == FALSE)
 	{
 		sem->ready_count--;
 	}
 	_sem_signal(sem);
-	
-
 }
+
+//TODO I have updated the normal functions, but not the "_n" functions.
 
 sem_token_t _sem_start_wait_n(Semaphore_n* sem, uint8_t n) {
 
