@@ -2,8 +2,8 @@
  * queue.c
  */ 
 #include "queue.h"
-#include "semaphore.h"
-#include "Os_Error.h"
+#include "semaphores/semaphore.h"
+#include "internal/Os_Error.h"
 #include <avr/interrupt.h>
 
 // return (x+1), but wrap around for semaphore waiting queue length
