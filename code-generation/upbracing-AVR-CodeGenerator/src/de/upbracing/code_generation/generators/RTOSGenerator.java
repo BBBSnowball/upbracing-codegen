@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import de.upbracing.code_generation.ITemplate;
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.RTOSApplicationCFileTemplate;
 import de.upbracing.code_generation.RTOSApplicationHeaderTemplate;
 import de.upbracing.code_generation.RTOSFeaturesTemplate;
@@ -30,27 +32,30 @@ public class RTOSGenerator extends AbstractGenerator {
 		boolean valid = true;
 		RTOSConfig rtos = config.getRtos();
 		
+		Messages messages = config.getMessages();
+		ContextItem context = messages.pushContext("caRTOS validator");
+		
 		if (!rtos.isUsed())
 			return true;
 		
 		if (!rtos.isTickFrequencyValid()) {
-			System.err.println("ERROR: RTOS doesn't have a valid tick frequency. Use sensible values for clock and tick_frequency and make sure the processor is supported.");
+			messages.error("RTOS doesn't have a valid tick frequency. Use sensible "
+					+ "values for clock and tick_frequency and make sure the processor is supported.");
 			valid = false;
 		} else if (Math.abs(rtos.getRealTickFrequency() - rtos.getTickFrequency()) > 0.1*rtos.getTickFrequency()) {
-			System.err.println("WARN: System timer tick has an error of more than 10%: " +
-					String.format("%0.0f instead of %0.0f, %0.2f%% off",
+			messages.warn("System timer tick has an error of more than 10%%: %0.0f instead of %0.0f, %0.2f%% off",
 							rtos.getRealTickFrequency(),
 							rtos.getTickFrequency(),
-							(rtos.getRealTickFrequency() - rtos.getTickFrequency())/rtos.getTickFrequency()*100));
+							(rtos.getRealTickFrequency() - rtos.getTickFrequency())/rtos.getTickFrequency()*100);
 		}
 		
 		if (!Arrays.asList("BCC1", "BCC2", "ECC1", "ECC2").contains(rtos.getConformanceClass())) {
-			System.err.println("ERROR: Invalid OSEK conformance class '" + rtos.getConformanceClass() + "'");
+			messages.error("Invalid OSEK conformance class '%s'", rtos.getConformanceClass());
 			valid = false;
 		}
 		
 		if (rtos.getTasks().isEmpty()) {
-			System.err.println("ERROR: There must be at least one task");
+			messages.error("There must be at least one task");
 			valid = false;
 		} else {
 			RTOSTask idle_task = rtos.getTasks().get(0);
@@ -65,25 +70,25 @@ public class RTOSGenerator extends AbstractGenerator {
 						}
 					}
 				} else if (!rtos.getAlarms().contains(alarm)) {
-					System.err.println("ERROR: Task " + task.getName() + " references an alarm which is not in the list of alarms");
+					messages.error("Task '%s' references an alarm which is not in the list of alarms", task.getName());
 					valid = false;
 				}
 	
 				if (task == idle_task) {
 					if (alarm != null)
-						System.err.println("WARN: The first task " + task.getName() + " is the idle task, so it shouldn't have an alarm");
+						messages.warn("The first task '%' is the idle task, so it shouldn't have an alarm", task.getName());
 				} else {
 					if (alarm == null)
-						System.err.println("WARN: Task " + task.getName() + " doesn't have an alarm");
+						messages.warn("Task '%' doesn't have an alarm", task.getName());
 				}
 				
 				if (!Pattern.matches("^[a-zA-Z_][a-zA-Z_0-9]*$", task.getName())) {
-					System.err.println("ERROR: Task '" + task.getName() + "' has a name that is not a valid identifier");
+					messages.error("ERROR: Task '%s' has a name that is not a valid identifier", task.getName());
 					valid = false;
 				}
 				
 				if (task.getStackSize() < 35) {
-					System.err.println("ERROR: Task " + task.getName() + " has a too small stack size (smaller than 35 bytes)");
+					messages.error("ERROR: Task '%' has a too small stack size (smaller than 35 bytes)", task.getName());
 					valid = false;
 				}
 			}
@@ -92,18 +97,21 @@ public class RTOSGenerator extends AbstractGenerator {
 		for (RTOSAlarm alarm : rtos.getAlarms()) {
 			RTOSTask task = alarm.getTask();
 			if (task == null) {
-				System.err.println("ERROR: An alarm (comment: " + alarm.getComment() + ") needs a task.");
+				messages.error("An alarm (comment: '%s') needs a task.", alarm.getComment());
 				valid = false;
 			} else 	if (!rtos.getTasks().contains(task)) {
-				System.err.println("ERROR: An alarm (comment: " + alarm.getComment() + ") references the task " + task.getName() + " which is not in the list of tasks");
+				messages.error("An alarm (comment: '%s') references the task '%s' which is not in the list of tasks",
+						alarm.getComment(), task.getName());
 				valid = false;
 			}
 			
 			if (alarm.getTicksPerBase() <= 0) {
-				System.err.println("ERROR: An alarm (comment: " + alarm.getComment() + ") has a non-positive ticks_per_base value");
+				messages.error("An alarm (comment: '%s') has a non-positive ticks_per_base value", alarm.getComment());
 				valid = false;
 			}
 		}
+		
+		context.pop();
 		
 		return valid;
 	}
