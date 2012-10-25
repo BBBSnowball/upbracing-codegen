@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.simpleframework.xml.Default;
 
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.dbc.DBC;
 import de.upbracing.eculist.ECUDefinition;
 import de.upbracing.eculist.EEPROMValue;
@@ -32,6 +34,8 @@ public class MCUConfiguration {
 	private ConfigurationModel timer;
 	private StatemachinesConfig statemachines = new StatemachinesConfig();
 
+	private Messages messages = new Messages().withOutputTo(System.err, Severity.INFO);
+	
 	/** current working directory for loading config files */
 	public static String currentDirectory = ".";
 	
@@ -250,5 +254,23 @@ public class MCUConfiguration {
 	 */
 	public void setTimerConfig(ConfigurationModel m) {
 		timer = m;
+	}
+
+	/**
+	 * Get object that is used to report messages in validate and updateConfig
+	 * @return the messages object
+	 */
+	public Messages getMessages() {
+		return messages;
+	}
+	
+	/**
+	 * Set object that is used to report messages in validate and updateConfig
+	 * @param messages the new value
+	 */
+	public void setMessages(Messages messages) {
+		this.messages = messages;
+		
+		getStatemachines().addFormatters(messages);
 	}
 }

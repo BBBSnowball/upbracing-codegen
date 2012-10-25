@@ -53,7 +53,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 			stringBuffer.append("#include \"statemachines.h\"\n");
 			
-			printWarningsAndErrors(stringBuffer, statemachines.getMessages());
+			printWarningsAndErrors(stringBuffer, config.getMessages());
 
 			generateCodeForGlobalCodeBoxes(stringBuffer, statemachines);
 

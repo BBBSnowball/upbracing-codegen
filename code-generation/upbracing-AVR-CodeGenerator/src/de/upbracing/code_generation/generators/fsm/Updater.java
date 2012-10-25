@@ -29,7 +29,7 @@ public class Updater {
 	private Messages messages;
 
 	public Updater(MCUConfiguration config) {
-		this.messages = config.getStatemachines().getMessages();
+		this.messages = config.getMessages();
 	}
 
 	public Object updateConfig(MCUConfiguration config) {

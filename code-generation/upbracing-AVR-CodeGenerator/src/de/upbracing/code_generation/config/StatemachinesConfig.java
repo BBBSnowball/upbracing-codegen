@@ -13,7 +13,6 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import de.upbracing.code_generation.Messages;
-import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 
@@ -29,8 +28,6 @@ import Statecharts.StatechartsPackage;
  */
 public class StatemachinesConfig implements List<StateMachineForGeneration> {
 	private ArrayList<StateMachineForGeneration> list = new ArrayList<StateMachineForGeneration>();
-	
-	private Messages messages = new Messages().withOutputTo(System.err, Severity.INFO);
 	
 	/** load a statemachine and add it to the list of statemachines to generate code for
 	 * 
@@ -191,13 +188,7 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 		list.trimToSize();
 	}
 
-	public Messages getMessages() {
-		return messages;
-	}
-
-	public void setMessages(Messages messages) {
-		this.messages = messages;
-		
+	void addFormatters(Messages messages) {
 		Helpers.addStatemachineFormatters(messages, this);
 	}
 }

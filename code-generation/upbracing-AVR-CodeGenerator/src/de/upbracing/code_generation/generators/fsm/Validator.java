@@ -36,7 +36,7 @@ public class Validator {
 		this.config = config;
 		this.after_update_config = after_update_config;
 		this.generator_data = generator_data;
-		this.messages = config.getStatemachines().getMessages();
+		this.messages = config.getMessages();
 	}
 
 	/**
