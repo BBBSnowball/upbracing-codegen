@@ -28,4 +28,9 @@ extern TASK(Task_Shift);
 #define OS_NUMBER_OF_TCBS_DEFINE   4
 #define OS_NUMBER_OF_ALARMS_DEFINE 3
 
+// category: drivers/usart
+
+// length of the usart transmit buffer
+#define USART_TRANSMIT_QUEUE_LENGTH 10
+
 #endif /* OS_CFG_APPLICATION_H_ */

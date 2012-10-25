@@ -3,7 +3,14 @@ package de.upbracing.code_generation.config.rtos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.ServiceLoader;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 
+import de.upbracing.code_generation.config.rtos.RTOSConfigValue.ConfigFile;
 import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 
 public class RTOSConfig {
@@ -21,9 +28,28 @@ public class RTOSConfig {
 	private ArrayList<RTOSTask> tasks = new ArrayList<RTOSTask>();
 	private ArrayList<RTOSAlarm> alarms = new ArrayList<RTOSAlarm>();
 	
+	private SortedMap<String, SortedMap<String, RTOSConfigValue>> config_values;
+	
 	public RTOSConfig() {
 		// add idle task
 		addTask("Idle", TaskState.READY);
+		
+		config_values = new TreeMap<String, SortedMap<String,RTOSConfigValue>>();
+		for (RTOSConfigValue value : getAllConfigValues()) {
+			String cat_name = value.getCategory();
+			SortedMap<String,RTOSConfigValue> category = config_values.get(cat_name);
+			if (category == null) {
+				category = new TreeMap<String, RTOSConfigValue>();
+				config_values.put(cat_name, category);
+			}
+			
+			
+			String name = value.getName();
+			if (category.containsKey(name))
+				throw new RuntimeException("duplicate config value " + name + " in category " + cat_name);
+			
+			category.put(name, value);
+		}
 	}
 	
 	/** Create and add an alarm
@@ -272,5 +298,86 @@ public class RTOSConfig {
 					Arrays.asList(1, 8, 64, 256, 1024));
 		else
 			return null;
+	}
+
+	
+	/**
+	 * Get all RTOSConfigValues using the Service Provider Interface for the
+	 * class RTOSConfigValueProvider
+	 * 
+	 * This will find all variables that are provided by RTOSConfigValueProviders
+	 * mentioned in an SPI file somewhere on the class path. The file is called:
+	 * META-INF/services/de.upbracing.code_generation.config.rtos.RTOSConfigValueProvider
+	 * @return a list of generator instances
+	 */
+	public static List<RTOSConfigValue> getAllConfigValues() {
+		ArrayList<RTOSConfigValue> values = new ArrayList<RTOSConfigValue>();
+		
+		for (RTOSConfigValueProvider provider : findConfigValueProviders())
+			values.addAll(provider.getRTOSConfigValues());
+		
+		return values;
+	}
+	
+	/**
+	 * Load RTOSConfigValueProvider instances via the Service Provider Interface
+	 * 
+	 * This will find all classes that are mentioned in an SPI file somewhere on the
+	 * class path. The file is called:
+	 * META-INF/services/de.upbracing.code_generation.config.rtos.RTOSConfigValueProvider
+	 * @return a list of generator instances
+	 */
+	private static ServiceLoader<RTOSConfigValueProvider> findConfigValueProviders() {
+		ServiceLoader<RTOSConfigValueProvider> loader
+			= ServiceLoader.load(RTOSConfigValueProvider.class);
+		return loader;
+	}
+	
+	public SortedSet<String> getConfigValueCategories() {
+		return Collections.unmodifiableSortedSet((SortedSet<String>) config_values.keySet());
+	}
+	
+	public SortedMap<String, RTOSConfigValue> getConfigValueCategory(String category) {
+		return Collections.unmodifiableSortedMap(config_values.get(category));
+	}
+	
+	public RTOSConfigValue getConfigValue(String category, String name) {
+		return config_values.get(category).get(name);
+	}
+	
+	public void setConfigValue(String category, String name, String value) {
+		getConfigValue(category, name).setValue(value);
+	}
+
+	public void addConfigValues(String indent, StringBuffer stringBuffer,
+			ConfigFile file) {
+		for (Entry<String, SortedMap<String, RTOSConfigValue>> category : config_values.entrySet()) {
+			boolean any_active = false;
+			for (RTOSConfigValue cvalue : category.getValue().values()) {
+				if (cvalue.getFile() == file) {
+					any_active = true;
+					break;
+				}
+			}
+			
+			if (!any_active)
+				continue;
+			
+			stringBuffer.append("\n" + indent + "// category: " + category.getKey() + "\n");
+
+			for (RTOSConfigValue cvalue : category.getValue().values()) {
+				if (cvalue.getFile() != file)
+					continue;
+
+				stringBuffer.append("\n");
+				if (cvalue.getComment() != null) {
+					stringBuffer.append(indent + "// ");
+					stringBuffer.append(cvalue.getComment().replaceAll("\n", "\n" + indent + "// "));
+					stringBuffer.append("\n");
+				}
+				
+				cvalue.getType().addCode(indent, stringBuffer, cvalue);
+			}
+		}
 	}
 }

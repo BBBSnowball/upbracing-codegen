@@ -35,7 +35,7 @@ public class Main {
 	/**
 	 * Load IGenerator instances via the Service Provider Interface
 	 * 
-	 * This will find all class that are mentioned in an SPI file somewhere on the
+	 * This will find all classes that are mentioned in an SPI file somewhere on the
 	 * class path. The file is called:
 	 * META-INF/services/de.upbracing.code_generation.IGenerator
 	 * @return a list of generator instances

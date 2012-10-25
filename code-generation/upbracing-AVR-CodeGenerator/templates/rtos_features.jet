@@ -26,4 +26,7 @@
 #define OS_TIMER_PRESCALE			TIMER_PRESCALE_<%= rtos.getTimerPrescaler() %>_bm
 #define OS_TIMER_COMPARE_VALUE		<%= rtos.getTimerCountTo() %>
 
+<%
+rtos.addConfigValues("", stringBuffer, RTOSConfigValue.ConfigFile.FEATURES);
+%>
 #endif /* OS_CFG_FEATURES_H_ */
