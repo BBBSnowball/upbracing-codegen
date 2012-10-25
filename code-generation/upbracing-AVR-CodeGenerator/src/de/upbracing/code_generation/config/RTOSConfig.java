@@ -21,6 +21,11 @@ public class RTOSConfig {
 	private ArrayList<RTOSTask> tasks = new ArrayList<RTOSTask>();
 	private ArrayList<RTOSAlarm> alarms = new ArrayList<RTOSAlarm>();
 	
+	public RTOSConfig() {
+		// add idle task
+		addTask("Idle", TaskState.READY);
+	}
+	
 	/** Create and add an alarm
 	 * 
 	 * @param name alarm name

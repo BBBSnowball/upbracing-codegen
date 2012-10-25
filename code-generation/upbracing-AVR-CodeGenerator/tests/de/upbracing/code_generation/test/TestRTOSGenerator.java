@@ -17,8 +17,7 @@ public class TestRTOSGenerator {
 		config.getRtos().setConformanceClass("BCC1");
 
 		@SuppressWarnings("unused")
-		RTOSTask idle_task = config.getRtos().addTask("Idle", TaskState.READY);
-		config.getRtos().addTask("Update", TaskState.SUSPENDED, 1);
+		RTOSTask update_task = config.getRtos().addTask("Update", TaskState.SUSPENDED, 1);
 		config.getRtos().addTask("Increment", TaskState.SUSPENDED, 5);
 		config.getRtos().addTask("Shift", TaskState.SUSPENDED, 1);
 		

@@ -19,7 +19,6 @@ $config.rtos.clock = 8000000
 $config.rtos.tick_frequency = 250
 $config.rtos.conformance_class = "BCC1"
 
-task_idle = $config.rtos.addTask("Idle", READY)
 task_update = $config.rtos.addTask("Update", SUSPENDED)
 task_increment = $config.rtos.addTask("Increment", SUSPENDED)
 task_shift = $config.rtos.addTask("Shift", SUSPENDED)

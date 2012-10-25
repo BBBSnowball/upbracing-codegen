@@ -16,8 +16,6 @@ $config.rtos.clock = 8000000
 $config.rtos.tick_frequency = 250
 $config.rtos.conformance_class = "BCC1"
 
-task_idle = $config.rtos.addTask("Idle", READY)
-
 task_usart = $config.rtos.addTask("UsartTransmit", SUSPENDED, 5)
 
 $config.canConfig.getMessage("Logger").period = "10ms"
