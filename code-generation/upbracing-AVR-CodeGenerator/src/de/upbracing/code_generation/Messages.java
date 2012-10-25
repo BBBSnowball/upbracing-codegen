@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,36 @@ public class Messages {
 
 		public boolean isEmpty() {
 			return context.isEmpty();
+		}
+		
+		public boolean isParentOf(Context child) {
+			if (this.context.size() > child.context.size())
+				// nesting level of c is not deep enough
+				// -> c cannot be the child
+				return false;
+			
+			// all items must be the same, but this
+			// context may have fewer entries
+			Iterator<Object> it_parent = this.context.iterator();
+			Iterator<Object> it_child  = child.context.iterator();
+			while (it_parent.hasNext() && it_child.hasNext()) {
+				if (it_parent.next() != it_child.next())
+					// not the same -> not a child
+					return false;
+			}
+			
+			if (!it_parent.hasNext())
+				// parent doesn't have any more entries and the
+				// child had matching entries up to this point
+				// -> it is a child
+				return true;
+			else
+				// loop ended due to another reason
+				// -> parent has more entries than child
+				// -> it cannot be its parent
+				// (Should be handled above, but we do it again
+				//  to make sure that it always works.)
+				return false;
 		}
 	}
 	
@@ -486,6 +517,22 @@ public class Messages {
 		return highest;
 	}
 	
+	/** get highest severity that occurs in the list of messages that have the current context
+	 * 
+	 * @return the highest severity or NONE, if the list is empty
+	 */
+	public Severity getHighestSeverityInContext() {
+		Severity highest = Severity.NONE;
+		
+		Context current_context = new Context(context);
+		for (Message msg : messages) {
+			if (current_context.isParentOf(msg.getContext()) && msg.getSeverity().ordinal() > highest.ordinal())
+				highest = msg.getSeverity();
+		}
+		
+		return highest;
+	}
+
 	/**
 	 * Format a list of messages
 	 * 

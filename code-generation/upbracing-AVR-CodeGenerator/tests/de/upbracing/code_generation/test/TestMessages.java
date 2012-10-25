@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import org.junit.Test;
 
 import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.Context;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.ObjectFormatter;
@@ -200,4 +201,48 @@ public class TestMessages {
 		assertEquals("before\n-- in Dummy,by Dummy,LONG\n-- in C1\nafter", sb.toString());
 	}
 
+	@Test
+	public void testHighestSeverityInContext() {
+		Messages msgs = new Messages();
+		
+		assertEquals(Severity.NONE, msgs.getHighestSeverityInContext());
+		
+		ContextItem context1 = msgs.pushContext("abc");
+		
+		msgs.warn("blub");
+		assertEquals(Severity.WARNING, msgs.getHighestSeverityInContext());
+
+		
+		ContextItem context2 = msgs.pushContext("def");
+
+		assertEquals(Severity.NONE, msgs.getHighestSeverityInContext());
+		
+		msgs.error("blub2");
+		assertEquals(Severity.ERROR, msgs.getHighestSeverityInContext());
+		
+		context2.pop();
+
+		
+		assertEquals(Severity.ERROR, msgs.getHighestSeverityInContext());
+		
+		context1.pop();
+
+		assertEquals(Severity.ERROR, msgs.getHighestSeverityInContext());
+		
+		
+		context1 = msgs.pushContext("ghi");
+		
+		assertEquals(Severity.NONE, msgs.getHighestSeverityInContext());
+		
+		context2 = msgs.pushContext("def");
+		
+		assertEquals(Severity.NONE, msgs.getHighestSeverityInContext());
+		
+		context2.pop();
+		
+		context1.pop();
+		
+
+		assertEquals(Severity.ERROR, msgs.getHighestSeverityInContext());
+	}
 }

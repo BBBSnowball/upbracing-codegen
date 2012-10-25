@@ -62,6 +62,8 @@ public class Validator {
 	public boolean validate() {
 		if (!validateNull())
 			return false;
+		
+		ContextItem validator_context = messages.pushContext("statemachine validator");
 
 		// make sure that we have the appropiate values on the root object
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
@@ -118,9 +120,12 @@ public class Validator {
 			}
 		}
 
-		return messages.getHighestSeverity().ordinal() < Severity.ERROR
+		boolean valid =  messages.getHighestSeverityInContext().ordinal() < Severity.ERROR
 				.ordinal();
-
+		
+		validator_context.pop();
+		
+		return valid;
 	}
 
 	public boolean duplicateNames(StateMachineForGeneration smg, List<State> states) {

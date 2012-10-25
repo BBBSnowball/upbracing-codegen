@@ -163,7 +163,7 @@ public class TestStateTransitions {
 		Validator validator = new Validator(config, false, null);
 		validator.setMessages(messages);
 		assertEquals(false, validator.validate());
-		assertEquals(TestHelpers.loadResource("/expected_results/statemachines/ExpectedTransitionTestResults.txt"),
+		assertEquals(TestHelpers.loadResource("expected_results/statemachines/ExpectedTransitionTestResults.txt"),
 				sb.toString());
 	}
 }

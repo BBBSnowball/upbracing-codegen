@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.RTOSApplicationCFileTemplate;
 import de.upbracing.code_generation.RTOSApplicationHeaderTemplate;
 import de.upbracing.code_generation.RTOSFeaturesTemplate;
@@ -29,7 +30,6 @@ public class RTOSGenerator extends AbstractGenerator {
 	
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
-		boolean valid = true;
 		RTOSConfig rtos = config.getRtos();
 		
 		Messages messages = config.getMessages();
@@ -41,7 +41,6 @@ public class RTOSGenerator extends AbstractGenerator {
 		if (!rtos.isTickFrequencyValid()) {
 			messages.error("RTOS doesn't have a valid tick frequency. Use sensible "
 					+ "values for clock and tick_frequency and make sure the processor is supported.");
-			valid = false;
 		} else if (Math.abs(rtos.getRealTickFrequency() - rtos.getTickFrequency()) > 0.1*rtos.getTickFrequency()) {
 			messages.warn("System timer tick has an error of more than 10%%: %0.0f instead of %0.0f, %0.2f%% off",
 							rtos.getRealTickFrequency(),
@@ -51,12 +50,10 @@ public class RTOSGenerator extends AbstractGenerator {
 		
 		if (!Arrays.asList("BCC1", "BCC2", "ECC1", "ECC2").contains(rtos.getConformanceClass())) {
 			messages.error("Invalid OSEK conformance class '%s'", rtos.getConformanceClass());
-			valid = false;
 		}
 		
 		if (rtos.getTasks().isEmpty()) {
 			messages.error("There must be at least one task");
-			valid = false;
 		} else {
 			RTOSTask idle_task = rtos.getTasks().get(0);
 			
@@ -71,7 +68,6 @@ public class RTOSGenerator extends AbstractGenerator {
 					}
 				} else if (!rtos.getAlarms().contains(alarm)) {
 					messages.error("Task '%s' references an alarm which is not in the list of alarms", task.getName());
-					valid = false;
 				}
 	
 				if (task == idle_task) {
@@ -84,12 +80,10 @@ public class RTOSGenerator extends AbstractGenerator {
 				
 				if (!Pattern.matches("^[a-zA-Z_][a-zA-Z_0-9]*$", task.getName())) {
 					messages.error("ERROR: Task '%s' has a name that is not a valid identifier", task.getName());
-					valid = false;
 				}
 				
 				if (task.getStackSize() < 35) {
 					messages.error("ERROR: Task '%' has a too small stack size (smaller than 35 bytes)", task.getName());
-					valid = false;
 				}
 			}
 		}
@@ -98,21 +92,21 @@ public class RTOSGenerator extends AbstractGenerator {
 			RTOSTask task = alarm.getTask();
 			if (task == null) {
 				messages.error("An alarm (comment: '%s') needs a task.", alarm.getComment());
-				valid = false;
 			} else 	if (!rtos.getTasks().contains(task)) {
 				messages.error("An alarm (comment: '%s') references the task '%s' which is not in the list of tasks",
 						alarm.getComment(), task.getName());
-				valid = false;
 			}
 			
 			if (alarm.getTicksPerBase() <= 0) {
 				messages.error("An alarm (comment: '%s') has a non-positive ticks_per_base value", alarm.getComment());
-				valid = false;
 			}
 		}
 		
-		context.pop();
+		boolean valid = messages.getHighestSeverityInContext().ordinal() < Severity.ERROR
+				.ordinal();
 		
+		context.pop();
+
 		return valid;
 	}
 	
