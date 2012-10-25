@@ -116,8 +116,8 @@ def eagle_port(port_name, ic_regex, name_regex, pin_regex = //)
   end
 end
 
-READY = Java::de::upbracing::code_generation::config::RTOSTask::TaskState::READY
-SUSPENDED = Java::de::upbracing::code_generation::config::RTOSTask::TaskState::SUSPENDED
+READY = Java::de::upbracing::code_generation::config::rtos::RTOSTask::TaskState::READY
+SUSPENDED = Java::de::upbracing::code_generation::config::rtos::RTOSTask::TaskState::SUSPENDED
 
 
 # tools for statemachines
