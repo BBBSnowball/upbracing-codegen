@@ -25,24 +25,24 @@
 
 
 
-// from file os/config/Os_application_dependent_code.c:
-
-// your includes (including the directory name!)
-// your code
-
-
 // from file os/drivers/USART.c:
 
 #include "IPC/queue.h"
 
-#ifndef USART_QUEUE_LENGTH
-#	warning USART_QUEUE_LENGTH not set, using default value of 10
-#	define USART_QUEUE_LENGTH 10
+#ifndef USART_TRANSMIT_QUEUE_LENGTH
+#	warning USART_TRANSMIT_QUEUE_LENGTH not set, using default value of 10
+#	define USART_TRANSMIT_QUEUE_LENGTH 10
 #endif
 
 // reserve waiting places for "writers" for all
 // tasks except the USART transmitter
-QUEUE(usart,USART_QUEUE_LENGTH,1,OS_NUMBER_OF_TCBS_DEFINE-1);
+QUEUE(usart,USART_TRANSMIT_QUEUE_LENGTH,1,OS_NUMBER_OF_TCBS_DEFINE-1);
+
+
+// from file os/config/Os_application_dependent_code.c:
+
+// your includes (including the directory name!)
+// your code
 
 
 // from file os/internal/Os_Kernel.c:

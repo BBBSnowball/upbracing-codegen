@@ -20,4 +20,18 @@
 #define OS_TIMER_PRESCALE			TIMER_PRESCALE_1_bm
 #define OS_TIMER_COMPARE_VALUE		6249
 
+// category: drivers/usart
+
+// enable USART driver
+#define USART_ENABLE_DRIVER
+
+// category: os/core
+
+// conformance mode (task features)
+#define OS_CFG_CC BCC1
+#define OS_CFG_CC_BCC1
+#undef  OS_CFG_CC_BCC2
+#undef  OS_CFG_CC_ECC1
+#undef  OS_CFG_CC_ECC2
+
 #endif /* OS_CFG_FEATURES_H_ */
