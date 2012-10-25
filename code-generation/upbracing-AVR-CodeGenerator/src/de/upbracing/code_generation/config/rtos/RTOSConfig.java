@@ -1,10 +1,10 @@
-package de.upbracing.code_generation.config;
+package de.upbracing.code_generation.config.rtos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import de.upbracing.code_generation.config.RTOSTask.TaskState;
+import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 
 public class RTOSConfig {
 	private String processor = "AT90CAN128";

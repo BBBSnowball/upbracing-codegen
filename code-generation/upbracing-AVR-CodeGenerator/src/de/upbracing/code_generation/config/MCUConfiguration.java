@@ -10,6 +10,7 @@ import org.simpleframework.xml.Default;
 
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Severity;
+import de.upbracing.code_generation.config.rtos.RTOSConfig;
 import de.upbracing.dbc.DBC;
 import de.upbracing.eculist.ECUDefinition;
 import de.upbracing.eculist.EEPROMValue;

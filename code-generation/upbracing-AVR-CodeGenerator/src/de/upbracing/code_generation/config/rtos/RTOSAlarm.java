@@ -1,4 +1,5 @@
-package de.upbracing.code_generation.config;
+package de.upbracing.code_generation.config.rtos;
+
 
 public class RTOSAlarm {
 	private String comment;

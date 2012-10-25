@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="RTOSFeaturesTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.*" %>
+	imports="de.upbracing.code_generation.config.rtos.*" %>
 <% RTOSConfig rtos = config.getRtos(); %>
 /*
  * Os_cfg_features.h

@@ -11,9 +11,9 @@ import de.upbracing.code_generation.RTOSApplicationCFileTemplate;
 import de.upbracing.code_generation.RTOSApplicationHeaderTemplate;
 import de.upbracing.code_generation.RTOSFeaturesTemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;
-import de.upbracing.code_generation.config.RTOSAlarm;
-import de.upbracing.code_generation.config.RTOSConfig;
-import de.upbracing.code_generation.config.RTOSTask;
+import de.upbracing.code_generation.config.rtos.RTOSAlarm;
+import de.upbracing.code_generation.config.rtos.RTOSConfig;
+import de.upbracing.code_generation.config.rtos.RTOSTask;
 
 public class RTOSGenerator extends AbstractGenerator {
 	public RTOSGenerator() {

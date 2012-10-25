@@ -3,8 +3,8 @@ package de.upbracing.code_generation.test;
 import org.junit.Test;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
-import de.upbracing.code_generation.config.RTOSTask;
-import de.upbracing.code_generation.config.RTOSTask.TaskState;
+import de.upbracing.code_generation.config.rtos.RTOSTask;
+import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 import de.upbracing.code_generation.generators.RTOSGenerator;
 
 public class TestRTOSGenerator {
