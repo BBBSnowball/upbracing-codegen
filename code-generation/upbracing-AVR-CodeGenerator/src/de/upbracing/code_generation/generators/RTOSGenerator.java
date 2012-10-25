@@ -49,31 +49,43 @@ public class RTOSGenerator extends AbstractGenerator {
 			valid = false;
 		}
 		
-		for (RTOSTask task : rtos.getTasks()) {
-			RTOSAlarm alarm = task.getAlarm();
-			if (alarm == null) {
-				boolean found = false;
-				for (RTOSAlarm alarm2 : rtos.getAlarms()) {
-					if (alarm2.getTask() == task) {
-						found = true;
-						break;
+		if (rtos.getTasks().isEmpty()) {
+			System.err.println("ERROR: There must be at least one task");
+			valid = false;
+		} else {
+			RTOSTask idle_task = rtos.getTasks().get(0);
+			
+			for (RTOSTask task : rtos.getTasks()) {
+				RTOSAlarm alarm = task.getAlarm();
+				if (alarm == null) {
+					for (RTOSAlarm alarm2 : rtos.getAlarms()) {
+						if (alarm2.getTask() == task) {
+							alarm = alarm2;
+							break;
+						}
 					}
+				} else if (!rtos.getAlarms().contains(alarm)) {
+					System.err.println("ERROR: Task " + task.getName() + " references an alarm which is not in the list of alarms");
+					valid = false;
 				}
-				if (!found)
-					System.err.println("WARN: Task " + task.getName() + " doesn't have an alarm");
-			} else if (!rtos.getAlarms().contains(alarm)) {
-				System.err.println("ERROR: Task " + task.getName() + " references an alarm which is not in the list of alarms");
-				valid = false;
-			}
-			
-			if (!Pattern.matches("^[a-zA-Z_][a-zA-Z_0-9]*$", task.getName())) {
-				System.err.println("ERROR: Task '" + task.getName() + "' has a name that is not a valid identifier");
-				valid = false;
-			}
-			
-			if (task.getStackSize() < 35) {
-				System.err.println("ERROR: Task " + task.getName() + " has a too small stack size (smaller than 35 bytes)");
-				valid = false;
+	
+				if (task == idle_task) {
+					if (alarm != null)
+						System.err.println("WARN: The first task " + task.getName() + " is the idle task, so it shouldn't have an alarm");
+				} else {
+					if (alarm == null)
+						System.err.println("WARN: Task " + task.getName() + " doesn't have an alarm");
+				}
+				
+				if (!Pattern.matches("^[a-zA-Z_][a-zA-Z_0-9]*$", task.getName())) {
+					System.err.println("ERROR: Task '" + task.getName() + "' has a name that is not a valid identifier");
+					valid = false;
+				}
+				
+				if (task.getStackSize() < 35) {
+					System.err.println("ERROR: Task " + task.getName() + " has a too small stack size (smaller than 35 bytes)");
+					valid = false;
+				}
 			}
 		}
 
