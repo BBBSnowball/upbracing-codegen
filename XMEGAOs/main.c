@@ -5,8 +5,8 @@
  *  Author: peer
  */ 
 
-//#define PROGRAM_MODE TEST_SYNC_QUEUE
-#define PROGRAM_MODE KRISHNA_204b6f
+#define PROGRAM_MODE TEST_SYNC_QUEUE
+//#define PROGRAM_MODE KRISHNA_204b6f
 
 #include <avr/io.h>
 #include <avr/interrupt.h>

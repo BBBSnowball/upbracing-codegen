@@ -37,10 +37,11 @@ void Os_InitializeTaskContext(Os_Tcb * tcb)
 	tcb->currentBaseOfStack = tcb->topOfStack - 35;
 }
 
-StatusType TerminateTask(void) 
+void TerminateTask(void) 
 {	
 	// The termination is a critical process. See below.
-	OS_ENTER_CRITICAL();
+	// NOTE: Since we destroy the current SREG here, we must use sei/cli here!
+	cli();
 
 	// Reset/init task context memory
 	// This is done in assembly
@@ -57,12 +58,8 @@ StatusType TerminateTask(void)
 	OS_RESTORE_CONTEXT();
 	
 	// The critical part is over now
-	OS_EXIT_CRITICAL();
-	
+	// NOTE: This will automatically re-enable interrupts.
 	asm volatile("reti");
-	
-	// will never get here
-	return E_OK;
 }
 
 StatusType GetTaskID(TaskRefType taskId)

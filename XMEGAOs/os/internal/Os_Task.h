@@ -100,7 +100,7 @@ void Os_InitializeTaskContext(Os_Tcb *tcb);
 // Description:                                                         //
 // Suspends the current task and cleans up stack space.                 //
 //////////////////////////////////////////////////////////////////////////
-StatusType TerminateTask(void);
+void TerminateTask(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  GetTaskID                                                 //
