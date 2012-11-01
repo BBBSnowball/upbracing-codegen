@@ -115,11 +115,6 @@ StatusType ResumeTask(TaskType taskId)
 	os_currentTcb->state = READY;
 	os_ready_queue[taskId] = RUNNING;
 	os_tcbs[taskId].state = RUNNING;
-	
-	OS_SAVE_CONTEXT();
-	os_currentTcb = &os_tcbs[taskId];
-	OS_RESTORE_CONTEXT();
-	asm volatile("reti");
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
