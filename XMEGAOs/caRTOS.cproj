@@ -18,20 +18,20 @@
     <com_atmel_avrdbg_tool_jtagicemkii>
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
       <ToolName>JTAGICE mkII</ToolName>
-      <ToolNumber>070000005DEE</ToolNumber>
+      <ToolNumber>00B000002588</ToolNumber>
       <KeepTimersRunning>true</KeepTimersRunning>
       <OverrideVtor>false</OverrideVtor>
       <OverrideVtorValue>
       </OverrideVtorValue>
       <Channel>
         <host>127.0.0.1</host>
-        <port>14857</port>
+        <port>49172</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
         <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
-          <JtagDbgClock>200000</JtagDbgClock>
+          <JtagDbgClock>250000</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
           <IspClock>150000</IspClock>
           <JtagInChain>false</JtagInChain>
@@ -409,10 +409,13 @@
     <Compile Include="os\Os.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\semaphores\semaphore.c">
+    <Compile Include="os\semaphores\semaphore.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="os\semaphores\semaphore.h">
+    <Compile Include="os\semaphores\semaphore_n.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os\semaphores\semaphore_normal.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
@@ -427,6 +430,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="os\config\Os_application_dependent_code.c.sh">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="os\semaphores\semaphore.c.inc">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>
