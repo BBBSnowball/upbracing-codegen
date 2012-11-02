@@ -57,7 +57,7 @@
    <extension point="org.eclipse.ui.popupMenus" id="init-diagram-action">
       <?gmfgen generated="true"?>
       <objectContribution
-            id="statemachine.diagram.InitDiagram"
+            id="StatechartEditor.diagram.InitDiagram"
             nameFilter="*.statecharts"
             objectClass="org.eclipse.core.resources.IFile">
          <action
@@ -65,7 +65,7 @@
                class="Statecharts.diagram.part.StatechartsInitDiagramFileAction"
                menubarPath="additions"
                enablesFor="1"
-               id="statemachine.diagram.InitDiagramAction">
+               id="StatechartEditor.diagram.InitDiagramAction">
          </action>
       </objectContribution>
    </extension>
@@ -127,7 +127,7 @@
    <extension point="org.eclipse.gmf.runtime.common.ui.services.markerNavigationProviders" id="markers-navigation">
       <?gmfgen generated="true"?>
       <MarkerNavigationProvider class="Statecharts.diagram.providers.StatechartsMarkerNavigationProvider">
-         <MarkerType name="statemachine.diagram.diagnostic"/>
+         <MarkerType name="StatechartEditor.diagram.diagnostic"/>
          <Priority name="Lowest"/>
       </MarkerNavigationProvider>
    </extension>
@@ -156,32 +156,32 @@
    <extension point="org.eclipse.ui.preferencePages" id="prefpages">
       <?gmfgen generated="true"?>
       <page
-            id="statemachine.diagram.general"
-            name="%prefpage.statemachine.diagram.general"
+            id="StatechartEditor.diagram.general"
+            name="%prefpage.StatechartEditor.diagram.general"
             class="Statecharts.diagram.preferences.DiagramGeneralPreferencePage">
       </page>
       <page
-            id="statemachine.diagram.appearance"
-            name="%prefpage.statemachine.diagram.appearance"
-            category="statemachine.diagram.general"
+            id="StatechartEditor.diagram.appearance"
+            name="%prefpage.StatechartEditor.diagram.appearance"
+            category="StatechartEditor.diagram.general"
             class="Statecharts.diagram.preferences.DiagramAppearancePreferencePage">
       </page>
       <page
-            id="statemachine.diagram.connections"
-            name="%prefpage.statemachine.diagram.connections"
-            category="statemachine.diagram.general"
+            id="StatechartEditor.diagram.connections"
+            name="%prefpage.StatechartEditor.diagram.connections"
+            category="StatechartEditor.diagram.general"
             class="Statecharts.diagram.preferences.DiagramConnectionsPreferencePage">
       </page>
       <page
-            id="statemachine.diagram.printing"
-            name="%prefpage.statemachine.diagram.printing"
-            category="statemachine.diagram.general"
+            id="StatechartEditor.diagram.printing"
+            name="%prefpage.StatechartEditor.diagram.printing"
+            category="StatechartEditor.diagram.general"
             class="Statecharts.diagram.preferences.DiagramPrintingPreferencePage">
       </page>
       <page
-            id="statemachine.diagram.rulersAndGrid"
-            name="%prefpage.statemachine.diagram.rulersAndGrid"
-            category="statemachine.diagram.general"
+            id="StatechartEditor.diagram.rulersAndGrid"
+            name="%prefpage.StatechartEditor.diagram.rulersAndGrid"
+            category="StatechartEditor.diagram.general"
             class="Statecharts.diagram.preferences.DiagramRulersAndGridPreferencePage">
       </page>
    </extension>
@@ -189,7 +189,7 @@
    <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor" id="prop-contrib">
       <?gmfgen generated="true"?>
       <propertyContributor
-            contributorId="statemachine.diagram"
+            contributorId="StatechartEditor.diagram"
             labelProvider="Statecharts.diagram.sheet.StatechartsSheetLabelProvider">
          <propertyCategory category="domain"/>
          <propertyCategory category="visual"/>
@@ -199,7 +199,7 @@
 
    <extension point="org.eclipse.ui.views.properties.tabbed.propertyTabs" id="proptabs">
       <?gmfgen generated="true"?>   
-      <propertyTabs contributorId="statemachine.diagram">
+      <propertyTabs contributorId="StatechartEditor.diagram">
          <propertyTab
              category="visual"
              id="property.tab.AppearancePropertySection"
@@ -217,7 +217,7 @@
 
    <extension point="org.eclipse.ui.views.properties.tabbed.propertySections" id="propsections">
       <?gmfgen generated="true"?>   
-      <propertySections contributorId="statemachine.diagram">
+      <propertySections contributorId="StatechartEditor.diagram">
          <propertySection id="property.section.ConnectorAppearancePropertySection" 
             filter="org.eclipse.gmf.runtime.diagram.ui.properties.filters.ConnectionEditPartPropertySectionFilter" 
             class="org.eclipse.gmf.runtime.diagram.ui.properties.sections.appearance.ConnectionAppearancePropertySection" 
@@ -334,7 +334,7 @@
       <?gmfgen generated="true"?>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.StateMachine_1000"
+               id="StatechartEditor.diagram.StateMachine_1000"
                name="%metatype.name.StateMachine_1000"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="StateMachine"
@@ -344,7 +344,7 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.SuperState_2002"
+               id="StatechartEditor.diagram.SuperState_2002"
                name="%metatype.name.SuperState_2002"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="SuperState"
@@ -354,34 +354,34 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <specializationType
-               id="statemachine.diagram.FinalState_2004"
+               id="StatechartEditor.diagram.FinalState_2004"
                name="%metatype.name.FinalState_2004"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType">
-            <specializes id="statemachine.diagram.FinalState_3005"/>
+            <specializes id="StatechartEditor.diagram.FinalState_3005"/>
             <param name="semanticHint" value="2004"/>
          </specializationType>
       </metamodel>
       <metamodel nsURI="http://statechart">
          <specializationType
-               id="statemachine.diagram.NormalState_2001"
+               id="StatechartEditor.diagram.NormalState_2001"
                name="%metatype.name.NormalState_2001"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType">
-            <specializes id="statemachine.diagram.NormalState_3002"/>
+            <specializes id="StatechartEditor.diagram.NormalState_3002"/>
             <param name="semanticHint" value="2001"/>
          </specializationType>
       </metamodel>
       <metamodel nsURI="http://statechart">
          <specializationType
-               id="statemachine.diagram.InitialState_2003"
+               id="StatechartEditor.diagram.InitialState_2003"
                name="%metatype.name.InitialState_2003"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType">
-            <specializes id="statemachine.diagram.InitialState_3004"/>
+            <specializes id="StatechartEditor.diagram.InitialState_3004"/>
             <param name="semanticHint" value="2003"/>
          </specializationType>
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.GlobalCode_2005"
+               id="StatechartEditor.diagram.GlobalCode_2005"
                name="%metatype.name.GlobalCode_2005"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="GlobalCode"
@@ -391,7 +391,7 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.Region_3001"
+               id="StatechartEditor.diagram.Region_3001"
                name="%metatype.name.Region_3001"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="Region"
@@ -401,16 +401,16 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <specializationType
-               id="statemachine.diagram.SuperState_3003"
+               id="StatechartEditor.diagram.SuperState_3003"
                name="%metatype.name.SuperState_3003"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType">
-            <specializes id="statemachine.diagram.SuperState_2002"/>
+            <specializes id="StatechartEditor.diagram.SuperState_2002"/>
             <param name="semanticHint" value="3003"/>
          </specializationType>
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.FinalState_3005"
+               id="StatechartEditor.diagram.FinalState_3005"
                name="%metatype.name.FinalState_3005"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="FinalState"
@@ -420,7 +420,7 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.NormalState_3002"
+               id="StatechartEditor.diagram.NormalState_3002"
                name="%metatype.name.NormalState_3002"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="NormalState"
@@ -430,7 +430,7 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.InitialState_3004"
+               id="StatechartEditor.diagram.InitialState_3004"
                name="%metatype.name.InitialState_3004"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="InitialState"
@@ -440,7 +440,7 @@
       </metamodel>
       <metamodel nsURI="http://statechart">
          <metamodelType
-               id="statemachine.diagram.Transition_4001"
+               id="StatechartEditor.diagram.Transition_4001"
                name="%metatype.name.Transition_4001"
                kind="org.eclipse.gmf.runtime.emf.type.core.IHintedType"
                eclass="Transition"
@@ -452,35 +452,35 @@
 
    <extension point="org.eclipse.gmf.runtime.emf.type.core.elementTypeBindings" id="element-types-bindings">
       <?gmfgen generated="true"?>
-      <clientContext id="statemachine.diagram.TypeContext">
+      <clientContext id="StatechartEditor.diagram.TypeContext">
          <enablement>
             <test
                property="org.eclipse.gmf.runtime.emf.core.editingDomain"
-               value="statemachine.diagram.EditingDomain"/>
+               value="StatechartEditor.diagram.EditingDomain"/>
          </enablement>
       </clientContext> 
-      <binding context="statemachine.diagram.TypeContext">
-         <elementType ref="statemachine.diagram.StateMachine_1000"/>
-         <elementType ref="statemachine.diagram.SuperState_2002"/>
-         <elementType ref="statemachine.diagram.FinalState_2004"/>
-         <elementType ref="statemachine.diagram.NormalState_2001"/>
-         <elementType ref="statemachine.diagram.InitialState_2003"/>
-         <elementType ref="statemachine.diagram.GlobalCode_2005"/>
-         <elementType ref="statemachine.diagram.Region_3001"/>
-         <elementType ref="statemachine.diagram.SuperState_3003"/>
-         <elementType ref="statemachine.diagram.FinalState_3005"/>
-         <elementType ref="statemachine.diagram.NormalState_3002"/>
-         <elementType ref="statemachine.diagram.InitialState_3004"/>
-         <elementType ref="statemachine.diagram.Transition_4001"/>
+      <binding context="StatechartEditor.diagram.TypeContext">
+         <elementType ref="StatechartEditor.diagram.StateMachine_1000"/>
+         <elementType ref="StatechartEditor.diagram.SuperState_2002"/>
+         <elementType ref="StatechartEditor.diagram.FinalState_2004"/>
+         <elementType ref="StatechartEditor.diagram.NormalState_2001"/>
+         <elementType ref="StatechartEditor.diagram.InitialState_2003"/>
+         <elementType ref="StatechartEditor.diagram.GlobalCode_2005"/>
+         <elementType ref="StatechartEditor.diagram.Region_3001"/>
+         <elementType ref="StatechartEditor.diagram.SuperState_3003"/>
+         <elementType ref="StatechartEditor.diagram.FinalState_3005"/>
+         <elementType ref="StatechartEditor.diagram.NormalState_3002"/>
+         <elementType ref="StatechartEditor.diagram.InitialState_3004"/>
+         <elementType ref="StatechartEditor.diagram.Transition_4001"/>
          <advice ref="org.eclipse.gmf.runtime.diagram.core.advice.notationDepdendents"/>
       </binding>
    </extension>
 	   <extension point="org.eclipse.core.expressions.propertyTesters" id="navigator-proptest.isURIEditorInput">
       <?gmfgen generated="true"?>
        <propertyTester
-           id="statemachine.diagram.URIEditorInputPropertyTester"
+           id="StatechartEditor.diagram.URIEditorInputPropertyTester"
            type="org.eclipse.emf.common.ui.URIEditorInput"
-           namespace="statemachine.diagram"
+           namespace="StatechartEditor.diagram"
            properties="isURIEditorInput"
            class="Statecharts.diagram.part.StatechartsUriEditorInputTester">
        </propertyTester>
@@ -489,9 +489,9 @@
 	   <extension point="org.eclipse.core.expressions.propertyTesters" id="navigator-proptest.isShortcut">
       <?gmfgen generated="true"?>
        <propertyTester
-           id="statemachine.diagram.ShortcutPropertyTester"
+           id="StatechartEditor.diagram.ShortcutPropertyTester"
            type="org.eclipse.gmf.runtime.notation.View"
-           namespace="statemachine.diagram"
+           namespace="StatechartEditor.diagram"
            properties="isShortcut"
            class="Statecharts.diagram.part.StatechartsShortcutPropertyTester">
        </propertyTester>
@@ -501,14 +501,14 @@
       <?gmfgen generated="true"?>
       <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
          <includes>
-            <contentExtension pattern="statemachine.diagram.resourceContent"/>
-			<contentExtension pattern="statemachine.diagram.domainResourceContent"/>
-            <contentExtension pattern="statemachine.diagram.navigatorLinkHelper"/>
+            <contentExtension pattern="StatechartEditor.diagram.resourceContent"/>
+			<contentExtension pattern="StatechartEditor.diagram.domainResourceContent"/>
+            <contentExtension pattern="StatechartEditor.diagram.navigatorLinkHelper"/>
          </includes>
       </viewerContentBinding>
       <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
          <includes>
-            <actionExtension pattern="statemachine.diagram.navigatorActionProvider"/>
+            <actionExtension pattern="StatechartEditor.diagram.navigatorActionProvider"/>
          </includes>
       </viewerActionBinding>
    </extension>
@@ -516,7 +516,7 @@
    <extension point="org.eclipse.ui.navigator.navigatorContent" id="navigator-content">
       <?gmfgen generated="true"?>
       <navigatorContent
-            id="statemachine.diagram.resourceContent" 
+            id="StatechartEditor.diagram.resourceContent" 
             name="%navigatorContentName" 
             priority="normal" 
             contentProvider="Statecharts.diagram.navigator.StatechartsNavigatorContentProvider" 
@@ -531,7 +531,7 @@
                </and>
                <instanceof value="Statecharts.diagram.navigator.StatechartsAbstractNavigatorItem"/>
            	   <adapt type="org.eclipse.gmf.runtime.notation.View">
-           	      <test property="statemachine.diagram.isShortcut"/>
+           	      <test property="StatechartEditor.diagram.isShortcut"/>
            	   </adapt>
             </or>
          </triggerPoints>
@@ -539,12 +539,12 @@
             <or>
          	   <instanceof value="Statecharts.diagram.navigator.StatechartsAbstractNavigatorItem"/>
            	   <adapt type="org.eclipse.gmf.runtime.notation.View">
-           	      <test property="statemachine.diagram.isShortcut"/>
+           	      <test property="StatechartEditor.diagram.isShortcut"/>
            	   </adapt>
             </or>
          </possibleChildren>
          <commonSorter 
-               id="statemachine.diagram.navigatorSorter" 
+               id="StatechartEditor.diagram.navigatorSorter" 
                class="Statecharts.diagram.navigator.StatechartsNavigatorSorter">
             <parentExpression>
                <or>
@@ -558,7 +558,7 @@
          </commonSorter>
       </navigatorContent>
       <navigatorContent
-            id="statemachine.diagram.domainResourceContent" 
+            id="StatechartEditor.diagram.domainResourceContent" 
             name="%domainNavigatorContentName" 
             priority="normal" 
             contentProvider="Statecharts.diagram.navigator.StatechartsDomainNavigatorContentProvider" 
@@ -579,13 +579,13 @@
          </possibleChildren>
       </navigatorContent>
       <actionProvider
-            id="statemachine.diagram.navigatorActionProvider"
+            id="StatechartEditor.diagram.navigatorActionProvider"
             class="Statecharts.diagram.navigator.StatechartsNavigatorActionProvider">
          <enablement>
             <or>
                <instanceof value="Statecharts.diagram.navigator.StatechartsAbstractNavigatorItem"/>
            	   <adapt type="org.eclipse.gmf.runtime.notation.View">
-           	      <test property="statemachine.diagram.isShortcut"/>
+           	      <test property="StatechartEditor.diagram.isShortcut"/>
            	   </adapt>
             </or>
          </enablement>
@@ -595,12 +595,12 @@
 	   <extension point="org.eclipse.ui.navigator.linkHelper" id="navigator-linkhelper">
       <?gmfgen generated="true"?>
       <linkHelper
-            id="statemachine.diagram.navigatorLinkHelper"
+            id="StatechartEditor.diagram.navigatorLinkHelper"
             class="Statecharts.diagram.navigator.StatechartsNavigatorLinkHelper">
          <editorInputEnablement>
             <and>
                <instanceof value="org.eclipse.emf.common.ui.URIEditorInput"/>
-               <test property="statemachine.diagram.isURIEditorInput"/>
+               <test property="StatechartEditor.diagram.isURIEditorInput"/>
             </and>
          </editorInputEnablement>
          <selectionEnablement>
@@ -634,7 +634,7 @@
       <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=">
       </menuContribution -->
       <menuContribution locationURI="popup:org.eclipse.gmf.runtime.diagram.ui.DiagramEditorContextMenu">
-         <command commandId="statemachine.diagram.LoadResourceAction">
+         <command commandId="StatechartEditor.diagram.LoadResourceAction">
             <visibleWhen>
                <and>
                   <with variable="activePartId"><equals value="Statecharts.diagram.part.StatechartsDiagramEditorID"/></with>
@@ -650,7 +650,7 @@
    <extension point="org.eclipse.ui.commands" id="menu-commands">
       <?gmfgen generated="true"?>
       <category id="Statecharts.diagram.part.StatechartsDiagramEditorID" name="%cmdcategory.name" description="%cmdcategory.desc"/>
-      <command id="statemachine.diagram.LoadResourceAction"
+      <command id="StatechartEditor.diagram.LoadResourceAction"
          name="Load Resource"
          categoryId="Statecharts.diagram.part.StatechartsDiagramEditorID"
          defaultHandler="Statecharts.diagram.part.LoadResourceAction"/>

@@ -17,8 +17,8 @@
 	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
 	<classpathentry kind="lib" path="libs/guava-13.0.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/statemachine"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Parser"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/StatechartEditor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java-parser-tools"/>
 	<classpathentry kind="lib" path="/upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
