@@ -127,8 +127,8 @@ StatusType GetTaskState(TaskStateRefType state);
 //////////////////////////////////////////////////////////////////////////
 StatusType ActivateTask(TaskType taskId);
 
-StatusType WaitTask(void) __attribute__ ( (naked) );
+StatusType WaitTask(void);
 
-StatusType ResumeTask(TaskType taskId) __attribute__ ( (naked) );
+StatusType ResumeTask(TaskType taskId);
 
 #endif /* OS_TASK_H_ */
