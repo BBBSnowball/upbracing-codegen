@@ -93,7 +93,8 @@ StatusType ActivateTask(TaskType taskId)
 	return E_OK;
 }
 
-static void SwitchTask() __attribute__((naked, noinline)) {
+static void SwitchTask(void) __attribute__((naked, noinline));
+static void SwitchTask(void) {
 	OS_SAVE_CONTEXT();
 	Os_Schedule();
 	OS_RESTORE_CONTEXT();
