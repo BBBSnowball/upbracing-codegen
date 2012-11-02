@@ -11,12 +11,14 @@
 
 // Global Os variables
 volatile Os_Tcb * os_currentTcb = &os_tcbs[0];
+volatile TaskType os_nextTaskId = 0;
 volatile uint16_t os_counter = 0;
 volatile uint8_t os_isStarted = 0;
 
 // Internal function prototypes:
 void Os_TimerIncrement(void);
 void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
+TaskType _dec_wrap(TaskType nextTaskId);
 
 // QUESTION(Peer): These conformance classes are defined in the OSEK standard.
 //                 I don't think that I will implement them in near future.
@@ -27,19 +29,19 @@ void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
 #	error No valid Conformance Class specified
 #endif
 
-// will be compiled in Os_application_dependent_code.c:
-#ifdef APPLICATION_DEPENDENT_CODE
-#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-/* Simple priority "queue":
- * - Just an array of bools */
-//QUESTION(Benjamin): Could we replace it by a bitfield?
-//ANSWER(Peer): Yes. But are we that low on memory?
-//              Isn't evaluating single bits quite time consuming?
-uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
-#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-#	error Multiple activations for basic tasks, multiple tasks per priority
-#endif
-#endif	// end of APPLICATION_DEPENDENT_CODE
+//// will be compiled in Os_application_dependent_code.c:
+//#ifdef APPLICATION_DEPENDENT_CODE
+//#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
+///* Simple priority "queue":
+ //* - Just an array of bools */
+////QUESTION(Benjamin): Could we replace it by a bitfield?
+////ANSWER(Peer): Yes. But are we that low on memory?
+////              Isn't evaluating single bits quite time consuming?
+//uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
+//#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
+//#	error Multiple activations for basic tasks, multiple tasks per priority
+//#endif
+//#endif	// end of APPLICATION_DEPENDENT_CODE
 
 void Os_StartFirstTask(void)
 {
@@ -87,30 +89,63 @@ void TIMER1_COMPA_vect(void)
 	SwitchTask();
 }
 
+TaskType _dec_wrap(TaskType tempTaskId)
+{
+	tempTaskId--;
+	if (tempTaskId == 0)
+	{
+		tempTaskId = OS_NUMBER_OF_TCBS - 1;
+	}
+	return tempTaskId;
+}
+
 StatusType Os_Schedule(void)
 {	
 	// Decide which task to run next...
-	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	OS_ENTER_CRITICAL();
-	os_currentTcb = &os_tcbs[0];
-	if (os_currentTcb->preempt == PREEMPTABLE
-		|| os_currentTcb->state == SUSPENDED) 
+	
+	// Switch this task to ready, if it was running before
+	// NOTE: Do not switch WAITING TASKS!
+	if (os_currentTcb->state == RUNNING)
+		os_currentTcb->state = READY;
+	
+	// Work with a local copy of the volatile os_nextTaskId variable
+	TaskType tempTaskId = os_nextTaskId;
+	
+	
+	if (tempTaskId == 0)
+		tempTaskId = OS_NUMBER_OF_TCBS - 1;
+	
+	for (uint8_t i = 0; i < OS_NUMBER_OF_TCBS; i++)
 	{
-		for (uint8_t i = OS_NUMBER_OF_TCBS - 1; i > 0; i--)
+		// Search first ready task beginning from os_lastTaskId downcounting
+		if (os_tcbs[tempTaskId].state == READY)
 		{
-			if (os_ready_queue[i] == READY)
+			// Found ready task.
+			os_currentTcb = &os_tcbs[tempTaskId];
+			// Continue with the next task
+			tempTaskId = _dec_wrap(tempTaskId);
+			os_nextTaskId = tempTaskId;
+			break;
+		}
+		else
+		{
+			if (i == OS_NUMBER_OF_TCBS - 1)
 			{
-				os_currentTcb = &(os_tcbs[i]);
-				os_ready_queue[i] = RUNNING;
+				// No ready task was found. Switching to IDLE
+				os_currentTcb = &os_tcbs[0];
+				// Continue with the next task
+				os_nextTaskId = OS_NUMBER_OF_TCBS - 1;
 				break;
 			}
+			tempTaskId = _dec_wrap(tempTaskId);
 		}
 	}
+	
+	// Sets the state of the current task to RUNNING
+	os_currentTcb->state = RUNNING;
 
 	OS_EXIT_CRITICAL();
-	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	#error Multiple activations for basic tasks, multiple tasks per priority
-	#endif
 	
 	return E_OK;
 }

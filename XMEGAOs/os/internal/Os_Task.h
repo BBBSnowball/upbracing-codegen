@@ -15,14 +15,6 @@
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];
 
-#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-/* Simple priority "queue":
- * - Just an array of bools */
-extern uint8_t os_ready_queue[];
-#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-#error Multiple activations for basic tasks, multiple tasks per priority
-#endif
-
 #define OS_RESET_CONTEXT()		\
 	asm volatile(	/* Reset stack pointer for this task */						\
 					"lds r26, os_currentTcb		\n\t"							\
@@ -83,7 +75,7 @@ extern uint8_t os_ready_queue[];
 					:															\
 					:															\
 					/* Clobber list */											\
-					: "r16", "r26", "r27"						\
+					: "r16", "r26", "r27", "memory"						\
 	)
 
 //////////////////////////////////////////////////////////////////////////
