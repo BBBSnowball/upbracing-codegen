@@ -105,7 +105,7 @@ void TerminateTask(void);
 // Description:                                                         //
 // Returns the ID of the running task.                                  //
 //////////////////////////////////////////////////////////////////////////
-StatusType GetTaskID(TaskRefType taskId);
+StatusType GetTaskID(TaskType * taskId);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  GetTaskState                                              //
@@ -115,7 +115,7 @@ StatusType GetTaskID(TaskRefType taskId);
 // Description:                                                         //
 // Returns the state of the running task.                               //
 //////////////////////////////////////////////////////////////////////////
-StatusType GetTaskState(TaskStateRefType state);
+StatusType GetTaskState(TaskStateType * state);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  ActivateTask                                              //
@@ -127,7 +127,7 @@ StatusType GetTaskState(TaskStateRefType state);
 //////////////////////////////////////////////////////////////////////////
 StatusType ActivateTask(TaskType taskId);
 
-StatusType WaitTask(TaskType taskId);
+StatusType WaitTask(void);
 
 StatusType ResumeTask(TaskType taskId);
 

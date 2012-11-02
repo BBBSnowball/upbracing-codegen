@@ -19,9 +19,6 @@
 typedef uint8_t TaskType;
 #define OS_TASKTYPE_MAX 0xff
 
-// TaskRefType
-typedef TaskType * TaskRefType;
-
 // TaskStateType
 typedef enum
 {
@@ -30,9 +27,6 @@ typedef enum
 	SUSPENDED = 2,
 	WAITING = 3,
 } TaskStateType;
-
-// TaskStateRefType
-typedef TaskStateType * TaskStateRefType;
 
 // Preemptible?
 typedef enum

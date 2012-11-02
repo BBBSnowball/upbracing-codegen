@@ -11,16 +11,6 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
-#ifndef OS_CFG_CC
-#error No Conformance Class specified!
-#endif
-
-#if OS_CFG_CC != BCC1 && OS_CFG_CC != BCC2 && \
-	OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
-#error No valid Conformance Class specified
-#endif
-
-
 void StartOS(void) 
 {
 	uint8_t i = 0;

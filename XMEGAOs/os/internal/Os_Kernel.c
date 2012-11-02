@@ -13,41 +13,14 @@
 volatile Os_Tcb * os_currentTcb = &os_tcbs[0];
 volatile TaskType os_nextTaskId = 0;
 volatile uint16_t os_counter = 0;
-volatile uint8_t os_isStarted = 0;
 
 // Internal function prototypes:
 void Os_TimerIncrement(void);
 void TIMER1_COMPA_vect(void) __attribute__ ( (signal) );
 TaskType _dec_wrap(TaskType nextTaskId);
 
-// QUESTION(Peer): These conformance classes are defined in the OSEK standard.
-//                 I don't think that I will implement them in near future.
-//                 -> Remove those directives for better readability?
-// Check for valid conformance class
-#if OS_CFG_CC != BCC1 && OS_CFG_CC != BCC2 && \
-		OS_CFG_CC != ECC1 && OS_CFG_CC != ECC2
-#	error No valid Conformance Class specified
-#endif
-
-//// will be compiled in Os_application_dependent_code.c:
-//#ifdef APPLICATION_DEPENDENT_CODE
-//#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-///* Simple priority "queue":
- //* - Just an array of bools */
-////QUESTION(Benjamin): Could we replace it by a bitfield?
-////ANSWER(Peer): Yes. But are we that low on memory?
-////              Isn't evaluating single bits quite time consuming?
-//uint8_t os_ready_queue[OS_NUMBER_OF_TCBS_DEFINE];
-//#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-//#	error Multiple activations for basic tasks, multiple tasks per priority
-//#endif
-//#endif	// end of APPLICATION_DEPENDENT_CODE
-
 void Os_StartFirstTask(void)
 {
-    // mark OS as started
-	os_isStarted = 1;
-    
     // select first task to start
     Os_Schedule();
     
@@ -67,7 +40,7 @@ void Os_TimerIncrement(void)
 	{
 		Os_Alarm * alarm = (Os_Alarm *) &os_alarms[i];
 		alarm->tick++;
-		if (alarm->tick == alarm->ticksperbase)
+		if (alarm->tick == alarm->max)
 		{
 			RunAlarm(alarm);
 		}

@@ -43,6 +43,7 @@ void TerminateTask(void)
 	// NOTE: Since we destroy the current SREG here, we must use sei/cli here!
 	cli();
 
+	// Mark this task SUSPENDED
 	os_currentTcb->state = SUSPENDED;
 
 	// Reset/init task context memory
@@ -57,37 +58,36 @@ void TerminateTask(void)
 
 	// Switch to another task
 	Os_Schedule();
+	// Restore context will take care of the I-Flag in SREG
 	OS_RESTORE_CONTEXT();
-	
-	// The critical part is over now
-	// NOTE: This will automatically re-enable interrupts.
-	asm volatile("reti");
 }
 
-StatusType GetTaskID(TaskRefType taskId)
+StatusType GetTaskID(TaskType * taskId)
 {
+	OS_ENTER_CRITICAL();
 	*taskId = os_currentTcb->id;
+	OS_EXIT_CRITICAL();
 	return E_OK;
 }
 
-StatusType GetTaskState(TaskStateRefType state)
+StatusType GetTaskState(TaskStateType * state)
 {		
+	OS_ENTER_CRITICAL();
 	*state = os_currentTcb->state;
+	OS_EXIT_CRITICAL();
 	return E_OK;
 }
 
 StatusType ActivateTask(TaskType taskId)
 {
-	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	// Waiting tasks should be resumed differently (FCFS!)
-	if (os_tcbs[taskId].state != WAITING) 
+	OS_ENTER_CRITICAL();
+	// Only SUSPENDED tasks may be activated by this function
+	if (os_tcbs[taskId].state == SUSPENDED) 
 	{
 		os_tcbs[taskId].state = READY;
-	}	
-	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	#error BCC2 and ECC2 are not yet supported!
-	#endif
-
+	}
+	OS_EXIT_CRITICAL();
+	
 	//QUESTION(Benjamin): That reminds me of the "yield" function. Does OSEK have something like it?
 	//ANSWER(Peer): What is the "yield" function?
 	return E_OK;
@@ -100,34 +100,26 @@ static void SwitchTask(void) {
 	OS_RESTORE_CONTEXT();
 }
 
-StatusType WaitTask(TaskType taskId) 
-{ 
-	TaskType currentTask;
-
-	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_tcbs[taskId].state = WAITING;
+StatusType WaitTask(void)
+{
+	OS_ENTER_CRITICAL();
 	
-	// switch task, if taskId is the current task
-	GetTaskID(&currentTask);
-	if (taskId == currentTask) {
-		SwitchTask();
-	}
+	// Puts the currently running task into WAITING state
+	os_currentTcb->state = WAITING;
 	
-	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	#error BCC2 and ECC2 are not yet supported!
-	#endif
+	OS_EXIT_CRITICAL();
+	
+	SwitchTask();
 	return E_OK;	
 }
 
 StatusType ResumeTask(TaskType taskId)
 {
-	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-
+	OS_ENTER_CRITICAL();
+	// Only WAITING tasks may be activated by this function
 	if (os_tcbs[taskId].state == WAITING) {
 		os_tcbs[taskId].state = READY;
 	}
-	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-	#error BCC2 and ECC2 are not yet supported!
-	#endif
+	OS_EXIT_CRITICAL();
 	return E_OK;
 }
