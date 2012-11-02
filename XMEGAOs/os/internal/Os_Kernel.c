@@ -79,14 +79,18 @@ void Os_TimerIncrement(void)
 }
 
 // Interrupt routine for compare match of Timer1
+//TODO do we have to make this a naked function
 void TIMER1_COMPA_vect(void)
 {
+	// save context, return value will be that of the timer interrupt
+	//NOTE: We assume that this function doesn't put anything on the
+	//      stack. Otherwise, the return value will be in the wrong
+	//      position.
+	//TODO I think this assumption is false... :-(
 	OS_SAVE_CONTEXT();
 	Os_TimerIncrement();	
 	Os_Schedule();
 	OS_RESTORE_CONTEXT();
-	
-	asm volatile("reti");
 }
 
 StatusType Os_Schedule(void)

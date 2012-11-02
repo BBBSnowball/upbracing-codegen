@@ -101,7 +101,6 @@ StatusType WaitTask(TaskType taskId)
 	OS_SAVE_CONTEXT();
 	Os_Schedule();
 	OS_RESTORE_CONTEXT();
-	asm volatile("reti");
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
