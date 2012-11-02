@@ -43,6 +43,8 @@ void TerminateTask(void)
 	// NOTE: Since we destroy the current SREG here, we must use sei/cli here!
 	cli();
 
+	os_currentTcb->state = SUSPENDED;
+
 	// Reset/init task context memory
 	// This is done in assembly
 	// a) to make it fast (very few sram operations)
@@ -80,7 +82,6 @@ StatusType ActivateTask(TaskType taskId)
 	// Waiting tasks should be resumed differently (FCFS!)
 	if (os_tcbs[taskId].state != WAITING) 
 	{
-		os_ready_queue[taskId] = READY;
 		os_tcbs[taskId].state = READY;
 	}	
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
@@ -93,14 +94,14 @@ StatusType ActivateTask(TaskType taskId)
 }
 
 StatusType WaitTask(TaskType taskId) 
-{
+{ 
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_ready_queue[taskId] = WAITING;
 	os_tcbs[taskId].state = WAITING;
 	
 	OS_SAVE_CONTEXT();
 	Os_Schedule();
 	OS_RESTORE_CONTEXT();
+	
 	asm volatile("reti");
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
@@ -111,9 +112,7 @@ StatusType WaitTask(TaskType taskId)
 StatusType ResumeTask(TaskType taskId)
 {
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_ready_queue[os_currentTcb->id] = READY;
 	os_currentTcb->state = READY;
-	os_ready_queue[taskId] = RUNNING;
 	os_tcbs[taskId].state = RUNNING;
 	
 	OS_SAVE_CONTEXT();
