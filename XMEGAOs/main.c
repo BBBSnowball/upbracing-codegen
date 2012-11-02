@@ -54,7 +54,7 @@ int main(void)
     while(1);
 }
 
-TASK(Task_Update)
+TASK(Update)
 {
 	#if PROGRAM_MODE == TEST_SYNC_QUEUE
 
@@ -172,7 +172,7 @@ TASK(Task_Update)
 	TerminateTask();
 }
 
-TASK(Task_Increment)
+TASK(Increment)
 {
 	#if PROGRAM_MODE == TEST_SYNC_QUEUE
 
@@ -286,7 +286,7 @@ TASK(Task_Increment)
 	TerminateTask();
 }
 
-TASK(Task_Shift)
+TASK(Shift)
 {
 	
 	#if PROGRAM_MODE == TEST_SYNC_QUEUE

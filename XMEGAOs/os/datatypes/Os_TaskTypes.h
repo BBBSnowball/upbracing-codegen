@@ -11,7 +11,8 @@
 
 #include "Platform_Types.h"
 
-#define TASK(id) void id(void)
+#define TASK(id) void Task_##id (void)
+#define TASKPTR(id) Task_##id
 
 // OSEK Task Management (see OS223.pdf -> p.49)
 // Assumption: no more than 256 tasks

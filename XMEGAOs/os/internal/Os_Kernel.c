@@ -123,7 +123,7 @@ StatusType Os_Schedule(void)
 	return E_OK;
 }
 
-TASK(Task_Idle)
+TASK(Idle)
 {
 	for (;;);
 }
