@@ -100,19 +100,16 @@ static void SwitchTask(void) {
 	OS_RESTORE_CONTEXT();
 }
 
-StatusType WaitTask(TaskType taskId) 
-{ 
-	TaskType currentTask;
+StatusType WaitTask(void)
+{
+	TaskType taskId;
+
+	GetTaskID(&taskId);
 
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	os_tcbs[taskId].state = WAITING;
 	
-	// switch task, if taskId is the current task
-	GetTaskID(&currentTask);
-	if (taskId == currentTask) {
-		SwitchTask();
-	}
-	
+	SwitchTask();
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
