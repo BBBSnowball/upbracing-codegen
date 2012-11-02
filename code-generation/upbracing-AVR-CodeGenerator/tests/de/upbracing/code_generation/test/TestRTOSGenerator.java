@@ -14,7 +14,7 @@ public class TestRTOSGenerator {
 		
 		config.getRtos().setClock(8000000);
 		config.getRtos().setTickFrequency(5);
-		config.getRtos().setConformanceClass("BCC1");
+//		config.getRtos().setConformanceClass("BCC1");
 
 		@SuppressWarnings("unused")
 		RTOSTask update_task = config.getRtos().addTask("Update", TaskState.SUSPENDED, 1);

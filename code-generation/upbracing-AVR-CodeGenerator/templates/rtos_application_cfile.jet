@@ -23,7 +23,7 @@ const uint8_t OS_NUMBER_OF_ALARMS = OS_NUMBER_OF_ALARMS_DEFINE;
 <% for (RTOSTask task : rtos.getTasks()) { %>
 static uint8_t Task_<%= task.getName() %>_Stack[<%= task.getStackSize() %>];
 #define TOP_OF_STACK_<%= task.getName() %> \
-	(Task_<%= task.getName() %>_Stack + sizeof(Task_<%= task.getName() %>_Stack))
+	(Task_<%= task.getName() %>_Stack + sizeof(Task_<%= task.getName() %>_Stack) - 1)
 <% } %>
 
 volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
@@ -34,7 +34,7 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		TOP_OF_STACK_<%= task.getName() %>, &&&/* current stack pointer */
 		TOP_OF_STACK_<%= task.getName() %>, &&&/* top of stack (upper end) */
 		<%= (task.isReady() ? "READY" : "SUSPENDED") %>, &&&/* Task State */
-		Task_<%= task.getName() %>, &&&/* Function Pointer */
+		TASKPTR(<%= task.getName() %>), &&&/* Function Pointer */
 		<%= task.getId() %>, &&&/* Id/Priority */
 		<%= (task.isPreemptable() ? "PREEMPTABLE" : "NONPREEMPTABLE") %>, &&&
 	},

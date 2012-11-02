@@ -18,13 +18,13 @@ public class CaRTOSConfigValueProvider implements RTOSConfigValueProvider {
 				new RTOSConfigValue(RTOSConfigValueType.DefineFlag,
 						ConfigFile.FEATURES, "drivers/usart",
 						"USART_ENABLE_DRIVER", "true",
-						"enable USART driver"),
+						"enable USART driver")
 		
-				new RTOSConfigValue(
-						RTOSConfigValueType.DefineEnum("BCC1", "BCC2", "ECC1", "ECC2"),
-						ConfigFile.FEATURES, "os/core",
-						"OS_CFG_CC", "BCC1",
-						"conformance mode (task features)")
+//				new RTOSConfigValue(
+//						RTOSConfigValueType.DefineEnum("BCC1", "BCC2", "ECC1", "ECC2"),
+//						ConfigFile.FEATURES, "os/core",
+//						"OS_CFG_CC", "BCC1",
+//						"conformance mode (task features)")
 			);
 	}
 }

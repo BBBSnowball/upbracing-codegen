@@ -181,20 +181,20 @@ public class RTOSConfig {
 		updateTimerSettings();
 	}
 
-	/**
-	 * @return the conformance_class
-	 */
-	public String getConformanceClass() {
-		return conformance_class;
-	}
+//	/**
+//	 * @return the conformance_class
+//	 */
+//	public String getConformanceClass() {
+//		return conformance_class;
+//	}
 
-	/**
-	 * @param conformance_class the conformance_class to set
-	 */
-	public void setConformanceClass(String conformance_class) {
-		this.conformance_class = conformance_class;
-		used = true;
-	}
+//	/**
+//	 * @param conformance_class the conformance_class to set
+//	 */
+//	public void setConformanceClass(String conformance_class) {
+//		this.conformance_class = conformance_class;
+//		used = true;
+//	}
 
 	/**
 	 * @return the tick_frequency

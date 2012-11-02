@@ -19,8 +19,6 @@
 #	error Expecting <%= rtos.getProcessor() %>. Either update your project configuration / Makefile or the code generator configuration.
 #endif
 
-#define OS_CFG_CC <%= rtos.getConformanceClass() %>
-
 //TODO put as much as possible into program memory constants or
 //     initialization functions in OS_cfg_generated.c
 #define OS_TIMER_PRESCALE			TIMER_PRESCALE_<%= rtos.getTimerPrescaler() %>_bm

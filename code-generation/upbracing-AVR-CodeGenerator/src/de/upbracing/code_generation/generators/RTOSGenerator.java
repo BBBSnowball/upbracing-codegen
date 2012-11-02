@@ -48,9 +48,9 @@ public class RTOSGenerator extends AbstractGenerator {
 							(rtos.getRealTickFrequency() - rtos.getTickFrequency())/rtos.getTickFrequency()*100);
 		}
 		
-		if (!Arrays.asList("BCC1", "BCC2", "ECC1", "ECC2").contains(rtos.getConformanceClass())) {
-			messages.error("Invalid OSEK conformance class '%s'", rtos.getConformanceClass());
-		}
+//		if (!Arrays.asList("BCC1", "BCC2", "ECC1", "ECC2").contains(rtos.getConformanceClass())) {
+//			messages.error("Invalid OSEK conformance class '%s'", rtos.getConformanceClass());
+//		}
 		
 		if (rtos.getTasks().isEmpty()) {
 			messages.error("There must be at least one task");
@@ -75,7 +75,7 @@ public class RTOSGenerator extends AbstractGenerator {
 						messages.warn("The first task '%' is the idle task, so it shouldn't have an alarm", task.getName());
 				} else {
 					if (alarm == null)
-						messages.warn("Task '%' doesn't have an alarm", task.getName());
+						messages.warn("Task '%s' doesn't have an alarm", task.getName());
 				}
 				
 				if (!Pattern.matches("^[a-zA-Z_][a-zA-Z_0-9]*$", task.getName())) {
