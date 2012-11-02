@@ -30,12 +30,12 @@ public class RTOSGenerator extends AbstractGenerator {
 	@Override
 	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
 		RTOSConfig rtos = config.getRtos();
+
+		if (!rtos.isUsed())
+			return true;
 		
 		Messages messages = config.getMessages();
 		ContextItem context = messages.pushContext("caRTOS validator");
-		
-		if (!rtos.isUsed())
-			return true;
 		
 		if (!rtos.isTickFrequencyValid()) {
 			messages.error("RTOS doesn't have a valid tick frequency. Use sensible "
