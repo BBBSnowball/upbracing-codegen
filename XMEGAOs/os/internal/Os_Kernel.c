@@ -50,15 +50,9 @@ void Os_StartFirstTask(void)
     Os_Schedule();
     
     // restore context of selected task
+    // This will "return" to the task and
+    // enable interrupts.
 	OS_RESTORE_CONTEXT();
-	
-	// enable interrupts
-    // -> scheduler is active
-	sei();
-	
-    // finish this task and "return" to
-    // selected task (probably Idle)
-	asm volatile("reti");
 }
 
 void Os_TimerIncrement(void) 

@@ -75,7 +75,10 @@ extern uint8_t os_ready_queue[];
 					"push __zero_reg__			\n\t"							\
 					"push __zero_reg__			\n\t"							\
 					"push __zero_reg__			\n\t"							\
-					"push __zero_reg__			\n\t"							\
+					/* push SREG with enabled interrupts (bit 7: I=1) */		\
+					"lds r26, 0x80              \n\t"							\
+					"push r26                   \n\t"							\
+					/* push r0 */												\
 					"push __zero_reg__			\n\t"							\
 					:															\
 					:															\
