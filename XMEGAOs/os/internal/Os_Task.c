@@ -92,6 +92,12 @@ StatusType ActivateTask(TaskType taskId)
 	return E_OK;
 }
 
+static void SwitchTask() __attribute__((naked, noinline)) {
+	OS_SAVE_CONTEXT();
+	Os_Schedule();
+	OS_RESTORE_CONTEXT();
+}
+
 StatusType WaitTask(TaskType taskId) 
 {
 	TaskType currentTask;
@@ -103,9 +109,7 @@ StatusType WaitTask(TaskType taskId)
 	// switch task, if taskId is the current task
 	GetTaskID(&currentTask);
 	if (taskId == currentTask) {
-		OS_SAVE_CONTEXT();
-		Os_Schedule();
-		OS_RESTORE_CONTEXT();
+		SwitchTask();
 	}
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
