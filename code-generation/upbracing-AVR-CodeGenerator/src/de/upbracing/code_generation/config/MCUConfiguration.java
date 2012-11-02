@@ -33,9 +33,15 @@ public class MCUConfiguration {
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
 	private ConfigurationModel timer;
-	private StatemachinesConfig statemachines = new StatemachinesConfig();
+	private StatemachinesConfig statemachines;
 
-	private Messages messages = new Messages().withOutputTo(System.err, Severity.INFO);
+	private Messages messages;
+	
+	public MCUConfiguration() {
+		messages = new Messages().withOutputTo(System.err, Severity.INFO);
+		statemachines = new StatemachinesConfig();
+		statemachines.addFormatters(messages);
+	}
 	
 	/** current working directory for loading config files */
 	public static String currentDirectory = ".";
