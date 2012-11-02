@@ -55,7 +55,6 @@ static void SwitchTask(void) {
 }
 
 // Interrupt routine for compare match of Timer1
-//TODO do we have to make this a naked function
 void TIMER1_COMPA_vect(void)
 {
 	Os_TimerIncrement();
