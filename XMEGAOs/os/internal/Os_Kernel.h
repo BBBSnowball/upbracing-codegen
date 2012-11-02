@@ -70,7 +70,7 @@
 							"st x+, r0					\n\t"	\
 						)
 						
-#define OS_RESTORE_CONTEXT()								\
+#define OS_RESTORE_CONTEXT()									\
 			asm volatile(	"lds r26, os_currentTcb		\n\t"	\
 							"lds r27, os_currentTcb + 1	\n\t"	\
 							"ld r28, x+					\n\t"	\
@@ -108,9 +108,51 @@
 							"pop r3						\n\t"	\
 							"pop r2						\n\t"	\
 							"pop r1						\n\t"	\
+							/* pop value for SREG */			\
 							"pop r0						\n\t"	\
+							/* Normally we would restore SREG,
+							 * restore the value of r0 and
+							 * "return" to the restored contex:
+							 * out __SREG__, r0
+							 * pop r0
+							 * ret
+							 *
+							 * However, we mustn't enable
+							 * interrupts before the return, so
+							 * we use "ret" or "reti" depending
+							 * on the value of SREG (stored in
+							 * r0).
+							 *
+							 * We must restore the exact value of
+							 * all the registers, so we cannot
+							 * use any of them to store information
+							 * about the I bit in SREG. Therefore,
+							 * we have to use the program counter.
+							 */									\
+							/* T <- I bit of saved SREG / r0 */	\
+							"bst r0, 7                  \n\t"	\
+							/* jump away, if I=0 */				\
+							"brtc 0f                    \n\t"	\
+							/* I bit should be set */			\
+							/* clear I bit for now */			\
+							/* "cbr r0, 7                  \n\t" */	\
+							/* cbr cannot be used for r0 */		\
+							/* T <- 0; r0(7) <- T */			\
+							"clt                        \n\t"	\
+							"bld r0, 7                  \n\t"	\
+							/* restore SREG (with I=0) */		\
 							"out __SREG__, r0			\n\t"	\
+							/* restore value of r0 */			\
 							"pop r0						\n\t"	\
+							/* return and enable interrupts */	\
+							"reti                       \n\t"	\
+							/* I bit was not set */				\
+							"0: "								\
+							/* restore SREG */					\
+							"out __SREG__, r0			\n\t"	\
+							/* restore value of r0 */			\
+							"pop r0						\n\t"	\
+							/* normal return; I bit remains 0 */\
 							"ret                        \n\t"	\
 						)
 
