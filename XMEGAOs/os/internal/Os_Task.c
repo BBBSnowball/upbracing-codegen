@@ -94,13 +94,19 @@ StatusType ActivateTask(TaskType taskId)
 
 StatusType WaitTask(TaskType taskId) 
 {
+	TaskType currentTask;
+
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
 	os_ready_queue[taskId] = WAITING;
 	os_tcbs[taskId].state = WAITING;
 	
-	OS_SAVE_CONTEXT();
-	Os_Schedule();
-	OS_RESTORE_CONTEXT();
+	// switch task, if taskId is the current task
+	GetTaskID(&currentTask);
+	if (taskId == currentTask) {
+		OS_SAVE_CONTEXT();
+		Os_Schedule();
+		OS_RESTORE_CONTEXT();
+	}
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
@@ -110,10 +116,10 @@ StatusType WaitTask(TaskType taskId)
 StatusType ResumeTask(TaskType taskId)
 {
 	#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-	os_ready_queue[os_currentTcb->id] = READY;
-	os_currentTcb->state = READY;
-	os_ready_queue[taskId] = RUNNING;
-	os_tcbs[taskId].state = RUNNING;
+	if (os_tcbs[taskId].state == WAITING) {
+		os_ready_queue[taskId] = READY;
+		os_tcbs[taskId].state = READY;
+	}
 	#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
 	#error BCC2 and ECC2 are not yet supported!
 	#endif
