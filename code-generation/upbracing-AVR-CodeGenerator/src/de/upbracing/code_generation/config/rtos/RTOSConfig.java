@@ -16,7 +16,7 @@ import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 public class RTOSConfig {
 	private String processor = "AT90CAN128";
 	private long clock = -1;
-	private String conformance_class = null;
+//	private String conformance_class = null;
 	private float tick_frequency = -1;
 	
 	private int timer_prescaler;

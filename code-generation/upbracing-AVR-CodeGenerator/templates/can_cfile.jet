@@ -11,7 +11,7 @@
 boolean run_generator = true;
 
 de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
-DBCConfig can_config = config.getCanConfig();
+DBCConfig can_config = config.getCan();
 
 if (can_config == null) {
 	run_generator = false;

@@ -1,6 +1,5 @@
 package de.upbracing.code_generation.generators;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import de.upbracing.code_generation.ITemplate;
