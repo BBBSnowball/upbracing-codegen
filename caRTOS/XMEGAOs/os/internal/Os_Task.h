@@ -15,14 +15,6 @@
 extern volatile Os_Tcb * os_currentTcb;
 extern volatile Os_Tcb os_tcbs[];
 
-#if OS_CFG_CC == BCC1 || OS_CFG_CC == ECC1
-/* Simple priority "queue":
- * - Just an array of bools */
-extern uint8_t os_ready_queue[];
-#elif OS_CFG_CC == BCC2 || OS_CFG_CC == ECC2
-#error Multiple activations for basic tasks, multiple tasks per priority
-#endif
-
 #define OS_RESET_CONTEXT()		\
 	asm volatile(	/* Reset stack pointer for this task */						\
 					"lds r26, os_currentTcb		\n\t"							\
@@ -75,12 +67,15 @@ extern uint8_t os_ready_queue[];
 					"push __zero_reg__			\n\t"							\
 					"push __zero_reg__			\n\t"							\
 					"push __zero_reg__			\n\t"							\
-					"push __zero_reg__			\n\t"							\
+					/* push SREG with enabled interrupts (bit 7: I=1) */		\
+					"lds r26, 0x80              \n\t"							\
+					"push r26                   \n\t"							\
+					/* push r0 */												\
 					"push __zero_reg__			\n\t"							\
 					:															\
 					:															\
 					/* Clobber list */											\
-					: "r16", "r26", "r27"						\
+					: "r16", "r26", "r27", "memory"						\
 	)
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,7 +95,7 @@ void Os_InitializeTaskContext(Os_Tcb *tcb);
 // Description:                                                         //
 // Suspends the current task and cleans up stack space.                 //
 //////////////////////////////////////////////////////////////////////////
-StatusType TerminateTask(void);
+void TerminateTask(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  GetTaskID                                                 //
@@ -110,7 +105,7 @@ StatusType TerminateTask(void);
 // Description:                                                         //
 // Returns the ID of the running task.                                  //
 //////////////////////////////////////////////////////////////////////////
-StatusType GetTaskID(TaskRefType taskId);
+StatusType GetTaskID(TaskType * taskId);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  GetTaskState                                              //
@@ -120,7 +115,7 @@ StatusType GetTaskID(TaskRefType taskId);
 // Description:                                                         //
 // Returns the state of the running task.                               //
 //////////////////////////////////////////////////////////////////////////
-StatusType GetTaskState(TaskStateRefType state);
+StatusType GetTaskState(TaskStateType * state);
 
 //////////////////////////////////////////////////////////////////////////
 // Function:  ActivateTask                                              //
@@ -132,8 +127,8 @@ StatusType GetTaskState(TaskStateRefType state);
 //////////////////////////////////////////////////////////////////////////
 StatusType ActivateTask(TaskType taskId);
 
-StatusType WaitTask(TaskType taskId) __attribute__ ( (naked) );
+StatusType WaitTask(void);
 
-StatusType ResumeTask(TaskType taskId) __attribute__ ( (naked) );
+StatusType ResumeTask(TaskType taskId);
 
 #endif /* OS_TASK_H_ */

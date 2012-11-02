@@ -12,17 +12,18 @@
 
 #include "config/Os_config.h"
 
-extern TASK(Task_Increment);
-extern TASK(Task_Update);
-extern TASK(Task_Idle);
-extern TASK(Task_Shift);
-extern TASK(Task_UsartTransmit);
+extern TASK(Increment);
+extern TASK(Update);
+extern TASK(Idle);
+extern TASK(Shift);
+extern TASK(UsartTransmit);
 
 
 #define TASK_ID_Idle 0
 #define TASK_ID_Update 1
 #define TASK_ID_Increment 2
 #define TASK_ID_Shift 3
+#define TASK_ID_UsartTransmit 4
 
 //TODO I don't see how one could set an alarm callback for an alarm. What is this supposed to do?
 //extern ALARMCALLBACK(Alarm_Test);
