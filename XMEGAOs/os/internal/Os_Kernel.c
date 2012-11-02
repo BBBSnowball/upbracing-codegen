@@ -17,7 +17,7 @@ volatile uint8_t os_isStarted = 0;
 
 // Internal function prototypes:
 void Os_TimerIncrement(void);
-void TIMER1_COMPA_vect(void) __attribute__ ( (signal, naked) );
+void TIMER1_COMPA_vect(void) __attribute__ ( (signal) );
 TaskType _dec_wrap(TaskType nextTaskId);
 
 // QUESTION(Peer): These conformance classes are defined in the OSEK standard.
@@ -82,7 +82,6 @@ static void SwitchTask(void) {
 }
 
 // Interrupt routine for compare match of Timer1
-//TODO do we have to make this a naked function
 void TIMER1_COMPA_vect(void)
 {
 	Os_TimerIncrement();
