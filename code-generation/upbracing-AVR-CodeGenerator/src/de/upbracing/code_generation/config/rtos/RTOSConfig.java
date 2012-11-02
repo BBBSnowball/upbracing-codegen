@@ -34,6 +34,9 @@ public class RTOSConfig {
 		// add idle task
 		addTask("Idle", TaskState.READY);
 		
+		// reset to not used
+		used = false;
+		
 		config_values = new TreeMap<String, SortedMap<String,RTOSConfigValue>>();
 		for (RTOSConfigValue value : getAllConfigValues()) {
 			String cat_name = value.getCategory();
