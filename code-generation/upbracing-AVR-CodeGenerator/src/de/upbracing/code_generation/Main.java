@@ -216,7 +216,11 @@ public class Main {
 						//NOTE In theory, it would be enough to list the *.class files, but
 						//     we have *.rb files as well and probably some others.
 						for (String class_file : getFiles(f))
-							System.out.println(escapeForMakefile(class_file));
+							// we cannot escape dollar signs (at least not for Mac), so we just ignore those files
+							// In most cases, those are anonymous classes and the parent class will trigger the
+							// regeneration anyway.
+							if (!class_file.contains("$"))
+								System.out.println(escapeForMakefile(class_file));
 					} else
 						System.err.println("WARNING: The class path element '" + entry + "' couldn't be found. Therefore, it cannot be tracked as a dependency of the generated code.");
 				}
