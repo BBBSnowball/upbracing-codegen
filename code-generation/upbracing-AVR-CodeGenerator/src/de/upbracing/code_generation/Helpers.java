@@ -83,6 +83,6 @@ public class Helpers {
 		return loadConfig(
 				new FileInputStream(file),
 				file,
-				new File(file).getParentFile().getAbsolutePath());
+				new File(file).getAbsoluteFile().getParent());
 	}
 }
