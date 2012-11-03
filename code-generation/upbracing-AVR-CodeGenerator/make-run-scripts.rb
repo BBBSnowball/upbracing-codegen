@@ -81,6 +81,8 @@ filename = File.join(dir, ".classpath")
 classpath = read_classpath(filename,
   "statemachine" => File.join(dir, "../StatechartEditor"),
   "Parser" => File.join(dir, "../java-parser-tools"),
+  "StatechartEditor" => File.join(dir, "../StatechartEditor"),
+  "java-parser-tools" => File.join(dir, "../java-parser-tools"),
   "upbracing-AVR-TimerConfigurationModel" => File.join(dir, "../upbracing-AVR-TimerConfigurationModel"))
 
 unix_classpath = classpath.map {|x| '$DIR/' + x}.join ":"
