@@ -197,7 +197,7 @@ public class UseCaseViewModel extends AViewModelBase {
 		// General
 		int maxValue = 255;
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
-			maxValue = 65536;
+			maxValue = 65535;
 		int timerNumber = getTimer().ordinal();
 		String tickDuration = getFormattedDecimal((double)1.0/getTickFrequency());
 		String tickFrequency = getFormattedDecimal(getTickFrequency());
