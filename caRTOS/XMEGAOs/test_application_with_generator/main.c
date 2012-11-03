@@ -64,7 +64,7 @@ int main(void)
     while(1);
 }
 
-TASK(Task_Update)
+TASK(Update)
 {
 	// Update the port with the leds connected
 	OS_ENTER_CRITICAL();
@@ -75,7 +75,7 @@ TASK(Task_Update)
 	TerminateTask();
 }
 
-TASK(Task_Increment)
+TASK(Increment)
 {
 	// Increment global counter for leds
 	//j++;
@@ -86,7 +86,7 @@ TASK(Task_Increment)
 	TerminateTask();
 }
 
-TASK(Task_Shift)
+TASK(Shift)
 {
 	//Left shifts global counter for leds
 	//OS_ENTER_CRITICAL();
