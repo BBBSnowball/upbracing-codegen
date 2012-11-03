@@ -52,10 +52,9 @@ void USARTWriteChar(char data)
 int main(void)
 {	
 	// Init PORTA
-	//GpioInit();
 	DDRA = 0xFF;
 	
-	sei();
+	// Init USART
 	USARTInit(51);
 	
 	// Init Os
