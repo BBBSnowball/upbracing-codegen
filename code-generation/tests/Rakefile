@@ -1,0 +1,346 @@
+CODE_GENERATOR_DIR = "../upbracing-AVR-CodeGenerator"
+CARTOS_DIR = "../../caRTOS/XMEGAOs/os"
+
+CC = "avr-gcc"
+LD = CC
+OBJCOPY = "avr-objcopy"
+OBJDUMP = "avr-objdump"
+OBJSIZE = "avr-size"
+
+CONFIGURATIONS = ["Debug", "Release"]
+BUILD_CONFIGURATIONS = CONFIGURATIONS
+
+CFLAGS_COMMON = "-I'#{File.expand_path CARTOS_DIR}' -Wall -fpack-struct -fshort-enums -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=at90can128 -DF_CPU=16000000UL"
+CFLAGS = {
+	"Debug" => CFLAGS_COMMON + " -g2 -gstabs -O0",
+	"Release" => CFLAGS_COMMON + " -Os"
+}
+
+LDFLAGS_COMMON = "-mmcu=at90can128"
+LDFLAGS = {
+	"Debug" => LDFLAGS_COMMON,
+	"Release" => LDFLAGS_COMMON
+}
+
+
+CODE_GENERATOR_BIN="#{CODE_GENERATOR_DIR}/run"
+TARGET_DIR="gen"
+
+
+require 'digest/md5'
+
+def md5sum(file)
+	Digest::MD5.hexdigest(File.read(file))
+end
+
+
+class ManyFilesTask < Rake::Task
+	attr_accessor :dependent_files
+
+	def needed?
+		@dependent_files.each do |file|
+			file = file.name.to_s if file.is_a? Rake::FileTask
+			if !File.exists?(file) or out_of_date?(File.mtime(file))
+				puts "#{self} is outdated because of #{file} (exists: #{File.exists? file})"
+				return true
+			end
+		end
+
+		return false
+	end
+
+	# Are there any prerequisites with a later time than the given time stamp?
+	def out_of_date?(stamp)
+		#@prerequisites.any? { |n| application[n].timestamp > stamp}
+		@prerequisites.each { |n|
+			if application[n].timestamp > stamp
+				puts "#{n} is newer (#{application[n].timestamp} > #{stamp})"
+				return true
+			end
+		}
+		return false
+	end
+end
+
+def many_files(name, dependent_files, *args, &block)
+	task = ManyFilesTask.define_task(name, *args, &block)
+	task.dependent_files = dependent_files
+	task
+end
+
+
+$unique_task_id_counter = 0
+def unique_task_id(prefix)
+	$unique_task_id_counter += 1
+	"#{prefix}_#{$unique_task_id_counter}".intern
+end
+
+
+$caRTOS_builders = {}
+def build_caRTOS(features_header_file, configuration = "Debug")
+	#TODO make this a special kind of task and implement needed?
+	task unique_task_id("caRTOS-lib") => features_header_file do
+		md5 = md5sum(features_header_file)
+		target = File.join(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
+		cartos_build_dir = File.join(CARTOS_DIR, configuration)
+		unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file)
+			# rebuild
+
+			# we cannot generate the Makefile - Eclipse has to do that for us
+			unless File.exists? File.join(cartos_build_dir, "makefile")
+				raise "No Makefile found. Please use Eclipse to build caRTOS with configuration #{configuration} and try again."
+			end
+
+			# copy features header to OS
+			cp features_header_file, File.join(CARTOS_DIR, "config", "Os_cfg_features.h")
+
+			# build
+			sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
+		end
+	end
+end
+
+
+def any_is_newer(old_files, new_files)
+	new_files.each do |new_file|
+		return true unless File.exists?(new_file)
+		old_files.each do |old_file|
+			if File.mtime(old_file) > File.mtime(new_file)
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+def generator_task(config_file)
+	dir = File.dirname(config_file)
+
+	target_dir = File.join(dir, TARGET_DIR)
+
+	code_generator = "'#{CODE_GENERATOR_BIN}' -C '#{target_dir}' '#{config_file}'"
+
+	# dependencies
+	dependencies = `#{code_generator} -D`.lines.map {|x| x.strip}.to_a
+	dependent_tasks = dependencies.map { |dep| file dep }
+
+	# generated files
+	generated_files = `#{code_generator} -w`.lines.map {|x| x.strip}.to_a
+
+	gen_task = many_files "generate for #{config_file}", generated_files
+
+	generated_files.each do |gen|
+		file gen => gen_task
+	end
+
+	# generation task
+	gen_task.enhance dependent_tasks do
+		#if any_is_newer(dependencies, generated_files)
+			sh "cd '#{dir}' ; '#{File.expand_path CODE_GENERATOR_BIN}' -C '#{TARGET_DIR}' '#{File.basename config_file}'"
+		#end
+	end
+end
+
+
+def find_sources(dir)
+	FileList.new(File.join(dir, "**", "*.c"))
+end
+
+def compile(source_dir, source_file, target_dir, configuration)
+	target_file = source_file.sub(/(\.[^.]+)?$/, ".o")
+
+	target = File.join(target_dir, target_file)
+	source = File.join(source_dir, source_file)
+
+	# -MMD means only user header files
+	# -MF is the output file
+	# -MP create phony targets for the header files - we don't want that
+	# -MT is the name of the target - we don't really care
+	dependency_file = File.join(target_dir, target_file + ".d")
+	make_dependencies_cflags = "-MMD -MF'#{dependency_file}' -MTtarget"
+
+	cflags = CFLAGS[configuration] + " " + make_dependencies_cflags
+
+	# determine real target dir
+	# This can be a subdirectory of target_dir because source_file
+	# (and therefore target_file) can contain directory components.
+	real_target_dir = File.dirname(target)
+	directory real_target_dir
+
+	t = file target => [source, file(real_target_dir)] do
+		# only compile, put output in .o file
+		sh "'#{CC}' #{cflags} -c -o '#{target}' '#{source}'"
+	end
+
+	# if the dependency file exists, we read its contents
+	if File.exists? dependency_file
+		# read file contents
+		x = File.read(dependency_file)
+		# unwrap lines (backslash can escape a newline)
+		x = x.gsub("\\\n", "")
+		# get first line
+		x = x.lines.first.strip
+		# remove target name (before colon)
+		x = x.sub(/^[^:]*:\s*/, "")
+		# split on spaces
+		x = x.split(/\s+/)
+		# add dependencies to compile task
+		#puts "dependencies for #{target}: #{x.inspect}"
+		t.enhance x
+	else
+		# we don't know the dependencies -> always compile
+		force = task unique_task_id("force") { }
+		t.enhance [force]
+	end
+
+	return t
+end
+
+def link_elf(source_dir, target_dir, name, configuration, objs, libs)
+	map_file = File.join(target_dir, "#{name}.map")
+	target = File.join(target_dir, "#{name}.elf")
+	objs_str = objs.map {|x| "'#{x}'"}.join(" ")
+	libs = libs.call() if libs.is_a? Proc
+	libs_str = libs.map {|x| "-l'#{x}'"}.join(" ")
+	file target => objs do
+		sh "'#{LD}' '-Wl,-Map,#{map_file}' -L'#{File.join(CARTOS_DIR, configuration)}' #{LDFLAGS[configuration]} -o '#{target}' #{objs_str} #{libs_str}"
+	end
+end
+
+def build(source_dir, configuration)
+	#TODO read config file, if present
+
+	# output name is the name of the directory
+	name = File.basename(source_dir)
+
+	# determine target directory
+	target_dir = File.join(source_dir, "bin", configuration)
+
+	# create generator task, if we have a config.rb file
+	generator_config = File.join(source_dir, "config.rb")
+	features_header_file = nil
+	generated_sources = []
+	if File.exists? generator_config
+		# create generator task
+		#TODO put generated files in bin folder?
+		gen_task = generator_task(generator_config)
+
+		# remember generated source files because we have to compile them
+		generated_sources = gen_task.dependent_files.select { |x| x =~ /\.c$/ }
+
+		# create caRTOS library builder task
+		# (uses generated features header)
+		features_header_file = File.join(source_dir, "gen", "Os_cfg_features.h")
+	end
+
+	# If we don't generate any files, we might still have a features header file.
+	if !features_header_file
+		maybe_features_header_file = File.join(source_dir, "Os_cfg_features.h")
+		features_header_file = maybe_features_header_file if File.exists? maybe_features_header_file
+	end
+
+	# find all source files (*.c)
+	sources = find_sources(source_dir) + generated_sources
+	# remove duplicates (generated sources will be found, if they already exist)
+	sources.uniq!
+	# strip prefix from sources
+	sources = sources.map do |source|
+		if source.start_with? source_dir
+			source = source[source_dir.length..-1]
+			source = source[1..-1] if source.start_with? "/"
+		end
+		source
+	end
+
+	# create compile tasks
+	objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
+
+	# The features header file might be regenerated, so we cannot know the MD5
+	# right now. Instead, we supply a lambda that will be evaluated right before
+	# the linker is called. We cache the result, so we won't have to calculate it
+	# more than once.
+	libs = nil
+	libs_future = lambda do
+		unless libs
+			if features_header_file
+				features_md5 = md5sum(features_header_file)
+				libs = ["caRtos-#{features_md5}"]
+			else
+				libs = []
+			end
+		end
+		libs
+	end
+
+	# create linker task
+	elf = link_elf(source_dir, target_dir, name, configuration, objs, libs_future)
+
+	# make sure we build the caRTOS library before linking the application
+	# (only if we have a features header file)
+	if features_header_file
+		cartos_lib_task = build_caRTOS(features_header_file, configuration)
+
+		# add dependency to linker task
+		elf.enhance [cartos_lib_task]
+	end
+
+	# create extended listing
+	# (not enforced by dependencies)
+	lss_file = File.join(target_dir, "#{name}.lss")
+	file lss_file => elf do
+		sh "'#{OBJDUMP}' -h -S '#{elf.name}'  >'#{lss_file}'"
+	end
+
+	# create HEX task
+	flash_hex_file = File.join(target_dir, "#{name}.hex")
+	file flash_hex_file => elf do
+		sh "'#{OBJCOPY}' -R .eeprom -O ihex '#{elf.name}' '#{flash_hex_file}'"
+	end
+
+	# create EEPROM HEX task
+	# (not enforced by dependencies)
+	eeprom_hex_file = File.join(target_dir, "#{name}.eep")
+	file eeprom_hex_file => elf do
+		flags = "-j .eeprom --no-change-warnings --change-section-lma .eeprom=0 -O ihex"
+		sh "'#{OBJCOPY}' #{flags} '#{elf.name}' '#{eeprom_hex_file}'"
+	end
+
+	# print size
+	task "#{name}-size" => elf do
+		sh "'#{OBJSIZE}' --format=avr --mcu=at90can128 '#{elf.name}'"
+	end
+
+	# make sure that the hex file is generated, if someone calls build-all
+	task :build_all => flash_hex_file
+
+	# return hex file task
+	flash_hex_file
+end
+
+# task build_all builds all hex files (through dependencies)
+task :build_all do end
+
+# make build-all an alias for build_all (only on the command line!)
+task "build-all" => :build_all do end
+
+# default action is building everything (for now - might change that to running the tests)
+task :default => :build_all
+
+# add tasks for all directories
+Dir["*/"].each do |dir|
+	# special case: 'common' directory is not a test
+	if dir != "common/"
+		# build hex file
+		BUILD_CONFIGURATIONS.each do |configuration|
+			build(dir, configuration)
+		end
+	end
+end
+
+
+# some old debug tasks
+
+#task :default => [build_caRTOS("features1.h"), build_caRTOS("features2.h"), build_caRTOS("features3.h", "Release")]
+#task :default => generator_task("blub/config.rb")
+#task :default => compile("blub", "main.c", "blub/bin/Debug", "Debug")

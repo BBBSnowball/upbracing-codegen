@@ -2,4 +2,5 @@
 
 export GEM_HOME=./GEM_HOME
 java -jar jruby-complete-1.6.7.2.jar -S gem install xml-simple
+java -jar jruby-complete-1.6.7.2.jar -S gem install rake
 jar cf ruby-gems.jar -C GEM_HOME .
