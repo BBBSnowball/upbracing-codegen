@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/upbracing-AVR-TimerConfigurationModel/build-jar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
+        <file path="/upbracing-AVR-TimerConfigurationModel/build-jar.jardesc"/>
+        <file path="/upbracing-AVR-TimerConfigurationModel/.project"/>
+        <file path="/upbracing-AVR-TimerConfigurationModel/build.xml"/>
+        <file path="/upbracing-AVR-TimerConfigurationModel/.classpath"/>
+    </selectedElements>
+</jardesc>
