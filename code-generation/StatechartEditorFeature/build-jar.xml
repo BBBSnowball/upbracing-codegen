@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project default="feature_export" name="build">
-	<target name="feature_export">
-		<pde.exportFeatures destination="/home/benny/Documents/Studium/PG/program" exportSource="false" exportType="zip" features="UPBracingAVRTimerConfiguration,UPBracingStatechartEditor" filename="EclipsePlugins.zip" useJARFormat="true"/>
-	</target>
-</project>
