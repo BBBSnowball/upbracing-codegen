@@ -199,8 +199,8 @@ public class UseCaseViewModel extends AViewModelBase {
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65535;
 		int timerNumber = getTimer().ordinal();
-		String tickDuration = getFormattedDecimal((double)1.0/getTickFrequency());
-		String tickFrequency = getFormattedDecimal(getTickFrequency());
+		String tickDuration = UseCaseModelValidator.formatPeriod((double)1.0/getTickFrequency());
+		String tickFrequency = UseCaseModelValidator.formatFrequency((double)1.0/getTickFrequency());
 		
 		// 8 or 16 Bit?
 		int bit = 8;
@@ -209,8 +209,8 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		// Text
 		String text = "Timer Number: " + timerNumber + " (" + bit + "Bit)" + ls
-				+ "Frequency: " + tickFrequency + "Hz (with prescale divisor " + getPrescale().getNumeric() + ")" + ls
-				+ "Resolution: " + tickDuration + "s" + ls
+				+ "Frequency: " + tickFrequency + " (with prescale divisor " + getPrescale().getNumeric() + ")" + ls
+				+ "Resolution: " + tickDuration + ls
 				+ "Max. Counter Value: " + maxValue + ls + ls;
 		
 		// CTC
@@ -440,13 +440,13 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		String ls = System.getProperty("line.separator");
 		
-		String overflowTime = getFormattedDecimal(((double) (maxValue + 1)) / getTickFrequency());
+		String overflowTime = UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod());
 		String text = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
-		text += "=> Timer will overflow every " + overflowTime + "s.";
+		text += "=> Timer will overflow every " + overflowTime + ".";
 		if (model.getOverflowInterrupt())
 			text += ls + "=> Interrupts are generated on overflow.";
 		
-		return text;
+		return text.trim();
 	}
 	
 	private String getCtcDescription() {
@@ -461,53 +461,95 @@ public class UseCaseViewModel extends AViewModelBase {
 			ctcTopReg += " (Output Capture Register)";
 		}
 
-		String text = "The Timer will run from 0 to the Top Value stored in " + ctcTopReg + "." + ls;
+		// Top value text:
+		String text = "The Timer will run from 0 to the value stored in " + ctcTopReg + " (TOP). The counter will restart at 0." + ls + ls;
+		text += "=> Timer will be reset every " + UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod()) + "." + ls;
 		
 		// Interrupts:
 		if (getCompareInterruptA())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrAPeriod()) + "s after timer reset.";
-		if (getCompareInterruptB())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrBPeriod()) + "s after timer reset.";
-		if (getCompareInterruptC())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrCPeriod()) + "s after timer reset.";
+			text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrAPeriod())) + " after timer reset.";
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+			if (getCompareInterruptB())
+				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrBPeriod())) + " after timer reset.";
+			if (getCompareInterruptC())
+				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrCPeriod())) + " after timer reset.";
+		}
 		if (getCompareInterruptA() || getCompareInterruptB() || getCompareInterruptC())
 			text += ls;
 		
 		// Output modes:
 		if (getComparePinModeA() != null && !getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel A will " + getComparePinModeA().toString().toLowerCase() + ".";
+			text += ls + "=> Channel A: " + getComparePinModeA().toString().toLowerCase() + ".";
 		}
-		if (getComparePinModeB() != null && !getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel B will " + getComparePinModeB().toString().toLowerCase() + ".";	
-		}
-		if (getComparePinModeC() != null && !getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel C will " + getComparePinModeC().toString().toLowerCase() + "."; 
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+			if (getComparePinModeB() != null && !getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
+				text += ls + "=> Channel B: " + getComparePinModeB().toString().toLowerCase() + ".";	
+			}
+			if (getComparePinModeC() != null && !getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
+				text += ls + "=> Channel C: " + getComparePinModeC().toString().toLowerCase() + "."; 
+			}
 		}
 		
-		return text;
+		return text.trim();
 	}
 	
 	private String getPWMDescription() {
 		
+		String ls = System.getProperty("line.separator");
 		String text = "The Timer will run in " + getMode().toString() + ". ";
 		
 		if (getMode().equals(TimerOperationModes.PWM_FAST) || getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
 			text += "Period cannot be altered during runtime.";
 		}
 		
-		// TODO: Base rate:
+		// Base rate:
+		text += ls + ls + "=> PWM period is " +  UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod()) + "." + ls;
+		text += "=> PWM base rate is " +  UseCaseModelValidator.formatFrequency(getValidator().getTopPeriod())  + "." + ls;
 		
-		// TODO: Channels:
+		// Channels:
+		if (getMode().equals(TimerOperationModes.PWM_FAST)) {
+			if (getSingleSlopePWMPinModeA() != null && !getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+				text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeA(), "A", getOcrAPeriod());
+			}
+			if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+				if (getSingleSlopePWMPinModeB() != null && !getSingleSlopePWMPinModeB().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeB(), "B", getOcrBPeriod());
+				}
+				if (getSingleSlopePWMPinModeC() != null && !getSingleSlopePWMPinModeC().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeC(), "C", getOcrCPeriod());
+				}
+			}
+		} else if (getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT) || getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+			if (getDualSlopePWMPinModeA() != null && !getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+				text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeA(), "A", getOcrAPeriod());
+			}
+			if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+				if (getDualSlopePWMPinModeB() != null && !getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeB(), "B", getOcrBPeriod());
+				}
+				if (getDualSlopePWMPinModeC() != null && !getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeC(), "C", getOcrCPeriod());
+				}
+			}
+		}
 		
-		return text;
+		return text.trim();
 	}
 	
-	private String getFormattedDecimal(double d) {
-		DecimalFormatSymbols sym = new DecimalFormatSymbols();
-		sym.setDecimalSeparator('.');
-		DecimalFormat df = new DecimalFormat("###.##########");
-		df.setDecimalFormatSymbols(sym);
-		
-		return df.format(d);
+	private String getPWMOutputPinDescription(PWMSingleSlopeOutputPinMode pinMode, String channel, double period) {
+		String txt = "=> Channel " + channel + ": " + pinMode.toString().toLowerCase();
+		if (!pinMode.equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
+			txt += " (duty-cycle: " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(period)) + ")";
+		}
+		txt += ".";
+		return txt;
+	}
+	private String getPWMOutputPinDescription(PWMDualSlopeOutputPinMode pinMode, String channel, double period) {
+		String txt = "=> Channel " + channel + ": " + pinMode.toString().toLowerCase();
+		if (!pinMode.equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
+			txt += " (duty-cycle: " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(period)) + ")";
+		}
+		txt += ".";
+		return txt;
 	}
 }
