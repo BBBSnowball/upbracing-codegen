@@ -9,10 +9,14 @@ import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -35,6 +39,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 
 	protected TimerConfigurationEditor editor;
 	protected UseCaseViewModel model;
+	protected String ls = System.getProperty("line.separator");
 	private Group settingsGroup;
 	private Group summaryGroup;
 	private ConfigurationExpandItemComposite expandItem;
@@ -52,7 +57,8 @@ public abstract class AConfigurationCompositeBase extends Composite {
 									   ConfigurationExpandItemComposite expandItem, 
 									   int style, 
 									   final TimerConfigurationEditor editor, 
-									   UseCaseViewModel model) {
+									   UseCaseViewModel model,
+									   int canvasHeight) {
 		super(parent, style);
 		
 		this.editor = editor;
@@ -96,13 +102,21 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		d.horizontalAlignment = SWT.RIGHT;
 		d.grabExcessHorizontalSpace = true;
 		d.verticalAlignment = SWT.TOP;
-		d.widthHint = 350;
+		d.widthHint = 400;
 		summaryGroup.setLayoutData(d);
 		Label descriptionL = new Label(summaryGroup, SWT.WRAP | SWT.BORDER);
 		d = new GridData();
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		descriptionL.setLayoutData(d);
+		final Canvas canvas = new Canvas(summaryGroup, SWT.BORDER);
+		canvas.setSize(370, canvasHeight);
+		d = new GridData();
+		d.horizontalAlignment = SWT.CENTER;
+		d.widthHint = 370;
+		d.heightHint = canvasHeight;
+		d.grabExcessHorizontalSpace = true;
+		canvas.setLayoutData(d);
 		summaryGroup.layout();
 		setFontStyle(summaryGroup, SWT.BOLD);
 		DataBindingContext c = new DataBindingContext();
@@ -114,6 +128,16 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			public void propertyChange(PropertyChangeEvent arg0) {
 				summaryGroup.layout();
 				layout();
+			}
+			
+		});
+		canvas.addPaintListener(new PaintListener() {
+
+			@Override
+			public void paintControl(PaintEvent e) {
+				GC gc = new GC(canvas);
+				drawDescriptionImage(gc);
+			    gc.dispose();
 			}
 			
 		});
@@ -149,4 +173,6 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		final Font newFont = new Font(c.getDisplay(),fD[0]);
 		c.setFont(newFont);
 	}
+	
+	public abstract void drawDescriptionImage(GC gc);
 }
