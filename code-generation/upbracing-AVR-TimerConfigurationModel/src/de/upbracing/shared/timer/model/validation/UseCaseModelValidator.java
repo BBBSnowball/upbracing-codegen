@@ -592,6 +592,51 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return max;
 	}
 
+	public double getTopPeriod() {
+		if (model.getMode().equals(TimerOperationModes.CTC))
+		{
+			if (model.getCtcTop().equals(CTCTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getCtcTop().equals(CTCTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_FAST))
+		{
+			if (model.getFastPWMTop().equals(PWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getFastPWMTop().equals(PWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT8))
+				return calculatePeriodForRegisterValue(255);
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT9))
+				return calculatePeriodForRegisterValue(511);
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT10))
+				return calculatePeriodForRegisterValue(1023);
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
+		{
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
+				return calculatePeriodForRegisterValue(255);
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT9))
+				return calculatePeriodForRegisterValue(511);
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT10))
+				return calculatePeriodForRegisterValue(1023);
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
+		{
+			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+		}
+		
+		return 0.0;
+	}
+
 	private boolean validateMaxPeriod(double period) {
 		// Get Maximum Register Value
 		int maxValue = getMaximumValue();
@@ -683,16 +728,29 @@ public class UseCaseModelValidator extends AValidatorBase {
 				+ "(" + topReg + formatPeriod(getTopPeriod()) + ").";
 	}
 	
-	private static String formatPeriod(double period) {
+	public static String formatPeriod(double period) {
 		DecimalFormat f = new DecimalFormat("###.##########");
-		if (period > 1)
-			return f.format(period) + "s";
-		else if (period > 1e-3)
+		if (period >= 1)
+			return f.format(period) + " s";
+		else if (period >= 1e-3)
 			return f.format(period * 1e3) + " ms";
-		else if (period > 1e-6)
+		else if (period >= 1e-6)
 			return f.format(period * 1e6) + " us";
 		else
 			return f.format(period * 1e9) + " ns";
+	}
+	
+	public static String formatFrequency(double period) {
+		DecimalFormat f = new DecimalFormat("###.##########");
+		double hz = 1.0/period;
+		if (hz < 1e3)
+			return f.format(hz) + " Hz";
+		else if (hz < 1e6)
+			return f.format(hz * 1e-3) + " kHz";
+		else if (hz < 1e9)
+			return f.format(hz * 1e-6) + " MHz";
+		else
+			return f.format(period * 1e-9) + " GHz";
 	}
 	
 	private boolean isNameColliding() {
@@ -751,50 +809,5 @@ public class UseCaseModelValidator extends AValidatorBase {
 		}
 		
 		return false;
-	}
-	
-	private double getTopPeriod() {
-		if (model.getMode().equals(TimerOperationModes.CTC))
-		{
-			if (model.getCtcTop().equals(CTCTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getCtcTop().equals(CTCTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_FAST))
-		{
-			if (model.getFastPWMTop().equals(PWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getFastPWMTop().equals(PWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT8))
-				return calculatePeriodForRegisterValue(255);
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT9))
-				return calculatePeriodForRegisterValue(511);
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT10))
-				return calculatePeriodForRegisterValue(1023);
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
-		{
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
-				return calculatePeriodForRegisterValue(255);
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT9))
-				return calculatePeriodForRegisterValue(511);
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT10))
-				return calculatePeriodForRegisterValue(1023);
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
-		{
-			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-		}
-		
-		return 0.0;
 	}
 }

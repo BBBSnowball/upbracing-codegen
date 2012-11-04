@@ -43,6 +43,13 @@ public class MCUConfiguration {
 		statemachines.addFormatters(messages);
 	}
 	
+	// Note (Peer): This was necessary in order to keep the TimerConfigurationEditor
+	//              working with this package of code generators. Otherwise the editor
+	//              would need to include the whole StateMachineEditor model.
+	public MCUConfiguration(boolean ignoreMe) {
+		messages = new Messages().withOutputTo(System.err, Severity.INFO);
+	}
+	
 	/** current working directory for loading config files */
 	public static String currentDirectory = ".";
 	
