@@ -9,6 +9,7 @@ OBJSIZE = "avr-size"
 
 CONFIGURATIONS = ["Debug", "Release"]
 BUILD_CONFIGURATIONS = CONFIGURATIONS
+TEST_CONFIGURATIONS  = CONFIGURATIONS
 
 CFLAGS_COMMON = "-I'#{File.expand_path CARTOS_DIR}' -Wall -fpack-struct -fshort-enums -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=at90can128 -DF_CPU=16000000UL"
 CFLAGS = {
@@ -26,8 +27,33 @@ LDFLAGS = {
 CODE_GENERATOR_BIN="#{CODE_GENERATOR_DIR}/run"
 TARGET_DIR="gen"
 
+# let the user change a few things, e.g. the programmer
+# This file must set these constants:
+# AVRDUDE = "avrdude -cjtag2 -pc128 -Pusb"
+# SERIALPORT = "/dev/ttyUSB0"	# can be a Proc object
+require 'userconfig.rb'
 
+# make sure that we have all the constants we expect
+user_config_error = false
+[:AVRDUDE, :SERIALPORT].each do |name|
+	unless Module.constants.include? name or Module.constants.include? name.to_s
+		puts "Please set #{name} in userconfig.rb !"
+		user_config_error = true
+	else
+		value = Module.const_get name
+		unless value.is_a? String and !value.empty? or value.is_a? Proc
+			puts "Invalid value for constant #{name}. Expecting a String or a Proc."
+			user_config_error = true
+		end
+	end
+end
+exit 1 if user_config_error
+
+
+require 'tempfile'
 require 'digest/md5'
+require 'java'
+
 
 def md5sum(file)
 	Digest::MD5.hexdigest(File.read(file))
@@ -324,16 +350,146 @@ task :build_all do end
 # make build-all an alias for build_all (only on the command line!)
 task "build-all" => :build_all do end
 
+
+def erase_processor
+	sh "#{AVRDUDE} -e"
+end
+
+def flash_processor_action(build_dir, name, parts = [:flash])
+	parts = [parts] if parts.is_a? String or parts.is_a? Symbol
+	return { :dependencies => [], :action => lambda {}, :cmdline => "" } if parts.empty?
+
+	dependencies = []
+	commands = ""
+	parts.each do |part|
+		part = part.intern if part.is_a? String
+		type = part.to_s
+		case part
+		when :flash, :application
+			ext = "hex"
+		when :eeprom
+			ext = "eep"
+		when :efuse, :lfuse, :hfuse, /^fuse[0-9]+$/, :calibration
+			ext = part.to_s
+		else
+			raise "Unsupported type of memory: #{part}"
+		end
+
+		file = File.join(build_dir, "#{name}.#{ext}")
+		dependencies << file
+		commands += " '-U#{type}:w:#{File.expand_path(file)}:a'"
+	end
+
+	cmdline = AVRDUDE+commands
+
+	{ :dependencies => dependencies, :action => lambda { sh cmdline }, :cmdline => cmdline }
+end
+
+Ruby = Java::org::jruby::Ruby
+
+#NOTE The script should be executed in an isolated environment, but
+#     unfortunately 
+def run_jruby_script(script_filename, global_variables = {})
+	engine = Ruby.newInstance
+
+	global_variables.each do |key, value|
+		#TODO support methods
+		if key =~ /^[A-Z]/
+			engine.defineGlobalConstant(key, value)
+		elsif value.is_a? Method
+			# we have to get the DynamicMethod object which
+			# is stored in the private field method
+			cls = Java::java::lang::Class.for_name("org.jruby.RubyMethod")
+			field = cls.getDeclaredField("method")
+			field.setAccessible true
+			method = field.get(value)
+
+			# We have to add it to some class or module. Here we are
+			# using Kernel.
+			#TODO I would like to add it to the main object, but I don't
+			#     know how to get that object.
+			target = engine.kernel
+
+			# now we can set this on the Ruby instance
+			# Unfortunately, we cannot access the addMethod method
+			# directly, so we use reflection.
+			mod_cls = Java::java::lang::Class.for_name("org.jruby.RubyModule")
+			add_method = mod_cls.declared_methods.select {|x| x.name == "addMethod"}.first
+			add_method.invoke(target, key.to_s, method)
+		else
+			engine.defineReadonlyVariable(key, value)
+		end
+	end
+
+	# load some helpers
+	engine.executeScript(File.read("test-helpers.rb"), "test-helpers.rb")
+
+	# change to directory of the script file
+	engine.current_directory = File.expand_path(File.dirname(script_filename))
+
+	# execute test script
+	engine.executeScript(File.read(script_filename), script_filename)
+end
+
+def run_test(dir, configuration)
+	name = File.basename dir
+
+	build_dir = File.join(dir, "bin", configuration)
+
+	# get dependencies and commandline for flashing program to processor
+	flash_info = flash_processor_action(build_dir, name)
+	flash_cmdline = flash_info[:cmdline]
+
+	# write flash command line to temporary file
+	#flash_cmdline_file = Tempfile.new("flashcmd")
+	#open(flash_cmdline_file, "w") do |f|
+	#	f.write(flash_cmdline)
+	#end
+
+	test = task "test-#{name}" => flash_info[:dependencies] do
+		puts "Running test '#{dir}' (#{configuration})..."
+
+		begin
+			run_jruby_script File.join(dir, "run-test.rb"), \
+				:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
+				:flash_cmdline => flash_cmdline
+				#:erase_processor2 => method(:erase_processor), \
+				#:sh => method(:sh)
+		rescue Exception => ex
+			puts "Exception in test script #{File.join(dir, "run-test.rb")}:"
+			puts ex.message
+			puts ex.backtrace.join("\n")
+		end
+	end
+
+	task :test_all => test
+
+	#flash_cmdline_file.delete
+end
+
+# task test_all tests all of them
+task :test_all do end
+
+# make test-all an alias for test_all (only on the command line!)
+task "test-all" => :test_all do end
+
+
 # default action is building everything (for now - might change that to running the tests)
 task :default => :build_all
+
 
 # add tasks for all directories
 Dir["*/"].each do |dir|
 	# special case: 'common' directory is not a test
 	if dir != "common/"
-		# build hex file
 		BUILD_CONFIGURATIONS.each do |configuration|
+			# build hex file
 			build(dir, configuration)
+		end
+
+		TEST_CONFIGURATIONS.each do |configuration|
+			# run test
+			run_test dir, configuration
 		end
 	end
 end

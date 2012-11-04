@@ -11,7 +11,7 @@ $config.selectEcu("Cockpit")
 
 $config.rtos.clock = 8000000
 $config.rtos.tick_frequency = 640
-$config.rtos.conformance_class = "BCC1"
+#$config.rtos.conformance_class = "BCC1"
 
 $config.rtos.addTask("Bla", SUSPENDED, 640)
 

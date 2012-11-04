@@ -42,7 +42,7 @@ int main(void) {
 	while(1);
 }
 
-TASK(Task_Bla) {
+TASK(Bla) {
 
 	usart_send_str("Task Bla\n");
 
