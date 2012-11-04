@@ -107,9 +107,10 @@ StatusType WaitTask(void)
 	// Puts the currently running task into WAITING state
 	os_currentTcb->state = WAITING;
 	
+	SwitchTask();
+	
 	OS_EXIT_CRITICAL();
 	
-	SwitchTask();
 	return E_OK;	
 }
 
