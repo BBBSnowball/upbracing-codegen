@@ -12,4 +12,3 @@ Export-Package: Statecharts,
  Statecharts.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport
-Bundle-ActivationPolicy: lazy
