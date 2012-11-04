@@ -440,7 +440,7 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		String ls = System.getProperty("line.separator");
 		
-		String overflowTime = UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod());
+		String overflowTime = UseCaseModelValidator.formatPeriod(getValidator().calculatePeriodForRegisterValue(getValidator().getMaximumValue()));
 		String text = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
 		text += "=> Timer will overflow every " + overflowTime + ".";
 		if (model.getOverflowInterrupt())
