@@ -11,7 +11,7 @@
 
 // Global Os variables
 volatile Os_Tcb * os_currentTcb = &os_tcbs[0];
-volatile TaskType os_nextTaskId = 0;
+volatile TaskType os_nextTaskId = 1;
 volatile uint16_t os_counter = 0;
 
 // Internal function prototypes:
@@ -85,9 +85,7 @@ StatusType Os_Schedule(void)
 	// Work with a local copy of the volatile os_nextTaskId variable
 	TaskType tempTaskId = os_nextTaskId;
 	
-	
-	if (tempTaskId == 0)
-		tempTaskId = OS_NUMBER_OF_TCBS - 1;
+	tempTaskId = _dec_wrap(tempTaskId);
 	
 	for (uint8_t i = 0; i < OS_NUMBER_OF_TCBS; i++)
 	{
@@ -107,8 +105,8 @@ StatusType Os_Schedule(void)
 			{
 				// No ready task was found. Switching to IDLE
 				os_currentTcb = &os_tcbs[0];
-				// Continue with the next task
-				os_nextTaskId = OS_NUMBER_OF_TCBS - 1;
+				// Set last task as next task to look at
+				os_nextTaskId = 1;
 				break;
 			}
 			tempTaskId = _dec_wrap(tempTaskId);
