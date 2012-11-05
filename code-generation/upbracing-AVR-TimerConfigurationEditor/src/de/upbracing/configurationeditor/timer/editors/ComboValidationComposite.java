@@ -62,7 +62,7 @@ public class ComboValidationComposite extends Composite {
 		}
 		
 		if (validator != null) {
-			Label imageLabel = new Label(this, (SWT.IMAGE_PNG | SWT.BORDER));
+			Label imageLabel = new Label(this, (SWT.IMAGE_PNG));
 			c = new DataBindingContext();
 			c.bindValue(SWTObservables.observeImage(imageLabel), 
 					BeansObservables.observeValue(validator, textProperty + "Error"), 

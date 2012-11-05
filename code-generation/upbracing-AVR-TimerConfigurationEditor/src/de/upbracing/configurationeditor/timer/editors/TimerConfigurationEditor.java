@@ -177,7 +177,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		arg0.setLayout(fillLayout);
 		
 		// General Settings Group
-		Group gs = new Group(arg0, SWT.BORDER);
+		Group gs = new Group(arg0, SWT.NONE);
 		GridLayout layout = new GridLayout(3, false);
 		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = 5;
 		layout.verticalSpacing = 5;
@@ -199,7 +199,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		gs.layout();
 		
 		// Add Configuration Button
-		Button newConfigButton = new Button(arg0, SWT.BORDER);
+		Button newConfigButton = new Button(arg0, SWT.NONE);
 		newConfigButton.setText("Add new configuration");
 		GridData d = new GridData();
 		d.grabExcessHorizontalSpace = true;
@@ -207,7 +207,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		newConfigButton.setLayoutData(d);
 		
 		// Generate Code Button
-		final Button generateCodeButton = new Button(arg0, SWT.BORDER);
+		final Button generateCodeButton = new Button(arg0, SWT.NONE);
 		generateCodeButton.setText("Generate Code");
 		generateCodeButton.setEnabled(true);
 		d = new GridData();
