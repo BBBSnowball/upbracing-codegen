@@ -11,7 +11,8 @@ CONFIGURATIONS = ["Debug", "Release"]
 BUILD_CONFIGURATIONS = CONFIGURATIONS
 TEST_CONFIGURATIONS  = CONFIGURATIONS
 
-CFLAGS_COMMON = "-I'#{File.expand_path CARTOS_DIR}' -Wall -fpack-struct -fshort-enums -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=at90can128 -DF_CPU=16000000UL"
+F_CPU = 8000000
+CFLAGS_COMMON = "-I'#{File.expand_path CARTOS_DIR}' -Wall -fpack-struct -fshort-enums -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=at90can128 -DF_CPU=#{F_CPU}UL"
 CFLAGS = {
 	"Debug" => CFLAGS_COMMON + " -g2 -gstabs -O0",
 	"Release" => CFLAGS_COMMON + " -Os"
@@ -105,11 +106,18 @@ end
 $caRTOS_builders = {}
 def build_caRTOS(features_header_file, configuration = "Debug")
 	#TODO make this a special kind of task and implement needed?
-	task unique_task_id("caRTOS-lib") => features_header_file do
+	task unique_task_id("caRTOS-lib") => features_header_file do |t|
 		md5 = md5sum(features_header_file)
 		target = File.join(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
 		cartos_build_dir = File.join(CARTOS_DIR, configuration)
-		unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file)
+		# rebuilt, if  library doesn't exist or any input file is newer
+		# NOTE We cannot let 'make' decide because 'make' wouldn't rebuilt
+		#      any file that has been compiled for a newer, totally different features
+		#      file, if we keep the mtime of the features header.
+		#      Therefore, we have to force a rebuild by touching the features header.
+		os_deps = FileList[ ["*.c", "*.h", "*.inc"].map { |ext| File.join(CARTOS_DIR, "**", ext) } ]
+		unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file) \
+				and os_deps.all? { |dep| File.mtime(target) >= File.mtime(dep) }
 			# rebuild
 
 			# we cannot generate the Makefile - Eclipse has to do that for us
@@ -118,7 +126,11 @@ def build_caRTOS(features_header_file, configuration = "Debug")
 			end
 
 			# copy features header to OS
-			cp features_header_file, File.join(CARTOS_DIR, "config", "Os_cfg_features.h")
+			features_header_for_build = File.join(CARTOS_DIR, "config", "Os_cfg_features.h")
+			cp features_header_file, features_header_for_build
+
+			# touch features header to force rebuild
+			touch features_header_for_build
 
 			# build
 			sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
@@ -140,7 +152,11 @@ def any_is_newer(old_files, new_files)
 	return false
 end
 
+$generator_tasks = {}
 def generator_task(config_file)
+	# use cached value, if it exists
+	return $generator_tasks[config_file] if $generator_tasks[config_file]
+
 	dir = File.dirname(config_file)
 
 	target_dir = File.join(dir, TARGET_DIR)
@@ -166,7 +182,19 @@ def generator_task(config_file)
 			sh "cd '#{dir}' ; '#{File.expand_path CODE_GENERATOR_BIN}' -C '#{TARGET_DIR}' '#{File.basename config_file}'"
 		#end
 	end
+
+	task :generate_all => gen_task
+
+	$generator_tasks[config_file] = gen_task
+
+	return gen_task
 end
+
+# task generate_all tests all of them
+task :generate_all do end
+
+# make generate-all an alias for generate_all (only on the command line!)
+task "generate-all" => :generate_all do end
 
 
 def find_sources(dir)
@@ -227,18 +255,23 @@ def link_elf(source_dir, target_dir, name, configuration, objs, libs)
 	map_file = File.join(target_dir, "#{name}.map")
 	target = File.join(target_dir, "#{name}.elf")
 	objs_str = objs.map {|x| "'#{x}'"}.join(" ")
-	libs = libs.call() if libs.is_a? Proc
-	libs_str = libs.map {|x| "-l'#{x}'"}.join(" ")
 	file target => objs do
+		libs = libs.call() if libs.is_a? Proc
+		libs_str = libs.map {|x| "-l'#{x}'"}.join(" ")
 		sh "'#{LD}' '-Wl,-Map,#{map_file}' -L'#{File.join(CARTOS_DIR, configuration)}' #{LDFLAGS[configuration]} -o '#{target}' #{objs_str} #{libs_str}"
 	end
+end
+
+def test_name_from_source_dir(source_dir)
+	name = File.basename(source_dir)
+	name.sub(/^[0-9]+[-_ ]?/, "")
 end
 
 def build(source_dir, configuration)
 	#TODO read config file, if present
 
 	# output name is the name of the directory
-	name = File.basename(source_dir)
+	name = test_name_from_source_dir(source_dir)
 
 	# determine target directory
 	target_dir = File.join(source_dir, "bin", configuration)
@@ -337,8 +370,10 @@ def build(source_dir, configuration)
 		sh "'#{OBJSIZE}' --format=avr --mcu=at90can128 '#{elf.name}'"
 	end
 
+	build_task = task("build-#{name}-#{configuration}" => flash_hex_file) {}
+
 	# make sure that the hex file is generated, if someone calls build-all
-	task :build_all => flash_hex_file
+	task :build_all => build_task
 
 	# return hex file task
 	flash_hex_file
@@ -432,7 +467,7 @@ def run_jruby_script(script_filename, global_variables = {})
 end
 
 def run_test(dir, configuration)
-	name = File.basename dir
+	name = test_name_from_source_dir dir
 
 	build_dir = File.join(dir, "bin", configuration)
 
@@ -446,13 +481,13 @@ def run_test(dir, configuration)
 	#	f.write(flash_cmdline)
 	#end
 
-	test = task "test-#{name}" => flash_info[:dependencies] do
+	test = task "test-#{name}-#{configuration}" => flash_info[:dependencies] do
 		puts "Running test '#{dir}' (#{configuration})..."
 
 		begin
 			run_jruby_script File.join(dir, "run-test.rb"), \
 				:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
-				:flash_cmdline => flash_cmdline
+				"$flash_cmdline" => flash_cmdline
 				#:erase_processor2 => method(:erase_processor), \
 				#:sh => method(:sh)
 		rescue Exception => ex
@@ -462,6 +497,8 @@ def run_test(dir, configuration)
 		end
 	end
 
+	#TODO How can we enforce the order? Does rake honour the order that
+	#     we use for adding the dependencies?
 	task :test_all => test
 
 	#flash_cmdline_file.delete
@@ -478,8 +515,13 @@ task "test-all" => :test_all do end
 task :default => :build_all
 
 
-# add tasks for all directories
-Dir["*/"].each do |dir|
+# add tasks for all directories which have certain files
+magic_files = FileList["**/run-test.rb", "**/config.rb", "**/main.c", "**/main-*.c"]
+project_dirs = magic_files.map { |file| File.dirname(file) }
+project_dirs.uniq!
+project_dirs.sort
+project_dirs.each do |dir|
+	puts "dir: #{dir}"
 	# special case: 'common' directory is not a test
 	if dir != "common/"
 		BUILD_CONFIGURATIONS.each do |configuration|
