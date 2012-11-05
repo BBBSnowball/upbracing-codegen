@@ -299,7 +299,7 @@ class Project
 	end
 
 	def compile(source_dir, source_file, target_dir, configuration)
-		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\)?[.\/\\]/, "")
+		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "")
 
 		target = File.join(target_dir, target_file)
 		if source_file.start_with? "#/"
@@ -669,6 +669,41 @@ class Project
 	end
 end
 
+class ProjectWithCommon < Project
+	@@common_libraries = {
+		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] }
+	}
+
+	def initialize
+		@used_common_source_files = []
+	end
+
+	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
+		["#/common"] + super
+	end
+
+	def additional_source_files(source_dir, name, configuration)
+		@used_common_source_files + super
+	end
+
+	def add_common(*args)
+		args.each do |arg|
+			arg = arg.to_s
+			lib = @@common_libraries[arg]
+			if lib
+				sources = lib[:sources].map { |file| "#/common/#{file}" }
+				@used_common_source_files.push(*sources)
+			elsif File.exists? "common/#{arg}.c"
+				@used_common_source_files << "common/#{arg}.c"
+			elsif File.exists? "common/#{arg}"
+				@used_common_source_files << "common/#{arg}"
+			else
+				raise "not found: common file or library '#{arg}'"
+			end
+		end
+	end
+end
+
 # We use ScriptEngine here. It should create a new instance of JRuby (and in some way
 # it does), but it shares global variables and a few other things. This is quite convenient
 # for loading the project config because it will need some rake stuff.
@@ -678,7 +713,6 @@ InputStreamReader = Java::java::io::InputStreamReader
 Charset = Java::java::nio::charset::Charset
 FileInputStream = Java::java::io::FileInputStream
 def load_project_config(dir)
-
 	project_config = File.join(dir, "project.rb")
 	if File.exists? project_config
 		jruby = ScriptEngineManager.new.getEngineByName("jruby")
@@ -712,7 +746,7 @@ end
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
 project_dirs = magic_files.map { |file| File.dirname(file) }
 project_dirs.uniq!
-project_dirs.sort
+project_dirs.sort 	#TODO is sort is too intelligent
 project_dirs.each do |dir|
 	puts "project: #{dir}"
 	# special case: 'common' directory is not a test
