@@ -7,3 +7,5 @@ Behaviour of the software:
   Test: If no button is pressed, the LEDs should be off. Press the buttons (one at a time) and watch the LEDs. For each button, exactly one LED must light up. Especially, check the center switch. If it doesn't work, you have to set the "Center" jumper to position 2-3.
 - The lower three LEDs are driven by a binary counter. The counter is incremented once every second. The counter resets after eight seconds.
   Test: All the LEDs can go on and off. The frequency is right (not of by factor 2 or more -> check fuse settings).
+
+NOTE: The frequency will be wrong for the Debug build.

@@ -1,5 +1,5 @@
-CODE_GENERATOR_DIR = "../upbracing-AVR-CodeGenerator"
-CARTOS_DIR = "../../caRTOS/XMEGAOs/os"
+CODE_GENERATOR_DIR = ENV["CODE_GENERATOR_DIR"] || "../upbracing-AVR-CodeGenerator"
+CARTOS_DIR = ENV["CARTOS_DIR"] || "../../caRTOS/XMEGAOs/os"
 
 CC = "avr-gcc"
 LD = CC
@@ -521,7 +521,7 @@ project_dirs = magic_files.map { |file| File.dirname(file) }
 project_dirs.uniq!
 project_dirs.sort
 project_dirs.each do |dir|
-	puts "dir: #{dir}"
+	puts "project: #{dir}"
 	# special case: 'common' directory is not a test
 	if dir != "common/"
 		BUILD_CONFIGURATIONS.each do |configuration|
