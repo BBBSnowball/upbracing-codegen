@@ -65,7 +65,7 @@ def load_pins_from_eagle(eagle_sch_file)
     eagle_sch_file,
     "pins_from_eagle.rb")
   
-  require 'pins_from_eagle'
+  require './pins_from_eagle.rb'
 end
 
 def string_or_regex_matches(pattern, str)
