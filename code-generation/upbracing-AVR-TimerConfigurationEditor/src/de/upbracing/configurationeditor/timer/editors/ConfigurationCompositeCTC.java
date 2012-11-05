@@ -13,6 +13,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.Label;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 /**
  * Content for the settings group in CTC mode.
@@ -44,7 +46,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 									 int style,
 									 TimerConfigurationEditor editor, 
 									 UseCaseViewModel model) {
-		super(parent, expandItem, style, editor, model);
+		super(parent, expandItem, style, editor, model, 220);
 		
 
 		createTopRegisterSelection(getSettingsGroup(), CTCTopValues.values(), "ctcTop");
@@ -153,5 +155,28 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 				}
 			});
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see de.upbracing.configurationeditor.timer.editors.AConfigurationCompositeBase#drawDescriptionImage(org.eclipse.swt.graphics.GC)
+	 */
+	@Override
+	public void drawDescriptionImage(GC gc) {
+		
+		// Period text:
+		String periodString = UseCaseModelValidator.formatPeriod(model.getValidator().getTopPeriod());
+		WaveformDrawHelper.drawPeriodText(gc, periodString, false);
+		
+		// Waveform:
+		WaveformDrawHelper.drawWaveform(gc, false);
+		WaveformDrawHelper.drawHorizontalLine(gc, 80, "MIN " + "(0)");
+		
+		// Channels:
+		WaveformDrawHelper.drawChannels(gc, model);
+		
+		// Output pins:
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel A");	
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel B");
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel C");	
 	}
 }

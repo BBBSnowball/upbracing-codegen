@@ -646,7 +646,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return true;
 	}
 
-	private double calculatePeriodForRegisterValue(int registerValue) {
+	public double calculatePeriodForRegisterValue(int registerValue) {
 		// registerValue = period / timerPeriod
 		//               = period * timerFreq
 		//               = period * (frequency / prescale)
@@ -666,7 +666,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return (double) (registerValue + 1) / timerFreq;
 	}
 	
-	private int getMaximumValue() {
+	public int getMaximumValue() {
 		int maxValue = 255;
 		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65535;
