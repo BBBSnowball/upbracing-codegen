@@ -54,7 +54,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	 * @param model {@link UseCaseViewModel} to databind visual elements to
 	 */
 	public AConfigurationCompositeBase(Composite parent, 
-									   ConfigurationExpandItemComposite expandItem, 
+									   final ConfigurationExpandItemComposite expandItem, 
 									   int style, 
 									   final TimerConfigurationEditor editor, 
 									   UseCaseViewModel model,
@@ -104,12 +104,12 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		d.verticalAlignment = SWT.TOP;
 		d.widthHint = 400;
 		summaryGroup.setLayoutData(d);
-		Label descriptionL = new Label(summaryGroup, SWT.WRAP | SWT.BORDER);
+		Label descriptionL = new Label(summaryGroup, SWT.WRAP);
 		d = new GridData();
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		descriptionL.setLayoutData(d);
-		final Canvas canvas = new Canvas(summaryGroup, SWT.BORDER);
+		final Canvas canvas = new Canvas(summaryGroup, SWT.NONE);
 		canvas.setSize(370, canvasHeight);
 		d = new GridData();
 		d.horizontalAlignment = SWT.CENTER;
@@ -128,6 +128,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			public void propertyChange(PropertyChangeEvent arg0) {
 				summaryGroup.layout();
 				layout();
+				expandItem.updateLayout();
 			}
 			
 		});
@@ -136,6 +137,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			@Override
 			public void paintControl(PaintEvent e) {
 				GC gc = new GC(canvas);
+				gc.setAntialias(SWT.ON);
 				drawDescriptionImage(gc);
 			    gc.dispose();
 			}

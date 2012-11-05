@@ -85,7 +85,7 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 		}
 		
 		// Label for Register Name:
-		Label lbPrefix = new Label(scComp, SWT.BORDER);
+		Label lbPrefix = new Label(scComp, SWT.NONE);
 		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;

@@ -71,7 +71,8 @@ public class WaveformDrawHelper {
 	}
 	
 	public static void drawHorizontalLine(GC gc, int y, String txt, int linecount, boolean alignBottom) {
-	    gc.setLineWidth(2);
+	    gc.setLineWidth(1);
+	    gc.setAntialias(SWT.OFF);
 	    gc.setLineStyle(SWT.LINE_DASH);
 	    gc.setForeground(COLOR_DARK_GRAY);
 	    gc.drawLine(xOffset - 5, 10 + yOffset + y, xOffset + 5 + cycleWidth * 4, 10 + yOffset + y);
@@ -81,6 +82,7 @@ public class WaveformDrawHelper {
 	    } else {
 	    	gc.drawText(txt, 5, 3 + yOffset + y, true);
 	    }
+	    gc.setAntialias(SWT.ON);
 	}
 	
 	public static void drawPeriodText(GC gc, String txt, boolean dualSlope) {
@@ -181,11 +183,13 @@ public class WaveformDrawHelper {
 		for (Double period : periods.descendingSet()) {
 			String value = hm.get(period);
 			Point p;
-			boolean compareInterrupt = model.getCompareInterruptA();
-			if (value.equals("Channel B"))
-				compareInterrupt = model.getCompareInterruptB();
-			if (value.equals("Channel C"))
-				compareInterrupt = model.getCompareInterruptC();
+			boolean compareInterrupt = false;
+			if (value.substring(7).contains("A"))
+				compareInterrupt = model.getCompareInterruptA();
+			if (value.substring(7).contains("B"))
+				compareInterrupt |= model.getCompareInterruptB();
+			if (value.substring(7).contains("C"))
+				compareInterrupt |= model.getCompareInterruptC();
 			if (count > 1) {
 				// Line:
 				WaveformDrawHelper.drawHorizontalLine(gc, counter * span, value + " (" + model.getValidator().calculateRegisterValue(period) +")");

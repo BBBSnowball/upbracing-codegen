@@ -89,7 +89,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		}
 		
 		// Label for Register Name:
-		Label lbPrefix = new Label(scComp, SWT.BORDER);
+		Label lbPrefix = new Label(scComp, SWT.NONE);
 		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
@@ -173,6 +173,11 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		
 		// Channels:
 		WaveformDrawHelper.drawChannels(gc, model);
+		
+		// Interrupts:
+		if (model.getCtcTop().equals(CTCTopValues.OCRnA)
+			|| (model.getValidator().calculateQuantizedPeriod(model.getOcrAPeriod()) == model.getValidator().calculateQuantizedPeriod(model.getIcrPeriod())))
+			WaveformDrawHelper.drawResetInterrupts(gc, model.getCompareInterruptA());
 		
 		// Output pins:
 		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel A");	
