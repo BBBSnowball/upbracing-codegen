@@ -24,7 +24,7 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.1010118548" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.avrdude.1697590945" name="AVRDude" superClass="de.innot.avreclipse.toolchain.options.toolchain.avrdude"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="de.innot.avreclipse.targetplatform.avr.530659085" name="AVR Cross-Target" osList="all" superClass="de.innot.avreclipse.targetplatform.avr"/>
-							<builder arguments="" command="${workspace_loc:/tests}/start-rake" errorParsers="org.eclipse.cdt.core.MakeErrorParser" id="de.innot.avreclipse.target.builder.winavr.base.2032472592" incrementalBuildTarget="build-all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.base"/>
+							<builder arguments="" buildPath="${workspace_loc:/tests}" command="${workspace_loc:/tests}/rake-${HostOsName}" errorParsers="org.eclipse.cdt.core.MakeErrorParser" id="de.innot.avreclipse.target.builder.winavr.base.2032472592" incrementalBuildTarget="build-all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.base"/>
 							<tool errorParsers="org.eclipse.cdt.core.GASErrorParser" id="de.innot.avreclipse.tool.assembler.winavr.base.1515932669" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.base">
 								<inputType id="de.innot.avreclipse.tool.assembler.input.114677237" superClass="de.innot.avreclipse.tool.assembler.input"/>
 							</tool>
