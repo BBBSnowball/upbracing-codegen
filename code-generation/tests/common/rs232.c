@@ -7,6 +7,7 @@
 
 #include "rs232.h"
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 
 // UBRR = F_CPU/16/BAUD - 1
 // 9600 Baud, 8MHz
@@ -21,6 +22,13 @@ void usart_init(void) {
 	UCSRxC = (3<<UCSZx);
 	// enable RX and TX
 	UCSRxB = (1<<RXENx) | (1<<TXENx);
+
+	// The level at reset is sort of undefined and
+	// after the reset it will be set to zero. We
+	// need it at a high level for some time, so the
+	// PC will get the first bit right.
+	// Well, that doesn't solve the problem :-(
+	_delay_us(1000);
 }
 
 void usart_send_str(const char* s) {
