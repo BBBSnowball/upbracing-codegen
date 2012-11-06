@@ -43,6 +43,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	private Group settingsGroup;
 	private Group summaryGroup;
 	private ConfigurationExpandItemComposite expandItem;
+	private Canvas canvas;
 	
 	/**
 	 * Prepares an {@link AConfigurationCompositeBase} object.
@@ -109,7 +110,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		descriptionL.setLayoutData(d);
-		final Canvas canvas = new Canvas(summaryGroup, SWT.BORDER);
+		canvas = new Canvas(summaryGroup, SWT.BORDER);
 		canvas.setSize(370, canvasHeight);
 		d = new GridData();
 		d.horizontalAlignment = SWT.CENTER;
@@ -146,6 +147,26 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			}
 			
 		});
+		
+		redrawDescriptionImageIfPropertyChanges("description");
+	}
+	
+	protected void redrawDescriptionImage() {
+		canvas.redraw();
+	}
+
+	protected void redrawDescriptionImageIfPropertyChanges(String property) {
+		model.addPropertyChangeListener(property, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				redrawDescriptionImage();
+			}
+		});
+	}
+
+	protected void redrawDescriptionImageIfPropertyChanges(String... properties) {
+		for (String property : properties)
+			redrawDescriptionImageIfPropertyChanges(property);
 	}
 	
 	/**
