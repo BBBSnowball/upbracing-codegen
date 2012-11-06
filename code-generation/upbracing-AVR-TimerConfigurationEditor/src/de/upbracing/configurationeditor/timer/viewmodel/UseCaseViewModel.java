@@ -18,10 +18,12 @@ public class UseCaseViewModel extends AViewModelBase {
 	private UseCaseModel model;
 	private ConfigurationViewModel parent;
 	private UseCaseModelValidator validator;
+	private String descriptionCache;
 		
 	// Constructor:
 	public UseCaseViewModel(UseCaseModel m, ConfigurationModel parent) {
 		this.model = m;
+		this.descriptionCache = "";
 		this.validator = new UseCaseModelValidator(parent, m);
 	}
 
@@ -63,55 +65,72 @@ public class UseCaseViewModel extends AViewModelBase {
 	
 	// Routed Model Setters:
 	public void setName(String n) {
-		model.setName(n);
-		changes.firePropertyChange("name", null, null);
-		validator.updateValidation();
-		
-		// Alert the parent, that the name of one of its child has changed
-		// -> this is needed to check for name collisions
-		getParent().updateUseCaseValidation();
+		if (!model.getName().equals(n)) {
+			model.setName(n);
+			changes.firePropertyChange("name", null, null);
+			validator.updateNameValidation();
+			
+			// Alert the parent, that the name of one of its child has changed
+			// -> this is needed to check for name collisions
+			getParent().updateUseCaseNameValidation();
+		}
 	}
 	public void setMode(TimerOperationModes m) {
-		this.model.setMode(m);
-		changes.firePropertyChange("mode", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getMode().equals(m)) {
+			this.model.setMode(m);
+			changes.firePropertyChange("mode", null, null);
+			triggerUpdateView();
+			validator.updateTimerModeValidation();
+		}
 	}
 	public void setTimer(TimerEnum t) {
-		this.model.setTimer(t);
-		changes.firePropertyChange("timer", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getTimer().equals(t)) {
+			this.model.setTimer(t);
+			changes.firePropertyChange("timer", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateTimerModeValidation();
+		}
 	}
 	public void setPrescale(PrescaleFactors p) {
-		this.model.setPrescale(p);
-		changes.firePropertyChange("prescale", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPrescale().equals(p)) {
+			this.model.setPrescale(p);
+			changes.firePropertyChange("prescale", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setIcrPeriod(double f) {
-		this.model.setIcrPeriod(f);
-		changes.firePropertyChange("icrPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getIcrPeriod() != f) {
+			this.model.setIcrPeriod(f);
+			changes.firePropertyChange("icrPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrAPeriod(double f) {
-		this.model.setOcrAPeriod(f);
-		changes.firePropertyChange("ocrAPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrAPeriod() != f) {
+			this.model.setOcrAPeriod(f);
+			changes.firePropertyChange("ocrAPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrBPeriod(double f) {
-		this.model.setOcrBPeriod(f);
-		changes.firePropertyChange("ocrBPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrBPeriod() != f) {
+			this.model.setOcrBPeriod(f);
+			changes.firePropertyChange("ocrBPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrCPeriod(double f) {
-		this.model.setOcrCPeriod(f);
-		changes.firePropertyChange("ocrCPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrCPeriod() != f) {
+			this.model.setOcrCPeriod(f);
+			changes.firePropertyChange("ocrCPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	
 	// Dynamic data-bound View Data:
@@ -233,11 +252,19 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void triggerUpdateView() {
-		changes.firePropertyChange("description", null, null);
+		// Only update description, if text has changed!
+		String newDescString = getDescription();
+		if (!newDescString.equals(descriptionCache)) {
+			changes.firePropertyChange("description", descriptionCache, newDescString);
+			descriptionCache = newDescString;
+		}
+	}
+	
+	public void triggerUpdateChannelsVisibility() {
+		// Trigger new channel names
 		changes.firePropertyChange("icrName", null, null);
 		changes.firePropertyChange("ocrAName", null, null);
-		changes.firePropertyChange("ocrBName", null, null);
-		changes.firePropertyChange("ocrCName", null, null);
+		// Trigger visbilities		
 		changes.firePropertyChange("icrVisibility", null, null);
 		changes.firePropertyChange("ocrChannelsVisibility", null, null);
 	}
@@ -255,9 +282,11 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setOverflowInterrupt(boolean i) {
-		this.model.setOverflowInterrupt(i);
-		changes.firePropertyChange("overflowInterrupt", null, null);
-		triggerUpdateView();
+		if (model.getOverflowInterrupt() != i) {
+			this.model.setOverflowInterrupt(i);
+			changes.firePropertyChange("overflowInterrupt", null, null);
+			triggerUpdateView();
+		}
 	}
 	
 	// CTC
@@ -284,46 +313,61 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setCtcTop(CTCTopValues v) {
-		model.setCtcTop(v);
-		changes.firePropertyChange("ctcTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getCtcTop().equals(v)) {
+			model.setCtcTop(v);
+			changes.firePropertyChange("ctcTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptA(boolean i) {
-		model.setCompareInterruptA(i);
-		changes.firePropertyChange("compareInterruptA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptA() != i) {
+			model.setCompareInterruptA(i);
+			changes.firePropertyChange("compareInterruptA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptB(boolean i) {
-		model.setCompareInterruptB(i);
-		changes.firePropertyChange("compareInterruptB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptB() != i) {	
+			model.setCompareInterruptB(i);
+			changes.firePropertyChange("compareInterruptB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptC(boolean i) {
-		model.setCompareInterruptC(i);
-		changes.firePropertyChange("compareInterruptC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptC() != i) {
+			model.setCompareInterruptC(i);
+			changes.firePropertyChange("compareInterruptC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeA(CTCOutputPinMode m) {
-		model.setComparePinModeA(m);
-		changes.firePropertyChange("comparePinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeA().equals(m)) {
+			model.setComparePinModeA(m);
+			changes.firePropertyChange("comparePinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeB(CTCOutputPinMode m) {
-		model.setComparePinModeB(m);
-		changes.firePropertyChange("comparePinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeB().equals(m)) {	
+			model.setComparePinModeB(m);
+			changes.firePropertyChange("comparePinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeC(CTCOutputPinMode m) {
-		model.setComparePinModeC(m);
-		changes.firePropertyChange("comparePinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeC().equals(m)) {
+			model.setComparePinModeC(m);
+			changes.firePropertyChange("comparePinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 		
 	// PWM
@@ -359,67 +403,88 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setFastPWMTop(PWMTopValues p) {
-		model.setFastPWMTop(p);
-		changes.firePropertyChange("fastPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getFastPWMTop().equals(p)) {
+			model.setFastPWMTop(p);
+			changes.firePropertyChange("fastPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setPhaseCorrectPWMTop(PWMTopValues p) {
-		model.setPhaseCorrectPWMTop(p);
-		changes.firePropertyChange("phaseCorrectPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPhaseCorrectPWMTop().equals(p)) {
+			model.setPhaseCorrectPWMTop(p);
+			changes.firePropertyChange("phaseCorrectPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setPhaseAndFrequencyCorrectPWMTop(PhaseAndFrequencyCorrectPWMTopValues p) {
-		model.setPhaseAndFrequencyCorrectPWMTop(p);
-		changes.firePropertyChange("phaseAndFrequencyCorrectPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPhaseAndFrequencyCorrectPWMTop().equals(p)) {	
+			model.setPhaseAndFrequencyCorrectPWMTop(p);
+			changes.firePropertyChange("phaseAndFrequencyCorrectPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setParent(ConfigurationViewModel parent) {
 		this.parent = parent;
 	}
 	public void setSingleSlopePWMPinModeA(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeA(m);
-		changes.firePropertyChange("singleSlopePWMPinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeA().equals(m)) {
+			model.setSingleSlopePWMPinModeA(m);
+			changes.firePropertyChange("singleSlopePWMPinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setSingleSlopePWMPinModeB(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeB(m);
-		changes.firePropertyChange("singleSlopePWMPinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeB().equals(m)) {
+			model.setSingleSlopePWMPinModeB(m);
+			changes.firePropertyChange("singleSlopePWMPinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}			
 	}
 	public void setSingleSlopePWMPinModeC(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeC(m);
-		changes.firePropertyChange("singleSlopePWMPinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeC().equals(m)) {
+			model.setSingleSlopePWMPinModeC(m);
+			changes.firePropertyChange("singleSlopePWMPinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeA(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeA(m);
-		changes.firePropertyChange("dualSlopePWMPinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeA().equals(m)) { 
+			model.setDualSlopePWMPinModeA(m);
+			changes.firePropertyChange("dualSlopePWMPinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeB(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeB(m);
-		changes.firePropertyChange("dualSlopePWMPinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeB().equals(m)) {
+			model.setDualSlopePWMPinModeB(m);
+			changes.firePropertyChange("dualSlopePWMPinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeC(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeC(m);
-		changes.firePropertyChange("dualSlopePWMPinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeC().equals(m)) {
+			model.setDualSlopePWMPinModeC(m);
+			changes.firePropertyChange("dualSlopePWMPinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	
 	// Private Helper Methods:

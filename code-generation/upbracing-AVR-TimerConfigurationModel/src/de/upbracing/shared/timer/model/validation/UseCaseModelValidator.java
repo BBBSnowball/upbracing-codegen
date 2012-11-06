@@ -58,8 +58,13 @@ public class UseCaseModelValidator extends AValidatorBase {
 	public ValidationResult getIcrPeriodError() {
 		if (!validateMaxPeriod(model.getIcrPeriod()))
 			return ValidationResult.ERROR;
+		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getIcrPeriod());
-		if (quantizedPeriod != model.getIcrPeriod())
+		double error = 100.0 - (model.getIcrPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getIcrPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -78,15 +83,18 @@ public class UseCaseModelValidator extends AValidatorBase {
 		// Check, if greater or equal top value period
 		if (!isOcrATopRegister()) 
 		{
-			// Furthermore, this test is unnecessary, if this is the TOP value register
-			if (model.getOcrAPeriod() > getTopPeriod())
-				return ValidationResult.WARNING;
+			// This test is unnecessary, if this is the TOP value register
+			if (calculateQuantizedPeriod(model.getOcrAPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+				return ValidationResult.ERROR;
 		}
 		
 		
-		// Check, if quantization is needed
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrAPeriod());
-		if (quantizedPeriod != model.getOcrAPeriod())
+		double error = 100.0 - (model.getOcrAPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrAPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -102,11 +110,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return ValidationResult.ERROR;
 		
 		// Check, if greater or equal top value period
-		if (model.getOcrBPeriod() > getTopPeriod())
-			return ValidationResult.WARNING;
+		if (calculateQuantizedPeriod(model.getOcrBPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+			return ValidationResult.ERROR;
 		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrBPeriod());
-		if (quantizedPeriod != model.getOcrBPeriod())
+		double error = 100.0 - (model.getOcrBPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrBPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -122,11 +134,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return ValidationResult.ERROR;
 		
 		// Check, if greater or equal top value period
-		if (model.getOcrCPeriod() > getTopPeriod())
-			return ValidationResult.WARNING;
+		if (calculateQuantizedPeriod(model.getOcrCPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+			return ValidationResult.ERROR;
 		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrCPeriod());
-		if (quantizedPeriod != model.getOcrCPeriod())
+		double error = 100.0 - (model.getOcrCPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrCPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -318,9 +334,6 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrAPeriodErrorText() {
-		if (getOcrAPeriodError() == ValidationResult.ERROR)
-			return getPeriodTooHighErrorText(model.getOcrAPeriod());
-		
 		// Check, if greater or equal top value period
 		if (!isOcrATopRegister()) 
 		{
@@ -328,6 +341,9 @@ public class UseCaseModelValidator extends AValidatorBase {
 			if (model.getOcrAPeriod() > getTopPeriod())
 				return getPeriodAboveTopValueWarningText(model.getOcrAPeriod());
 		}
+		
+		if (getOcrAPeriodError() == ValidationResult.ERROR)
+			return getPeriodTooHighErrorText(model.getOcrAPeriod());
 		
 		if (getOcrAPeriodError() == ValidationResult.WARNING) 
 		{
@@ -341,16 +357,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrBPeriodErrorText() {
-		if (getOcrBPeriodError() == ValidationResult.ERROR)
-			return getPeriodTooHighErrorText(model.getOcrBPeriod());
+		// Check, if greater or equal top value period
+		if (model.getOcrBPeriod() > getTopPeriod())
+			return getPeriodAboveTopValueWarningText(model.getOcrBPeriod());
 		if (getOcrBPeriodError() == ValidationResult.WARNING)
 		{
-			// Check, if greater or equal top value period
-			if (model.getOcrBPeriod() > getTopPeriod())
-				return getPeriodAboveTopValueWarningText(model.getOcrBPeriod());
-			
 			return "The desired period " + formatPeriod(model.getOcrBPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrBPeriod())) + ".";
 		}
+		if (getOcrBPeriodError() == ValidationResult.ERROR)
+			return getPeriodTooHighErrorText(model.getOcrBPeriod());
 		return "";
 	}
 	
@@ -359,13 +374,13 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrCPeriodErrorText() {
+		// Check, if greater or equal top value period
+		if (model.getOcrCPeriod() > getTopPeriod())
+			return getPeriodAboveTopValueWarningText(model.getOcrCPeriod());
 		if (getOcrCPeriodError() == ValidationResult.ERROR)
 			return getPeriodTooHighErrorText(model.getOcrCPeriod());
 		if (getOcrCPeriodError() == ValidationResult.WARNING)
 		{
-			// Check, if greater or equal top value period
-			if (model.getOcrCPeriod() > getTopPeriod())
-				return getPeriodAboveTopValueWarningText(model.getOcrCPeriod());
 			return "The desired period " + formatPeriod(model.getOcrCPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrCPeriod())) + ".";
 		}
 		return "";
@@ -497,6 +512,29 @@ public class UseCaseModelValidator extends AValidatorBase {
 		changes.firePropertyChange("singleSlopePWMPinModeAErrorText", null, null);
 		changes.firePropertyChange("dualSlopePWMPinModeAError", null, null);
 		changes.firePropertyChange("dualSlopePWMPinModeAErrorText", null, null);
+	}
+	
+	public void updateNameValidation() {
+		changes.firePropertyChange("nameError", null, null);
+		changes.firePropertyChange("nameErrorText", null, null);
+	}
+	
+	public void updateTimerModeValidation() {
+		changes.firePropertyChange("modeError", null, null);
+		changes.firePropertyChange("modeErrorText", null, null);
+		changes.firePropertyChange("timerError", null, null);
+		changes.firePropertyChange("timerErrorText", null, null);
+	}
+	
+	public void updatePeriodValidation() {
+		changes.firePropertyChange("icrPeriodError", null, null);
+		changes.firePropertyChange("icrPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrAPeriodError", null, null);
+		changes.firePropertyChange("ocrAPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrBPeriodError", null, null);
+		changes.firePropertyChange("ocrBPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrCPeriodError", null, null);
+		changes.firePropertyChange("ocrCPeriodErrorText", null, null);
 	}
 	
 	/**

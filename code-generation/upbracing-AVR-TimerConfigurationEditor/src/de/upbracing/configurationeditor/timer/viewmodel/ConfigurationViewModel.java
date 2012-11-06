@@ -44,16 +44,31 @@ public class ConfigurationViewModel extends AViewModelBase {
 	public int getFrequency() {
 		return model.getFrequency();
 	}
+	public int getErrorTolerance() {
+		return model.getErrorTolerance();
+	}
 	
 	// Routed Model Setters:
 	public void setFrequency(int f) {
-		model.setFrequency(f);
-		changes.firePropertyChange("frequency", null, null);
-		for (UseCaseViewModel vm: configurations) {
-			vm.triggerUpdateView();
-			vm.getValidator().updateValidation();
+		if (model.getFrequency() != f) {
+			model.setFrequency(f);
+			changes.firePropertyChange("frequency", null, null);
+			for (UseCaseViewModel vm: configurations) {
+				vm.triggerUpdateView();
+				vm.getValidator().updatePeriodValidation();
+			}
+			this.validator.updateValidation();
 		}
-		this.validator.updateValidation();
+	}
+	public void setErrorTolerance(int t) {
+		if (model.getErrorTolerance() != t) {
+			model.setErrorTolerance(t);
+			changes.firePropertyChange("errorTolerance", null, null);
+			for (UseCaseViewModel vm: configurations) {
+				vm.triggerUpdateView();
+				vm.getValidator().updatePeriodValidation();
+			}
+		}
 	}
 	
 	private ArrayList<UseCaseViewModel> configurations = new ArrayList<UseCaseViewModel>();
@@ -109,9 +124,9 @@ public class ConfigurationViewModel extends AViewModelBase {
 		model.Save(path);
 	}
 	
-	public void updateUseCaseValidation() {
+	public void updateUseCaseNameValidation() {
 		for (UseCaseViewModel m: configurations) {
-			m.getValidator().updateValidation();
+			m.getValidator().updateNameValidation();
 		}
 	}
 }

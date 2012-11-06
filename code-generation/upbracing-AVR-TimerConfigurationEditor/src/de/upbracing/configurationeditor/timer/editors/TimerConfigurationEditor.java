@@ -178,7 +178,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		
 		// General Settings Group
 		Group gs = new Group(arg0, SWT.NONE);
-		GridLayout layout = new GridLayout(3, false);
+		GridLayout layout = new GridLayout(2, false);
 		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = 5;
 		layout.verticalSpacing = 5;
 		gs.setLayout(layout);
@@ -190,6 +190,15 @@ public class TimerConfigurationEditor extends EditorPart {
 		freqText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
+				setDirty(true);
+			}
+		});
+		Label errorToleranceLabel = new Label(gs, SWT.NONE);
+		errorToleranceLabel.setText("Error tolerance:");
+		TextValidationComposite text2 = new TextValidationComposite(gs, SWT.NONE, model, "errorTolerance", null, "%", Integer.class);
+		text2.getTextBox().addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
 				setDirty(true);
 			}
 		});

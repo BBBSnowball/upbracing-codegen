@@ -16,6 +16,7 @@ public class ConfigurationModel {
 	
 	// Private fields:
 	private int frequency;								// Each CPU runs at a specific frequency :)
+	private int errorTolerance;							// Quantization error percentage tolerated
 	private ArrayList<UseCaseModel>	configurations;		// Each ConfigurationModel has an arbitrary
 														// number of UseCaseConfigurations
 	// Constructor:
@@ -24,6 +25,7 @@ public class ConfigurationModel {
 	 */
 	public ConfigurationModel() {
 		frequency = 8000000;
+		errorTolerance = 5;
 		configurations = new ArrayList<UseCaseModel>();
 	}
 	
@@ -34,6 +36,13 @@ public class ConfigurationModel {
 	 */
 	public int getFrequency() {
 		return this.frequency;
+	}
+	/**
+	 * Gets the configured error tolerance in percent.
+	 * @return the error tolerance in percent.
+	 */
+	public int getErrorTolerance() {
+		return this.errorTolerance;
 	}
 	/**
 	 * Gets the list of {@link UseCaseModel} objects.
@@ -51,6 +60,13 @@ public class ConfigurationModel {
 	 */
 	public void setFrequency(int f) {
 		this.frequency = f;
+	}
+	/**
+	 * Sets the error tolerance in percent.
+	 * @param t the new error tolerance setting.
+	 */
+	public void setErrorTolerance(int t) {
+		this.errorTolerance = t;
 	}
 	/**
 	 * Changes the list of {@link UseCaseModel} objects.
