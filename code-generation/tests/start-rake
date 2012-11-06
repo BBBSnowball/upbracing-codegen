@@ -1,3 +1,0 @@
-#!/bin/sh
-CODE_GEN_DIR="../upbracing-AVR-CodeGenerator"
-java -cp "$CODE_GEN_DIR/libs/jruby-complete-1.7.0.jar:$CODE_GEN_DIR/libs/ruby-gems.jar:." org.jruby.Main -S rake "$@"

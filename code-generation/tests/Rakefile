@@ -103,42 +103,6 @@ def unique_task_id(prefix)
 end
 
 
-$caRTOS_builders = {}
-def build_caRTOS(features_header_file, configuration = "Debug")
-	#TODO make this a special kind of task and implement needed?
-	task unique_task_id("caRTOS-lib") => features_header_file do |t|
-		md5 = md5sum(features_header_file)
-		target = File.join(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
-		cartos_build_dir = File.join(CARTOS_DIR, configuration)
-		# rebuilt, if  library doesn't exist or any input file is newer
-		# NOTE We cannot let 'make' decide because 'make' wouldn't rebuilt
-		#      any file that has been compiled for a newer, totally different features
-		#      file, if we keep the mtime of the features header.
-		#      Therefore, we have to force a rebuild by touching the features header.
-		os_deps = FileList[ ["*.c", "*.h", "*.inc"].map { |ext| File.join(CARTOS_DIR, "**", ext) } ]
-		unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file) \
-				and os_deps.all? { |dep| File.mtime(target) >= File.mtime(dep) }
-			# rebuild
-
-			# we cannot generate the Makefile - Eclipse has to do that for us
-			unless File.exists? File.join(cartos_build_dir, "makefile")
-				raise "No Makefile found. Please use Eclipse to build caRTOS with configuration #{configuration} and try again."
-			end
-
-			# copy features header to OS
-			features_header_for_build = File.join(CARTOS_DIR, "config", "Os_cfg_features.h")
-			cp features_header_file, features_header_for_build
-
-			# touch features header to force rebuild
-			touch features_header_for_build
-
-			# build
-			sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
-		end
-	end
-end
-
-
 def any_is_newer(old_files, new_files)
 	new_files.each do |new_file|
 		return true unless File.exists?(new_file)
@@ -152,43 +116,6 @@ def any_is_newer(old_files, new_files)
 	return false
 end
 
-$generator_tasks = {}
-def generator_task(config_file)
-	# use cached value, if it exists
-	return $generator_tasks[config_file] if $generator_tasks[config_file]
-
-	dir = File.dirname(config_file)
-
-	target_dir = File.join(dir, TARGET_DIR)
-
-	code_generator = "'#{CODE_GENERATOR_BIN}' -C '#{target_dir}' '#{config_file}'"
-
-	# dependencies
-	dependencies = `#{code_generator} -D`.lines.map {|x| x.strip}.to_a
-	dependent_tasks = dependencies.map { |dep| file dep }
-
-	# generated files
-	generated_files = `#{code_generator} -w`.lines.map {|x| x.strip}.to_a
-
-	gen_task = many_files "generate for #{config_file}", generated_files
-
-	generated_files.each do |gen|
-		file gen => gen_task
-	end
-
-	# generation task
-	gen_task.enhance dependent_tasks do
-		#if any_is_newer(dependencies, generated_files)
-			sh "cd '#{dir}' ; '#{File.expand_path CODE_GENERATOR_BIN}' -C '#{TARGET_DIR}' '#{File.basename config_file}'"
-		#end
-	end
-
-	task :generate_all => gen_task
-
-	$generator_tasks[config_file] = gen_task
-
-	return gen_task
-end
 
 # task generate_all tests all of them
 task :generate_all do end
@@ -197,312 +124,12 @@ task :generate_all do end
 task "generate-all" => :generate_all do end
 
 
-def find_sources(dir)
-	FileList.new(File.join(dir, "**", "*.c"))
-end
-
-def compile(source_dir, source_file, target_dir, configuration)
-	target_file = source_file.sub(/(\.[^.]+)?$/, ".o")
-
-	target = File.join(target_dir, target_file)
-	source = File.join(source_dir, source_file)
-
-	# -MMD means only user header files
-	# -MF is the output file
-	# -MP create phony targets for the header files - we don't want that
-	# -MT is the name of the target - we don't really care
-	dependency_file = File.join(target_dir, target_file + ".d")
-	make_dependencies_cflags = "-MMD -MF'#{dependency_file}' -MTtarget"
-
-	cflags = CFLAGS[configuration] + " " + make_dependencies_cflags
-
-	# determine real target dir
-	# This can be a subdirectory of target_dir because source_file
-	# (and therefore target_file) can contain directory components.
-	real_target_dir = File.dirname(target)
-	directory real_target_dir
-
-	t = file target => [source, file(real_target_dir)] do
-		# only compile, put output in .o file
-		sh "'#{CC}' #{cflags} -c -o '#{target}' '#{source}'"
-	end
-
-	# if the dependency file exists, we read its contents
-	if File.exists? dependency_file
-		# read file contents
-		x = File.read(dependency_file)
-		# unwrap lines (backslash can escape a newline)
-		x = x.gsub("\\\n", "")
-		# get first line
-		x = x.lines.first.strip
-		# remove target name (before colon)
-		x = x.sub(/^[^:]*:\s*/, "")
-		# split on spaces
-		x = x.split(/\s+/)
-		# add dependencies to compile task
-		#puts "dependencies for #{target}: #{x.inspect}"
-		t.enhance x
-	else
-		# we don't know the dependencies -> always compile
-		force = task unique_task_id("force") { }
-		t.enhance [force]
-	end
-
-	return t
-end
-
-def link_elf(source_dir, target_dir, name, configuration, objs, libs)
-	map_file = File.join(target_dir, "#{name}.map")
-	target = File.join(target_dir, "#{name}.elf")
-	objs_str = objs.map {|x| "'#{x}'"}.join(" ")
-	file target => objs do
-		libs = libs.call() if libs.is_a? Proc
-		libs_str = libs.map {|x| "-l'#{x}'"}.join(" ")
-		sh "'#{LD}' '-Wl,-Map,#{map_file}' -L'#{File.join(CARTOS_DIR, configuration)}' #{LDFLAGS[configuration]} -o '#{target}' #{objs_str} #{libs_str}"
-	end
-end
-
-def test_name_from_source_dir(source_dir)
-	name = File.basename(source_dir)
-	name.sub(/^[0-9]+[-_ ]?/, "")
-end
-
-def build(source_dir, configuration)
-	#TODO read config file, if present
-
-	# output name is the name of the directory
-	name = test_name_from_source_dir(source_dir)
-
-	# determine target directory
-	target_dir = File.join(source_dir, "bin", configuration)
-
-	# create generator task, if we have a config.rb file
-	generator_config = File.join(source_dir, "config.rb")
-	features_header_file = nil
-	generated_sources = []
-	if File.exists? generator_config
-		# create generator task
-		#TODO put generated files in bin folder?
-		gen_task = generator_task(generator_config)
-
-		# remember generated source files because we have to compile them
-		generated_sources = gen_task.dependent_files.select { |x| x =~ /\.c$/ }
-
-		# create caRTOS library builder task
-		# (uses generated features header)
-		features_header_file = File.join(source_dir, "gen", "Os_cfg_features.h")
-	end
-
-	# If we don't generate any files, we might still have a features header file.
-	if !features_header_file
-		maybe_features_header_file = File.join(source_dir, "Os_cfg_features.h")
-		features_header_file = maybe_features_header_file if File.exists? maybe_features_header_file
-	end
-
-	# find all source files (*.c)
-	sources = find_sources(source_dir) + generated_sources
-	# remove duplicates (generated sources will be found, if they already exist)
-	sources.uniq!
-	# strip prefix from sources
-	sources = sources.map do |source|
-		if source.start_with? source_dir
-			source = source[source_dir.length..-1]
-			source = source[1..-1] if source.start_with? "/"
-		end
-		source
-	end
-
-	# create compile tasks
-	objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
-
-	# The features header file might be regenerated, so we cannot know the MD5
-	# right now. Instead, we supply a lambda that will be evaluated right before
-	# the linker is called. We cache the result, so we won't have to calculate it
-	# more than once.
-	libs = nil
-	libs_future = lambda do
-		unless libs
-			if features_header_file
-				features_md5 = md5sum(features_header_file)
-				libs = ["caRtos-#{features_md5}"]
-			else
-				libs = []
-			end
-		end
-		libs
-	end
-
-	# create linker task
-	elf = link_elf(source_dir, target_dir, name, configuration, objs, libs_future)
-
-	# make sure we build the caRTOS library before linking the application
-	# (only if we have a features header file)
-	if features_header_file
-		cartos_lib_task = build_caRTOS(features_header_file, configuration)
-
-		# add dependency to linker task
-		elf.enhance [cartos_lib_task]
-	end
-
-	# create extended listing
-	# (not enforced by dependencies)
-	lss_file = File.join(target_dir, "#{name}.lss")
-	file lss_file => elf do
-		sh "'#{OBJDUMP}' -h -S '#{elf.name}'  >'#{lss_file}'"
-	end
-
-	# create HEX task
-	flash_hex_file = File.join(target_dir, "#{name}.hex")
-	file flash_hex_file => elf do
-		sh "'#{OBJCOPY}' -R .eeprom -O ihex '#{elf.name}' '#{flash_hex_file}'"
-	end
-
-	# create EEPROM HEX task
-	# (not enforced by dependencies)
-	eeprom_hex_file = File.join(target_dir, "#{name}.eep")
-	file eeprom_hex_file => elf do
-		flags = "-j .eeprom --no-change-warnings --change-section-lma .eeprom=0 -O ihex"
-		sh "'#{OBJCOPY}' #{flags} '#{elf.name}' '#{eeprom_hex_file}'"
-	end
-
-	# print size
-	task "#{name}-size" => elf do
-		sh "'#{OBJSIZE}' --format=avr --mcu=at90can128 '#{elf.name}'"
-	end
-
-	build_task = task("build-#{name}-#{configuration}" => flash_hex_file) {}
-
-	# make sure that the hex file is generated, if someone calls build-all
-	task :build_all => build_task
-
-	# return hex file task
-	flash_hex_file
-end
-
 # task build_all builds all hex files (through dependencies)
 task :build_all do end
 
 # make build-all an alias for build_all (only on the command line!)
 task "build-all" => :build_all do end
 
-
-def erase_processor
-	sh "#{AVRDUDE} -e"
-end
-
-def flash_processor_action(build_dir, name, parts = [:flash])
-	parts = [parts] if parts.is_a? String or parts.is_a? Symbol
-	return { :dependencies => [], :action => lambda {}, :cmdline => "" } if parts.empty?
-
-	dependencies = []
-	commands = ""
-	parts.each do |part|
-		part = part.intern if part.is_a? String
-		type = part.to_s
-		case part
-		when :flash, :application
-			ext = "hex"
-		when :eeprom
-			ext = "eep"
-		when :efuse, :lfuse, :hfuse, /^fuse[0-9]+$/, :calibration
-			ext = part.to_s
-		else
-			raise "Unsupported type of memory: #{part}"
-		end
-
-		file = File.join(build_dir, "#{name}.#{ext}")
-		dependencies << file
-		commands += " '-U#{type}:w:#{File.expand_path(file)}:a'"
-	end
-
-	cmdline = AVRDUDE+commands
-
-	{ :dependencies => dependencies, :action => lambda { sh cmdline }, :cmdline => cmdline }
-end
-
-Ruby = Java::org::jruby::Ruby
-
-#NOTE The script should be executed in an isolated environment, but
-#     unfortunately 
-def run_jruby_script(script_filename, global_variables = {})
-	engine = Ruby.newInstance
-
-	global_variables.each do |key, value|
-		#TODO support methods
-		if key =~ /^[A-Z]/
-			engine.defineGlobalConstant(key, value)
-		elsif value.is_a? Method
-			# we have to get the DynamicMethod object which
-			# is stored in the private field method
-			cls = Java::java::lang::Class.for_name("org.jruby.RubyMethod")
-			field = cls.getDeclaredField("method")
-			field.setAccessible true
-			method = field.get(value)
-
-			# We have to add it to some class or module. Here we are
-			# using Kernel.
-			#TODO I would like to add it to the main object, but I don't
-			#     know how to get that object.
-			target = engine.kernel
-
-			# now we can set this on the Ruby instance
-			# Unfortunately, we cannot access the addMethod method
-			# directly, so we use reflection.
-			mod_cls = Java::java::lang::Class.for_name("org.jruby.RubyModule")
-			add_method = mod_cls.declared_methods.select {|x| x.name == "addMethod"}.first
-			add_method.invoke(target, key.to_s, method)
-		else
-			engine.defineReadonlyVariable(key, value)
-		end
-	end
-
-	# load some helpers
-	engine.executeScript(File.read("test-helpers.rb"), "test-helpers.rb")
-
-	# change to directory of the script file
-	engine.current_directory = File.expand_path(File.dirname(script_filename))
-
-	# execute test script
-	engine.executeScript(File.read(script_filename), script_filename)
-end
-
-def run_test(dir, configuration)
-	name = test_name_from_source_dir dir
-
-	build_dir = File.join(dir, "bin", configuration)
-
-	# get dependencies and commandline for flashing program to processor
-	flash_info = flash_processor_action(build_dir, name)
-	flash_cmdline = flash_info[:cmdline]
-
-	# write flash command line to temporary file
-	#flash_cmdline_file = Tempfile.new("flashcmd")
-	#open(flash_cmdline_file, "w") do |f|
-	#	f.write(flash_cmdline)
-	#end
-
-	test = task "test-#{name}-#{configuration}" => flash_info[:dependencies] do
-		puts "Running test '#{dir}' (#{configuration})..."
-
-		begin
-			run_jruby_script File.join(dir, "run-test.rb"), \
-				:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
-				"$flash_cmdline" => flash_cmdline
-				#:erase_processor2 => method(:erase_processor), \
-				#:sh => method(:sh)
-		rescue Exception => ex
-			puts "Exception in test script #{File.join(dir, "run-test.rb")}:"
-			puts ex.message
-			puts ex.backtrace.join("\n")
-		end
-	end
-
-	#TODO How can we enforce the order? Does rake honour the order that
-	#     we use for adding the dependencies?
-	task :test_all => test
-
-	#flash_cmdline_file.delete
-end
 
 # task test_all tests all of them
 task :test_all do end
@@ -515,30 +142,619 @@ task "test-all" => :test_all do end
 task :default => :build_all
 
 
-# add tasks for all directories which have certain files
-magic_files = FileList["**/run-test.rb", "**/config.rb", "**/main.c", "**/main-*.c"]
-project_dirs = magic_files.map { |file| File.dirname(file) }
-project_dirs.uniq!
-project_dirs.sort
-project_dirs.each do |dir|
-	puts "project: #{dir}"
-	# special case: 'common' directory is not a test
-	if dir != "common/"
-		BUILD_CONFIGURATIONS.each do |configuration|
-			# build hex file
-			build(dir, configuration)
+class Project
+	include Rake::DSL
+
+	## build caRTOS library
+
+	def build_caRTOS(features_header_file, configuration = "Debug")
+		#TODO make this a special kind of task and implement needed?
+		task unique_task_id("caRTOS-lib") => features_header_file do |t|
+			md5 = md5sum(features_header_file)
+			target = File.join(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
+			cartos_build_dir = File.join(CARTOS_DIR, configuration)
+			# rebuilt, if  library doesn't exist or any input file is newer
+			# NOTE We cannot let 'make' decide because 'make' wouldn't rebuilt
+			#      any file that has been compiled for a newer, totally different features
+			#      file, if we keep the mtime of the features header.
+			#      Therefore, we have to force a rebuild by touching the features header.
+			os_deps = FileList[ ["*.c", "*.h", "*.inc"].map { |ext| File.join(CARTOS_DIR, "**", ext) } ]
+			unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file) \
+					and os_deps.all? { |dep| File.mtime(target) >= File.mtime(dep) }
+				# rebuild
+
+				# we cannot generate the Makefile - Eclipse has to do that for us
+				unless File.exists? File.join(cartos_build_dir, "makefile")
+					raise "No Makefile found. Please use Eclipse to build caRTOS with configuration #{configuration} and try again."
+				end
+
+				# copy features header to OS
+				features_header_for_build = File.join(CARTOS_DIR, "config", "Os_cfg_features.h")
+				cp features_header_file, features_header_for_build
+
+				# touch features header to force rebuild
+				touch features_header_for_build
+
+				# build
+				sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
+			end
+		end
+	end
+
+
+	## run generators
+
+	# config_file => task
+	@@generator_task_cache = {}
+
+	def generator_task(config_file)
+		# use cached value, if it exists
+		return @@generator_task_cache[config_file] if @@generator_task_cache[config_file]
+
+		gen_task = create_generator_task(config_file)
+
+		@@generator_task_cache[config_file] = gen_task
+
+		task :generate_all => gen_task
+
+		return gen_task
+	end
+
+
+	def code_generator_target_dir(config_file)
+		dir = File.dirname(config_file)
+
+		File.join(dir, TARGET_DIR)
+	end
+
+	def code_generator_cmdline_for_dependencies(target_dir, config_file)
+		"'#{CODE_GENERATOR_BIN}' -C '#{target_dir}' '#{config_file}'"
+	end
+
+	def _stripped_lines(string)
+		string.lines.map {|x| x.strip}.to_a
+	end
+
+	def relative_path(path, parent_dir)
+		path2 = File.expand_path path
+		parent2 = File.expand_path parent_dir
+		if path2.start_with? parent2
+			path2 = path2[parent2.length..-1]
+			path2 = path2[1..-1] if path2.start_with? "/" or path2.start_with? "\\"
+			return path2
+		else
+			return path
+		end
+	end
+
+	def do_generate(dir, target_dir, config_file)
+		target_dir = relative_path target_dir, dir
+		config_file = relative_path config_file, dir
+
+		sh "cd '#{dir}' ; '#{File.expand_path CODE_GENERATOR_BIN}' -C '#{target_dir}' '#{config_file}'"
+	end
+
+	def create_generator_task(config_file)
+		dir = File.dirname(config_file)
+
+		target_dir = code_generator_target_dir(config_file)
+
+		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
+
+		# dependencies
+		dependencies = _stripped_lines(`#{code_generator} -D`)
+		dependent_tasks = dependencies.map { |dep| file dep }
+
+		# generated files
+		generated_files = _stripped_lines(`#{code_generator} -w`)
+
+		gen_task = many_files "generate for #{config_file}", generated_files
+
+		generated_files.each do |gen|
+			file gen => gen_task
 		end
 
-		TEST_CONFIGURATIONS.each do |configuration|
+		# generation task
+		gen_task.enhance dependent_tasks do
+			#if any_is_newer(dependencies, generated_files)
+				do_generate(dir, target_dir, config_file)
+			#end
+		end
+
+		return gen_task
+	end
+
+
+	# compile and link
+
+	def find_sources(dir)
+		FileList.new(File.join(dir, "**", "*.c"))
+	end
+
+	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
+		[]
+	end
+
+	def cflags(source_dir, source_file, target_dir, configuration)
+		dirs = additional_include_dirs(source_dir, source_file, target_dir, configuration)
+		dir_flags = dirs.map { |dir|
+			if dir.start_with? "#/"
+				rel_path = dir[2..-1]
+			elsif dir.starts_with? "/"
+				rel_path = dir
+			else
+				rel_path = File.join(source_dir, rel_path)
+			end
+			" '-I#{rel_path}'"
+		}.join
+		#puts dirs.inspect
+		#puts dir_flags
+		#puts CFLAGS[configuration]
+		CFLAGS[configuration] + dir_flags
+	end
+
+	def do_compile(cflags, source, target)
+		# only compile, put output in .o file
+		sh "'#{CC}' #{cflags} -c -o '#{target}' '#{source}'"
+	end
+
+	def compile(source_dir, source_file, target_dir, configuration)
+		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "")
+
+		target = File.join(target_dir, target_file)
+		if source_file.start_with? "#/"
+			source = source_file[2..-1]
+		else
+			source = File.join(source_dir, source_file)
+		end
+
+		# -MMD means only user header files
+		# -MF is the output file
+		# -MP create phony targets for the header files - we don't want that
+		# -MT is the name of the target - we don't really care
+		dependency_file = File.join(target_dir, target_file + ".d")
+		make_dependencies_cflags = "-MMD -MF'#{dependency_file}' -MTtarget"
+
+		cflags = cflags(source_dir, source_file, target_dir, configuration) + " " + make_dependencies_cflags
+
+		# determine real target dir
+		# This can be a subdirectory of target_dir because source_file
+		# (and therefore target_file) can contain directory components.
+		real_target_dir = File.dirname(target)
+		directory real_target_dir
+
+		t = file target => [source, file(real_target_dir)] do
+			do_compile(cflags, source, target)
+		end
+
+		# if the dependency file exists, we read its contents
+		if File.exists? dependency_file
+			# read file contents
+			x = File.read(dependency_file)
+			# unwrap lines (backslash can escape a newline)
+			x = x.gsub("\\\n", "")
+			# get first line
+			x = x.lines.first.strip
+			# remove target name (before colon)
+			x = x.sub(/^[^:]*:\s*/, "")
+			# split on spaces
+			x = x.split(/\s+/)
+			# add dependencies to compile task
+			#puts "dependencies for #{target}: #{x.inspect}"
+			t.enhance x
+		else
+			# we don't know the dependencies -> always compile
+			force = task unique_task_id("force") { }
+			t.enhance [force]
+		end
+
+		return t
+	end
+
+	def link_elf(source_dir, target_dir, name, configuration, objs, libs)
+		map_file = File.join(target_dir, "#{name}.map")
+		target = File.join(target_dir, "#{name}.elf")
+		objs_str = objs.map {|x| "'#{x}'"}.join(" ")
+		file target => objs do
+			libs = libs.call() if libs.is_a? Proc
+			libs_str = libs.map {|x| "-l'#{x}'"}.join(" ")
+			sh "'#{LD}' '-Wl,-Map,#{map_file}' -L'#{File.join(CARTOS_DIR, configuration)}' #{LDFLAGS[configuration]} -o '#{target}' #{objs_str} #{libs_str}"
+		end
+	end
+
+	def name_from_source_dir(source_dir)
+		name = File.basename(source_dir)
+		name.sub(/^[0-9]+[-_ ]?/, "")
+	end
+
+	def get_target_dir(source_dir, configuration)
+		File.join(source_dir, "bin", configuration)
+	end
+
+	def get_generator_config(source_dir, configuration)
+		File.join(source_dir, "config.rb")
+	end
+
+	def get_features_header_file(source_dir, configuration)
+		File.join(source_dir, "Os_cfg_features.h")
+	end
+
+	def get_generated_sources(source_dir, generator_config, gen_task)
+		gen_task.dependent_files.select { |x| x =~ /\.c$/ }
+	end
+
+	def get_generated_features_header_file(source_dir, generator_config, gen_task, generated_sources)
+		#TODO
+		File.join(source_dir, "gen", "Os_cfg_features.h")
+	end
+
+	def get_libs(features_header_file, source_dir, name, configuration, sources)
+		if features_header_file
+			# The features header file might be regenerated, so we cannot know the MD5
+			# right now. Instead, we supply a lambda that will be evaluated right before
+			# the linker is called. We cache the result, so we won't have to calculate it
+			# more than once.
+			libs = nil
+			return lambda do
+				unless libs
+					if features_header_file and File.exists? features_header_file
+						features_md5 = md5sum(features_header_file)
+						libs = ["caRtos-#{features_md5}"]
+					else
+						libs = []
+					end
+				end
+				libs
+			end
+		else
+			return []
+		end
+	end
+
+	def create_lss_task(source_dir, target_dir, name, elf, configuration)
+		# create extended listing
+		# (not enforced by dependencies)
+		lss_file = File.join(target_dir, "#{name}.lss")
+		file lss_file => elf do
+			sh "'#{OBJDUMP}' -h -S '#{elf.name}'  >'#{lss_file}'"
+		end
+	end
+
+	def create_hex_task(source_dir, target_dir, name, elf, configuration)
+		# create HEX task
+		flash_hex_file = File.join(target_dir, "#{name}.hex")
+		file flash_hex_file => elf do
+			sh "'#{OBJCOPY}' -R .eeprom -O ihex '#{elf.name}' '#{flash_hex_file}'"
+		end
+	end
+
+	def create_eeprom_task(source_dir, target_dir, name, elf, configuration)
+		# create EEPROM HEX task
+		# (not enforced by dependencies)
+		eeprom_hex_file = File.join(target_dir, "#{name}.eep")
+		file eeprom_hex_file => elf do
+			flags = "-j .eeprom --no-change-warnings --change-section-lma .eeprom=0 -O ihex"
+			sh "'#{OBJCOPY}' #{flags} '#{elf.name}' '#{eeprom_hex_file}'"
+		end
+	end
+
+	def create_size_task(source_dir, target_dir, name, elf, configuration)
+		# print size
+		task "#{name}-size-#{configuration}" => elf do
+			sh "'#{OBJSIZE}' --format=avr --mcu=at90can128 '#{elf.name}'"
+		end
+	end
+
+	def additional_source_files(source_dir, name, configuration)
+		[]
+	end
+
+	def build(source_dir, configuration)
+		# output name is the name of the directory
+		name = name_from_source_dir(source_dir)
+
+		# determine target directory
+		target_dir = get_target_dir(source_dir, configuration)
+
+		# create generator task, if we have a config.rb file
+		generator_config = get_generator_config(source_dir, configuration)
+		features_header_file = nil
+		generated_sources = []
+		if generator_config and File.exists? generator_config
+			# create generator task
+			#TODO put generated files in bin folder?
+			gen_task = generator_task(generator_config)
+
+			# remember generated source files because we have to compile them
+			generated_sources = get_generated_sources(source_dir, generator_config, gen_task)
+
+			# create caRTOS library builder task
+			# (uses generated features header)
+			features_header_file = get_generated_features_header_file(source_dir, generator_config, gen_task, generated_sources)
+		end
+
+		# If we don't generate any files, we might still have a features header file.
+		if !features_header_file
+			maybe_features_header_file = get_features_header_file(source_dir, configuration)
+			features_header_file = maybe_features_header_file if maybe_features_header_file and File.exists? maybe_features_header_file
+		end
+
+		# find all source files (*.c)
+		sources = find_sources(source_dir)
+		sources += generated_sources
+		sources += additional_source_files(source_dir, name, configuration)
+		# strip prefix from sources
+		sources = sources.map { |source| relative_path source, source_dir }
+		# remove duplicates (generated sources will be found, if they already exist)
+		sources.uniq!
+
+		# create compile tasks
+		objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
+
+		# get libraries (probably a future value (Proc))
+		libs = get_libs(features_header_file, source_dir, name, configuration, sources)
+
+		# create linker task
+		elf = link_elf(source_dir, target_dir, name, configuration, objs, libs)
+
+		# make sure we build the caRTOS library before linking the application
+		# (only if we have a features header file)
+		if features_header_file
+			cartos_lib_task = build_caRTOS(features_header_file, configuration)
+
+			# add dependency to linker task
+			elf.enhance [cartos_lib_task] if cartos_lib_task
+		end
+
+		create_lss_task(source_dir, target_dir, name, elf, configuration)
+
+		flash_hex_file = create_hex_task(source_dir, target_dir, name, elf, configuration)
+		
+		create_eeprom_task(source_dir, target_dir, name, elf, configuration)
+
+		create_size_task(source_dir, target_dir, name, elf, configuration)
+
+		build_task = task("build-#{name}-#{configuration}" => flash_hex_file) {}
+
+		# make sure that the hex file is generated, if someone calls build-all
+		task :build_all => build_task
+
+		# return hex file task
+		flash_hex_file
+	end
+
+
+	## run tests
+
+	def erase_processor
+		sh "#{AVRDUDE} -e"
+	end
+
+	def flash_processor_action(build_dir, name, parts = [:flash])
+		parts = [parts] if parts.is_a? String or parts.is_a? Symbol
+		return { :dependencies => [], :action => lambda {}, :cmdline => "" } if parts.empty?
+
+		dependencies = []
+		commands = ""
+		parts.each do |part|
+			part = part.intern if part.is_a? String
+			type = part.to_s
+			case part
+			when :flash, :application
+				ext = "hex"
+			when :eeprom
+				ext = "eep"
+			when :efuse, :lfuse, :hfuse, /^fuse[0-9]+$/, :calibration
+				ext = part.to_s
+			else
+				raise "Unsupported type of memory: #{part}"
+			end
+
+			file = File.join(build_dir, "#{name}.#{ext}")
+			dependencies << file
+			commands += " '-U#{type}:w:#{File.expand_path(file)}:a'"
+		end
+
+		cmdline = AVRDUDE+commands
+
+		{ :dependencies => dependencies, :action => lambda { sh cmdline }, :cmdline => cmdline }
+	end
+
+	Ruby = Java::org::jruby::Ruby
+
+	def run_jruby_script(script_filename, global_variables = {})
+		engine = Ruby.newInstance
+
+		global_variables.each do |key, value|
+			#TODO support methods
+			if key =~ /^[A-Z]/
+				engine.defineGlobalConstant(key, value)
+			elsif value.is_a? Method
+				# we have to get the DynamicMethod object which
+				# is stored in the private field method
+				cls = Java::java::lang::Class.for_name("org.jruby.RubyMethod")
+				field = cls.getDeclaredField("method")
+				field.setAccessible true
+				method = field.get(value)
+
+				# We have to add it to some class or module. Here we are
+				# using Kernel.
+				#TODO I would like to add it to the main object, but I don't
+				#     know how to get that object.
+				target = engine.kernel
+
+				# now we can set this on the Ruby instance
+				# Unfortunately, we cannot access the addMethod method
+				# directly, so we use reflection.
+				mod_cls = Java::java::lang::Class.for_name("org.jruby.RubyModule")
+				add_method = mod_cls.declared_methods.select {|x| x.name == "addMethod"}.first
+				add_method.invoke(target, key.to_s, method)
+			else
+				engine.defineReadonlyVariable(key, value)
+			end
+		end
+
+		# load some helpers
+		engine.executeScript(File.read("test-helpers.rb"), "test-helpers.rb")
+
+		# change to directory of the script file
+		engine.current_directory = File.expand_path(File.dirname(script_filename))
+
+		# execute test script
+		engine.executeScript(File.read(script_filename), script_filename)
+	end
+
+	def run_test(dir, configuration)
+		name = name_from_source_dir dir
+
+		build_dir = File.join(dir, "bin", configuration)
+
+		# get dependencies and commandline for flashing program to processor
+		flash_info = flash_processor_action(build_dir, name)
+		flash_cmdline = flash_info[:cmdline]
+
+		# write flash command line to temporary file
+		#flash_cmdline_file = Tempfile.new("flashcmd")
+		#open(flash_cmdline_file, "w") do |f|
+		#	f.write(flash_cmdline)
+		#end
+
+		test = task "test-#{name}-#{configuration}" => flash_info[:dependencies] do
+			puts "Running test '#{dir}' (#{configuration})..."
+
+			begin
+				run_jruby_script File.join(dir, "run-test.rb"), \
+					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
+					"$flash_cmdline" => flash_cmdline
+					#:erase_processor2 => method(:erase_processor), \
+					#:sh => method(:sh)
+			rescue Exception => ex
+				puts "Exception in test script #{File.join(dir, "run-test.rb")}:"
+				puts ex.message
+				puts ex.backtrace.join("\n")
+			end
+		end
+
+		#TODO How can we enforce the order? Does rake honour the order that
+		#     we use for adding the dependencies?
+		task :test_all => test
+
+		#flash_cmdline_file.delete
+	end
+
+
+	# main method
+
+	def create_tasks(dir)
+		configurations(:build).each do |configuration|
+			# build hex file
+			build dir, configuration
+		end
+
+		configurations(:test).each do |configuration|
 			# run test
 			run_test dir, configuration
 		end
 	end
+
+	def configurations which
+		case which
+		when :build
+			BUILD_CONFIGURATIONS
+		when :test
+			TEST_CONFIGURATIONS
+		else
+			CONFIGURATIONS
+		end
+	end
 end
 
+class ProjectWithCommon < Project
+	@@common_libraries = {
+		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] }
+	}
 
-# some old debug tasks
+	def initialize
+		@used_common_source_files = []
+	end
 
-#task :default => [build_caRTOS("features1.h"), build_caRTOS("features2.h"), build_caRTOS("features3.h", "Release")]
-#task :default => generator_task("blub/config.rb")
-#task :default => compile("blub", "main.c", "blub/bin/Debug", "Debug")
+	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
+		["#/common"] + super
+	end
+
+	def additional_source_files(source_dir, name, configuration)
+		@used_common_source_files + super
+	end
+
+	def add_common(*args)
+		args.each do |arg|
+			arg = arg.to_s
+			lib = @@common_libraries[arg]
+			if lib
+				sources = lib[:sources].map { |file| "#/common/#{file}" }
+				@used_common_source_files.push(*sources)
+			elsif File.exists? "common/#{arg}.c"
+				@used_common_source_files << "common/#{arg}.c"
+			elsif File.exists? "common/#{arg}"
+				@used_common_source_files << "common/#{arg}"
+			else
+				raise "not found: common file or library '#{arg}'"
+			end
+		end
+	end
+end
+
+# We use ScriptEngine here. It should create a new instance of JRuby (and in some way
+# it does), but it shares global variables and a few other things. This is quite convenient
+# for loading the project config because it will need some rake stuff.
+ScriptEngineManager = Java::javax::script::ScriptEngineManager
+ScriptEngine = Java::javax::script::ScriptEngine
+InputStreamReader = Java::java::io::InputStreamReader
+Charset = Java::java::nio::charset::Charset
+FileInputStream = Java::java::io::FileInputStream
+def load_project_config(dir)
+	project_config = File.join(dir, "project.rb")
+	if File.exists? project_config
+		jruby = ScriptEngineManager.new.getEngineByName("jruby")
+		raise "Couldn't find the JRuby engine!" unless jruby
+
+		#TODO give it a chance to alter the test object, as well
+		jruby.put "Project", Project
+
+		old_pwd = Dir.pwd
+		jruby.put("directory", dir);
+		jruby.eval("Dir.chdir($directory)");
+
+		jruby.put(ScriptEngine.FILENAME, project_config)
+
+		script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"));
+		jruby.eval script_reader
+		script_reader.close()
+		
+		# restore working directory
+		Dir.chdir old_pwd
+
+		project = jruby.get("project")
+	else
+		project = Project.new
+	end
+
+	return project
+end
+
+# add tasks for all directories which have certain files
+magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
+project_dirs = magic_files.map { |file| File.dirname(file) }
+project_dirs.uniq!
+project_dirs.sort 	#TODO is sort is too intelligent
+project_dirs.each do |dir|
+	puts "project: #{dir}"
+	# special case: 'common' directory is not a test
+	if dir != "common/"
+		project = load_project_config(dir)
+
+		project.create_tasks(dir) if project
+
+		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
+	end
+end
