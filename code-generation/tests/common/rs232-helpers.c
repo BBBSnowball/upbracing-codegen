@@ -19,10 +19,14 @@ void usart_send_number(int32_t number, uint8_t base, uint8_t min_places) {
 
 	while (number || min_places) {
 		uint8_t digit = number % base;
-		if (digit < 10)
+		if (number == 0 && base == 10)
+			// cannot use '0' to fill the space because that would
+			// make it an octal number
+			digit = ' ';
+		else if (digit < 10)
 			digit += '0';
 		else
-			digit += 'a';
+			digit += 'a' - 10;
 		*(--x) = digit;
 
 		number /= base;
