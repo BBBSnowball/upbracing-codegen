@@ -127,9 +127,15 @@ public abstract class AConfigurationCompositeBase extends Composite {
 
 			@Override
 			public void propertyChange(PropertyChangeEvent arg0) {
-				summaryGroup.layout();
-				layout();
-				expandItem.updateLayout();
+				
+				// Only redraw, if the expandItem is expanded
+				// -> otherwise no one would see the changes and we could save the CPU time ;)
+				if (expandItem.getExpandItem().getExpanded()) {
+					summaryGroup.layout();
+					layout();
+					expandItem.updateLayout();
+					canvas.redraw();
+				}
 			}
 			
 		});
