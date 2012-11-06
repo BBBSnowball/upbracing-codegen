@@ -154,14 +154,14 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 		
 		// Waveform:
 		WaveformDrawHelper.drawWaveform(gc, true);
-		WaveformDrawHelper.drawHorizontalLine(gc, 80, "MIN " + "(0)");
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
 		
 		// Channels:
-		WaveformDrawHelper.drawChannels(gc, model);
+		WaveformDrawHelper.drawWaveformChannels(gc, model);
 		
 		// Output pins:
-		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel A");	
-		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel B");
-		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel C");	
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel A", model.getOcrAPeriod(), model.getDualSlopePWMPinModeA());	
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel B", model.getOcrBPeriod(), model.getDualSlopePWMPinModeB());
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel C", model.getOcrCPeriod(), model.getDualSlopePWMPinModeC());	
 	}
 }

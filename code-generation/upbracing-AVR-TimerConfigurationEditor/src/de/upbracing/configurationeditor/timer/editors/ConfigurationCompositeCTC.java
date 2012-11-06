@@ -169,10 +169,10 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		
 		// Waveform:
 		WaveformDrawHelper.drawWaveform(gc, false);
-		WaveformDrawHelper.drawHorizontalLine(gc, 80, "MIN " + "(0)");
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
 		
 		// Channels:
-		WaveformDrawHelper.drawChannels(gc, model);
+		WaveformDrawHelper.drawWaveformChannels(gc, model);
 		
 		// Interrupts:
 		if (model.getCtcTop().equals(CTCTopValues.OCRnA)
@@ -180,8 +180,8 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 			WaveformDrawHelper.drawResetInterrupts(gc, model.getCompareInterruptA());
 		
 		// Output pins:
-		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel A");	
-		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel B");
-		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel C");	
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel A", model.getOcrAPeriod(), model.getComparePinModeA());	
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel B", model.getOcrBPeriod(), model.getComparePinModeB());
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel C", model.getOcrCPeriod(), model.getComparePinModeC());	
 	}
 }

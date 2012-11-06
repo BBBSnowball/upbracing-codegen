@@ -58,7 +58,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 									   int style, 
 									   final TimerConfigurationEditor editor, 
 									   UseCaseViewModel model,
-									   int canvasHeight) {
+									   final int canvasHeight) {
 		super(parent, style);
 		
 		this.editor = editor;
@@ -109,13 +109,14 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		descriptionL.setLayoutData(d);
-		final Canvas canvas = new Canvas(summaryGroup, SWT.NONE);
+		final Canvas canvas = new Canvas(summaryGroup, SWT.BORDER);
 		canvas.setSize(370, canvasHeight);
 		d = new GridData();
 		d.horizontalAlignment = SWT.CENTER;
 		d.widthHint = 370;
 		d.heightHint = canvasHeight;
 		d.grabExcessHorizontalSpace = true;
+		d.verticalIndent = 5;
 		canvas.setLayoutData(d);
 		summaryGroup.layout();
 		setFontStyle(summaryGroup, SWT.BOLD);
@@ -137,6 +138,8 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			@Override
 			public void paintControl(PaintEvent e) {
 				GC gc = new GC(canvas);
+				gc.setBackground(canvas.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+				gc.fillRectangle(0, 0, 370, canvasHeight);
 				gc.setAntialias(SWT.ON);
 				drawDescriptionImage(gc);
 			    gc.dispose();

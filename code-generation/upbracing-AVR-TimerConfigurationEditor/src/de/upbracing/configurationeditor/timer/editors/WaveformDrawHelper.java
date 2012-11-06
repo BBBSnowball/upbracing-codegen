@@ -13,13 +13,11 @@ import org.eclipse.swt.graphics.Point;
 import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
-import de.upbracing.shared.timer.model.enums.CTCTopValues;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PWMSingleSlopeOutputPinMode;
-import de.upbracing.shared.timer.model.enums.PWMTopValues;
-import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
 import de.upbracing.shared.timer.model.enums.TimerEnum;
 import de.upbracing.shared.timer.model.enums.TimerOperationModes;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 /**
  * @author Peer Adelt (adelt@mail.uni-paderborn.de)
@@ -28,60 +26,153 @@ import de.upbracing.shared.timer.model.enums.TimerOperationModes;
 public class WaveformDrawHelper {
 	
 	// Width of one slope
-	private static int cycleWidth = 60;
+	private static int waveCycleWidth = 60;
+	private static int waveHeight = 80;
 	// Horizontal and vertical offset of waveform
-	private static int yOffset = 35;
-	private static int xOffset = 115;
+	private static int yWaveOffset = 45;
+	private static int xWaveOffset = 115;
+	// xOffset for text:
+	private static int xTextOffset = 5;
+	// yOffset for period marker:
+	private static int yPeriodMarkerOffset = 10;
+	private static int yPeriodMarkerHeight = 10;
+	// Size for interrupt bullets:
+	private static int interruptBulletSize = 7;
+	// Vertical padding for output channels:
+	private static int yOutputPinPadding = 20;
 	
 	// Used colors
-	private static Color COLOR_DARK_GRAY 
-		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY);
 	private static Color COLOR_BLACK
 		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK);
-	private static Color COLOR_CYAN
-		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_CYAN);
-	private static Color COLOR_DEFAULT_BG
-		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+	private static Color COLOR_CHANNEL_A 
+		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_CYAN);
+	private static Color COLOR_CHANNEL_B 
+		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_MAGENTA);
+	private static Color COLOR_CHANNEL_C 
+		= Activator.getDefault().getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_GREEN);
 	
 	public static void drawWaveform(GC gc, boolean dualSlope) {
 		gc.setLineWidth(2);
 		if (!dualSlope) {
-		    gc.drawPolyline(new int[] { 
-		    		xOffset,                  90 + yOffset, 
-		    		xOffset + cycleWidth,     10 + yOffset, 
-		    		xOffset + cycleWidth,     90 + yOffset, 
-		    		xOffset + cycleWidth * 2, 10 + yOffset, 
-		    		xOffset + cycleWidth * 2, 90 + yOffset, 
-		    		xOffset + cycleWidth * 3, 10 + yOffset, 
-		    		xOffset + cycleWidth * 3, 90 + yOffset, 
-		    		xOffset + cycleWidth * 4, 10 + yOffset, 
-		    		xOffset + cycleWidth * 4, 90 + yOffset });
+			for (int i = 0; i < 4; i++) {
+			    gc.drawPolyline(new int[] { 
+	    		xWaveOffset + waveCycleWidth * i,     yWaveOffset + waveHeight, 
+	    		xWaveOffset + waveCycleWidth * (i+1), yWaveOffset,
+	    		xWaveOffset + waveCycleWidth * (i+1), yWaveOffset + waveHeight });
+			}
 		} else {
 			gc.drawPolyline(new int[] { 
-					xOffset,                  90 + yOffset, 
-		    		xOffset + cycleWidth,     10 + yOffset, 
-		    		xOffset + cycleWidth * 2, 90 + yOffset, 
-		    		xOffset + cycleWidth * 3, 10 + yOffset, 
-		    		xOffset + cycleWidth * 4, 90 + yOffset });
+					xWaveOffset,                  	  yWaveOffset + waveHeight, 
+		    		xWaveOffset + waveCycleWidth,     yWaveOffset, 
+		    		xWaveOffset + waveCycleWidth * 2, yWaveOffset + waveHeight, 
+		    		xWaveOffset + waveCycleWidth * 3, yWaveOffset, 
+		    		xWaveOffset + waveCycleWidth * 4, yWaveOffset + waveHeight });
 		}
 	}
 	
-	public static void drawHorizontalLine(GC gc, int y, String txt) {
-		drawHorizontalLine(gc, y, txt, 1, false);
+	public static void drawWaveformChannels(GC gc, UseCaseViewModel model) {
+		
+		drawTopLine(gc, model);
+		
+		// 1) Get Top value:
+		double topPeriod = model.getValidator().calculateQuantizedPeriod(model.getValidator().getTopPeriod());
+		// 2) Put all periods in hashmap
+		HashMap<Double, String> hm = getRelevantChannels(model);
+		// Draw the sorted list
+		TreeSet<Double> periods = new TreeSet<Double>(hm.keySet());
+		int count = periods.size();
+		int counter = 1;
+		for (Double period : periods) {
+			String value = hm.get(period);
+			Point p;
+			boolean compareInterrupt = false;
+			Color color = null;
+			if (value.substring(7).contains("A")) {
+				compareInterrupt = model.getCompareInterruptA();
+				color = COLOR_CHANNEL_A;
+			}
+			if (value.substring(7).contains("B")) {
+				compareInterrupt |= model.getCompareInterruptB();
+				if (color == null)
+					color = COLOR_CHANNEL_B;
+			}
+			if (value.substring(7).contains("C")) {
+				compareInterrupt |= model.getCompareInterruptC();
+				if (color == null)
+					color = COLOR_CHANNEL_C;
+			}
+			if (count > 1) {
+				// Line:
+				WaveformDrawHelper.drawHorizontalLine(gc, color, (100 / (count + 1)) * counter, (int) ((period / topPeriod) * 100), value);
+				counter++;
+			} else {
+				WaveformDrawHelper.drawHorizontalLine(gc, color, 50, (int) ((period / topPeriod) * 100), value);	
+			}
+			if (model.getMode().equals(TimerOperationModes.CTC)) {
+				// Interrupt bullets:
+				p = getSectionPoint(period, topPeriod, model.getValidator());
+				drawChannelInterrupts(gc, color, p, compareInterrupt);
+			}
+		}
+		
+		// Draw period markers for output pins:
+		gc.setLineWidth(1);
+		gc.setLineStyle(SWT.LINE_DASH);
+		gc.setAntialias(SWT.OFF);
+		
+		if (!(model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)
+				|| model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))) {
+			// Single Slope:
+			for (int i = 0; i < 5; i++) {
+				gc.drawLine(xWaveOffset + waveCycleWidth * i, yWaveOffset - 5, 
+						    xWaveOffset + waveCycleWidth * i, yWaveOffset + waveHeight + yOutputPinPadding + 66);
+			}
+		} else {
+			// Dual Slope:
+			for (int i = 0; i < 3; i++) {
+				gc.drawLine(xWaveOffset + waveCycleWidth * i * 2, yWaveOffset - 5, 
+					    	xWaveOffset + waveCycleWidth * i * 2, yWaveOffset + waveHeight + yOutputPinPadding + 66);
+			}
+		}
+		
+		gc.setLineStyle(SWT.LINE_SOLID);
+		gc.setAntialias(SWT.ON);
+	}
+
+	public static void drawHorizontalLine(GC gc, int startPercent, int endPercent, String txt) {
+		drawHorizontalLine(gc, COLOR_BLACK, startPercent, endPercent, txt, 1, false);
 	}
 	
-	public static void drawHorizontalLine(GC gc, int y, String txt, int linecount, boolean alignBottom) {
-	    gc.setLineWidth(1);
-	    gc.setAntialias(SWT.OFF);
-	    gc.setLineStyle(SWT.LINE_DASH);
-	    gc.setForeground(COLOR_DARK_GRAY);
-	    gc.drawLine(xOffset - 5, 10 + yOffset + y, xOffset + 5 + cycleWidth * 4, 10 + yOffset + y);
+	public static void drawHorizontalLine(GC gc, int startPercent, int endPercent, String txt, int lineCount, boolean alignBottom) {
+		drawHorizontalLine(gc, COLOR_BLACK, startPercent, endPercent, txt, lineCount, alignBottom);
+	}
+	
+	public static void drawHorizontalLine(GC gc, Color c, int startPercent, int endPercent, String txt) {
+		drawHorizontalLine(gc, c, startPercent, endPercent, txt, 1, false);
+	}
+	
+	public static void drawHorizontalLine(GC gc, Color c, int startPercent, int endPercent, String txt, int linecount, boolean alignBottom) {
+	    
+		int x1 = xWaveOffset - 5;
+		int x2 = xWaveOffset + 5 + (waveCycleWidth * 4);
+		int y1 = getYCoordinateFromPercentage(startPercent);
+		int y2 = getYCoordinateFromPercentage(endPercent);
+		
+		gc.setLineWidth(1);
+		gc.setAntialias(SWT.OFF);
+	    gc.setForeground(c);
+	    
+	    // Draw line:
+	    gc.drawPolyline(new int[] { x1 - 30, y1, x1 - 10, y1, x1 - 10, y2, x2, y2});
+	    	    
+	    // Draw text:
 	    int lineheight = gc.getFontMetrics().getHeight();
 	    if (alignBottom) {
-	    	gc.drawText(txt, 5, 3 + yOffset + y - ((linecount - 1) * lineheight), true);
+	    	gc.drawText(txt, xTextOffset, y1 - 7 - ((linecount - 1) * lineheight), true);
 	    } else {
-	    	gc.drawText(txt, 5, 3 + yOffset + y, true);
+	    	gc.drawText(txt, xTextOffset, y1 - 7, true);
 	    }
+	    gc.setForeground(COLOR_BLACK);
 	    gc.setAntialias(SWT.ON);
 	}
 	
@@ -91,33 +182,44 @@ public class WaveformDrawHelper {
 		if (dualSlope) {
 			stretchfactor = 3;
 		}
-		gc.drawLine(xOffset + cycleWidth, yOffset - 15, xOffset + cycleWidth, 10 + yOffset - 10);
-		gc.drawLine(xOffset + cycleWidth * stretchfactor, yOffset - 15, xOffset + cycleWidth * stretchfactor, 10 + yOffset - 10);
-		gc.drawPolyline(new int[] {xOffset + cycleWidth + 2, 10 + yOffset - 17, xOffset + cycleWidth + 7, yOffset - 12});
-		gc.drawPolyline(new int[] {xOffset + cycleWidth + 2, 10 + yOffset - 17, xOffset + cycleWidth + 7, yOffset - 3});
-		gc.drawPolyline(new int[] {xOffset + cycleWidth * stretchfactor - 2, 10 + yOffset - 17, xOffset + cycleWidth * stretchfactor - 7, yOffset - 12});
-		gc.drawPolyline(new int[] {xOffset + cycleWidth * stretchfactor - 2, 10 + yOffset - 17, xOffset + cycleWidth * stretchfactor - 7, yOffset - 3});
-		gc.drawLine(xOffset + cycleWidth + 3, 10 + yOffset - 17, xOffset + cycleWidth * stretchfactor - 3, 10 + yOffset - 17);
+		
+		int xLeft     = xWaveOffset + waveCycleWidth * 2;
+		int xRight    = xWaveOffset + waveCycleWidth + waveCycleWidth * stretchfactor; 
+		int yArrowMid = yWaveOffset - yPeriodMarkerOffset - (yPeriodMarkerHeight / 2);
+		
+		// Left vertical marker
+		gc.drawLine(xLeft, yWaveOffset - yPeriodMarkerOffset - yPeriodMarkerHeight, 
+				    xLeft, yWaveOffset - yPeriodMarkerOffset);
+		// Right vertical marker
+		gc.drawLine(xRight, yWaveOffset - yPeriodMarkerOffset - yPeriodMarkerHeight, 
+				    xRight, yWaveOffset - yPeriodMarkerOffset);
+		
+		// Draw left arrow cap
+		gc.drawPolyline(new int[] {
+				xLeft + 7, yArrowMid - 4, 
+				xLeft + 2, yArrowMid, 
+				xLeft + 7, yArrowMid + 4});
+		// Draw right arrow cap
+		gc.drawPolyline(new int[] {
+				xRight - 7, yArrowMid - 4, 
+				xRight - 2, yArrowMid, 
+				xRight - 7, yArrowMid + 4});
+		
+		// Draw line between arrow caps
+		gc.drawLine(xLeft  + 3, yArrowMid, 
+				    xRight - 3, yArrowMid);
+		
+		// Draw centered text
 		Point overflowPeriodStringWidth = gc.stringExtent(txt);
-		int xDiff = (cycleWidth - overflowPeriodStringWidth.x) / 2;
-		gc.drawText(txt, xOffset + ((int)(cycleWidth * (stretchfactor / 2.0))) + xDiff, 5, true);
+		int xDiff = (waveCycleWidth - overflowPeriodStringWidth.x) / 2;
+		gc.drawText(txt, 
+				    xWaveOffset + waveCycleWidth + ((int)(waveCycleWidth * (stretchfactor / 2.0))) + xDiff, 
+				    yWaveOffset - yPeriodMarkerOffset - yPeriodMarkerHeight - 15, 
+				    true);
 	}
 	
 	public static void drawResetInterrupts(GC gc, boolean enabled) {
-		gc.setLineStyle(SWT.LINE_SOLID);
-	    gc.setLineWidth(3);
-	    if (enabled) {
-	    	gc.setBackground(COLOR_CYAN);
-	    }
-	    gc.fillOval(xOffset + cycleWidth - 3,     87 + yOffset, 6, 6);
-    	gc.fillOval(xOffset + cycleWidth * 2 - 3, 87 + yOffset, 6, 6);
-    	gc.fillOval(xOffset + cycleWidth * 3 - 3, 87 + yOffset, 6, 6);
-    	gc.fillOval(xOffset + cycleWidth * 4 - 3, 87 + yOffset, 6, 6);
-	    gc.setForeground(COLOR_BLACK);
-	    gc.drawOval(xOffset + cycleWidth - 4,     86 + yOffset, 8, 8);
-    	gc.drawOval(xOffset + cycleWidth * 2 - 4, 86 + yOffset, 8, 8);
-    	gc.drawOval(xOffset + cycleWidth * 3 - 4, 86 + yOffset, 8, 8);
-    	gc.drawOval(xOffset + cycleWidth * 4 - 4, 86 + yOffset, 8, 8);
+		drawChannelInterrupts(gc, COLOR_CHANNEL_A, new Point(0, 0), enabled);
 	}
 	
 	public static void drawOverflowInterruptText(GC gc, boolean enabled) {
@@ -127,12 +229,11 @@ public class WaveformDrawHelper {
     	} else {
     		overflowInterruptText += "disabled";
     	}
-    	int xDiff = (3 * cycleWidth - gc.stringExtent(overflowInterruptText).x) / 2;
-    	gc.drawText(overflowInterruptText, xOffset + cycleWidth + xDiff, 100 + yOffset, true);
+    	int xDiff = (3 * waveCycleWidth - gc.stringExtent(overflowInterruptText).x) / 2;
+    	gc.drawText(overflowInterruptText, xWaveOffset + waveCycleWidth + xDiff, yWaveOffset + waveHeight + 10, true);
 	}
 	
 	public static void drawTopLine(GC gc, UseCaseViewModel model) {
-		String ls = System.getProperty("line.separator");
 		List<String> lst = new ArrayList<String>();
 		int topRegValue = model.getValidator().calculateRegisterValue(model.getValidator().getTopPeriod());
 		if (model.getValidator().calculateRegisterValue(model.getIcrPeriod()) == topRegValue)
@@ -146,326 +247,237 @@ public class WaveformDrawHelper {
 				lst.add("C");
 		}
 		
-		boolean startedWithChannels = false;
-		String lineText = "TOP (" + model.getValidator().calculateRegisterValue(model.getValidator().getTopPeriod()) + ")";
-		if (lst.size() > 0)
-			lineText += ls;
-		for (String entry : lst) {
-			if (!entry.equals("ICR")) {
-				if (!startedWithChannels) {
-					lineText += "Channel ";
-					startedWithChannels = true; 
-				}
-			}
-			lineText += entry;
-			if (!lst.get(lst.size()-1).equals(entry))
-				lineText += ", ";
-		}
-		if (lst.size() > 0)
-			WaveformDrawHelper.drawHorizontalLine(gc, 0, lineText, 2, true);
-		else 
-			WaveformDrawHelper.drawHorizontalLine(gc, 0, lineText);
+		String lineText = "TOP";
+		WaveformDrawHelper.drawHorizontalLine(gc, 100, 100, lineText);
 	}
 	
-	public static void drawChannels(GC gc, UseCaseViewModel model) {
-		
-		drawTopLine(gc, model);
-		
-		// 1) Get Top value:
-		double topPeriod = model.getValidator().getTopPeriod();
-		// 2) Put all periods in hashmap
-		HashMap<Double, String> hm = getRelevantChannels(model);
-		// Draw the sorted list
-		TreeSet<Double> periods = new TreeSet<Double>(hm.keySet());
-		int count = periods.size();
-		int span = 80 / (count + 1);
-		int counter = 1;
-		for (Double period : periods.descendingSet()) {
-			String value = hm.get(period);
-			Point p;
-			boolean compareInterrupt = false;
-			if (value.substring(7).contains("A"))
-				compareInterrupt = model.getCompareInterruptA();
-			if (value.substring(7).contains("B"))
-				compareInterrupt |= model.getCompareInterruptB();
-			if (value.substring(7).contains("C"))
-				compareInterrupt |= model.getCompareInterruptC();
-			if (count > 1) {
-				// Line:
-				WaveformDrawHelper.drawHorizontalLine(gc, counter * span, value + " (" + model.getValidator().calculateRegisterValue(period) +")");
-				if (model.getMode().equals(TimerOperationModes.CTC)) {
-					// Interrupt bullets:
-//					Point p = new Point(0, counter * span);
-					p = getSectionPoint(model, value);
-					drawChannelInterrupts(gc, p, compareInterrupt);
-				}
-				counter++;
-			} else {
-				if (period < (topPeriod / 2)) {
-					WaveformDrawHelper.drawHorizontalLine(gc, 50, value + " (" + model.getValidator().calculateRegisterValue(period) +")");
-					if (model.getMode().equals(TimerOperationModes.CTC)) {
-//						// Interrupt bullets:
-//						Point p = new Point(0, 50);
-						p = getSectionPoint(model, value);
-						drawChannelInterrupts(gc, p, compareInterrupt);
-					}
-				} else {
-					WaveformDrawHelper.drawHorizontalLine(gc, 30, value + " (" + model.getValidator().calculateRegisterValue(period) +")");
-					if (model.getMode().equals(TimerOperationModes.CTC)) {
-//						// Interrupt bullets:
-//						Point p = new Point(0, 30);
-						p = getSectionPoint(model, value);
-						drawChannelInterrupts(gc, p, compareInterrupt);
-					}
-				}
-			}
-		}
-	}
-	
-	public static void drawCTCOutputPin(GC gc, UseCaseViewModel model, String register) {
-		int y = yOffset + 110;
-		if (register.endsWith("B"))
-			y += 25;
-		else if (register.endsWith("C"))
-			y += 50;
+	public static void drawCTCOutputPin(GC gc, 
+										UseCaseViewModel model, 
+										String register, 
+										double period,
+										CTCOutputPinMode mode) {
+		int y = getYCoordinateForOutputPin(register);
 		gc.setForeground(COLOR_BLACK);
 		gc.setLineStyle(SWT.LINE_SOLID);
 		gc.drawText(register.replace("Channel", "Output pin"), 5, y, true);
-		Point p = getSectionPoint(model, register);
+		Point p = getSectionPoint(period, model.getValidator().getTopPeriod(), model.getValidator());
 		if (p != null) {
-			if (register.equals("Channel A")) {
-				if (model.getComparePinModeA().equals(CTCOutputPinMode.TOGGLE)) {
-					drawOutputPinToggleLine(gc, p.x, y, false);
+			if (register.equals("Channel A") ||
+					model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
+				if (mode.equals(CTCOutputPinMode.TOGGLE)) {
+					drawOutputPinToggleLine(gc, getColorForOutputPin(register), p.x, y, false);
+				} else if (mode.equals(CTCOutputPinMode.CLEAR)) {
+					drawOutputPinClearSetLine(gc, getColorForOutputPin(register), p.x, y, false);
+				} else if (mode.equals(CTCOutputPinMode.SET)) {
+					drawOutputPinClearSetLine(gc, getColorForOutputPin(register), p.x, y, true);
 				} else {
-					gc.drawString(model.getComparePinModeA().toString(), xOffset, y, true);
-				}
-			}
-			else if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
-				if (register.equals("Channel B")) {
-					if (model.getComparePinModeB().equals(CTCOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, false);
-					} else {
-						gc.drawString(model.getComparePinModeB().toString(), xOffset, y, true);
-					}
-				} else if (register.equals("Channel C")) {
-					if (model.getComparePinModeC().equals(CTCOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, false);
-					} else {
-						gc.drawString(model.getComparePinModeC().toString(), xOffset, y, true);
-					}
+					gc.drawString(mode.toString(), xWaveOffset + 5, y, true);
 				}
 			} else {
-				gc.drawString("N/A", xOffset, y, true);
+				gc.drawString("N/A", xWaveOffset + 5, y, true);
 			}
 		} else {
-			gc.drawString("See error or warning message for details!", xOffset, y, true);
+			gc.drawString("See error or warning message for details!", xWaveOffset + 5, y, true);
 		}
 	}
 	
-	public static void drawSingleSlopePWMOutputPin(GC gc, UseCaseViewModel model, String register) {
-		int y = yOffset + 110;
-		if (register.endsWith("B"))
-			y += 25;
-		else if (register.endsWith("C"))
-			y += 50;
+	public static void drawSingleSlopePWMOutputPin(GC gc, 
+												   UseCaseViewModel model, 
+												   String register, 
+												   double period,
+												   PWMSingleSlopeOutputPinMode mode) {
+		int y = getYCoordinateForOutputPin(register);
 		gc.setForeground(COLOR_BLACK);
 		gc.setLineStyle(SWT.LINE_SOLID);
 		gc.drawText(register.replace("Channel", "Output pin"), 5, y, true);
-		Point p = getSectionPoint(model, register);
+		Point p = getSectionPoint(period, model.getValidator().getTopPeriod(), model.getValidator());
 		if (p != null) {
-			if (register.equals("Channel A")) {
-				if (model.getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
-					drawOutputPinToggleLine(gc, p.x, y, false);
-				} else if (model.getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.CLEAR)) {
-					drawOutputPinPWMLine(gc, p.x, y, false, false);
-				} else if (model.getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.SET)) {
-					drawOutputPinPWMLine(gc, p.x, y, false, true);
+			if (register.equals("Channel A") ||
+					model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
+				if (mode.equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
+					drawOutputPinToggleLine(gc, getColorForOutputPin(register), p.x, y, false);
+				} else if (mode.equals(PWMSingleSlopeOutputPinMode.CLEAR)) {
+					drawOutputPinPWMLine(gc, getColorForOutputPin(register), p.x, y, false, false);
+				} else if (mode.equals(PWMSingleSlopeOutputPinMode.SET)) {
+					drawOutputPinPWMLine(gc, getColorForOutputPin(register), p.x, y, false, true);
 				} else {
-					gc.drawString(model.getComparePinModeA().toString(), xOffset, y, true);
-				}
-			}
-			else if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
-				if (register.equals("Channel B")) {
-					if (model.getSingleSlopePWMPinModeB().equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, false);
-					} else if (model.getSingleSlopePWMPinModeB().equals(PWMSingleSlopeOutputPinMode.CLEAR)) {
-						drawOutputPinPWMLine(gc, p.x, y, false, false);
-					} else if (model.getSingleSlopePWMPinModeB().equals(PWMSingleSlopeOutputPinMode.SET)) {
-						drawOutputPinPWMLine(gc, p.x, y, false, true);
-					} else {
-						gc.drawString(model.getComparePinModeB().toString(), xOffset, y, true);
-					}
-				} else if (register.equals("Channel C")) {
-					if (model.getSingleSlopePWMPinModeC().equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, false);
-					} else if (model.getSingleSlopePWMPinModeC().equals(PWMSingleSlopeOutputPinMode.CLEAR)) {
-						drawOutputPinPWMLine(gc, p.x, y, false, false);
-					} else if (model.getSingleSlopePWMPinModeC().equals(PWMSingleSlopeOutputPinMode.SET)) {
-						drawOutputPinPWMLine(gc, p.x, y, false, true);
-					} else {
-						gc.drawString(model.getComparePinModeC().toString(), xOffset, y, true);
-					}
+					gc.drawString(mode.toString(), xWaveOffset + 5, y, true);
 				}
 			} else {
-				gc.drawString("N/A", xOffset, y, true);
+				gc.drawString("N/A", xWaveOffset + 5, y, true);
 			}
 		} else {
-			gc.drawString("See error or warning message for details!", xOffset, y, true);
+			gc.drawString("See error or warning message for details!", xWaveOffset + 5, y, true);
 		}
 	}
 	
-	public static void drawDualSlopePWMOutputPin(GC gc, UseCaseViewModel model, String register) {
-		int y = yOffset + 110;
-		if (register.endsWith("B"))
-			y += 25;
-		else if (register.endsWith("C"))
-			y += 50;
+	public static void drawDualSlopePWMOutputPin(GC gc, 
+												 UseCaseViewModel model, 
+												 String register, 
+												 double period,
+												 PWMDualSlopeOutputPinMode mode) {
+		int y = getYCoordinateForOutputPin(register);
 		gc.setForeground(COLOR_BLACK);
 		gc.setLineStyle(SWT.LINE_SOLID);
 		gc.drawText(register.replace("Channel", "Output pin"), 5, y, true);
-		Point p = getSectionPoint(model, register);
+		Point p = getSectionPoint(period, model.getValidator().getTopPeriod(), model.getValidator());
 		if (p != null) {
-			if (register.equals("Channel A")) {
-				if (model.getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
-					drawOutputPinToggleLine(gc, p.x, y, true);
-				} else if (model.getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.CLEAR_SET)) {
-					drawOutputPinPWMLine(gc, p.x, y, true, false);
-				} else if (model.getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.SET_CLEAR)) {
-					drawOutputPinPWMLine(gc, p.x, y, true, true);
+			if (register.equals("Channel A") ||
+					model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
+				if (mode.equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
+					drawOutputPinToggleLine(gc, getColorForOutputPin(register), p.x, y, true);
+				} else if (mode.equals(PWMDualSlopeOutputPinMode.CLEAR_SET)) {
+					drawOutputPinPWMLine(gc, getColorForOutputPin(register), p.x, y, true, false);
+				} else if (mode.equals(PWMDualSlopeOutputPinMode.SET_CLEAR)) {
+					drawOutputPinPWMLine(gc, getColorForOutputPin(register), p.x, y, true, true);
 				} else {
-					gc.drawString(model.getComparePinModeA().toString(), xOffset, y, true);
-				}
-			}
-			else if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
-				if (register.equals("Channel B")) {
-					if (model.getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, true);
-					} else if (model.getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.CLEAR_SET)) {
-						drawOutputPinPWMLine(gc, p.x, y, true, false);
-					} else if (model.getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.SET_CLEAR)) {
-						drawOutputPinPWMLine(gc, p.x, y, true, true);
-					} else {
-						gc.drawString(model.getComparePinModeB().toString(), xOffset, y, true);
-					}
-				} else if (register.equals("Channel C")) {
-					if (model.getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
-						drawOutputPinToggleLine(gc, p.x, y, true);
-					} else if (model.getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.CLEAR_SET)) {
-						drawOutputPinPWMLine(gc, p.x, y, true, false);
-					} else if (model.getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.SET_CLEAR)) {
-						drawOutputPinPWMLine(gc, p.x, y, true, true);
-					} else {
-						gc.drawString(model.getComparePinModeC().toString(), xOffset, y, true);
-					}
+					gc.drawString(mode.toString(), xWaveOffset + 5, y, true);
 				}
 			} else {
-				gc.drawString("N/A", xOffset, y, true);
+				gc.drawString("N/A", xWaveOffset + 5, y, true);
 			}
 		} else {
-			gc.drawString("See error or warning message for details!", xOffset, y, true);
+			gc.drawString("See error or warning message for details!", xWaveOffset + 5, y, true);
 		}
 	}
 	
-	private static void drawOutputPinToggleLine(GC gc, int x, int y, boolean dualSlope) {
+	private static void drawOutputPinToggleLine(GC gc, Color c, int x, int y, boolean dualSlope) {
 		gc.setLineWidth(2);
-		int xStart = xOffset;
-		int xOff = xOffset + x + cycleWidth;
+		int xStart = xWaveOffset;
+		int xOff = xWaveOffset + x + waveCycleWidth;
 		int yLow = y + 14;
 		int yHigh = y;
-		if (!dualSlope) {
-			gc.drawPolyline(new int[] {
-					xStart, yLow, 
-					xOff, yLow, 
-					xOff, yHigh, 
-					xOff + cycleWidth, yHigh,
-					xOff + cycleWidth, yLow, 
-					xOff + cycleWidth * 2, yLow, 
-					xOff + cycleWidth * 2, yHigh, 
-					xOff + cycleWidth * 3, yHigh,
-					xOff + cycleWidth * 3, yLow,
-					xStart + cycleWidth * 4, yLow});
+		gc.setForeground(c);
+		if (x <= 0) {
+			if (!dualSlope) {
+				gc.drawPolyline(new int[] {
+						xStart, yLow, 
+						xOff, yLow, 
+						xOff, yHigh, 
+						xOff + waveCycleWidth, yHigh,
+						xOff + waveCycleWidth, yLow, 
+						xOff + waveCycleWidth * 2, yLow, 
+						xOff + waveCycleWidth * 2, yHigh, 
+						xOff + waveCycleWidth * 3, yHigh,
+						xOff + waveCycleWidth * 3, yLow,
+						xStart + waveCycleWidth * 4, yLow});
+			} else {
+				gc.drawPolyline(new int[] {
+						xStart, yLow, 
+						xOff, yLow,
+						xOff, yHigh,
+						xOff + waveCycleWidth * 2, yHigh, 
+						xOff + waveCycleWidth * 2, yLow, 
+						xStart + waveCycleWidth * 4, yLow});
+			}
 		} else {
-			gc.drawPolyline(new int[] {
-					xStart, yLow, 
-					xOff, yLow,
-					xOff, yHigh,
-					xOff + cycleWidth * 2, yHigh, 
-					xOff + cycleWidth * 2, yLow, 
-					xStart + cycleWidth * 4, yLow});
+			gc.drawLine(xStart, yLow, xStart + waveCycleWidth * 4, yLow);
 		}
+		gc.setForeground(COLOR_BLACK);
 	}
 	
-	private static void drawOutputPinPWMLine(GC gc, int x, int y, boolean dualSlope, boolean inverted) {
+	private static void drawOutputPinClearSetLine(GC gc, Color c, int x, int y, boolean set) {
 		gc.setLineWidth(2);
-		int xStart = xOffset;
-		int xOff = xOffset + x + cycleWidth;
+		int xStart = xWaveOffset;
+		int xOff = xWaveOffset + x + waveCycleWidth;
+		int yLow = y + 14;
+		int yHigh = y;
+		gc.setForeground(c);
+		int dontCareYOffset = 0;
+		
+		// Draw arrows:
+		if (x <= 0) {
+			for (int i = 0; i < 4; i++) {
+				if (set) {
+					gc.drawPolyline(new int[] {
+							xOff + waveCycleWidth * i - 4, yHigh + 4, 
+							xOff + waveCycleWidth * i, yHigh, 
+							xOff + waveCycleWidth * i + 4, yHigh + 4
+						});
+					dontCareYOffset = 2;
+				} else {
+					gc.drawPolyline(new int[] {
+							xOff + waveCycleWidth * i - 4, yLow - 4, 
+							xOff + waveCycleWidth * i, yLow, 
+							xOff + waveCycleWidth * i + 4, yLow - 4
+						});
+					dontCareYOffset = -2;
+				}
+				gc.drawLine(xOff + waveCycleWidth * i, yLow, xOff + waveCycleWidth * i, yHigh);
+			}
+		} 
+		
+		// Draw don't care line:
+		gc.setLineWidth(1);
+		int crossWidth = 6;
+		int numberOfCrosses = (4 * waveCycleWidth) / crossWidth;
+		for (int i = 0; i < numberOfCrosses; i++) {
+			gc.drawLine(xStart + crossWidth * i, yLow - 5 + dontCareYOffset, 
+					xStart + crossWidth * i + crossWidth, yHigh + 5 + dontCareYOffset);
+			gc.drawLine(xStart + crossWidth * i, yHigh + 5 + dontCareYOffset,
+					xStart + crossWidth * i + crossWidth, yLow - 5 + dontCareYOffset);
+		}
+		
+		gc.setForeground(COLOR_BLACK);
+	}
+	
+	private static void drawOutputPinPWMLine(GC gc, Color c, int x, int y, boolean dualSlope, boolean inverted) {
+		gc.setLineWidth(2);
+		int xStart = xWaveOffset;
+		int xOff = xWaveOffset + x + waveCycleWidth;
 		int yLow = y;
 		int yHigh = y + 14;
 		if (inverted) {
 			yLow = y + 14;
 			yHigh = y;
 		}
-		if (!dualSlope) {
-			gc.drawPolyline(new int[] {
-					xStart, yLow, 
-					xOff, yLow, 
-					xOff, yHigh, 
-					xStart + cycleWidth, yHigh,
-					xStart + cycleWidth, yLow, 
-					xOff + cycleWidth, yLow, 
-					xOff + cycleWidth, yHigh, 
-					xStart + cycleWidth * 2, yHigh,
-					xStart + cycleWidth * 2, yLow,
-					xOff + cycleWidth * 2, yLow,
-					xOff + cycleWidth * 2, yHigh,
-					xStart + cycleWidth * 3, yHigh,
-					xStart + cycleWidth * 3, yLow,
-					xOff + cycleWidth * 3, yLow,
-					xOff + cycleWidth * 3, yHigh,
-					xStart + cycleWidth * 4, yHigh,
-					xStart + cycleWidth * 4, yLow});
+		gc.setForeground(c);
+		if (x <= 0) {
+			if (!dualSlope) {
+				for (int i = 0; i < 4; i++) {
+					gc.drawPolyline(new int[] {
+						xStart + waveCycleWidth * i, yLow, 
+						xOff + waveCycleWidth * i, yLow, 
+						xOff + waveCycleWidth * i, yHigh, 
+						xStart + waveCycleWidth * (i+1), yHigh,
+						xStart + waveCycleWidth * (i+1), yLow,	
+					});
+				}
+			} else {
+				for (int i = 0; i < 2; i++) {
+					gc.drawPolyline(new int[] {
+						xStart + waveCycleWidth * i * 2, yLow, 
+						xOff + waveCycleWidth * i * 2, yLow,
+						xOff + waveCycleWidth * i * 2, yHigh,
+						2 * xStart + waveCycleWidth * (i+1) * 2 - xOff, yHigh,
+						2 * xStart + waveCycleWidth * (i+1) * 2 - xOff, yLow,
+						xStart + waveCycleWidth * (i+1) * 2, yLow
+					});
+				}
+			}
 		} else {
-			gc.drawPolyline(new int[] {
-					xStart, yLow, 
-					xOff, yLow,
-					xOff, yHigh,
-					(xStart + cycleWidth) * 2 - xOff, yHigh,
-					(xStart + cycleWidth) * 2 - xOff, yLow,
-					xOff + cycleWidth * 2, yLow,
-					xOff + cycleWidth * 2, yHigh,
-					2 * xStart + cycleWidth * 4 - xOff, yHigh,
-					2 * xStart + cycleWidth * 4 - xOff, yLow,
-					xStart + cycleWidth * 4, yLow});
+			gc.drawLine(xStart, yLow, xStart + waveCycleWidth * 4, yLow);
 		}
+		gc.setForeground(COLOR_BLACK);
 	}
 	
-	private static void drawChannelInterrupts(GC gc, Point p, boolean enabled) {
-		gc.setLineStyle(SWT.LINE_SOLID);
-	    gc.setLineWidth(3);
-	    if (enabled) {
-	    	gc.setBackground(COLOR_CYAN);
-	    } else {
-	    	gc.setBackground(COLOR_DEFAULT_BG);
-	    }
-	    gc.fillOval(p.x + xOffset + cycleWidth - 3,     p.y + yOffset + 6, 6, 6);
-		gc.fillOval(p.x + xOffset + cycleWidth * 2 - 3, p.y + yOffset + 6, 6, 6);
-		gc.fillOval(p.x + xOffset + cycleWidth * 3 - 3, p.y + yOffset + 6, 6, 6);
-		gc.fillOval(p.x + xOffset + cycleWidth * 4 - 3, p.y + yOffset + 6, 6, 6);
-	    gc.setForeground(COLOR_BLACK);
-	    gc.drawOval(p.x + xOffset + cycleWidth - 4,     p.y + yOffset + 6, 8, 8);
-		gc.drawOval(p.x + xOffset + cycleWidth * 2 - 4, p.y + yOffset + 6, 8, 8);
-		gc.drawOval(p.x + xOffset + cycleWidth * 3 - 4, p.y + yOffset + 6, 8, 8);
-		gc.drawOval(p.x + xOffset + cycleWidth * 4 - 4, p.y + yOffset + 6, 8, 8);
-	}
-
-	private static boolean isChannelARelevant(UseCaseViewModel model) {
-		if ((model.getMode().equals(TimerOperationModes.CTC) && !model.getCtcTop().equals(CTCTopValues.OCRnA)) ||
-			(model.getMode().equals(TimerOperationModes.PWM_FAST) && !model.getFastPWMTop().equals(PWMTopValues.OCRnA)) ||
-			(model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT) && !model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA)) ||
-			(model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT) && !model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))) {
-			return true;
+	private static void drawChannelInterrupts(GC gc, Color c, Point p, boolean enabled) {
+		
+		if (enabled) {
+			gc.setLineStyle(SWT.LINE_SOLID);
+		    
+		    int innerBulletOffset = interruptBulletSize / 2;
+		    int y = getYCoordinateFromPercentage(100);
+		    
+		    // Bullet:
+		    Color colBg = gc.getBackground();
+		    gc.setBackground(c);
+		    for (int i = 1; i < 5; i++) {
+		    	gc.fillOval(p.x + xWaveOffset - innerBulletOffset + waveCycleWidth * i, p.y + y - innerBulletOffset, interruptBulletSize, interruptBulletSize);
+		    }
+		    gc.setBackground(colBg);
+	    	gc.setForeground(COLOR_BLACK);
 		}
-		return false;
 	}
 	
 	private static HashMap<Double, String> getRelevantChannels(UseCaseViewModel model) {
@@ -473,87 +485,64 @@ public class WaveformDrawHelper {
 		double topPeriod = model.getValidator().getTopPeriod();
 		// 2) Put all periods in hashmap
 		HashMap<Double, String> hm = new HashMap<Double, String>();
-		if (isChannelARelevant(model))
-			hm.put(model.getOcrAPeriod(), "Channel A");
+		hm.put(model.getValidator().calculateQuantizedPeriod(model.getOcrAPeriod()), "Channel A");
 		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3)) {
-			if (hm.containsKey(model.getOcrBPeriod()))
-				hm.put(model.getOcrBPeriod(), hm.get(model.getOcrBPeriod()) + ", B");
+			if (hm.containsKey(model.getValidator().calculateQuantizedPeriod(model.getOcrBPeriod())))
+				hm.put(model.getValidator().calculateQuantizedPeriod(model.getOcrBPeriod()), 
+					   hm.get(model.getValidator().calculateQuantizedPeriod(model.getOcrBPeriod())) + ", B");
 			else
-				hm.put(model.getOcrBPeriod(), "Channel B");
-			if (hm.containsKey(model.getOcrCPeriod()))
-				hm.put(model.getOcrCPeriod(), hm.get(model.getOcrCPeriod()) + ", C");
+				hm.put(model.getValidator().calculateQuantizedPeriod(model.getOcrBPeriod()), "Channel B");
+			if (hm.containsKey(model.getValidator().calculateQuantizedPeriod(model.getOcrCPeriod())))
+				hm.put(model.getValidator().calculateQuantizedPeriod(model.getOcrCPeriod()), 
+					   hm.get(model.getValidator().calculateQuantizedPeriod(model.getOcrCPeriod())) + ", C");
 			else
-				hm.put(model.getOcrCPeriod(), "Channel C");
+				hm.put(model.getValidator().calculateQuantizedPeriod(model.getOcrCPeriod()), "Channel C");
 		}
 		// 3) Cleanup sorted list
 		TreeSet<Double> periods = new TreeSet<Double>(hm.keySet());
 		for (Double period : periods) {
-			if (model.getValidator().calculateQuantizedPeriod(period) >= model.getValidator().calculateQuantizedPeriod(topPeriod)) {
+			if (period > model.getValidator().calculateQuantizedPeriod(topPeriod)) {
 				hm.remove(period);
 			}
 		}
 		return hm;
 	}
 	
-	private static Point getSectionPoint(UseCaseViewModel model, String register) {
+	private static Point getSectionPoint(double period, double topPeriod, UseCaseModelValidator val) {
 		
-		double topPeriodCompare = -1.0;
-		if (register.equals("Channel A")) 
-			topPeriodCompare = model.getOcrAPeriod();
-		if (register.equals("Channel B")) 
-			topPeriodCompare = model.getOcrBPeriod();
-		if (register.equals("Channel C")) 
-			topPeriodCompare = model.getOcrCPeriod();
-		if (topPeriodCompare == model.getValidator().getTopPeriod())
-			return new Point(0, 0);
-		
-		HashMap<Double, String> hm = getRelevantChannels(model);
-		int count = hm.size();
-		TreeSet<Double> periods = new TreeSet<Double>(hm.keySet());
-		int i = 0;
-		double p = -1;
-		for (Double period : periods.descendingSet()) {
-			String value = hm.get(period);
-			String channelChar = register.subSequence(register.length() - 1, register.length()).toString();
-			if (value.startsWith("Channel ") &&
-					value.substring(1).contains(channelChar)) {
-				p = period;
-				break;
-			}
-			i++;
-		}
-		
-		// Get y coordinate:
-		int y = -1;
-		if (count == 3) {
-			if (i == 2)
-				y = 60;
-			if (i == 1)
-				y = 40;
-			if (i == 0)
-				y = 20;
-		} else if (count == 2) {
-			if (i == 1)
-				y = 53;
-			if (i == 0)
-				y = 27;
-		} else if (count == 1) {
-			if (p < (model.getValidator().getTopPeriod() / 2))
-				y = 50;
-			else
-				y = 30;
-		}
-		
-		// Get x coordinate:
-		y--;
-		double m = 75.0/cycleWidth;
-		double a = (80 - y);
-		double c = a * m;
-		int x = (int) Math.sqrt(Math.pow(c, 2) - Math.pow(a, 2)) - cycleWidth;
-		
-		if (p == -1) {
-			return null;
-		}
-		return new Point(x, y);
+		double percent = 1.0 - (val.calculateQuantizedPeriod(period) / val.calculateQuantizedPeriod(topPeriod));
+		int x = (int) ((double)(1.0-percent) * waveCycleWidth) - waveCycleWidth;
+		int y = (int) ((double)percent * waveHeight);
+		if (val.calculateQuantizedPeriod(period) > val.calculateQuantizedPeriod(val.getTopPeriod()))
+			x = 1;
+		return new Point (x, y);
+	}
+	
+	private static int getYCoordinateFromPercentage(double percent) {
+		// 0 percent is:
+		// -> yOffset + waveHeight
+		// 100 percent is:
+		// -> yOffset
+
+		int y = (int) (((double) (100.0 - percent)) * ((double)(waveHeight / 100.0)));
+		y += yWaveOffset;
+		return y;
+	}
+	
+	private static int getYCoordinateForOutputPin(String register) {
+		int y = yWaveOffset + waveHeight + yOutputPinPadding;
+		if (register.endsWith("B"))
+			y += 25;
+		else if (register.endsWith("C"))
+			y += 50;
+		return y;
+	}
+	
+	private static Color getColorForOutputPin(String register) {
+		if (register.endsWith("B"))
+			return COLOR_CHANNEL_B;
+		if (register.endsWith("C"))
+			return COLOR_CHANNEL_C;
+		return COLOR_CHANNEL_A;
 	}
 }

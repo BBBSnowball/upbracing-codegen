@@ -1,21 +1,14 @@
 package de.upbracing.configurationeditor.timer.editors;
 
-import java.awt.Color;
-
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
@@ -79,8 +72,8 @@ public class ConfigurationCompositeOverflow extends AConfigurationCompositeBase 
 		
 		// Waveform:
 		WaveformDrawHelper.drawWaveform(gc, false);
-		WaveformDrawHelper.drawHorizontalLine(gc, 0, "MAX " + "(" + model.getValidator().getMaximumValue() + ")");
-		WaveformDrawHelper.drawHorizontalLine(gc, 80, "MIN " + "(0)");
+		WaveformDrawHelper.drawHorizontalLine(gc, 100, 100, "MAX " + "(" + model.getValidator().getMaximumValue() + ")");
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
 	    
 	    // Interrupts:
 	    WaveformDrawHelper.drawResetInterrupts(gc, model.getOverflowInterrupt());

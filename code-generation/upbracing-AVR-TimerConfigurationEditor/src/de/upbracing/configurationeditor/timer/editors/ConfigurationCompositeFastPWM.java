@@ -171,14 +171,14 @@ public class ConfigurationCompositeFastPWM extends AConfigurationCompositeBase {
 		
 		// Waveform:
 		WaveformDrawHelper.drawWaveform(gc, false);
-		WaveformDrawHelper.drawHorizontalLine(gc, 80, "MIN " + "(0)");
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
 		
 		// Channels:
-		WaveformDrawHelper.drawChannels(gc, model);
+		WaveformDrawHelper.drawWaveformChannels(gc, model);
 		
 		// Output pins:
-		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel A");	
-		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel B");
-		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel C");	
+		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel A", model.getOcrAPeriod(), model.getSingleSlopePWMPinModeA());	
+		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel B", model.getOcrBPeriod(), model.getSingleSlopePWMPinModeB());
+		WaveformDrawHelper.drawSingleSlopePWMOutputPin(gc, model, "Channel C", model.getOcrCPeriod(), model.getSingleSlopePWMPinModeC());	
 	}
 }

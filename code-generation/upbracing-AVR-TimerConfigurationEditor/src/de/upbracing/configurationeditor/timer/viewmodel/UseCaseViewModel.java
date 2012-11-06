@@ -1,8 +1,5 @@
 package de.upbracing.configurationeditor.timer.viewmodel;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
