@@ -129,13 +129,12 @@ public abstract class AConfigurationCompositeBase extends Composite {
 			@Override
 			public void propertyChange(PropertyChangeEvent arg0) {
 				
-				// Only redraw, if the expandItem is expanded
+				// Only relayout, if the expandItem is expanded
 				// -> otherwise no one would see the changes and we could save the CPU time ;)
 				if (expandItem.getExpandItem().getExpanded()) {
 					summaryGroup.layout();
 					layout();
 					expandItem.updateLayout();
-					canvas.redraw();
 				}
 			}
 			
@@ -158,7 +157,11 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	}
 	
 	protected void redrawDescriptionImage() {
-		canvas.redraw();
+		// Only redraw image, if the expandItem is expanded
+		// -> otherwise no one would see the changes and we could save the CPU time ;)
+		if (expandItem.getExpandItem().getExpanded()) {
+			canvas.redraw();
+		}
 	}
 
 	protected void redrawDescriptionImageIfPropertyChanges(String property) {
