@@ -1,0 +1,55 @@
+You can create a lot of tests in here. Each folder which has a main.c, project.rb, config.rb or run-test.rb file will be regarded as a test project.
+
+You can use Eclipse to edit the files. There is one project in the tests folder. If you build this project, it will build all the test projects. You cannot use Eclipse to change build settings. Please use project.rb instead, if you have to (the defaults are fine for most cases).
+
+For building and running we use 'rake' or more precisely 'rake' on JRuby. You don't need to know the details because you can simply go to the test folder and execute the rake Script which is appropiate for you platform.
+
+In most cases, you want to give it a task name, which can be:
+- build-all (build all projects)
+- generate-all (code generator on all projects)
+- test-all (run all tests)
+- test-NAME-CONFIGURATION, run a single test; NAME is a project name, CONFIGURATION is the configuration (e.g. Debug or Release)
+- build-NAME-CONFIGURATION, build a single test; NAME and CONFIGURATION as for test-NAME-CONFIGURATION
+- a file name that can be built, e.g. some-project/bin/Release/main.o
+
+You have to create a userconfig.rb file which contains some information about your set-up, e.g. programming interface and serial port. Please have a look at userconfig.rb.example
+
+
+If you want to add a test project, you simply create a new folder and put the files in it (at least main.c, project.rb, config.rb or run-test.rb).
+
+Folders should have a 4-digit number in front of it, which determines the order of tests. We increment it in steps of 5 (0005, 0010, 0015, ...), so we can later insert a test between them. Test must only test one thing and all the things they use, must be tested before. For example, the semaphore test must be run before the queue test because queues use semaphores internally and therefore, they won't work, if the semaphores are broken. That way, we will notice he broken semaphores, before a failing queue test makes us fix the queues which aren't actually broken.
+
+There are several things that you can put in a test folder:
+- C source files (*.c). They will be built and linked into the test application.
+- There must be exactly one main function in any of the C files. This function will be the entry point of the application.
+- config.rb: If this file is present, the code generators will be run. The output will be in folder "gen".
+- project.rb: You can use that file to tweak all parts of the build process. It must create an instance of Project and put it into the global variable $project. You can use your own subclass of Project and overwrite some methods to change its behaviour. See the Rakefile for details on the Project class. Please remove all global variables (except $project) and constants (including your classes) that you have created because the scripts share the global namespace. You should create an instance of ProjectWithCommon, if you want to use files from the "common" directory. You can then use its "add_common" method to add libraries or single files, e.g. $project.add_common :rs232
+- run-test.rb: This script will be called to run the test. It should write the program to the microcontroller. For an automated test, it will then listen on the serial line and validate the data coming from the MCU. For a manual test, it prints detailed information to the console and accepts user input. If you don't want to do that in JRuby, you can let the script execute a Java method.
+- Java source files: to be done
+
+
+Common files:
+
+You can put C sources and headers into the common directory, if you think they might be useful for more than one test. You can use a project.rb file to use those files in your project (see above or look at the existing project.rb files).
+
+The tests-helpers project contains Java classes that can be used by several projects (e.g. regular expression tools). [to be done]
+
+
+run-test.rb script
+
+The test scripts should be very short and easy to read. One must be able to write them with little knowledge of Ruby. To achieve that goal, we put all the heavy lifting in helper methods and classes which are implemented in Ruby (Rakefile or test-helpers.rb) or Java (test-helpers project).
+
+At the moment, we use the console to communicate with the user: Output is printed on the console, test results (success, failure, error) are reported to the console and user input is read from the console.
+
+to be done: We will have an interface that can be used to notify the user, report test results, instruct the user for manual testing and ask for user input. There will be two implementations for this interface: One is using the console and the other has a GUI (Java+Swing).
+
+
+Test GUI
+
+to be done
+
+Features:
+- Treeview with test-folder/test-name/test-step; items indicate test status (success, failure, error, running)
+- Messages pane (console output) - shows output for item selected in treeview (including output of called tools: gcc, avrdude, code generator, ...)
+- shows instructions for manual tests
+- can ask for user input (e.g. result of manual test): input of text, selection among a list of choices (e.g. "yes"/"no") with buttons
