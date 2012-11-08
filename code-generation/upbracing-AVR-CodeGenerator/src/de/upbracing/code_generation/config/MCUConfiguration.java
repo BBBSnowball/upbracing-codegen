@@ -33,9 +33,22 @@ public class MCUConfiguration {
 	private GlobalVariableConfig global_variables = new GlobalVariableConfig();
 	private RTOSConfig rtos = new RTOSConfig();
 	private ConfigurationModel timer;
-	private StatemachinesConfig statemachines = new StatemachinesConfig();
+	private StatemachinesConfig statemachines;
 
-	private Messages messages = new Messages().withOutputTo(System.err, Severity.INFO);
+	private Messages messages;
+	
+	public MCUConfiguration() {
+		messages = new Messages().withOutputTo(System.err, Severity.INFO);
+		statemachines = new StatemachinesConfig();
+		statemachines.addFormatters(messages);
+	}
+	
+	// Note (Peer): This was necessary in order to keep the TimerConfigurationEditor
+	//              working with this package of code generators. Otherwise the editor
+	//              would need to include the whole StateMachineEditor model.
+	public MCUConfiguration(boolean ignoreMe) {
+		messages = new Messages().withOutputTo(System.err, Severity.INFO);
+	}
 	
 	/** current working directory for loading config files */
 	public static String currentDirectory = ".";

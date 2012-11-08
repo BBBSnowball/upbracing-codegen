@@ -16,7 +16,7 @@ import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 public class RTOSConfig {
 	private String processor = "AT90CAN128";
 	private long clock = -1;
-	private String conformance_class = null;
+//	private String conformance_class = null;
 	private float tick_frequency = -1;
 	
 	private int timer_prescaler;
@@ -33,6 +33,9 @@ public class RTOSConfig {
 	public RTOSConfig() {
 		// add idle task
 		addTask("Idle", TaskState.READY);
+		
+		// reset to not used
+		used = false;
 		
 		config_values = new TreeMap<String, SortedMap<String,RTOSConfigValue>>();
 		for (RTOSConfigValue value : getAllConfigValues()) {
@@ -178,20 +181,20 @@ public class RTOSConfig {
 		updateTimerSettings();
 	}
 
-	/**
-	 * @return the conformance_class
-	 */
-	public String getConformanceClass() {
-		return conformance_class;
-	}
+//	/**
+//	 * @return the conformance_class
+//	 */
+//	public String getConformanceClass() {
+//		return conformance_class;
+//	}
 
-	/**
-	 * @param conformance_class the conformance_class to set
-	 */
-	public void setConformanceClass(String conformance_class) {
-		this.conformance_class = conformance_class;
-		used = true;
-	}
+//	/**
+//	 * @param conformance_class the conformance_class to set
+//	 */
+//	public void setConformanceClass(String conformance_class) {
+//		this.conformance_class = conformance_class;
+//		used = true;
+//	}
 
 	/**
 	 * @return the tick_frequency

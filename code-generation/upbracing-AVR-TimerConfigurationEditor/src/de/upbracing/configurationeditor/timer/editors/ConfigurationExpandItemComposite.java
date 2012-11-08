@@ -217,6 +217,10 @@ public class ConfigurationExpandItemComposite extends Composite {
 		
 		expandItem.setHeight(activeC.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 50);
 	}
+	
+	public ExpandItem getExpandItem() {
+		return this.expandItem;
+	}
 
 	private void initUseCaseGroups() {
 		

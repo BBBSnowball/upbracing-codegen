@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CARTOS_DIR/delimiter=\:
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CARTOS_DIR/operation=append
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CARTOS_DIR/value=${CARTOS_DIR_VARIABLE}
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CODE_GENERATOR_DIR/delimiter=\:
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CODE_GENERATOR_DIR/operation=append
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/CODE_GENERATOR_DIR/value=${CODE_GENERATOR_DIR_VARIABLE}
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/append=true
+environment/project/de.innot.avreclipse.toolchain.winavr.base.404018288/appendContributed=true

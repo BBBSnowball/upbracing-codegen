@@ -78,15 +78,15 @@ void _queue_dequeue_many(Queue* q, Semaphore_n* sem_prod,
 
 // start an enqueue/dequeue operation
 #define queue_start_enqueue(name, no_of_bytes) \
-		sem_start_wait_n(QUEUE_PROD_REF(name), no_of_bytes)
+		_sem_start_wait_n(QUEUE_PROD_REF(name), no_of_bytes)
 #define queue_start_dequeue(name, no_of_bytes) \
-		sem_start_wait_n(QUEUE_CONS_REF(name), no_of_bytes)
+		_sem_start_wait_n(QUEUE_CONS_REF(name), no_of_bytes)
 
 // is the queue ready for the operation?
 #define queue_continue_enqueue(name, token) \
-		sem_continue_wait_n(QUEUE_PROD_REF(name), token)
+		_sem_continue_wait_n(QUEUE_PROD_REF(name), token)
 #define queue_continue_dequeue(name, token) \
-		sem_continue_wait_n(QUEUE_CONS_REF(name), token)
+		_sem_continue_wait_n(QUEUE_CONS_REF(name), token)
 
 // finish the operation
 // The parameter no_of_bytes mustn't be greater than the
@@ -109,9 +109,9 @@ void _queue_finish_dequeue(Queue* sem, Semaphore_n* sem_prod,
 
 // abort waiting
 #define queue_abort_enqueue(name, token) \
-		sem_abort_wait_n(QUEUE_PROD_REF(name), token)
+		_sem_abort_wait_n(QUEUE_PROD_REF(name), token)
 #define queue_abort_dequeue(name, token) \
-		sem_abort_wait_n(QUEUE_CONS_REF(name), token)
+		_sem_abort_wait_n(QUEUE_CONS_REF(name), token)
 
 //TODO we might want a function that changes the reservation
 //     size for a token

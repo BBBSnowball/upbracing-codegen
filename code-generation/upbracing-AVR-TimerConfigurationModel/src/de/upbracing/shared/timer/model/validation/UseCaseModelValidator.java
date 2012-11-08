@@ -58,8 +58,13 @@ public class UseCaseModelValidator extends AValidatorBase {
 	public ValidationResult getIcrPeriodError() {
 		if (!validateMaxPeriod(model.getIcrPeriod()))
 			return ValidationResult.ERROR;
+		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getIcrPeriod());
-		if (quantizedPeriod != model.getIcrPeriod())
+		double error = 100.0 - (model.getIcrPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getIcrPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -78,15 +83,18 @@ public class UseCaseModelValidator extends AValidatorBase {
 		// Check, if greater or equal top value period
 		if (!isOcrATopRegister()) 
 		{
-			// Furthermore, this test is unnecessary, if this is the TOP value register
-			if (model.getOcrAPeriod() > getTopPeriod())
-				return ValidationResult.WARNING;
+			// This test is unnecessary, if this is the TOP value register
+			if (calculateQuantizedPeriod(model.getOcrAPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+				return ValidationResult.ERROR;
 		}
 		
 		
-		// Check, if quantization is needed
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrAPeriod());
-		if (quantizedPeriod != model.getOcrAPeriod())
+		double error = 100.0 - (model.getOcrAPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrAPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -102,11 +110,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return ValidationResult.ERROR;
 		
 		// Check, if greater or equal top value period
-		if (model.getOcrBPeriod() > getTopPeriod())
-			return ValidationResult.WARNING;
+		if (calculateQuantizedPeriod(model.getOcrBPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+			return ValidationResult.ERROR;
 		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrBPeriod());
-		if (quantizedPeriod != model.getOcrBPeriod())
+		double error = 100.0 - (model.getOcrBPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrBPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -122,11 +134,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return ValidationResult.ERROR;
 		
 		// Check, if greater or equal top value period
-		if (model.getOcrCPeriod() > getTopPeriod())
-			return ValidationResult.WARNING;
+		if (calculateQuantizedPeriod(model.getOcrCPeriod()) > calculateQuantizedPeriod(getTopPeriod()))
+			return ValidationResult.ERROR;
 		
+		// Check, if quantization is needed, check error tolerance
 		double quantizedPeriod = calculateQuantizedPeriod(model.getOcrCPeriod());
-		if (quantizedPeriod != model.getOcrCPeriod())
+		double error = 100.0 - (model.getOcrCPeriod() / quantizedPeriod) * 100.0;
+		if (error == Double.NaN)
+			error = 0;
+		if (quantizedPeriod != model.getOcrCPeriod() && Math.abs(error) > parent.getErrorTolerance())
 			return ValidationResult.WARNING;
 		return ValidationResult.OK;
 	}
@@ -318,9 +334,6 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrAPeriodErrorText() {
-		if (getOcrAPeriodError() == ValidationResult.ERROR)
-			return getPeriodTooHighErrorText(model.getOcrAPeriod());
-		
 		// Check, if greater or equal top value period
 		if (!isOcrATopRegister()) 
 		{
@@ -328,6 +341,9 @@ public class UseCaseModelValidator extends AValidatorBase {
 			if (model.getOcrAPeriod() > getTopPeriod())
 				return getPeriodAboveTopValueWarningText(model.getOcrAPeriod());
 		}
+		
+		if (getOcrAPeriodError() == ValidationResult.ERROR)
+			return getPeriodTooHighErrorText(model.getOcrAPeriod());
 		
 		if (getOcrAPeriodError() == ValidationResult.WARNING) 
 		{
@@ -341,16 +357,15 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrBPeriodErrorText() {
-		if (getOcrBPeriodError() == ValidationResult.ERROR)
-			return getPeriodTooHighErrorText(model.getOcrBPeriod());
+		// Check, if greater or equal top value period
+		if (model.getOcrBPeriod() > getTopPeriod())
+			return getPeriodAboveTopValueWarningText(model.getOcrBPeriod());
 		if (getOcrBPeriodError() == ValidationResult.WARNING)
 		{
-			// Check, if greater or equal top value period
-			if (model.getOcrBPeriod() > getTopPeriod())
-				return getPeriodAboveTopValueWarningText(model.getOcrBPeriod());
-			
 			return "The desired period " + formatPeriod(model.getOcrBPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrBPeriod())) + ".";
 		}
+		if (getOcrBPeriodError() == ValidationResult.ERROR)
+			return getPeriodTooHighErrorText(model.getOcrBPeriod());
 		return "";
 	}
 	
@@ -359,13 +374,13 @@ public class UseCaseModelValidator extends AValidatorBase {
 	 * @return the created error message.
 	 */
 	public String getOcrCPeriodErrorText() {
+		// Check, if greater or equal top value period
+		if (model.getOcrCPeriod() > getTopPeriod())
+			return getPeriodAboveTopValueWarningText(model.getOcrCPeriod());
 		if (getOcrCPeriodError() == ValidationResult.ERROR)
 			return getPeriodTooHighErrorText(model.getOcrCPeriod());
 		if (getOcrCPeriodError() == ValidationResult.WARNING)
 		{
-			// Check, if greater or equal top value period
-			if (model.getOcrCPeriod() > getTopPeriod())
-				return getPeriodAboveTopValueWarningText(model.getOcrCPeriod());
 			return "The desired period " + formatPeriod(model.getOcrCPeriod()) + " cannot be reached exactly. It will be quantized to " + formatPeriod(calculateQuantizedPeriod(model.getOcrCPeriod())) + ".";
 		}
 		return "";
@@ -499,6 +514,29 @@ public class UseCaseModelValidator extends AValidatorBase {
 		changes.firePropertyChange("dualSlopePWMPinModeAErrorText", null, null);
 	}
 	
+	public void updateNameValidation() {
+		changes.firePropertyChange("nameError", null, null);
+		changes.firePropertyChange("nameErrorText", null, null);
+	}
+	
+	public void updateTimerModeValidation() {
+		changes.firePropertyChange("modeError", null, null);
+		changes.firePropertyChange("modeErrorText", null, null);
+		changes.firePropertyChange("timerError", null, null);
+		changes.firePropertyChange("timerErrorText", null, null);
+	}
+	
+	public void updatePeriodValidation() {
+		changes.firePropertyChange("icrPeriodError", null, null);
+		changes.firePropertyChange("icrPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrAPeriodError", null, null);
+		changes.firePropertyChange("ocrAPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrBPeriodError", null, null);
+		changes.firePropertyChange("ocrBPeriodErrorText", null, null);
+		changes.firePropertyChange("ocrCPeriodError", null, null);
+		changes.firePropertyChange("ocrCPeriodErrorText", null, null);
+	}
+	
 	/**
 	 * Calculates the register value for a given period.
 	 * @param period is the desired period in seconds, for which the corresponding register value is calculated.
@@ -592,6 +630,51 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return max;
 	}
 
+	public double getTopPeriod() {
+		if (model.getMode().equals(TimerOperationModes.CTC))
+		{
+			if (model.getCtcTop().equals(CTCTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getCtcTop().equals(CTCTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_FAST))
+		{
+			if (model.getFastPWMTop().equals(PWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getFastPWMTop().equals(PWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT8))
+				return calculatePeriodForRegisterValue(255);
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT9))
+				return calculatePeriodForRegisterValue(511);
+			if (model.getFastPWMTop().equals(PWMTopValues.BIT10))
+				return calculatePeriodForRegisterValue(1023);
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
+		{
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
+				return calculatePeriodForRegisterValue(255);
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT9))
+				return calculatePeriodForRegisterValue(511);
+			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT10))
+				return calculatePeriodForRegisterValue(1023);
+		}
+		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
+		{
+			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
+				return calculateQuantizedPeriod(model.getIcrPeriod());
+			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
+				return calculateQuantizedPeriod(model.getOcrAPeriod());
+		}
+		
+		return 0.0;
+	}
+
 	private boolean validateMaxPeriod(double period) {
 		// Get Maximum Register Value
 		int maxValue = getMaximumValue();
@@ -601,7 +684,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 		return true;
 	}
 
-	private double calculatePeriodForRegisterValue(int registerValue) {
+	public double calculatePeriodForRegisterValue(int registerValue) {
 		// registerValue = period / timerPeriod
 		//               = period * timerFreq
 		//               = period * (frequency / prescale)
@@ -621,7 +704,7 @@ public class UseCaseModelValidator extends AValidatorBase {
 			return (double) (registerValue + 1) / timerFreq;
 	}
 	
-	private int getMaximumValue() {
+	public int getMaximumValue() {
 		int maxValue = 255;
 		if (model.getTimer().equals(TimerEnum.TIMER1) || model.getTimer().equals(TimerEnum.TIMER3))
 			maxValue = 65535;
@@ -683,16 +766,29 @@ public class UseCaseModelValidator extends AValidatorBase {
 				+ "(" + topReg + formatPeriod(getTopPeriod()) + ").";
 	}
 	
-	private static String formatPeriod(double period) {
+	public static String formatPeriod(double period) {
 		DecimalFormat f = new DecimalFormat("###.##########");
-		if (period > 1)
-			return f.format(period) + "s";
-		else if (period > 1e-3)
+		if (period >= 1)
+			return f.format(period) + " s";
+		else if (period >= 1e-3)
 			return f.format(period * 1e3) + " ms";
-		else if (period > 1e-6)
+		else if (period >= 1e-6)
 			return f.format(period * 1e6) + " us";
 		else
 			return f.format(period * 1e9) + " ns";
+	}
+	
+	public static String formatFrequency(double period) {
+		DecimalFormat f = new DecimalFormat("###.##########");
+		double hz = 1.0/period;
+		if (hz < 1e3)
+			return f.format(hz) + " Hz";
+		else if (hz < 1e6)
+			return f.format(hz * 1e-3) + " kHz";
+		else if (hz < 1e9)
+			return f.format(hz * 1e-6) + " MHz";
+		else
+			return f.format(period * 1e-9) + " GHz";
 	}
 	
 	private boolean isNameColliding() {
@@ -751,50 +847,5 @@ public class UseCaseModelValidator extends AValidatorBase {
 		}
 		
 		return false;
-	}
-	
-	private double getTopPeriod() {
-		if (model.getMode().equals(TimerOperationModes.CTC))
-		{
-			if (model.getCtcTop().equals(CTCTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getCtcTop().equals(CTCTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_FAST))
-		{
-			if (model.getFastPWMTop().equals(PWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getFastPWMTop().equals(PWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT8))
-				return calculatePeriodForRegisterValue(255);
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT9))
-				return calculatePeriodForRegisterValue(511);
-			if (model.getFastPWMTop().equals(PWMTopValues.BIT10))
-				return calculatePeriodForRegisterValue(1023);
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT))
-		{
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT8))
-				return calculatePeriodForRegisterValue(255);
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT9))
-				return calculatePeriodForRegisterValue(511);
-			if (model.getPhaseCorrectPWMTop().equals(PWMTopValues.BIT10))
-				return calculatePeriodForRegisterValue(1023);
-		}
-		if (model.getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT))
-		{
-			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.ICR))
-				return calculateQuantizedPeriod(model.getIcrPeriod());
-			if (model.getPhaseAndFrequencyCorrectPWMTop().equals(PhaseAndFrequencyCorrectPWMTopValues.OCRnA))
-				return calculateQuantizedPeriod(model.getOcrAPeriod());
-		}
-		
-		return 0.0;
 	}
 }

@@ -1,8 +1,5 @@
 package de.upbracing.configurationeditor.timer.viewmodel;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-
 import de.upbracing.shared.timer.model.ConfigurationModel;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
@@ -21,10 +18,12 @@ public class UseCaseViewModel extends AViewModelBase {
 	private UseCaseModel model;
 	private ConfigurationViewModel parent;
 	private UseCaseModelValidator validator;
+	private String descriptionCache;
 		
 	// Constructor:
 	public UseCaseViewModel(UseCaseModel m, ConfigurationModel parent) {
 		this.model = m;
+		this.descriptionCache = "";
 		this.validator = new UseCaseModelValidator(parent, m);
 	}
 
@@ -66,55 +65,72 @@ public class UseCaseViewModel extends AViewModelBase {
 	
 	// Routed Model Setters:
 	public void setName(String n) {
-		model.setName(n);
-		changes.firePropertyChange("name", null, null);
-		validator.updateValidation();
-		
-		// Alert the parent, that the name of one of its child has changed
-		// -> this is needed to check for name collisions
-		getParent().updateUseCaseValidation();
+		if (!model.getName().equals(n)) {
+			model.setName(n);
+			changes.firePropertyChange("name", null, null);
+			validator.updateNameValidation();
+			
+			// Alert the parent, that the name of one of its child has changed
+			// -> this is needed to check for name collisions
+			getParent().updateUseCaseNameValidation();
+		}
 	}
 	public void setMode(TimerOperationModes m) {
-		this.model.setMode(m);
-		changes.firePropertyChange("mode", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getMode().equals(m)) {
+			this.model.setMode(m);
+			changes.firePropertyChange("mode", null, null);
+			triggerUpdateView();
+			validator.updateTimerModeValidation();
+		}
 	}
 	public void setTimer(TimerEnum t) {
-		this.model.setTimer(t);
-		changes.firePropertyChange("timer", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getTimer().equals(t)) {
+			this.model.setTimer(t);
+			changes.firePropertyChange("timer", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateTimerModeValidation();
+		}
 	}
 	public void setPrescale(PrescaleFactors p) {
-		this.model.setPrescale(p);
-		changes.firePropertyChange("prescale", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPrescale().equals(p)) {
+			this.model.setPrescale(p);
+			changes.firePropertyChange("prescale", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setIcrPeriod(double f) {
-		this.model.setIcrPeriod(f);
-		changes.firePropertyChange("icrPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getIcrPeriod() != f) {
+			this.model.setIcrPeriod(f);
+			changes.firePropertyChange("icrPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrAPeriod(double f) {
-		this.model.setOcrAPeriod(f);
-		changes.firePropertyChange("ocrAPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrAPeriod() != f) {
+			this.model.setOcrAPeriod(f);
+			changes.firePropertyChange("ocrAPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrBPeriod(double f) {
-		this.model.setOcrBPeriod(f);
-		changes.firePropertyChange("ocrBPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrBPeriod() != f) {
+			this.model.setOcrBPeriod(f);
+			changes.firePropertyChange("ocrBPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	public void setOcrCPeriod(double f) {
-		this.model.setOcrCPeriod(f);
-		changes.firePropertyChange("ocrCPeriod", null, null);
-		validator.updateValidation();
-		triggerUpdateView();
+		if (model.getOcrCPeriod() != f) {
+			this.model.setOcrCPeriod(f);
+			changes.firePropertyChange("ocrCPeriod", null, null);
+			validator.updateValidation();
+			triggerUpdateView();
+		}
 	}
 	
 	// Dynamic data-bound View Data:
@@ -197,10 +213,10 @@ public class UseCaseViewModel extends AViewModelBase {
 		// General
 		int maxValue = 255;
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
-			maxValue = 65536;
+			maxValue = 65535;
 		int timerNumber = getTimer().ordinal();
-		String tickDuration = getFormattedDecimal((double)1.0/getTickFrequency());
-		String tickFrequency = getFormattedDecimal(getTickFrequency());
+		String tickDuration = UseCaseModelValidator.formatPeriod((double)1.0/getTickFrequency());
+		String tickFrequency = UseCaseModelValidator.formatFrequency((double)1.0/getTickFrequency());
 		
 		// 8 or 16 Bit?
 		int bit = 8;
@@ -209,8 +225,8 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		// Text
 		String text = "Timer Number: " + timerNumber + " (" + bit + "Bit)" + ls
-				+ "Frequency: " + tickFrequency + "Hz (with prescale divisor " + getPrescale().getNumeric() + ")" + ls
-				+ "Resolution: " + tickDuration + "s" + ls
+				+ "Frequency: " + tickFrequency + " (with prescale divisor " + getPrescale().getNumeric() + ")" + ls
+				+ "Resolution: " + tickDuration + ls
 				+ "Max. Counter Value: " + maxValue + ls + ls;
 		
 		// CTC
@@ -236,11 +252,19 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void triggerUpdateView() {
-		changes.firePropertyChange("description", null, null);
+		// Only update description, if text has changed!
+		String newDescString = getDescription();
+		if (!newDescString.equals(descriptionCache)) {
+			changes.firePropertyChange("description", descriptionCache, newDescString);
+			descriptionCache = newDescString;
+		}
+	}
+	
+	public void triggerUpdateChannelsVisibility() {
+		// Trigger new channel names
 		changes.firePropertyChange("icrName", null, null);
 		changes.firePropertyChange("ocrAName", null, null);
-		changes.firePropertyChange("ocrBName", null, null);
-		changes.firePropertyChange("ocrCName", null, null);
+		// Trigger visbilities		
 		changes.firePropertyChange("icrVisibility", null, null);
 		changes.firePropertyChange("ocrChannelsVisibility", null, null);
 	}
@@ -258,9 +282,11 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setOverflowInterrupt(boolean i) {
-		this.model.setOverflowInterrupt(i);
-		changes.firePropertyChange("overflowInterrupt", null, null);
-		triggerUpdateView();
+		if (model.getOverflowInterrupt() != i) {
+			this.model.setOverflowInterrupt(i);
+			changes.firePropertyChange("overflowInterrupt", null, null);
+			triggerUpdateView();
+		}
 	}
 	
 	// CTC
@@ -287,46 +313,61 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setCtcTop(CTCTopValues v) {
-		model.setCtcTop(v);
-		changes.firePropertyChange("ctcTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getCtcTop().equals(v)) {
+			model.setCtcTop(v);
+			changes.firePropertyChange("ctcTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptA(boolean i) {
-		model.setCompareInterruptA(i);
-		changes.firePropertyChange("compareInterruptA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptA() != i) {
+			model.setCompareInterruptA(i);
+			changes.firePropertyChange("compareInterruptA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptB(boolean i) {
-		model.setCompareInterruptB(i);
-		changes.firePropertyChange("compareInterruptB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptB() != i) {	
+			model.setCompareInterruptB(i);
+			changes.firePropertyChange("compareInterruptB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setCompareInterruptC(boolean i) {
-		model.setCompareInterruptC(i);
-		changes.firePropertyChange("compareInterruptC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (model.getCompareInterruptC() != i) {
+			model.setCompareInterruptC(i);
+			changes.firePropertyChange("compareInterruptC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeA(CTCOutputPinMode m) {
-		model.setComparePinModeA(m);
-		changes.firePropertyChange("comparePinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeA().equals(m)) {
+			model.setComparePinModeA(m);
+			changes.firePropertyChange("comparePinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeB(CTCOutputPinMode m) {
-		model.setComparePinModeB(m);
-		changes.firePropertyChange("comparePinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeB().equals(m)) {	
+			model.setComparePinModeB(m);
+			changes.firePropertyChange("comparePinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setComparePinModeC(CTCOutputPinMode m) {
-		model.setComparePinModeC(m);
-		changes.firePropertyChange("comparePinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getComparePinModeC().equals(m)) {
+			model.setComparePinModeC(m);
+			changes.firePropertyChange("comparePinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 		
 	// PWM
@@ -362,67 +403,88 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	
 	public void setFastPWMTop(PWMTopValues p) {
-		model.setFastPWMTop(p);
-		changes.firePropertyChange("fastPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getFastPWMTop().equals(p)) {
+			model.setFastPWMTop(p);
+			changes.firePropertyChange("fastPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setPhaseCorrectPWMTop(PWMTopValues p) {
-		model.setPhaseCorrectPWMTop(p);
-		changes.firePropertyChange("phaseCorrectPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPhaseCorrectPWMTop().equals(p)) {
+			model.setPhaseCorrectPWMTop(p);
+			changes.firePropertyChange("phaseCorrectPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setPhaseAndFrequencyCorrectPWMTop(PhaseAndFrequencyCorrectPWMTopValues p) {
-		model.setPhaseAndFrequencyCorrectPWMTop(p);
-		changes.firePropertyChange("phaseAndFrequencyCorrectPWMTop", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getPhaseAndFrequencyCorrectPWMTop().equals(p)) {	
+			model.setPhaseAndFrequencyCorrectPWMTop(p);
+			changes.firePropertyChange("phaseAndFrequencyCorrectPWMTop", null, null);
+			triggerUpdateView();
+			triggerUpdateChannelsVisibility();
+			validator.updateValidation();
+		}
 	}
 	public void setParent(ConfigurationViewModel parent) {
 		this.parent = parent;
 	}
 	public void setSingleSlopePWMPinModeA(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeA(m);
-		changes.firePropertyChange("singleSlopePWMPinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeA().equals(m)) {
+			model.setSingleSlopePWMPinModeA(m);
+			changes.firePropertyChange("singleSlopePWMPinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setSingleSlopePWMPinModeB(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeB(m);
-		changes.firePropertyChange("singleSlopePWMPinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeB().equals(m)) {
+			model.setSingleSlopePWMPinModeB(m);
+			changes.firePropertyChange("singleSlopePWMPinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}			
 	}
 	public void setSingleSlopePWMPinModeC(PWMSingleSlopeOutputPinMode m)
 	{
-		model.setSingleSlopePWMPinModeC(m);
-		changes.firePropertyChange("singleSlopePWMPinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getSingleSlopePWMPinModeC().equals(m)) {
+			model.setSingleSlopePWMPinModeC(m);
+			changes.firePropertyChange("singleSlopePWMPinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeA(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeA(m);
-		changes.firePropertyChange("dualSlopePWMPinModeA", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeA().equals(m)) { 
+			model.setDualSlopePWMPinModeA(m);
+			changes.firePropertyChange("dualSlopePWMPinModeA", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeB(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeB(m);
-		changes.firePropertyChange("dualSlopePWMPinModeB", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeB().equals(m)) {
+			model.setDualSlopePWMPinModeB(m);
+			changes.firePropertyChange("dualSlopePWMPinModeB", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	public void setDualSlopePWMPinModeC(PWMDualSlopeOutputPinMode m)
 	{
-		model.setDualSlopePWMPinModeC(m);
-		changes.firePropertyChange("dualSlopePWMPinModeC", null, null);
-		triggerUpdateView();
-		validator.updateValidation();
+		if (!model.getDualSlopePWMPinModeC().equals(m)) {
+			model.setDualSlopePWMPinModeC(m);
+			changes.firePropertyChange("dualSlopePWMPinModeC", null, null);
+			triggerUpdateView();
+			validator.updateValidation();
+		}
 	}
 	
 	// Private Helper Methods:
@@ -440,13 +502,13 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		String ls = System.getProperty("line.separator");
 		
-		String overflowTime = getFormattedDecimal(((double) (maxValue + 1)) / getTickFrequency());
+		String overflowTime = UseCaseModelValidator.formatPeriod(getValidator().calculatePeriodForRegisterValue(getValidator().getMaximumValue()));
 		String text = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
-		text += "=> Timer will overflow every " + overflowTime + "s.";
+		text += "=> Timer will overflow every " + overflowTime + ".";
 		if (model.getOverflowInterrupt())
 			text += ls + "=> Interrupts are generated on overflow.";
 		
-		return text;
+		return text.trim();
 	}
 	
 	private String getCtcDescription() {
@@ -461,53 +523,95 @@ public class UseCaseViewModel extends AViewModelBase {
 			ctcTopReg += " (Output Capture Register)";
 		}
 
-		String text = "The Timer will run from 0 to the Top Value stored in " + ctcTopReg + "." + ls;
+		// Top value text:
+		String text = "The Timer will run from 0 to the value stored in " + ctcTopReg + " (TOP). The counter will restart at 0." + ls + ls;
+		text += "=> Timer will be reset every " + UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod()) + "." + ls;
 		
 		// Interrupts:
 		if (getCompareInterruptA())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrAPeriod()) + "s after timer reset.";
-		if (getCompareInterruptB())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrBPeriod()) + "s after timer reset.";
-		if (getCompareInterruptC())
-			text += ls + "=> Interrupt is generated " + getValidator().calculateQuantizedPeriod(getOcrCPeriod()) + "s after timer reset.";
+			text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrAPeriod())) + " after timer reset.";
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+			if (getCompareInterruptB())
+				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrBPeriod())) + " after timer reset.";
+			if (getCompareInterruptC())
+				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrCPeriod())) + " after timer reset.";
+		}
 		if (getCompareInterruptA() || getCompareInterruptB() || getCompareInterruptC())
 			text += ls;
 		
 		// Output modes:
 		if (getComparePinModeA() != null && !getComparePinModeA().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel A will " + getComparePinModeA().toString().toLowerCase() + ".";
+			text += ls + "=> Channel A: " + getComparePinModeA().toString().toLowerCase() + ".";
 		}
-		if (getComparePinModeB() != null && !getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel B will " + getComparePinModeB().toString().toLowerCase() + ".";	
-		}
-		if (getComparePinModeC() != null && !getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
-			text += ls + "=> Channel C will " + getComparePinModeC().toString().toLowerCase() + "."; 
+		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+			if (getComparePinModeB() != null && !getComparePinModeB().equals(CTCOutputPinMode.NORMAL)) {
+				text += ls + "=> Channel B: " + getComparePinModeB().toString().toLowerCase() + ".";	
+			}
+			if (getComparePinModeC() != null && !getComparePinModeC().equals(CTCOutputPinMode.NORMAL)) {
+				text += ls + "=> Channel C: " + getComparePinModeC().toString().toLowerCase() + "."; 
+			}
 		}
 		
-		return text;
+		return text.trim();
 	}
 	
 	private String getPWMDescription() {
 		
+		String ls = System.getProperty("line.separator");
 		String text = "The Timer will run in " + getMode().toString() + ". ";
 		
 		if (getMode().equals(TimerOperationModes.PWM_FAST) || getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {
 			text += "Period cannot be altered during runtime.";
 		}
 		
-		// TODO: Base rate:
+		// Base rate:
+		text += ls + ls + "=> PWM period is " +  UseCaseModelValidator.formatPeriod(getValidator().getTopPeriod()) + "." + ls;
+		text += "=> PWM base rate is " +  UseCaseModelValidator.formatFrequency(getValidator().getTopPeriod())  + "." + ls;
 		
-		// TODO: Channels:
+		// Channels:
+		if (getMode().equals(TimerOperationModes.PWM_FAST)) {
+			if (getSingleSlopePWMPinModeA() != null && !getSingleSlopePWMPinModeA().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+				text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeA(), "A", getOcrAPeriod());
+			}
+			if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+				if (getSingleSlopePWMPinModeB() != null && !getSingleSlopePWMPinModeB().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeB(), "B", getOcrBPeriod());
+				}
+				if (getSingleSlopePWMPinModeC() != null && !getSingleSlopePWMPinModeC().equals(PWMSingleSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getSingleSlopePWMPinModeC(), "C", getOcrCPeriod());
+				}
+			}
+		} else if (getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT) || getMode().equals(TimerOperationModes.PWM_PHASE_FREQUENCY_CORRECT)) {
+			if (getDualSlopePWMPinModeA() != null && !getDualSlopePWMPinModeA().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+				text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeA(), "A", getOcrAPeriod());
+			}
+			if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
+				if (getDualSlopePWMPinModeB() != null && !getDualSlopePWMPinModeB().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeB(), "B", getOcrBPeriod());
+				}
+				if (getDualSlopePWMPinModeC() != null && !getDualSlopePWMPinModeC().equals(PWMDualSlopeOutputPinMode.NORMAL)) {
+					text += ls + getPWMOutputPinDescription(getDualSlopePWMPinModeC(), "C", getOcrCPeriod());
+				}
+			}
+		}
 		
-		return text;
+		return text.trim();
 	}
 	
-	private String getFormattedDecimal(double d) {
-		DecimalFormatSymbols sym = new DecimalFormatSymbols();
-		sym.setDecimalSeparator('.');
-		DecimalFormat df = new DecimalFormat("###.##########");
-		df.setDecimalFormatSymbols(sym);
-		
-		return df.format(d);
+	private String getPWMOutputPinDescription(PWMSingleSlopeOutputPinMode pinMode, String channel, double period) {
+		String txt = "=> Channel " + channel + ": " + pinMode.toString().toLowerCase();
+		if (!pinMode.equals(PWMSingleSlopeOutputPinMode.TOGGLE)) {
+			txt += " (duty-cycle: " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(period)) + ")";
+		}
+		txt += ".";
+		return txt;
+	}
+	private String getPWMOutputPinDescription(PWMDualSlopeOutputPinMode pinMode, String channel, double period) {
+		String txt = "=> Channel " + channel + ": " + pinMode.toString().toLowerCase();
+		if (!pinMode.equals(PWMDualSlopeOutputPinMode.TOGGLE)) {
+			txt += " (duty-cycle: " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(period)) + ")";
+		}
+		txt += ".";
+		return txt;
 	}
 }

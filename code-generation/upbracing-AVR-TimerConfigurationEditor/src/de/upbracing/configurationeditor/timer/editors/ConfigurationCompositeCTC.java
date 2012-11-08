@@ -13,6 +13,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.Label;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.CTCOutputPinMode;
 import de.upbracing.shared.timer.model.enums.CTCTopValues;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 /**
  * Content for the settings group in CTC mode.
@@ -44,7 +46,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 									 int style,
 									 TimerConfigurationEditor editor, 
 									 UseCaseViewModel model) {
-		super(parent, expandItem, style, editor, model);
+		super(parent, expandItem, style, editor, model, 220);
 		
 
 		createTopRegisterSelection(getSettingsGroup(), CTCTopValues.values(), "ctcTop");
@@ -87,7 +89,7 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 		}
 		
 		// Label for Register Name:
-		Label lbPrefix = new Label(scComp, SWT.BORDER);
+		Label lbPrefix = new Label(scComp, SWT.NONE);
 		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
@@ -153,5 +155,33 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 				}
 			});
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see de.upbracing.configurationeditor.timer.editors.AConfigurationCompositeBase#drawDescriptionImage(org.eclipse.swt.graphics.GC)
+	 */
+	@Override
+	public void drawDescriptionImage(GC gc) {
+		
+		// Period text:
+		String periodString = UseCaseModelValidator.formatPeriod(model.getValidator().getTopPeriod());
+		WaveformDrawHelper.drawPeriodText(gc, periodString, false);
+		
+		// Waveform:
+		WaveformDrawHelper.drawWaveform(gc, false);
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
+		
+		// Channels:
+		WaveformDrawHelper.drawWaveformChannels(gc, model);
+		
+		// Interrupts:
+		if (model.getCtcTop().equals(CTCTopValues.OCRnA)
+			|| (model.getValidator().calculateQuantizedPeriod(model.getOcrAPeriod()) == model.getValidator().calculateQuantizedPeriod(model.getIcrPeriod())))
+			WaveformDrawHelper.drawResetInterrupts(gc, model.getCompareInterruptA());
+		
+		// Output pins:
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel A", model.getOcrAPeriod(), model.getComparePinModeA());	
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel B", model.getOcrBPeriod(), model.getComparePinModeB());
+		WaveformDrawHelper.drawCTCOutputPin(gc, model, "Channel C", model.getOcrCPeriod(), model.getComparePinModeC());	
 	}
 }

@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import org.junit.Test;
 
 import de.upbracing.code_generation.Messages;
-import de.upbracing.code_generation.Messages.Context;
+//import de.upbracing.code_generation.Messages.Context;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.ObjectFormatter;

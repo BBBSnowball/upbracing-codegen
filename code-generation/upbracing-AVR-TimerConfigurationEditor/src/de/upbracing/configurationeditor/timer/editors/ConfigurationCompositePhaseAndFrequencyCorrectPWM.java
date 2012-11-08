@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -19,6 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
 import de.upbracing.shared.timer.model.enums.PWMDualSlopeOutputPinMode;
 import de.upbracing.shared.timer.model.enums.PhaseAndFrequencyCorrectPWMTopValues;
+import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
 
 /**
  * Content for the settings group in Phase and frequency
@@ -42,7 +44,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 															 int style,
 															 TimerConfigurationEditor editor, 
 															 UseCaseViewModel model) {
-		super(parent, expandItem, style, editor, model);
+		super(parent, expandItem, style, editor, model, 220);
 		
 		createTopRegisterSelection(getSettingsGroup(), PhaseAndFrequencyCorrectPWMTopValues.values(), "phaseAndFrequencyCorrectPWMTop");
 		initPWMTopValueGroup(getSettingsGroup());
@@ -84,7 +86,7 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 		}
 		
 		// Label for Register Name:
-		Label lbPrefix = new Label(scComp, SWT.BORDER);
+		Label lbPrefix = new Label(scComp, SWT.NONE);
 		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
@@ -157,5 +159,28 @@ public class ConfigurationCompositePhaseAndFrequencyCorrectPWM extends
 				}
 			});
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.upbracing.configurationeditor.timer.editors.AConfigurationCompositeBase#drawDescriptionImage(org.eclipse.swt.graphics.GC)
+	 */
+	@Override
+	public void drawDescriptionImage(GC gc) {
+		
+		// Period text:
+		String periodString = UseCaseModelValidator.formatPeriod(model.getValidator().getTopPeriod());
+		WaveformDrawHelper.drawPeriodText(gc, periodString, true);
+		
+		// Waveform:
+		WaveformDrawHelper.drawWaveform(gc, true);
+		WaveformDrawHelper.drawHorizontalLine(gc, 0, 0, "MIN");
+		
+		// Channels:
+		WaveformDrawHelper.drawWaveformChannels(gc, model);
+		
+		// Output pins:
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel A", model.getOcrAPeriod(), model.getDualSlopePWMPinModeA());	
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel B", model.getOcrBPeriod(), model.getDualSlopePWMPinModeB());
+		WaveformDrawHelper.drawDualSlopePWMOutputPin(gc, model, "Channel C", model.getOcrCPeriod(), model.getDualSlopePWMPinModeC());	
 	}
 }

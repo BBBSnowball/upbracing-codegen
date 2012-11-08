@@ -124,14 +124,15 @@ public class TextValidationComposite extends Composite {
 			l.setText(unit);
 		}
 		
+		if (validator != null) {
 		Label imageLabel = new Label(this, SWT.IMAGE_PNG);
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeImage(imageLabel), 
-				BeansObservables.observeValue(validator, textProperty + "Error"), 
-				null, new UpdateValueStrategy().setConverter(new StatusImageConverter()));
-		c = new DataBindingContext();
-		c.bindValue(SWTObservables.observeTooltipText(imageLabel), BeansObservables.observeValue(validator, textProperty + "ErrorText"));
-
+			c = new DataBindingContext();
+			c.bindValue(SWTObservables.observeImage(imageLabel), 
+					BeansObservables.observeValue(validator, textProperty + "Error"), 
+					null, new UpdateValueStrategy().setConverter(new StatusImageConverter()));
+			c = new DataBindingContext();
+			c.bindValue(SWTObservables.observeTooltipText(imageLabel), BeansObservables.observeValue(validator, textProperty + "ErrorText"));
+		}
 	}
 	
 	/**

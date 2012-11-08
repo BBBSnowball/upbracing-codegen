@@ -9,10 +9,14 @@ import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -35,9 +39,11 @@ public abstract class AConfigurationCompositeBase extends Composite {
 
 	protected TimerConfigurationEditor editor;
 	protected UseCaseViewModel model;
+	protected String ls = System.getProperty("line.separator");
 	private Group settingsGroup;
 	private Group summaryGroup;
 	private ConfigurationExpandItemComposite expandItem;
+	private Canvas canvas;
 	
 	/**
 	 * Prepares an {@link AConfigurationCompositeBase} object.
@@ -49,10 +55,11 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	 * @param model {@link UseCaseViewModel} to databind visual elements to
 	 */
 	public AConfigurationCompositeBase(Composite parent, 
-									   ConfigurationExpandItemComposite expandItem, 
+									   final ConfigurationExpandItemComposite expandItem, 
 									   int style, 
 									   final TimerConfigurationEditor editor, 
-									   UseCaseViewModel model) {
+									   UseCaseViewModel model,
+									   final int canvasHeight) {
 		super(parent, style);
 		
 		this.editor = editor;
@@ -96,13 +103,22 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		d.horizontalAlignment = SWT.RIGHT;
 		d.grabExcessHorizontalSpace = true;
 		d.verticalAlignment = SWT.TOP;
-		d.widthHint = 350;
+		d.widthHint = 400;
 		summaryGroup.setLayoutData(d);
-		Label descriptionL = new Label(summaryGroup, SWT.WRAP | SWT.BORDER);
+		Label descriptionL = new Label(summaryGroup, SWT.WRAP);
 		d = new GridData();
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
 		descriptionL.setLayoutData(d);
+		canvas = new Canvas(summaryGroup, SWT.BORDER);
+		canvas.setSize(370, canvasHeight);
+		d = new GridData();
+		d.horizontalAlignment = SWT.CENTER;
+		d.widthHint = 370;
+		d.heightHint = canvasHeight;
+		d.grabExcessHorizontalSpace = true;
+		d.verticalIndent = 5;
+		canvas.setLayoutData(d);
 		summaryGroup.layout();
 		setFontStyle(summaryGroup, SWT.BOLD);
 		DataBindingContext c = new DataBindingContext();
@@ -112,11 +128,54 @@ public abstract class AConfigurationCompositeBase extends Composite {
 
 			@Override
 			public void propertyChange(PropertyChangeEvent arg0) {
-				summaryGroup.layout();
-				layout();
+				
+				// Only relayout, if the expandItem is expanded
+				// -> otherwise no one would see the changes and we could save the CPU time ;)
+				if (expandItem.getExpandItem().getExpanded()) {
+					summaryGroup.layout();
+					layout();
+					expandItem.updateLayout();
+				}
 			}
 			
 		});
+		canvas.addPaintListener(new PaintListener() {
+
+			@Override
+			public void paintControl(PaintEvent e) {
+				GC gc = new GC(canvas);
+				gc.setBackground(canvas.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+				gc.fillRectangle(0, 0, 370, canvasHeight);
+				gc.setAntialias(SWT.ON);
+				drawDescriptionImage(gc);
+			    gc.dispose();
+			}
+			
+		});
+		
+		redrawDescriptionImageIfPropertyChanges("description");
+	}
+	
+	protected void redrawDescriptionImage() {
+		// Only redraw image, if the expandItem is expanded
+		// -> otherwise no one would see the changes and we could save the CPU time ;)
+		if (expandItem.getExpandItem().getExpanded()) {
+			canvas.redraw();
+		}
+	}
+
+	protected void redrawDescriptionImageIfPropertyChanges(String property) {
+		model.addPropertyChangeListener(property, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				redrawDescriptionImage();
+			}
+		});
+	}
+
+	protected void redrawDescriptionImageIfPropertyChanges(String... properties) {
+		for (String property : properties)
+			redrawDescriptionImageIfPropertyChanges(property);
 	}
 	
 	/**
@@ -149,4 +208,6 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		final Font newFont = new Font(c.getDisplay(),fD[0]);
 		c.setFont(newFont);
 	}
+	
+	public abstract void drawDescriptionImage(GC gc);
 }

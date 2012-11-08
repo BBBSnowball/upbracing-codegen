@@ -109,7 +109,7 @@ void SEM_FUNC(_sem_wait)(SEMAPHORE_T* sem MAYBE_ARG_N) {
 		SEM_FUNC(_sem_enqueue)(sem, t MAYBE_ARG_N_VALUE);
 
 		// block this task since the semaphore is not free
-		WaitTask(t);
+		WaitTask();
 		//TODO interrupts active? -> probably corruption of ready_count!
 
 		// we disable interrupts here to avoid corruption (still in critical section)

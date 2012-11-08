@@ -52,7 +52,7 @@ void USARTEnqueue(uint8_t length, const char * text)
 	queue_enqueue_many(usart, length, (const uint8_t *) text);
 }
 
-TASK(Task_UsartTransmit)
+TASK(UsartTransmit)
 {
 	// Check, if Transmitter is ready:
 	if (UCSR0A & (1<<UDRE0))
