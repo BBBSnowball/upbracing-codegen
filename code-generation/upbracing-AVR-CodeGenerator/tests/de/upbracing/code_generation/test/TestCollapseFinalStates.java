@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.kenai.jaffl.annotations.In;
-
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
