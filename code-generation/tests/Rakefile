@@ -604,10 +604,14 @@ class Project
 		engine.executeScript(File.read(script_filename), script_filename)
 	end
 
+	def get_test_script(dir, configuration)
+		File.join(dir, "run-test.rb")
+	end
+
 	def run_test(dir, configuration)
 		name = name_from_source_dir dir
 
-		build_dir = File.join(dir, "bin", configuration)
+		build_dir = get_target_dir(dir, configuration)
 
 		# get dependencies and commandline for flashing program to processor
 		flash_info = flash_processor_action(build_dir, name)
@@ -619,11 +623,14 @@ class Project
 		#	f.write(flash_cmdline)
 		#end
 
+		test_script = get_test_script(dir, configuration)
+
 		test = task "test-#{name}-#{configuration}" => flash_info[:dependencies] do
 			puts "Running test '#{dir}' (#{configuration})..."
 
+			raise "Test script not found at '#{test_script}'" unless File.exists? test_script
 			begin
-				run_jruby_script File.join(dir, "run-test.rb"), \
+				run_jruby_script test_script, 						\
 					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
 					"$flash_cmdline" => flash_cmdline
 					#:erase_processor2 => method(:erase_processor), \
