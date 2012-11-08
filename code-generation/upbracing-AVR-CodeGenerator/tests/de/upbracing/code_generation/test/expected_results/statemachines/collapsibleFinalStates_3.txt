@@ -1,0 +1,13 @@
+Remaining final state(s) and its(their) incoming transitions
+State final_state0
+  Transition -> super_state0 --> final_state0
+State final_state1
+  Transition -> normal_state0 --> final_state1
+  Transition -> normal_state1 --> final_state1
+  Transition -> normal_state2 --> final_state1
+  Transition -> normal_state0 --> final_state1
+  Transition -> normal_state1 --> final_state1
+  Transition -> normal_state2 --> final_state1
+  Transition -> normal_state0 --> final_state1
+  Transition -> normal_state1 --> final_state1
+  Transition -> normal_state2 --> final_state1

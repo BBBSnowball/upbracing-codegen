@@ -62,8 +62,9 @@ public class Validator {
 	public boolean validate() {
 		if (!validateNull())
 			return false;
-		
-		ContextItem validator_context = messages.pushContext("statemachine validator");
+
+		ContextItem validator_context = messages
+				.pushContext("statemachine validator");
 
 		// make sure that we have the appropiate values on the root object
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
@@ -90,11 +91,11 @@ public class Validator {
 		}
 
 		// check states and regions for duplicate names
-//		for (StateMachineForGeneration smg : config.getStatemachines()) {
-//			if (!duplicateNames(smg, smg.getStates()))
-//				return false;
-//		}
-		
+		for (StateMachineForGeneration smg : config.getStatemachines()) {
+			if (!duplicateNames(smg, smg.getStates()))
+				return false;
+		}
+
 		if (!after_update_config) {
 			for (StateMachineForGeneration smg : config.getStatemachines()) {
 				// statemachine validation
@@ -120,59 +121,93 @@ public class Validator {
 			}
 		}
 
-		boolean valid =  messages.getHighestSeverityInContext().ordinal() < Severity.ERROR
+		boolean valid = messages.getHighestSeverityInContext().ordinal() < Severity.ERROR
 				.ordinal();
-		
+
 		validator_context.pop();
-		
+
 		return valid;
 	}
 
-	public boolean duplicateNames(StateMachineForGeneration smg, List<State> states) {
-		ContextItem statemachine_context = messages.pushContext(smg);
-		Set<String> region_names = new HashSet<String>();
-		duplicateNames(states, smg.getStates().size());
+	public boolean duplicateNames(StateMachineForGeneration smg,
+			List<State> states) {
 		boolean valid = true;
-		
-		for (State state : states) {
+
+		// push state machine context
+		ContextItem statemachine_context = messages.pushContext(smg);
+		// call duplicateNames for evaluating normal states
+		if (!duplicateStateNames(states, smg.getStates().size()))
+			valid = false;
+
+		// check for any super states
+		for (State state : states)
 			if (state instanceof SuperState) {
-				SuperState super_state = (SuperState) state;
-				ContextItem super_context = messages.pushContext(super_state);
-				
-				for (Region region : super_state.getRegions()) 
-					region_names.add(region.getName());
-					
-					if (region_names.size() < super_state.getRegions().size()) {
-						duplicateNamesErrorMessage("regions");
-						valid = false;
-					}
-					
-					for (Region region : super_state.getRegions()) {
-						ContextItem region_context = messages.pushContext(region);
-						List<State> inner_states = region.getStates();
-						duplicateNames(inner_states, region.getStates().size());
-					
-						region_context.pop();
-					}
-				super_context.pop();
+				// call duplicateNames for evaluating the SuperState
+				if (!duplicateNames(state))
+					valid = false;
 			}
-		}
+		// pop state machine context
 		statemachine_context.pop();
 		return valid;
 	}
 	
-	private boolean duplicateNames(List<State> list, int size) {
-		Set<String> state_names = new HashSet<String>();
+	//check for duplicate region names and state names in a super state
+	private boolean duplicateNames(State state) {
 		boolean valid = true;
+		SuperState super_state = (SuperState) state;
+		ContextItem super_context = messages.pushContext(super_state);
 
-		for (State state : list) 
+		if (!duplicateRegionNames(super_state.getRegions(), super_state
+				.getRegions().size()))
+			valid = false;
+
+		for (Region region : super_state.getRegions()) {
+			ContextItem region_context = messages.pushContext(region);
+			List<State> inner_states = region.getStates();
+			if (!duplicateStateNames(inner_states, region.getStates().size()))
+				valid = false;
+
+			for (State st : region.getStates())
+				if (st instanceof SuperState) {
+					if (!duplicateNames(st))
+						valid = false;
+				}
+
+			region_context.pop();
+		}
+		super_context.pop();
+		return valid;
+	}
+	
+	//check for duplicate region names
+	private boolean duplicateRegionNames(List<Region> list, int size) {
+		boolean valid = true;
+		Set<String> region_names = new HashSet<String>();
+
+		for (Region reg : list)
+			region_names.add(reg.getName());
+
+		if (region_names.size() < size) {
+			duplicateNamesErrorMessage("regions");
+			valid = false;
+		}
+
+		return valid;
+	}
+	
+	//check for duplicate state names
+	private boolean duplicateStateNames(List<State> list, int size) {
+		boolean valid = true;
+		Set<String> state_names = new HashSet<String>();
+
+		for (State state : list)
 			state_names.add(state.getName());
-		
+
 		if (state_names.size() < size) {
 			duplicateNamesErrorMessage("states");
 			valid = false;
 		}
-		
+
 		return valid;
 	}
 
@@ -235,7 +270,6 @@ public class Validator {
 		for (State state : states) {
 			if (state instanceof InitialState) {
 				initialcount++;
-
 			}
 		}
 

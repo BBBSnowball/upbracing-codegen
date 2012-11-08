@@ -1,0 +1,5 @@
+ERROR: Initial transitions cannot be waiting transitions
+	in transition: initial state initial_state --> final state final_state (wait(10ms))
+	in initial state initial_state
+	in StateMachineForGeneration initalHasWait
+	in statemachine validator

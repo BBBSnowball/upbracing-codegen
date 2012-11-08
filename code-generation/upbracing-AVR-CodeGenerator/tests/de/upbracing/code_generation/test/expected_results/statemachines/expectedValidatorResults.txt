@@ -1,59 +1,73 @@
 ERROR: Initial state must have exactly one outgoing transition
 	in initial state Stmach_start1
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial transitions cannot be triggered by an event
 	in transition: initial state Stmach_start1 --> normal state normal_1 (start)
 	in initial state Stmach_start1
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial state must have exactly one outgoing transition
 	in initial state stmach_start2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Transition has waitType 'wait', but condition or event not empty
 	in transition: super state super_1 --> normal state normal_1 (multiply : wait(10ms) [c=a])
 	in normal state normal_1
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Transition has waitType 'wait', but condition or event not empty
 	in transition: normal state normal_1 --> super state super_1 (add : wait(10ms) [a=b])
 	in super state super_1
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: More than 1 start states
 	in region reg_1
 	in super state super_1
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial states cannot have incoming transitions!
 	in transition: normal state Sup2_normal1 --> initial state Sup2_start (push : before(10ms) [b=c])
 	in initial state Sup2_start
 	in region reg_2
 	in super state super_2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial transitions cannot be waiting transitions
 	in transition: initial state Sup2_start --> normal state Sup2_normal1 (mark : before(10ms) [b=c])
 	in initial state Sup2_start
 	in region reg_2
 	in super state super_2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial transitions cannot be triggered by an event
 	in transition: initial state Sup2_start --> normal state Sup2_normal1 (mark : before(10ms) [b=c])
 	in initial state Sup2_start
 	in region reg_2
 	in super state super_2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Initial transitions cannot have a condition
 	in transition: initial state Sup2_start --> normal state Sup2_normal1 (mark : before(10ms) [b=c])
 	in initial state Sup2_start
 	in region reg_2
 	in super state super_2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: More than 1 start states
 	in region reg_2
 	in super state super_2
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Final states cannot have outgoing transitions!
 	in final state finalstate
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: Transition has waitType 'before' but neither condition nor event
 	in transition: super state super_2 --> final state finalstate (before(10ms))
 	in final state finalstate
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
 ERROR: More than 1 start states
 	in StateMachineForGeneration FailedStateMachine
+	in statemachine validator
