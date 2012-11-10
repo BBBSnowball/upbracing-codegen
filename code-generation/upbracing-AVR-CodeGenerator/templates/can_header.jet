@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="CanHeaderTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.*" %>
+	imports="de.upbracing.code_generation.config.* de.upbracing.code_generation.generators.CanGeneratorHelper de.upbracing.dbc.* java.util.ArrayList" %>
 <%
 
 // check prerequisites for running the code generator
@@ -75,22 +75,34 @@ if (hdecls != null && !hdecls.isEmpty()) {
 typedef enum uint32_t {
 <%
 
+ArrayList<String> done = new ArrayList<String>();
+
 Table t = new Table(stringBuffer);
 t.start();
 
 for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	if (done.contains(msg.getRawId())) continue;
+	done.add(msg.getRawId());
+	
+	String direction = "receive";
+	if (dbcEcu.getTxMsgs().contains(msg))
+		direction += " and send";
+	
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;	 
 %>
-	CAN_<%=msgconfig.getName()%>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// receive
+	CAN_<%=msgconfig.getName()%>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// <%= direction %>
 <% 
 	for (String alias : msgconfig.getAliases()) {
 %>
-	CAN_<%= alias %>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// receive, alias for <%=msgconfig.getName()%>
+	CAN_<%= alias %>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// <%= direction %>, alias for <%=msgconfig.getName()%>
 <% 
 	}
 }
 
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	if (done.contains(msg.getRawId())) continue;
+	done.add(msg.getRawId());
+	
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
 	CAN_<%=msgconfig.getName()%>&&&= <%=CanGeneratorHelper.messageId(msgconfig, false)%>,&&&// send
@@ -110,19 +122,27 @@ t.finish(" ");
 // do the messages use extended CAN ids or not (0 = standard, 1 = extended)
 typedef enum {
 <%
+done.clear();
+
 t.start();
 for (DBCMessage msg : dbcEcu.getRxMsgs()) {
+	if (done.contains(msg.getRawId())) continue;
+	done.add(msg.getRawId());
+	
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
 	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
 <%
-for (String alias : msgconfig.getAliases()) {
+	for (String alias : msgconfig.getAliases()) {
 %>
 	CAN_<%= alias %>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,
 <%	
 	}
 }
 for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+	if (done.contains(msg.getRawId())) continue;
+	done.add(msg.getRawId());
+	
 	DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 %>
 	CAN_<%=msgconfig.getName()%>_IsExtended&&&= <%=msgconfig.isExtended()?1:0%>,

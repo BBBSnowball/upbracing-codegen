@@ -1,5 +1,6 @@
 package de.upbracing.code_generation.generators;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -195,12 +196,19 @@ public class CanGenerator extends AbstractGenerator {
 			}
 		}
 		
+		//Store all done signals to prevent multiple global variables for the same signal
+		ArrayList<DBCSignalConfig> done = new ArrayList<DBCSignalConfig>(dbcEcu.getRxSignals().size() + dbcEcu.getTxMsgs().size());
+		
 		//Create a global variable for all RX signals
 		for (DBCSignal sig : dbcEcu.getRxSignals()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;
 			if (signal.isNoGlobalVar()) continue;
 			
-			addGlobalVariable(config, signal);
+			//Only add a global variable, if there is none yet for this signal
+			if (!done.contains(signal)) {
+				addGlobalVariable(config, signal);
+				done.add(signal);
+			}
 		}
 		
 		//Create a global variable for all signals in all TX messages
@@ -216,7 +224,11 @@ public class CanGenerator extends AbstractGenerator {
 				
 				if (signal.isNoGlobalVar()) continue;
 
-				addGlobalVariable(config, signal);
+				//Only add a global variable, if there is none yet for this signal
+				if (!done.contains(signal)) {
+					addGlobalVariable(config, signal);
+					done.add(signal);
+				}
 			}
 			
 			//Create OS task for periodic sending
@@ -267,9 +279,8 @@ public class CanGenerator extends AbstractGenerator {
 			
 			//set the changed name as a new custom global variable name
 			signal.setGlobalVarName(signal.getGlobalVarName() + "_" + suffix);
-		} 
+		}
 		
 		config.getGlobalVariables().add(signal.getGlobalVarName(), signal.getCType());
-
 	}
 }
