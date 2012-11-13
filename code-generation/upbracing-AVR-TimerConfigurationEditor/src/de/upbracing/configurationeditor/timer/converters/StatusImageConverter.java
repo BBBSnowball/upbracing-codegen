@@ -2,6 +2,8 @@ package de.upbracing.configurationeditor.timer.converters;
 
 import org.eclipse.core.databinding.conversion.IConverter;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 
 import de.upbracing.configurationeditor.timer.Activator;
 import de.upbracing.shared.timer.model.validation.ValidationResult;
@@ -20,9 +22,11 @@ public class StatusImageConverter implements IConverter {
 	 * Loads the images for error, warning and ok statuses.
 	 */
 	public StatusImageConverter() {
-		errorImage = Activator.getImageDescriptor("./images/icon_error.gif").createImage();
-		warningImage = Activator.getImageDescriptor("./images/icon_warning.gif").createImage();
 		okImage = Activator.getImageDescriptor("./images/icon_ok.gif").createImage();
+		errorImage = PlatformUI.getWorkbench().
+				getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
+		warningImage = PlatformUI.getWorkbench().
+				getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK);
 	}
 	
 	/**
