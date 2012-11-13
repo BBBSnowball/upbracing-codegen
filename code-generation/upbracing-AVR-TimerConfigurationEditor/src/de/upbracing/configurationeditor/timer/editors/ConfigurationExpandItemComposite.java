@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
 import de.upbracing.configurationeditor.timer.Activator;
@@ -70,7 +69,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 		this.bar = bar;
 		this.expandItem = expandItem;
 		
-		GridLayout layout = new GridLayout(7, false);
+		GridLayout layout = new GridLayout(4, false);
 		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = 5;
 		setLayout(layout);
 		
@@ -84,10 +83,16 @@ public class ConfigurationExpandItemComposite extends Composite {
 			
 		}
 		
+//		// Test Composite with RowLayout:
+//		Composite cmp = new Composite(this, SWT.BORDER);
+//		GridData d = new GridData();
+//		d.horizontalSpan = 6;
+//		cmp.setLayoutData(d);
+//		RowLayout rl = new RowLayout();
+//		cmp.setLayout(rl);
+		
 		// Name Setting:
-		Label label = new Label(this, SWT.NONE);
-		label.setText("Name:");
-		final TextValidationComposite t = new TextValidationComposite(this, SWT.NONE, null, "name", model.getValidator(), null, String.class);
+		final TextValidationComposite t = new TextValidationComposite(this, SWT.NONE, "Name:", null, "name", model.getValidator(), null, String.class);
 		t.getTextBox().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
@@ -98,14 +103,10 @@ public class ConfigurationExpandItemComposite extends Composite {
 		});
 		
 		// Timer Combo Box:
-		Label timerL = new Label(this, SWT.NONE);
-		timerL.setText("Timer:");
-		ComboValidationComposite timerC = new ComboValidationComposite(this, SWT.NONE, null, "timer", model.getValidator(), TimerEnum.values());
+		ComboValidationComposite timerC = new ComboValidationComposite(this, SWT.NONE, "Timer:", null, "timer", model.getValidator(), TimerEnum.values());
 		
 		// Mode Combo Box:
-		Label modeL = new Label(this, SWT.NONE);
-		modeL.setText("Mode:");
-		ComboValidationComposite modeC = new ComboValidationComposite(this, SWT.NONE, null, "mode", model.getValidator(), TimerOperationModes.values());
+		ComboValidationComposite modeC = new ComboValidationComposite(this, SWT.NONE, "Mode:", null, "mode", model.getValidator(), TimerOperationModes.values());
 		
 		// Delete Button:
 		final Button delB = new Button(this, SWT.NONE);
@@ -113,6 +114,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 		GridData d = new GridData();
 		d.horizontalAlignment = SWT.RIGHT;
 		delB.setLayoutData(d);
+		
 		delB.addListener(SWT.Selection, new Listener() {
 
 			@Override
@@ -138,7 +140,7 @@ public class ConfigurationExpandItemComposite extends Composite {
 		d = new GridData();
 		d.horizontalAlignment = SWT.FILL;
 		d.grabExcessHorizontalSpace = true;
-		d.horizontalSpan = 7;
+		d.horizontalSpan = 4;
 		settingsComposite.setLayoutData(d);
 		final StackLayout sl = new StackLayout();
 		settingsComposite.setLayout(sl);

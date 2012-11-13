@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
@@ -160,12 +159,6 @@ public class TimerConfigurationEditor extends EditorPart {
 	 * Creates the content of the editor window.
 	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
 	 */
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	public void createPartControl(Composite arg0) {
 		
@@ -183,9 +176,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		layout.verticalSpacing = 5;
 		gs.setLayout(layout);
 		gs.setText("General Settings:");
-		Label label = new Label(gs, SWT.NONE);
-		label.setText("CPU Clock:");
-		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, model, "frequency", model.getValidator(), "Hz", Integer.class);
+		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, "CPU Clock:", model, "frequency", model.getValidator(), "Hz", Integer.class);
 		freqText = text.getTextBox();
 		freqText.addModifyListener(new ModifyListener() {
 			@Override
@@ -193,9 +184,7 @@ public class TimerConfigurationEditor extends EditorPart {
 				setDirty(true);
 			}
 		});
-		Label errorToleranceLabel = new Label(gs, SWT.NONE);
-		errorToleranceLabel.setText("Error tolerance:");
-		TextValidationComposite text2 = new TextValidationComposite(gs, SWT.NONE, model, "errorTolerance", null, "%", Integer.class);
+		TextValidationComposite text2 = new TextValidationComposite(gs, SWT.NONE, "Error tolerance:", model, "errorTolerance", null, "%", Integer.class);
 		text2.getTextBox().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {

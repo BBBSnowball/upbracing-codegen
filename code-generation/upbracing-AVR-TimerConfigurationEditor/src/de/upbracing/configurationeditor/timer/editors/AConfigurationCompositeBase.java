@@ -77,16 +77,14 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		// Left Side: Settings Group
 		settingsGroup = new Group(this, SWT.NONE);
 		settingsGroup.setText("Settings:");
-		gl = new GridLayout(2, false);
+		gl = new GridLayout(1, false);
 		settingsGroup.setLayout(gl);
 		d = new GridData();
 		d.verticalAlignment = SWT.TOP;
 		settingsGroup.setLayoutData(d);
 		setFontStyle(settingsGroup, SWT.BOLD);
 			// Prescale Combo
-			Label prescaleL = new Label(settingsGroup, SWT.NONE);
-			prescaleL.setText("Prescale divisor:");
-			ComboValidationComposite prescaleC = new ComboValidationComposite(settingsGroup, SWT.NONE, model, "prescale", null, PrescaleFactors.values());
+			ComboValidationComposite prescaleC = new ComboValidationComposite(settingsGroup, SWT.NONE, "Prescale divisor:", model, "prescale", null, PrescaleFactors.values());
 			prescaleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent arg0) {
@@ -100,7 +98,6 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		gl = new GridLayout(1, false);
 		summaryGroup.setLayout(gl);
 		d = new GridData();
-		d.horizontalAlignment = SWT.RIGHT;
 		d.grabExcessHorizontalSpace = true;
 		d.verticalAlignment = SWT.TOP;
 		d.widthHint = 400;
@@ -154,6 +151,8 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		});
 		
 		redrawDescriptionImageIfPropertyChanges("description");
+		redrawDescriptionImageIfPropertyChanges("ocrBPeriod");
+		redrawDescriptionImageIfPropertyChanges("ocrCPeriod");
 	}
 	
 	protected void redrawDescriptionImage() {
@@ -188,10 +187,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	
 	protected void createTopRegisterSelection(Composite parent, Object[] choices, String choicesProperty) {
 		
-		Label topValueL = new Label(parent, SWT.NONE);
-		topValueL.setText("Top value register:");
-		
-		ComboValidationComposite topComposite = new ComboValidationComposite(parent, SWT.NONE, model, choicesProperty, model.getValidator(), choices);
+		ComboValidationComposite topComposite = new ComboValidationComposite(parent, SWT.NONE, "Top value register:", model, choicesProperty, model.getValidator(), choices);
 		
 		topComposite.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 			@Override

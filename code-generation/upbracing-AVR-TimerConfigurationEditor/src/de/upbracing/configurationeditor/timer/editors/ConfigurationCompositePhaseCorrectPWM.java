@@ -97,17 +97,17 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 				BeansObservables.observeValue(model, nameProperty));
 		setFontStyle(lbPrefix, SWT.BOLD);
 		
-		// Label for Period
-		Label freqLOA = new Label(scComp, SWT.NONE);
-		freqLOA.setText("Duty-Cycle:");
-		
-		// Validated Text Box:
+		// Validated Period Text Box:
 		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
 				SWT.NONE, 
+				"Duty cycle:",
 				model, periodProperty, 
 				model.getValidator(),
 				"s",
 				Double.class);
+		d = new GridData();
+		d.horizontalSpan = 2;
+		tFreq.setLayoutData(d);
 		tFreq.getTextBox().addModifyListener(new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent arg0) {
@@ -115,10 +115,6 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 		}});
 		
 		if (pinModeProperty != null) {
-			// Toggle Mode:
-			Label toggleL = new Label(scComp, SWT.NONE);
-			toggleL.setText("Output Pin Operation:");
-			
 			// Toggle Combo Box:
 			ArrayList<Object> o = new ArrayList<Object>();
 			for (PWMDualSlopeOutputPinMode m: PWMDualSlopeOutputPinMode.values())
@@ -131,7 +127,7 @@ public class ConfigurationCompositePhaseCorrectPWM extends
 			Object validator = model.getValidator();
 			if (!pinModeProperty.endsWith("A"))
 				validator = null;
-			ComboValidationComposite toggleC = new ComboValidationComposite(scComp, SWT.NONE, model, pinModeProperty, validator, o.toArray());
+			ComboValidationComposite toggleC = new ComboValidationComposite(scComp, SWT.NONE, "Output Pin operation:", model, pinModeProperty, validator, o.toArray());
 			
 			toggleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override

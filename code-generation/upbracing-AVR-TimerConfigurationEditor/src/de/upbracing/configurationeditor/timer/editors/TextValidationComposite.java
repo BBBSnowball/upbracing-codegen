@@ -38,7 +38,8 @@ public class TextValidationComposite extends Composite {
 	 * @param type filters for integer or double, if not null
 	 */
 	public TextValidationComposite(Composite parent, 
-								   int style, 
+								   int style,
+								   String labelText,
 								   Object model, 
 								   String textProperty, 
 								   Object validator, 
@@ -46,12 +47,14 @@ public class TextValidationComposite extends Composite {
 								   Class<?> type) {
 		super(parent, style);
 		
-		GridLayout gl = new GridLayout(2, false);
+		GridLayout gl = new GridLayout(3, false);
 		setLayout(gl);
 		
 		if (unit != null)
-			setLayout(new GridLayout(3, false));
+			setLayout(new GridLayout(4, false));
 		
+		Label label = new Label(this, SWT.NONE);
+		label.setText(labelText);
 		
 		text = new Text(this, SWT.BORDER);
 		GridData d = new GridData();
