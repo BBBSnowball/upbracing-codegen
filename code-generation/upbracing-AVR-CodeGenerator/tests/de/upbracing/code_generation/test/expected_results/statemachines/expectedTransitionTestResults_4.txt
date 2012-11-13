@@ -1,0 +1,5 @@
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal --> super state super (add: wait(10ms))
+	in super state super
+	in StateMachineForGeneration transitionHasEvent
+	in statemachine validator

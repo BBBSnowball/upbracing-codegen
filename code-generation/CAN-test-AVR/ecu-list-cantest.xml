@@ -1,88 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ECUs>
 	<ecu
-		name="Lenkrad-main"
-		path="upbracing-Lenkrad-main"
-		build_dir="upbracing-Lenkrad-main/Release"
+		name="TestBoard"
+		path="upbracing-TestBoard"
+		build_dir="upbracing-TestBoard/Release"
 		type="AT90CAN"
-		node_id="0x42"
-		node_name="LenkradMain">
-		<eeprom>
-			<value name="lower_clutch_bound" type="uint16_t" default="50" />	<!-- default=0x260 ? -->
-			<value name="upper_clutch_bound" type="uint16_t" default="0x3ff" />	<!-- default=0x333 ? -->
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-		</eeprom>
+		node_id="0x666"
+		node_name="TestBoard">
 	</ecu>
 	<ecu
-		name="Lenkrad-Display"
-		path="upbracing-Lenkrad-Display"
-		build_dir="upbracing-Lenkrad-Display/Release"
+		name="DummyBoard"
+		path="upbracing-DummyBoard"
+		build_dir="upbracing-DummyBoard/Release"
 		type="AT90CAN"
-		node_id="0x43"
-		node_name="LenkradDisplay">
-		<eeprom>
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-			<value name="cockpit_rpm_brightness" type="uint8_t" default="255" />
-			<value name="cockpit_gear_brightness" type="uint8_t" default="255" />
-			<value name="sevenseg_brightness" type="uint8_t" default="255" />
-		</eeprom>
-	</ecu>
-	<ecu
-		name="Lenkrad-CANtoRS232"
-		type="dummy"
-		node_id="0x44" />
-	<ecu
-		name="Cockpit-PX209"
-		type="ATmega644+MCP2515"
-		path="upbracing-Cockpit-PX209"
-		build_dir="upbracing-Cockpit-PX209/Debug"
-		node_name="Cockpit"
-		node_id="0x45">
-		<eeprom>
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-			<value name="gang_pwm_duty_cycle" type="uint8_t" default="255" />
-			<value name="rpm_pwm_duty_cycle" type="uint8_t" default="255" />
-		</eeprom>
-	</ecu>
-	<ecu
-		name="Shifter"
-		type="AT90CAN"
-		path="upbracing-Shifter"
-		build_dir="upbracing-Shifter/Release"
-		hexfile="upbracing-Shifter.hex"
-		node_name="Shifter"
-		node_id="0x46">
-		<eeprom>
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-			<value name="shift_time" type="uint8_t" default="100" />
-			<value name="shift_pause" type="uint16_t" default="30" />
-			<value name="shift_after_retard_delay" type="uint8_t" default="1" />
-		</eeprom>
-	</ecu>
-	<ecu
-		name="Sensorboard"
-		type="AT90CAN"
-		path="upbracing-Sensorboard"
-		build_dir="upbracing-Sensorboard/Release"
-		hexfile="upbracing-Sensorboard.hex"
-		node_name="RapidPro"
-		node_id="0x47">
-		<eeprom>
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-		</eeprom>
-	</ecu>
-	<ecu
-		name="Cockpit"
-		path="upbracing-Cockpit-PX212"
-		build_dir="upbracing-Cockpit-PX212/Release"
-		type="AT90CAN"
-		node_id="0x48"
-		node_name="Cockpit">
-		<eeprom>
-			<value name="wdt_reset_count" type="uint8_t" default="0" />
-			<value name="gear_pwm_duty_cycle" type="uint8_t" default="255" />
-			<value name="rpm_pwm_duty_cycle" type="uint8_t" default="255" />
-			<value name="shift_light_period" type="uint8_t" default="10" />
-		</eeprom>
+		node_id="0x667"
+		node_name="DummyBoard">
 	</ecu>
 </ECUs>

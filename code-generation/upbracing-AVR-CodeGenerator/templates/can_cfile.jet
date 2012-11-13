@@ -206,7 +206,7 @@ if (dbcEcu.getSendingTasks().size() > 0) {
 	
 %>
 
-TASK(Task_<%= list.get(0).getName() %>) { //<%= taskDescription %>
+TASK(<%= list.get(0).getName() %>) { //<%= taskDescription %>
 <%
 		for (DBCMessageConfig msg : list) {
 			String params = "";

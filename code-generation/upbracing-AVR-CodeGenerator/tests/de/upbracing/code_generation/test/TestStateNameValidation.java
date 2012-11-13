@@ -40,8 +40,6 @@ public class TestStateNameValidation {
 		state[10].setName(null);
 		state[11].setName("");
 			
-
-		
 		for(int i=0; i<7; i++) {
 			assertEquals(false, validate.nameValidate(state[i]));
 		}

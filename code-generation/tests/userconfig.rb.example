@@ -1,0 +1,11 @@
+# JTAG Ice on usb, for AT90CAN128
+AVRDUDE = "avrdude -cjtag2 -pc128 -Pusb"
+
+# Atmel mkII (or compatible device) on usb, for AT90CAN128
+#AVRDUDE = "avrdude -cjtag2 -pc128 -Pusb"
+
+# use any of the ttyUSB ports (Linux)
+SERIALPORT = lambda { Dir["/dev/ttyUSB*"].first }
+
+# use COM10 (Windows)
+#SERIALPORT = "COM10"

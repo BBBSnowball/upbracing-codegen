@@ -33,164 +33,32 @@ NS_ :
 
 BS_:
 
-BU_: OpenSquirt LenkradDisplay LenkradMain Computer_Programmer Cockpit RapidPro Shifter
-VAL_TABLE_ main2display 3 "BOOTLOADER_ACTIVE" 2 "START_FLIPPER" 1 "START_TETRIS" 0 "MAIN_ACK" ;
-VAL_TABLE_ Dunkermotor_CANOPEN_Index 14224 "DUNKER_MovA" 14194 "DUNKER_VPOS_ActualPosition_cnt" ;
-VAL_TABLE_ BootloaderNode 68 "LenkradCANtoRS232" 67 "LenkradDisplay" 66 "LenkradMain" 71 "Sensorboard" ;
-VAL_TABLE_ boolean 1 "true" 0 "false" ;
+BU_: TestBoard DummyBoard
 
+BO_ 2147483655 InitTestphase: 2 TestBoard
+ SG_ TestNumber : 8|8@1+ (1,0) [0|0] "" TestBoard
+ SG_ TestVersion : 0|8@1+ (1,0) [0|0] "" TestBoard
 
-BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
- SG_ RaddrehzahlHinten : 0|8@1- (1,0) [0|0] "" Vector__XXX
- SG_ RaddrehzahlVorne : 0|16@1- (1,0) [0|0] "" Vector__XXX
- SG_ BoardspannungRapidPro : 0|16@1- (10,0) [0|0] "V" Vector__XXX
+BO_ 2147483666 TestMessage1: 1 TestBoard
+ SG_ TestSignal : 0|8@1+ (1,0) [0|1] ""  TestBoard
 
-BO_ 2147484040 OpenSquirt_Raddrehzahlen: 4 OpenSquirt
+BO_ 2147483670 TestMessage2C: 8 TestBoard
+ SG_ TestSignalC1 : 55|16@0- (1,0) [0|0] ""  TestBoard
+ SG_ TestSignalB1 : 39|16@0- (1,0) [0|0] ""  TestBoard
+ SG_ DummySignal : 23|16@0- (1,0) [0|0] ""  DummyBoard
+ SG_ TestSignalA1 : 7|16@0- (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483912 OpenSquirt_Sensoren1: 6 OpenSquirt
- SG_ Boardspannung : 39|16@0- (10,0) [0|0] "V"  LenkradDisplay,Cockpit
- SG_ Temp_Ansaug : 23|16@0- (10,0) [0|0] "deg C"  LenkradDisplay
- SG_ Temp_Wasser : 7|16@0- (10,0) [0|0] "deg C"  LenkradDisplay,Cockpit
+BO_ 2147483776 TestMessage2R: 6 TestBoard
+ SG_ TestSignalC2 : 32|16@1+ (1,0) [0|0] ""  TestBoard
+ SG_ TestSignalB2 : 16|16@1+ (1,0) [0|0] ""  TestBoard
+ SG_ TestSignalA2 : 0|16@1+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483784 OpenSquirt_Engine: 8 OpenSquirt
- SG_ ThrottlePosition : 55|16@0- (10,0) [0|0] ""  LenkradDisplay
- SG_ Lambda : 39|16@0- (147,0) [0|0] ""  LenkradDisplay
- SG_ Druck_Ansaug : 23|16@0- (10,0) [0|0] "kPa"  LenkradDisplay
- SG_ Drehzahl : 7|16@0+ (1,0) [0|0] "rpm"  Cockpit,LenkradDisplay
+BO_ 2147483876 TestMessage3A: 6 TestBoard
+ SG_ TestSignalA : 32|16@1+ (1,0) [0|0] ""  TestBoard
+ 
+BO_ 2147483877 TestMessage3B: 6 TestBoard
+ SG_ TestSignalB : 32|16@1+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483761 Gear: 1 Shifter
- SG_ Gang : 0|8@1+ (1,0) [0|0] ""  LenkradDisplay,Cockpit
-
-BO_ 2147755622 SetShiftTime: 4 Computer_Programmer
- SG_ ShiftPause : 16|16@1+ (1,0) [0|0] "10 ms" Vector__XXX
- SG_ ShiftTimeRepeat : 8|8@1+ (1,0) [0|0] ""  Shifter
- SG_ ShiftTime : 0|8@1+ (1,0) [0|0] ""  Shifter
-
-BO_ 1919 ClutchActuatorHello: 1 Vector__XXX
- SG_ ClutchActuatorHello : 0|8@1- (1,0) [0|0] ""  LenkradMain
-
-BO_ 2147500545 Lenkrad_main2display: 1 LenkradMain
- SG_ Lenkrad_main2display : 0|8@1- (1,0) [0|0] ""  LenkradDisplay
-
-BO_ 1535 ClutchGetPos: 8 Vector__XXX
- SG_ CANOPEN_SubIndex : 24|8@1- (1,0) [0|0] "" Vector__XXX
- SG_ Clutch_IstPosition : 32|32@1- (1,0) [0|0] ""  LenkradDisplay,LenkradMain
- SG_ CANOPEN_Index : 8|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ CANOPEN_1 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
-
-BO_ 1663 ClutchSetPos: 8 LenkradMain
- SG_ CANOPEN_SubIndex : 24|8@1- (1,0) [0|0] "" Vector__XXX
- SG_ Clutch_SollPosition : 32|32@1- (1,0) [0|0] "" Vector__XXX
- SG_ CANOPEN_Index : 8|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ CANOPEN_1 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
-
-BO_ 2147500611 Test: 7 RapidPro
- SG_ Test2 : 8|16@1+ (1,0) [0|0] "litre" Vector__XXX
- SG_ Test1 : 7|8@0- (0.1,100) [87.2|112.7] "hectar" Vector__XXX
-
-BO_ 2147484240 Kupplung_Calibration_Control: 1 LenkradDisplay
- SG_ KupplungKalibrationActive : 0|8@1+ (1,0) [0|1] "bool"  LenkradMain
-
-BO_ 6 Bootloader_6: 8 Computer_Programmer
-
-BO_ 5 Bootloader_5: 8 Computer_Programmer
-
-BO_ 4 Bootloader_4: 8 Computer_Programmer
-
-BO_ 3 Bootloader_3: 8 Computer_Programmer
-
-BO_ 2 Bootloader_2: 8 Computer_Programmer
-
-BO_ 1 Bootloader_1: 8 Computer_Programmer
-
-BO_ 0 Bootloader_SelectNode: 1 Computer_Programmer
- SG_ Bootloader_SelectNode : 0|8@1- (1,0) [0|0] ""  Shifter,Cockpit,LenkradDisplay,LenkradMain,RapidPro
-
-BO_ 2147483905 Kupplung_Calibration: 2 LenkradMain
- SG_ Kupplung_RAW : 7|16@0+ (1,0) [0|1023] ""  LenkradDisplay
-
-BO_ 2147483777 Sensoren_2: 2 RapidPro
- SG_ Druck_Kraftstoff : 0|16@1+ (1,0) [0|0] "kPa"  LenkradDisplay
-
-BO_ 2147483920 Geschwindigkeit: 1 RapidPro
- SG_ Geschwindigkeit : 0|8@1+ (1,0) [0|0] "km/h"  LenkradDisplay
-
-BO_ 2147483744 Launch: 1 LenkradDisplay
- SG_ Launch : 0|8@1+ (1,0) [0|0] "bool"  Shifter,RapidPro
-
-BO_ 2147483904 Logger: 1 Cockpit
- SG_ Logger : 0|8@1+ (1,0) [0|0] "bool"  LenkradMain,RapidPro
-
-BO_ 2147483696 Ignition: 1 Cockpit
- SG_ Ignition : 0|8@1+ (1,0) [0|0] "bool"  RapidPro
-
-BO_ 2147483792 Radio: 1 LenkradDisplay
- SG_ Radio : 0|8@1+ (1,0) [0|0] "bool"  Cockpit
-
-BO_ 2147483712 Start: 1 Cockpit
- SG_ Start : 0|8@1+ (1,0) [0|0] "bool"  RapidPro
-
-BO_ 2147483680 Neutral: 1 Cockpit
- SG_ Neutral : 0|8@1+ (1,0) [0|0] "bool"  RapidPro,Shifter
-
-BO_ 2147483776 Sensoren: 6 RapidPro
- SG_ Druck_Oel : 32|16@1+ (1,0) [0|0] "kPa"  LenkradDisplay,Cockpit
- SG_ Temp_Oel : 16|8@1+ (1,0) [0|0] "deg C"  LenkradDisplay,Cockpit
-
-BO_ 2147483760 Engine: 3 RapidPro
- SG_ Drehzahl : 8|16@1+ (1,0) [0|0] "rpm" Vector__XXX
- SG_ Gang : 0|8@1+ (1,0) [0|0] ""  LenkradMain
-
-BO_ 2147483729 Shift_Down: 1 LenkradMain
- SG_ Shift_Down : 0|8@1+ (1,0) [0|0] "bool"  Shifter
-
-BO_ 2147483728 Shift_Up: 1 LenkradMain
- SG_ Shift_Up : 0|8@1+ (1,0) [0|0] "bool"  Shifter
-
-BO_ 2147483794 Shift_Down_Reply: 1 Shifter
- SG_ Shift_Down_Success : 0|8@1+ (1,0) [0|0] "bool"  LenkradMain
-
-BO_ 2147483793 Shift_Up_Reply: 1 Shifter
- SG_ Shift_Down_Success : 0|8@1+ (1,0) [0|0] "bool"  LenkradMain
-
-BO_ 2147483664 Kupplung_Soll: 1 LenkradMain
- SG_ Kupplung_Soll : 0|8@1+ (1,0) [0|0] ""  LenkradDisplay,RapidPro
-
-BO_ 2147500610 CockpitBrightness: 4 LenkradDisplay
- SG_ CockpitRPMBrightness : 0|8@1+ (1,0) [0|0] ""  Cockpit
- SG_ CockpitGangBrightness : 8|8@1+ (1,0) [0|0] ""  Cockpit
- SG_ CockpitShiftLightPeriod : 16|8@1+ (1,0) [0|0] ""  Cockpit
- SG_ CockpitShiftLightAlwaysFlash : 24|8@1+ (1,0) [0|0] "" Cockpit
-
-BO_ 2147484241 Kupplung_UpdateBoundsResult: 4 LenkradMain
- SG_ Kupplung_LowerBound : 7|16@0+ (1,0) [0|0] "" Vector__XXX
- SG_ Kupplung_UpperBound : 23|16@0+ (1,0) [0|0] "" Vector__XXX
-
-
-
-CM_ BU_ Computer_Programmer "CAN-Debugger mit Programm, dass ueber den Bootloader einen Prozessor programmiert";
-CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
-CM_ BO_ 2147500611 "Test Signal";
-CM_ BO_ 2147484240 "Startet (data[0]==1) oder beendet (data[0]==0) das Kalibrieren der Kupplung (im Lenkrad).";
-CM_ BO_ 0 "Waehlt einen Bootloader aus:
-data[0] ist die node id (NNB):
-0x42   Lenkrad-main
-0x43   Lenkrad-Display
-0x44   Lenkrad-Display CAN->RS232 (fuer Display SD-Karte)";
-CM_ BO_ 2147483905 "Wird normalerweise nicht gesendet. Waehrend die Kupplung kalibriert wird, sendet Lenkrad-main dieses Signal.";
-BA_DEF_  "BusType" STRING ;
-BA_DEF_DEF_  "BusType" "CAN";
-VAL_ 2147500545 Lenkrad_main2display 3 "BOOTLOADER_ACTIVE" 2 "START_FLIPPER" 1 "START_TETRIS" 0 "MAIN_ACK" ;
-VAL_ 1535 CANOPEN_Index 14224 "DUNKER_MovA" 14194 "DUNKER_VPOS_ActualPosition_cnt" ;
-VAL_ 1663 CANOPEN_Index 14224 "DUNKER_MovA" 14194 "DUNKER_VPOS_ActualPosition_cnt" ;
-VAL_ 2147484240 KupplungKalibrationActive 1 "true" 0 "false" ;
-VAL_ 0 Bootloader_SelectNode 68 "LenkradCANtoRS232" 67 "LenkradDisplay" 66 "LenkradMain" ;
-VAL_ 2147483744 Launch 1 "true" 0 "false" ;
-VAL_ 2147483904 Logger 1 "true" 0 "false" ;
-VAL_ 2147483792 Radio 1 "true" 0 "false" ;
-VAL_ 2147483680 Neutral 1 "true" 0 "false" ;
-VAL_ 2147483729 Shift_Down 1 "true" 0 "false" ;
-VAL_ 2147483728 Shift_Up 1 "true" 0 "false" ;
-VAL_ 2147483794 Shift_Down_Success 1 "true" 0 "false" ;
-VAL_ 2147483793 Shift_Down_Success 1 "true" 0 "false" ;
-
+BO_ 2147484567 DummyMessage: 6 DummyBoard
+ SG_ DummySignalB : 32|16@1+ (1,0) [0|0] ""  TestBoard
+ SG_ DummySignalA : 16|8@1+ (1,0) [0|0] ""  TestBoard

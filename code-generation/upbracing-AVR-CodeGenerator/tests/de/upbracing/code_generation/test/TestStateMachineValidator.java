@@ -20,22 +20,25 @@ import de.upbracing.code_generation.generators.fsm.Validator;
 
 public class TestStateMachineValidator {
 
-	Messages messages = new Messages();
-	Validator validate = new Validator(messages);
+	Messages[] messages = new Messages[12];
+	Validator[] validate = new Validator[12];
+	final StringBuffer sb = new StringBuffer();
 
 	@Test
 	public void test() {
-
-		final StringBuffer sb = new StringBuffer();
-
-		messages.addMessageListener(new MessageListener() {
-
-			@Override
-			public void message(Message msg) {
-				msg.format(sb);
-			}
-		});
-
+		
+		for (int i=0; i<messages.length; i++) {
+			
+			messages[i] = new Messages();
+			validate[i] = new Validator(messages[i]);
+			messages[i].addMessageListener(new MessageListener() {
+				@Override
+				public void message(Message msg) {
+					msg.format(sb);
+				}
+			});
+		}
+		
 		StateMachine statemachine = JRubyHelpers.getStatemachineFactory()
 				.createStateMachine();
 
@@ -162,7 +165,15 @@ public class TestStateMachineValidator {
 
 		MCUConfiguration config_fail = new MCUConfiguration();
 		config_fail.getStatemachines().add(smg_1);
+		Validator validate_fail = new Validator(config_fail, false, null);
 
+		validate_fail.setMessages(messages[0]);
+		assertEquals(false, validate_fail.validate());
+		assertEquals(
+				TestHelpers
+						.loadResource("/expected_results/statemachines/expectedValidatorResults.txt"),
+				sb.toString());
+				
 		// passes validation
 		StateMachine statem_pass = JRubyHelpers.getStatemachineFactory()
 				.createStateMachine();
@@ -264,18 +275,12 @@ public class TestStateMachineValidator {
 		config_pass.getStatemachines().add(smg_2);
 
 		Validator validate_pass = new Validator(config_pass, false, null);
-
-		validate_pass.setMessages(messages);
+		sb.setLength(0);
+		
+		validate_pass.setMessages(messages[1]);
 		assertEquals(true, validate_pass.validate());
 		assertEquals("", sb.toString());
-
-		Validator validate_fail = new Validator(config_fail, false, null);
-
-		validate_fail.setMessages(messages);
-		assertEquals(false, validate_fail.validate());
-		assertEquals(
-				TestHelpers
-						.loadResource("/expected_results/statemachines/expectedValidatorResults.txt"),
-				sb.toString());
+		
+		
 	}
 }

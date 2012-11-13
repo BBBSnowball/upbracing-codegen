@@ -1,0 +1,5 @@
+ERROR: Initial transitions cannot have a condition
+	in transition: initial state initial_state --> final state final_state ([a>b])
+	in initial state initial_state
+	in StateMachineForGeneration initalHasCondition
+	in statemachine validator

@@ -1,0 +1,9 @@
+
+
+#error There was one warning or error
+/*ERROR: More than one regions have same name!
+	in super state Super_state1
+	in region region_1
+	in super state Super_state0
+	in StateMachineForGeneration duplicateRegions
+*/
