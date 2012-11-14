@@ -8,7 +8,6 @@ import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -33,26 +32,27 @@ public class ComboValidationComposite extends Composite {
 	 * @param choices collection of choices for the Combo
 	 */
 	public ComboValidationComposite(Composite parent, 
-									int style, 
+									int style,
+									String labelText,
 									Object model, 
 									String textProperty, 
 									Object validator, 
 									Object[] choices) {
 		super(parent, style);
 		
-		int columns = 1;
+		int columns = 2;
 		if (validator != null)
-			columns = 2;
+			columns = 3;
 		
 		GridLayout gl = new GridLayout(columns, false);
 		setLayout(gl);
 		
+		Label label = new Label(this, SWT.NONE);
+		label.setText(labelText);
+		
 		combo = new ComboViewer(this, SWT.BORDER | SWT.READ_ONLY);
 		combo.setContentProvider(ArrayContentProvider.getInstance());
 		combo.setInput(choices);
-		GridData d = new GridData();
-		d.horizontalSpan = 1;
-		this.setLayoutData(d);
 		
 		DataBindingContext c;
 		if (model != null) {

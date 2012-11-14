@@ -101,17 +101,17 @@ public class ConfigurationCompositeCTC extends AConfigurationCompositeBase {
 				BeansObservables.observeValue(model, nameProperty));
 		setFontStyle(lbPrefix, SWT.BOLD);
 		
-		// Label for Period
-		Label freqLOA = new Label(scComp, SWT.NONE);
-		freqLOA.setText("Period:");
-		
-		// Validated Text Box:
+		// Validated Period Text Box:
 		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
 				SWT.NONE, 
+				"Period:",
 				model, periodProperty, 
 				model.getValidator(),
 				"s",
 				Double.class);
+		d = new GridData();
+		d.horizontalSpan = 2;
+		tFreq.setLayoutData(d);
 		tFreq.getTextBox().addModifyListener(new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent arg0) {

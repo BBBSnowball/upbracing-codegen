@@ -19,9 +19,11 @@ public class UseCaseViewModel extends AViewModelBase {
 	private ConfigurationViewModel parent;
 	private UseCaseModelValidator validator;
 	private String descriptionCache;
+	private String ls;
 		
 	// Constructor:
 	public UseCaseViewModel(UseCaseModel m, ConfigurationModel parent) {
+		this.ls = System.getProperty("line.separator");
 		this.model = m;
 		this.descriptionCache = "";
 		this.validator = new UseCaseModelValidator(parent, m);
@@ -208,8 +210,6 @@ public class UseCaseViewModel extends AViewModelBase {
 	}
 	public String getDescription() {
 
-		String ls = System.getProperty("line.separator");
-		
 		// General
 		int maxValue = 255;
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3))
@@ -500,8 +500,6 @@ public class UseCaseViewModel extends AViewModelBase {
 	// Private Description Helpers:
 	private String getOverflowDescription(int maxValue) {
 		
-		String ls = System.getProperty("line.separator");
-		
 		String overflowTime = UseCaseModelValidator.formatPeriod(getValidator().calculatePeriodForRegisterValue(getValidator().getMaximumValue()));
 		String text = "The Timer will run from 0 to " + maxValue + " (MAX). The counter will overflow and restart at 0." + ls + ls;
 		text += "=> Timer will overflow every " + overflowTime + ".";
@@ -513,8 +511,6 @@ public class UseCaseViewModel extends AViewModelBase {
 	
 	private String getCtcDescription() {
 		
-		String ls = System.getProperty("line.separator");
-		
 		String ctcTopReg = "ICR (Input Capture Register)";
 		if (getCtcTop() != null && getCtcTop().equals(CTCTopValues.OCRnA)) {
 			ctcTopReg = "OCR" + getTimer().ordinal();
@@ -522,6 +518,7 @@ public class UseCaseViewModel extends AViewModelBase {
 				ctcTopReg += "A";
 			ctcTopReg += " (Output Capture Register)";
 		}
+		double topPeriod = getValidator().getTopPeriod();
 
 		// Top value text:
 		String text = "The Timer will run from 0 to the value stored in " + ctcTopReg + " (TOP). The counter will restart at 0." + ls + ls;
@@ -529,12 +526,12 @@ public class UseCaseViewModel extends AViewModelBase {
 		
 		// Interrupts:
 		if (getCompareInterruptA())
-			text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrAPeriod())) + " after timer reset.";
+		    text += getCtcInterruptDescription(getOcrAPeriod(), topPeriod);
 		if (getTimer().equals(TimerEnum.TIMER1) || getTimer().equals(TimerEnum.TIMER3)) {
 			if (getCompareInterruptB())
-				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrBPeriod())) + " after timer reset.";
+			    text += getCtcInterruptDescription(getOcrBPeriod(), topPeriod);
 			if (getCompareInterruptC())
-				text += ls + "=> Interrupt is generated " + UseCaseModelValidator.formatPeriod(getValidator().calculateQuantizedPeriod(getOcrCPeriod())) + " after timer reset.";
+			    text += getCtcInterruptDescription(getOcrCPeriod(), topPeriod);
 		}
 		if (getCompareInterruptA() || getCompareInterruptB() || getCompareInterruptC())
 			text += ls;
@@ -555,9 +552,19 @@ public class UseCaseViewModel extends AViewModelBase {
 		return text.trim();
 	}
 	
+	private String getCtcInterruptDescription(double channelPeriod, double topPeriod) {
+		double quantizedChannelPeriod = getValidator().calculateQuantizedPeriod(channelPeriod);
+		String text = ls + "=> Interrupt is generated ";
+		if (quantizedChannelPeriod == topPeriod) {
+			text += "on timer reset.";
+		} else {
+			text += UseCaseModelValidator.formatPeriod(quantizedChannelPeriod) + " after timer reset.";
+		}
+		return text;
+	}
+
 	private String getPWMDescription() {
 		
-		String ls = System.getProperty("line.separator");
 		String text = "The Timer will run in " + getMode().toString() + ". ";
 		
 		if (getMode().equals(TimerOperationModes.PWM_FAST) || getMode().equals(TimerOperationModes.PWM_PHASE_CORRECT)) {

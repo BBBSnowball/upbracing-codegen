@@ -42,21 +42,6 @@ public class ConfigurationCompositeOverflow extends AConfigurationCompositeBase 
 		c.bindValue(SWTObservables.observeSelection(intCb), 
 				BeansObservables.observeValue(model, "overflowInterrupt"));
 		
-//		// Image
-//		ImageDescriptor img = null;
-//		try {
-//			img = Activator.getImageDescriptor("./images/Overflow.png");
-//			Image i = img.createImage();
-//			Label comp = new Label(getSettingsGroup(), SWT.IMAGE_PNG);
-//			GridData d = new GridData();
-//			d.horizontalSpan = 2;
-//			d.grabExcessHorizontalSpace = true;
-//			comp.setLayoutData(d);
-//			comp.setImage(i);
-//		}
-//		catch (Exception e) {
-//		}
-		
 		layout();		
 	}
 

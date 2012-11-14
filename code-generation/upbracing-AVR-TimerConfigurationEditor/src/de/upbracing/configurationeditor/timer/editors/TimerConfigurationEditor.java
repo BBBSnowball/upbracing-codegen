@@ -2,12 +2,9 @@ package de.upbracing.configurationeditor.timer.editors;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -22,9 +19,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -33,12 +28,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 
-import de.upbracing.code_generation.ITemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
-import de.upbracing.code_generation.generators.TimerGenerator;
+import de.upbracing.configurationeditor.timer.popup.actions.GenerateCodeAction;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
-import de.upbracing.eculist.ECUDefinition;
 
 /**
  * This is the graphical timer configuration editor, which is loaded by Eclipse.
@@ -160,12 +152,6 @@ public class TimerConfigurationEditor extends EditorPart {
 	 * Creates the content of the editor window.
 	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
 	 */
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	public void createPartControl(Composite arg0) {
 		
@@ -183,9 +169,7 @@ public class TimerConfigurationEditor extends EditorPart {
 		layout.verticalSpacing = 5;
 		gs.setLayout(layout);
 		gs.setText("General Settings:");
-		Label label = new Label(gs, SWT.NONE);
-		label.setText("CPU Clock:");
-		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, model, "frequency", model.getValidator(), "Hz", Integer.class);
+		TextValidationComposite text = new TextValidationComposite(gs, SWT.NONE, "CPU Clock:", model, "frequency", model.getValidator(), "Hz", Integer.class);
 		freqText = text.getTextBox();
 		freqText.addModifyListener(new ModifyListener() {
 			@Override
@@ -193,9 +177,7 @@ public class TimerConfigurationEditor extends EditorPart {
 				setDirty(true);
 			}
 		});
-		Label errorToleranceLabel = new Label(gs, SWT.NONE);
-		errorToleranceLabel.setText("Error tolerance:");
-		TextValidationComposite text2 = new TextValidationComposite(gs, SWT.NONE, model, "errorTolerance", null, "%", Integer.class);
+		TextValidationComposite text2 = new TextValidationComposite(gs, SWT.NONE, "Error tolerance:", model, "errorTolerance", null, "%", Integer.class);
 		text2.getTextBox().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
@@ -256,72 +238,14 @@ public class TimerConfigurationEditor extends EditorPart {
 				setDirty(true);
 			}
 		});
-		
-		final Composite mainComposite = arg0;
+
 		generateCodeButton.addListener(SWT.Selection, new Listener() {
 
 			@Override
 			public void handleEvent(Event arg0) {
 				
-				MessageBox m2 = new MessageBox(mainComposite.getShell(), SWT.ICON_ERROR | SWT.OK);
-				try {
-					MCUConfiguration mcu = new MCUConfiguration(true);
-					mcu.setEcus(new ArrayList<ECUDefinition>());
-					
-					mcu.setTimerConfig(model.getModel());
-					// Get the configuration file name:
-					String projectFileName = file.getRawLocation().toFile().getName();
-					projectFileName = projectFileName.substring(0, projectFileName.indexOf("."));
-					
-					// Generate code:
-					TimerGenerator gen = new TimerGenerator(projectFileName);
-					ITemplate cTemp = gen.getFiles().get(projectFileName + ".c");
-					ITemplate hTemp = gen.getFiles().get(projectFileName + ".h");
-					String cFileContents = cTemp.generate(mcu, projectFileName);
-					String headerContents = hTemp.generate(mcu, projectFileName);
-					
-					String pathPrefix = ((IPath) file.getRawLocation().clone()).removeLastSegments(1).toOSString();
-					if (pathPrefix != null) {
-						// Write out both files:
-						try {
-							// Store the generated code on disk:
-							PrintWriter w = new PrintWriter(pathPrefix + "/" + projectFileName + ".c");
-							w.print(cFileContents);
-							w.flush();
-							w.close();
-							w = new PrintWriter(pathPrefix + "/" + projectFileName + ".h");
-							w.print(headerContents);
-							w.flush();
-							w.close();
-							// Refresh files in workspace
-							file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".c").refreshLocal(0, null);
-							file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".h").refreshLocal(0, null);
-						} catch (FileNotFoundException e) {
-							// TODO Give useful error message here!
-							MessageBox m = new MessageBox(mainComposite.getShell(), SWT.ICON_ERROR | SWT.OK);
-							m.setText("Error");
-							m.setMessage("Cannot open file \"" + pathPrefix + "/" + projectFileName + ".h" + "\" for writing.");
-							m.open();
-							e.printStackTrace();
-						} catch (CoreException e) {
-							// TODO Handle refresh error
-							MessageBox m = new MessageBox(mainComposite.getShell(), SWT.ICON_ERROR | SWT.OK);
-							m.setText("Error");
-							m.setMessage("Something went wrong during code generation.");
-							m.open();
-							e.printStackTrace();
-						}
-					}
-				}
-				catch (Exception e) {
-					m2 = new MessageBox(mainComposite.getShell(), SWT.ICON_ERROR | SWT.OK);
-					m2.setText("Error");
-					m2.setText("Something went wrong\r\n" + e.getMessage());
-				}
-				
-				
-//				CodeGenerator gen = new CodeGenerator(model.getModel());
-//				gen.generateCode("/Users/peer/timertest", "/Volumes/Data/Peer/Documents/Uni/RacingCarIT/Program/code-generation/upbracing-AVR-TimerConfigurationEditor/templates/");
+				GenerateCodeAction action = new GenerateCodeAction();
+				action.run(file);
 			}});
 
 		this.finishedLoading = true;

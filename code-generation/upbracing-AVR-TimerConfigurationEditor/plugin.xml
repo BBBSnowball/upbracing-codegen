@@ -2,12 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="contexts.xml">
-      </contexts>
-   </extension>
-   <extension
          point="org.eclipse.ui.editors">
       <editor
             class="de.upbracing.configurationeditor.timer.editors.TimerConfigurationEditor"
@@ -41,6 +35,31 @@
             id="de.upbracing.configurationeditor.timer.wizards.NewConfigurationFileWizard"
             name="New Timer Configuration">
       </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            id="upbracing-AVR-TimerConfigurationEditor.contribution1"
+            nameFilter="*.tcxml"
+            objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               icon="icons/clock.png"
+               id="upbracing-AVR-TimerConfigurationEditor.menu1"
+               label="AVR Timer Configuration"
+               path="additions">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               class="de.upbracing.configurationeditor.timer.popup.actions.GenerateCodeAction"
+               enablesFor="1"
+               icon="icons/source.gif"
+               id="upbracing-AVR-TimerConfigurationEditor.newAction"
+               label="Generate Code"
+               menubarPath="upbracing-AVR-TimerConfigurationEditor.menu1/group1">
+         </action>
+      </objectContribution>
    </extension>
 
 </plugin>
