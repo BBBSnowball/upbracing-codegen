@@ -2,7 +2,7 @@
 // provided by external code: time-with-suffix
 
 // a clock time like 1:30:02.7
-clock-time ::= (positive-number {":" positive-number} [":" simple-unsigned-float-number])
+clock-time ::= (positive-number [":" positive-number] ":" simple-unsigned-float-number)
 
 // a time like 100ms
 // time-suffix is defined externally

@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import de.upbracing.code_generation.common.Times;
+
 public class TestParsers {
 
 	@Test
@@ -204,6 +206,18 @@ public class TestParsers {
 				new TransitionInfo(null, null, "x()", "at", 3600+2*60+13.7),
 				FSMParsers.parseTransitionInfo("at 1:02:13.7 / x()"));
 		//NOTE: 1:02:.7 would not work
+	}
+	
+	@Test
+	public void testParseTime() {
+		// most times are tested in testParseTransitionInfo
+		
+		try {
+			Times.parseTime("1");
+			fail("expected ParserException");
+		} catch (ParserException e) {
+			// expected
+		}
 	}
 
 	public static void main(String args[]) throws IOException {
