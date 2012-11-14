@@ -7,6 +7,3 @@ class MyProject < ProjectWithCommon
 end
 
 $project = MyProject.new
-
-# remove class, so we can use the same name in other tests
-Object.send(:remove_const, :MyProject)

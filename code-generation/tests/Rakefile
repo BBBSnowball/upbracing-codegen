@@ -734,14 +734,24 @@ def load_project_config(dir)
 
 		jruby.put(ScriptEngine.FILENAME, project_config)
 
+		# save list of constants
+		all_consts = Object.constants.clone
+
 		script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"));
 		jruby.eval script_reader
 		script_reader.close()
-		
+
 		# restore working directory
 		Dir.chdir old_pwd
 
 		project = jruby.get("project")
+
+		# remove constants that have been created by the script
+		#puts "new constants after loading #{project_config}: " + (Object.constants - all_consts).inspect
+		keep_constants = jruby.get("keep_constants") || []
+		(Object.constants - all_consts - keep_constants).each do |const_name|
+			Object.send(:remove_const, const_name)
+		end
 	else
 		project = Project.new
 	end
