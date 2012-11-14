@@ -763,7 +763,7 @@ end
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
 project_dirs = magic_files.map { |file| File.dirname(file) }
 project_dirs.uniq!
-project_dirs.sort 	#TODO is sort is too intelligent
+project_dirs.sort!
 project_dirs.each do |dir|
 	puts "project: #{dir}"
 	# special case: 'common' directory is not a test
