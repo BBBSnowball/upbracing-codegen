@@ -117,6 +117,13 @@ def any_is_newer(old_files, new_files)
 end
 
 
+class Dir
+	def self.empty?(dir)
+		Dir.entries(dir).grep(/^(?!\.\.?$)/).empty?
+	end
+end
+
+
 # task generate_all tests all of them
 task :generate_all do end
 
@@ -140,6 +147,10 @@ task "test-all" => :test_all do end
 
 # default action is building everything (for now - might change that to running the tests)
 task :default => :build_all
+
+
+# clean task removes all build output files and directories
+task :clean do end
 
 
 class Project
@@ -260,6 +271,12 @@ class Project
 				do_generate(dir, target_dir, config_file)
 			#end
 		end
+
+		clean = task "clean for #{config_file}" do
+			rm generated_files, :force => true
+			rmdir target_dir if Dir.exists? target_dir
+		end
+		task :clean => clean
 
 		return gen_task
 	end
@@ -519,6 +536,12 @@ class Project
 		# make sure that the hex file is generated, if someone calls build-all
 		task :build_all => build_task
 
+		# clean task
+		clean = task "clean-#{name}-#{configuration}" do
+			rm_rf target_dir
+		end
+		task "clean-#{name}" => clean
+
 		# return hex file task
 		flash_hex_file
 	end
@@ -749,6 +772,14 @@ class Project
 
 			build_task.enhance [compile_java_task] if compile_java_task
 		end
+
+		# clean task
+		name = name_from_source_dir dir
+		clean = task "clean-#{name}" do
+			target_dir = get_target_dir(dir, "")
+			rmdir target_dir if Dir.exists?(target_dir) and Dir.empty?(target_dir)
+		end
+		task :clean => clean
 
 		configurations(:test).each do |configuration|
 			# run test
