@@ -600,21 +600,26 @@ class Project
 		java_source_dir = get_java_source_dir(project_dir)
 		if File.exists? java_source_dir
 			java_output_dir = get_java_output_dir(project_dir)
-			directory java_output_dir
 
-			java_sources = get_java_sources(java_source_dir)
-			class_files = java_sources.map { |x| x.sub(java_source_dir, java_output_dir).sub(/\.[^.]+$/, ".class") }
-
-			compile_java_task = many_files "compile java files in #{java_source_dir}", class_files
-
-			compile_java_task.enhance([file(java_output_dir)] + java_sources) do
-				run_compiler(java_source_dir, java_output_dir)
-			end
-
-			compile_java_task
+			create_java_task2(project_dir, java_source_dir, java_output_dir)
 		else
 			nil
 		end
+	end
+
+	def create_java_task2(project_dir, java_source_dir, java_output_dir)
+		directory java_output_dir
+
+		java_sources = get_java_sources(java_source_dir)
+		class_files = java_sources.map { |x| x.sub(java_source_dir, java_output_dir).sub(/\.[^.]+$/, ".class") }
+
+		compile_java_task = many_files "compile java files in #{java_source_dir}", class_files
+
+		compile_java_task.enhance([file(java_output_dir)] + java_sources) do
+			run_compiler(java_source_dir, java_output_dir)
+		end
+
+		compile_java_task
 	end
 
 	## run tests
@@ -735,7 +740,7 @@ class Project
 
 	# main method
 
-	def create_tasks(dir)
+	def create_tasks(dir, dependencies_for_run)
 		compile_java_task = create_java_task(dir)
 
 		configurations(:build).each do |configuration|
@@ -747,7 +752,9 @@ class Project
 
 		configurations(:test).each do |configuration|
 			# run test
-			run_test dir, configuration
+			run_task = run_test dir, configuration
+
+			run_task.enhance dependencies_for_run
 		end
 	end
 
@@ -846,6 +853,13 @@ def load_project_config(dir)
 	return project
 end
 
+# compile task for helpers project
+JAVA_HELPERS=File.join("..", "tests-java-helpers")
+compile_helpers = Project.new.create_java_task2(JAVA_HELPERS,
+	File.join(JAVA_HELPERS, "src"),
+	File.join(JAVA_HELPERS, "bin"))
+task :build_all => compile_helpers
+
 # add tasks for all directories which have certain files
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
 project_dirs = magic_files.map { |file| File.dirname(file) }
@@ -857,7 +871,7 @@ project_dirs.each do |dir|
 	if dir != "common/"
 		project = load_project_config(dir)
 
-		project.create_tasks(dir) if project
+		project.create_tasks(dir, [compile_helpers]) if project
 
 		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
 	end
