@@ -2,4 +2,43 @@
 if [ -z "$CODE_GENERATOR_DIR" ] ; then
 	CODE_GENERATOR_DIR="../upbracing-AVR-CodeGenerator"
 fi
-java -cp "$CODE_GENERATOR_DIR/libs/jruby-complete-1.7.0.jar:$CODE_GENERATOR_DIR/libs/ruby-gems.jar:." org.jruby.Main -S rake "$@"
+if [ -z "$JAVA_HELPERS"] ; then
+	JAVA_HELPERS="../tests-java-helpers/bin"
+fi
+if [ -z "$JAVA_PARSER_TOOLS_BIN" ] ; then
+	JAVA_PARSER_TOOLS_BIN="../java-parser-tools"
+fi
+if [ -z "$TIMER_CONFIG_JAR" ] ; then
+	TIMER_CONFIG_JAR="../upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"
+fi
+
+if [ -z "$NG" ] ; then NG="`which nailgun`" ; fi
+if [ -z "$NG" ] ; then NG="`which ng-nailgun`" ; fi
+if [ -z "$NG" ] ; then NG="`which ng`" ; fi
+
+# don't use nailgun because I couldn't make it any faster than without
+NG=""
+
+# build classpath
+CP="."
+for jar in jruby-complete-1.7.0.jar ruby-gems.jar \
+	org.eclipse.emf.common_2.7.0.v20120127-1122.jar org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar \
+	org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar \
+	simple-xml-2.6.4.jar guava-13.0.1.jar
+do
+	CP="$CP:$CODE_GENERATOR_DIR/libs/$jar"
+done
+CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR"
+
+if [ -n "$NG" ] ; then
+	# start nailgun server, unless it is already running
+	#TODO only, if not running
+	java -server -cp "$CP:/usr/share/java/nailgun.jar" com.martiansoftware.nailgun.NGServer
+
+	$NG -cp "$CP" org.jruby.util.NailMain -S rake "$@"
+else
+	# use JamVM because it starts faster (4 seconds instead of 8 for server VM)
+	# http://blog.headius.com/2010/03/jruby-startup-time-tips.html
+	VMOPTS=-jamvm
+	java $VMOPTS -cp "$CP" org.jruby.Main -S rake "$@"
+fi

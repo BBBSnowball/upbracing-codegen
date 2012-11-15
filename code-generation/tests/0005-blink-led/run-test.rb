@@ -1,5 +1,4 @@
-puts $flash_cmdline
-system $flash_cmdline
+$helper.flash_processor
 
 puts "This is a manual test. If you want to run it,"
 puts "please press ENTER now. You can press 's' and"
