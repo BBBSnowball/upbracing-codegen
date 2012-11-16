@@ -1,0 +1,6 @@
+This test tests the code generators to generate the CAN sending and receiving methods.
+
+You need two test boards with AT90CAN to test it. Both boards need to be flashed with the same file.
+The first board is leading the test. It is connected with RS232 with the PC to verify the test outcomes.
+The second board is attached with a can connection to the first board.
+It must be powered on before the first board is starting the CAN test.

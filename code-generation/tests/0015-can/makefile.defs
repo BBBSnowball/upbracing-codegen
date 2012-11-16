@@ -1,0 +1,1 @@
+include $(CARTOS_DIR)/makefile.defs-application

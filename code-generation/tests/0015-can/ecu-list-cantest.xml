@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECUs>
+	<ecu
+		name="TestBoard"
+		path="upbracing-TestBoard"
+		build_dir="upbracing-TestBoard/Release"
+		type="AT90CAN"
+		node_id="0x666"
+		node_name="TestBoard">
+	</ecu>
+	<ecu
+		name="DummyBoard"
+		path="upbracing-DummyBoard"
+		build_dir="upbracing-DummyBoard/Release"
+		type="AT90CAN"
+		node_id="0x667"
+		node_name="DummyBoard">
+	</ecu>
+</ECUs>
