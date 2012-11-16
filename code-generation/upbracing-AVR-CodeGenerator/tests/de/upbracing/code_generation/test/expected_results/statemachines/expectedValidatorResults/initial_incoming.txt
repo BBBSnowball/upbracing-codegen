@@ -1,0 +1,21 @@
+ERROR: Initial states cannot have incoming transitions!
+	in transition: normal state normal_1 --> initial state start (wait(20ms))
+	in initial state start
+	in StateMachineForGeneration initial_incoming
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: normal state normal_2 --> initial state start (back)
+	in initial state start
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration initial_incoming
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: normal state normal_3 --> initial state start (back)
+	in initial state start
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration initial_incoming
+	in statemachine validator

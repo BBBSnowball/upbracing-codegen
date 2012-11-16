@@ -1,0 +1,12 @@
+ERROR: More than 1 start states
+	in region region_3
+	in super state super_2
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration moreThanOneInitial_2
+	in statemachine validator
+ERROR: More than 1 start states
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration moreThanOneInitial_2
+	in statemachine validator

@@ -1,0 +1,18 @@
+
+
+#error There were 4 warnings and/or errors
+/*
+ERROR: More than one states have same name!
+	in StateMachineForGeneration withDuplicates
+ERROR: More than one regions have same name!
+	in super state state
+	in StateMachineForGeneration withDuplicates
+ERROR: More than one states have same name!
+	in region reg_0
+	in super state state
+	in StateMachineForGeneration withDuplicates
+ERROR: More than one states have same name!
+	in region reg_2
+	in super state sup_2
+	in StateMachineForGeneration withDuplicates
+*/

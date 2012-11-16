@@ -1,0 +1,21 @@
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: normal state normal_1 --> super state super_1 (before(10ms))
+	in super state super_1
+	in StateMachineForGeneration before_transitionInfo
+	in statemachine validator
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: normal state normal_2 --> normal state normal_3 (before(20ms))
+	in normal state normal_3
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration before_transitionInfo
+	in statemachine validator
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: normal state normal_4 --> normal state normal_5 (before(10ms))
+	in normal state normal_5
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration before_transitionInfo
+	in statemachine validator

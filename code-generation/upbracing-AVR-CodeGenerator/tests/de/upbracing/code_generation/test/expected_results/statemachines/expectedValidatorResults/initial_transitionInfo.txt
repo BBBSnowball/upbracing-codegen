@@ -1,0 +1,26 @@
+ERROR: Initial transitions cannot be waiting transitions
+	in transition: initial state start --> normal state normal_1 (start : wait(10ms))
+	in initial state start
+	in StateMachineForGeneration initial_transitionInfo
+	in statemachine validator
+ERROR: Initial transitions cannot be triggered by an event
+	in transition: initial state start --> normal state normal_1 (start : wait(10ms))
+	in initial state start
+	in StateMachineForGeneration initial_transitionInfo
+	in statemachine validator
+ERROR: Initial transitions cannot be triggered by an event
+	in transition: initial state start --> normal state normal_2 (start)
+	in initial state start
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration initial_transitionInfo
+	in statemachine validator
+ERROR: Initial transitions cannot have a condition
+	in transition: initial state '' --> normal state normal_3 ([a>b])
+	in initial state ''
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration initial_transitionInfo
+	in statemachine validator

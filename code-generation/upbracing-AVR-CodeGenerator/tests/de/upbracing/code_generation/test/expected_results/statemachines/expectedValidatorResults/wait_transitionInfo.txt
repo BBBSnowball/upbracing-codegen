@@ -1,0 +1,21 @@
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal_1 --> super state super_1 (begin : wait(10ms))
+	in super state super_1
+	in StateMachineForGeneration wait_transitionInfo
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal_2 --> normal state normal_4 (wait(10ms) [a>b])
+	in normal state normal_4
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration wait_transitionInfo
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal_3 --> normal state normal_5 (add : wait(10ms) [a==b])
+	in normal state normal_5
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration wait_transitionInfo
+	in statemachine validator

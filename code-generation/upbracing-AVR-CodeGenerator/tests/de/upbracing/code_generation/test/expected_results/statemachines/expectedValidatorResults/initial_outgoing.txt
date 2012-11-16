@@ -1,0 +1,18 @@
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in StateMachineForGeneration initial_outgoing
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration initial_outgoing
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration initial_outgoing
+	in statemachine validator

@@ -92,14 +92,15 @@ public class Validator {
 
 		// check states and regions for duplicate names
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
-			if (!duplicateNames(smg, smg.getStates()))
+			if ((!duplicateNames(smg, smg.getStates())) && after_update_config)
 				return false;
 		}
 
+		// run the validator before the updator has been run
 		if (!after_update_config) {
 			for (StateMachineForGeneration smg : config.getStatemachines()) {
-				// statemachine validation
 
+				// push the statemachine context
 				ContextItem statemachine_context = messages.pushContext(smg);
 
 				// check whether the statemachine has a valid name
@@ -113,22 +114,41 @@ public class Validator {
 						evNameValidate(event, smg.getEvents().get(event), smg);
 				}
 
+				// statemachine must have a final state
+				// if (!statemachineHasFinal(smg))
+				// return false;
+
+				// check number of initial states for each parent
+				checkInitialCount(smg.getStates());
+
 				// traverse all states and regions and run various validators
 				// for them
 				typeCheckAndValidate(smg.getStates(), smg);
 
+				// pop statemachine context
 				statemachine_context.pop();
 			}
 		}
 
+		// returns false if there are any error messages
 		boolean valid = messages.getHighestSeverityInContext().ordinal() < Severity.ERROR
 				.ordinal();
 
+		// pops the validator context
 		validator_context.pop();
 
 		return valid;
 	}
 
+	/**
+	 * Check for any duplicate state/region names in the statemachine
+	 * 
+	 * @param smg
+	 *            The statemachine which is to be parsed for duplicate names
+	 * @param states
+	 *            The list of states that have statemachine as their parent
+	 * @return true, if there are no duplicate names
+	 */
 	public boolean duplicateNames(StateMachineForGeneration smg,
 			List<State> states) {
 		boolean valid = true;
@@ -150,43 +170,64 @@ public class Validator {
 		statemachine_context.pop();
 		return valid;
 	}
-	
-	//check for duplicate region names and state names in a super state
+
+	// check for duplicate region names and state names in a super state
 	private boolean duplicateNames(State state) {
 		boolean valid = true;
+
+		// cast state to Super state
 		SuperState super_state = (SuperState) state;
+
+		// push super state context
 		ContextItem super_context = messages.pushContext(super_state);
 
+		// set valid to false if there are any duplicate regions
 		if (!duplicateRegionNames(super_state.getRegions(), super_state
 				.getRegions().size()))
 			valid = false;
 
+		// parse through all the regions in the super state
 		for (Region region : super_state.getRegions()) {
+
+			// push region context
 			ContextItem region_context = messages.pushContext(region);
+
+			// collect the states of the region
 			List<State> inner_states = region.getStates();
+
+			// set valid to false if there are any duplicate names in the region
 			if (!duplicateStateNames(inner_states, region.getStates().size()))
 				valid = false;
 
+			// get the states in the region
 			for (State st : region.getStates())
+				// check if there are any super states in the region
 				if (st instanceof SuperState) {
+					// call itself and return true or false depending on
+					// whether there are any duplicate names in this super
+					// state
 					if (!duplicateNames(st))
 						valid = false;
 				}
-
+			// pop the context of the region
 			region_context.pop();
 		}
 		super_context.pop();
 		return valid;
 	}
-	
-	//check for duplicate region names
+
+	// check for duplicate region names
 	private boolean duplicateRegionNames(List<Region> list, int size) {
 		boolean valid = true;
 		Set<String> region_names = new HashSet<String>();
 
+		// add regions to the set
 		for (Region reg : list)
 			region_names.add(reg.getName());
 
+		// if there are fewer regions in the set region_names (duplicate names)
+		// than
+		// the size of the list then set valid false
 		if (region_names.size() < size) {
 			duplicateNamesErrorMessage("regions");
 			valid = false;
@@ -194,15 +235,18 @@ public class Validator {
 
 		return valid;
 	}
-	
-	//check for duplicate state names
+
+	// check for duplicate state names
 	private boolean duplicateStateNames(List<State> list, int size) {
 		boolean valid = true;
 		Set<String> state_names = new HashSet<String>();
 
+		// add states to the set
 		for (State state : list)
 			state_names.add(state.getName());
 
+		// if the size of the set is less than the size of the list
+		// then set the valid to false
 		if (state_names.size() < size) {
 			duplicateNamesErrorMessage("states");
 			valid = false;
@@ -211,6 +255,7 @@ public class Validator {
 		return valid;
 	}
 
+	// sets the duplicate names error messages
 	private void duplicateNamesErrorMessage(String type) {
 		messages.error("More than one %s have same name!", type);
 	}
@@ -218,9 +263,15 @@ public class Validator {
 	// check all the state types and perform validation
 	private void typeCheckAndValidate(List<State> s,
 			StateMachineForGeneration smg) {
+
+		// iterate through all the states
 		for (State state : s) {
+
+			// push the context of the state
 			ContextItem state_context = messages.pushContext(state);
 
+			// if state is an initial state perform validation for
+			// initial state and so on for final, normal, and super states
 			if (state instanceof InitialState)
 				initalValidate(state, smg);
 
@@ -235,69 +286,145 @@ public class Validator {
 
 				normSupValidate(sstate, smg);
 
+				// get the regions in the super state
 				for (Region region : sstate.getRegions()) {
+					// push the context of the region
 					ContextItem region_context = messages.pushContext(region);
 
+					// validate region name
 					nameValidate(region);
 
+					// call the method again for processing the states in the
+					// region
 					typeCheckAndValidate(region.getStates(), smg);
 
+					// pop the context of the region
 					region_context.pop();
 				}
 			}
-
+			// pop the context of the state
 			state_context.pop();
 		}
-
-		// check number of initial states for each parent
-		checkInitialCount(smg.getStates());
 	}
 
-	// perform validation of initial state
+	/**
+	 * Performs the validation of the initial state
+	 * 
+	 * @param state
+	 *            the initial state for which the validation is to be performed
+	 * @param smg
+	 *            the statemachine in which this initial state is contained
+	 */
 	public void initalValidate(State state, StateMachineForGeneration smg) {
+		// validate the name of the initial state
 		nameValidate(state);
 
+		// check whether the initial state has incoming transitions
 		initialHasInTransValidate(state);
 
+		// check whether the initial state has only one outgoing transition
 		initialOutValidate(state);
 
+		// check whether the initial transition has a condition/event/waitType
 		initialTransValidate(state, smg);
 	}
 
-	// count number of initial states
+	/**
+	 * Count the number of initial states that have the same parent -
+	 * statemachine/region. If the number of initial states is greater than one
+	 * then an error message is printed.
+	 * 
+	 * @param states
+	 *            the list of the states in the parent(statemachine/region)
+	 */
 	public void checkInitialCount(List<State> states) {
+		// initial state counter
 		int initialcount = 0;
-		for (State state : states) {
-			if (state instanceof InitialState) {
+
+		// iterate through all the states in the parent and check for the
+		// initial state. If there is an initial state initialcount is
+		// incremented
+		for (State state : states)
+			if (state instanceof InitialState)
 				initialcount++;
+
+		// check for any super states, and if there are any super states then
+		// the
+		// then validation for initial states in these super states is performed
+		for (State state : states) {
+			if (state instanceof SuperState) {
+
+				// push context of the super state
+				ContextItem super_context = messages.pushContext(state);
+
+				// collect all the regions of the super state
+				for (Region region : ((SuperState) state).getRegions()) {
+
+					// push context of the region
+					ContextItem region_context = messages.pushContext(region);
+
+					// count the initial states contained in the region
+					checkInitialCount(region.getStates());
+
+					// pop context of the region
+					region_context.pop();
+				}
+				// pop super state context
+				super_context.pop();
 			}
 		}
 
+		// if initial states are greater than one then print an error message
 		if (initialcount > 1)
 			messages.error("More than 1 start states");
+
+		// if there are some states in the region, but there is no initial state
+		// then set an error message
 		else if (initialcount < 1 && !states.isEmpty())
 			messages.error("No initial state");
 	}
 
-	// validate all final states
+	/**
+	 * Perform all the checks relevant for the validation of the final state
+	 * 
+	 * @param state
+	 *            the final state which is to be validates
+	 * @param smg
+	 *            the statemachine in which the final state is contained
+	 */
 	public void finalValidate(State state, StateMachineForGeneration smg) {
+		// validate name of the final state
 		nameValidate(state);
 
+		// validate outgoing transitions of the final state
 		finalOutValidate(state);
 
+		// validate the trigger for the transition
 		normalTransValidate(state, smg);
 	}
 
-	// validate normal and super states
+	/**
+	 * Perform all the relevant checks for the normal and super states
+	 * 
+	 * @param state
+	 *            the normal/super state for which the validation is to be
+	 *            performed
+	 * @param smg
+	 *            the statemachine in which this normal or super state is
+	 *            contained
+	 */
 	public void normSupValidate(State state, StateMachineForGeneration smg) {
+		// validate the name of the state
 		nameValidate(state);
 
+		// validate the transition triggers for normal and super states
 		normalTransValidate(state, smg);
 	}
 
 	/** return whether we have any null values in inappropiate places */
 	private boolean validateStatesNotNull(Iterable<State> states) {
 		for (State state : states) {
+			// push the statemachine context
 			ContextItem state_context = messages.pushContext(state);
 
 			validateNotNull(state.getIncomingTransitions(),
@@ -338,7 +465,7 @@ public class Validator {
 		return true;
 	}
 
-	/** return whether we have any null values in inappropiate places */
+	/** return whether we have any null values in inappropriate places */
 	private boolean validateNull() {
 		// make sure that we don't have any unexpected null values
 		ContextItem task_context = messages
@@ -374,27 +501,45 @@ public class Validator {
 		return true;
 	}
 
+	// returns true if the string passed is empty or null
 	private static boolean emptyOrNull(String obj) {
 		return obj == null || obj.isEmpty();
 	}
 
+	/**
+	 * Validate the name of the statemachine.
+	 * 
+	 * @param smg
+	 *            the statemachine whose name is to be validated
+	 * @return true, if the name of the statemachine is a valid C identifier
+	 */
 	public boolean nameValidate(StateMachineForGeneration smg) {
+		// if state name is empty or null then set an error message
 		if (emptyOrNull(smg.getName())) {
 			messages.error("Statemachine name is empty or null!", smg);
 			return false;
 
-		} else if (!isNameValid(smg.getName())) {
+		}
+		// if state name is not a valid C identifier then set an error message
+		else if (!isNameValid(smg.getName())) {
 			setNameErrorMess(smg.getName());
 			return false;
 
-		} else
+		} // if state name is a valid C identifier return true
+		else
 			return true;
 	}
 
-	// validate state name
+	/**
+	 * Validate name of the state/region
+	 * 
+	 * @param state
+	 *            the state whose name is to be validated
+	 * @return true, if the name of the state is a valid C identifier
+	 */
 	public boolean nameValidate(NamedItem state) {
 		String name = state.getName();
-
+		
 		if (emptyOrNull(name) || isNameValid(name))
 			return true;
 		else {
@@ -402,13 +547,15 @@ public class Validator {
 			return false;
 		}
 	}
-
-	public boolean isNameValid(String nametobevalidated) {
+	
+	//match the name of the state/region/statemachine against the regular expression
+	//for a valid C identifier
+	private boolean isNameValid(String nametobevalidated) {
 		Pattern name_pattern = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
 		return name_pattern.matcher(nametobevalidated).matches();
 	}
 
-	// event name validator
+	//validate the name of the event. If the name is a valid C identifier, return true
 	private boolean evNameValidate(String event, Set<Transition> trans,
 			StateMachineForGeneration smg) {
 		if (emptyOrNull(event) || isNameValid(event))
@@ -422,7 +569,9 @@ public class Validator {
 			return false;
 		}
 	}
-
+	
+	//error message for states/events/statemachines/region names which are not
+	//valid C identifiers
 	private void setNameErrorMess(String name) {
 		messages.error("'%s' is not a valid C identifier!", name);
 	}
@@ -430,16 +579,22 @@ public class Validator {
 	// validate initial state transitions
 	private void initialTransValidate(State state, StateMachineForGeneration smg) {
 		for (Transition trans : state.getOutgoingTransitions()) {
+			//get transition info of the outgoing transitions from the state
 			TransitionInfo ti = smg.getTransitionInfo(trans);
-
+			
+			//push context of the transition
 			ContextItem trans_context = messages.pushContext(trans);
-
+			
+			//if the transition is triggered by waitType then set an error message
 			if (ti.isWaitTransition())
 				messages.error("Initial transitions cannot be waiting transitions");
-
+			
+			//if the transition is triggered by an event then set an error message
 			if (!emptyOrNull(ti.getEventName()))
 				messages.error("Initial transitions cannot be triggered by an event");
-
+			
+			//if transition is triggered by a condition then set an error message. The transition
+			//condition should be either empty or null, or equal to "1" or "true"
 			if (!emptyOrNull(ti.getCondition())
 					&& !ti.getCondition().equals("1")
 					&& !ti.getCondition().equals("true"))
@@ -451,6 +606,9 @@ public class Validator {
 
 	// validate normal/super state transition
 	private void normalTransValidate(State state, StateMachineForGeneration smg) {
+		if (state.getIncomingTransitions().size() == 0)
+			messages.error("State has no incoming transitions!");
+
 		for (Transition trans : state.getIncomingTransitions()) {
 			TransitionInfo ti = smg.getTransitionInfo(trans);
 
@@ -506,4 +664,14 @@ public class Validator {
 			messages.error("Final states cannot have outgoing transitions!");
 		}
 	}
+
+//	private boolean statemachineHasFinal(StateMachineForGeneration smg) {
+//		int final_count = 0;
+//
+//		for (State state : smg.getStates())
+//			if (state instanceof FinalState)
+//				final_count++;
+//
+//		return final_count > 0 ? true : false;
+//	}
 }

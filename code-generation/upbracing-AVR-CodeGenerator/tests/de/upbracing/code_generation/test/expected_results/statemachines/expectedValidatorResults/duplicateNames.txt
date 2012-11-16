@@ -1,0 +1,8 @@
+ERROR: More than one states have same name!
+	in StateMachineForGeneration duplicate_names
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_1
+	in super state super_state
+	in StateMachineForGeneration duplicate_names
+	in statemachine validator

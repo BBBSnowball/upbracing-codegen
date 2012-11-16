@@ -1,0 +1,46 @@
+ERROR: More than one states have same name!
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_1
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_3
+	in super state super_2
+	in region 2region_2
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: '2normal_1' is not a valid C identifier!
+	in normal state 2normal_1
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: '2super' is not a valid C identifier!
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: '#normal_4' is not a valid C identifier!
+	in normal state '#normal_4'
+	in region region_1
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: '2region_2' is not a valid C identifier!
+	in region 2region_2
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: 'norm?_5' is not a valid C identifier!
+	in normal state 'norm?_5'
+	in region region_3
+	in super state super_2
+	in region 2region_2
+	in super state 2super
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator
+ERROR: State has no incoming transitions!
+	in normal state normal_2
+	in StateMachineForGeneration dup_inavalidnames
+	in statemachine validator

@@ -1,0 +1,8 @@
+ERROR: '#state_normal' is not a valid C identifier!
+	in normal state '#state_normal'
+	in StateMachineForGeneration invalidName
+	in statemachine validator
+ERROR: '2state' is not a valid C identifier!
+	in normal state 2state
+	in StateMachineForGeneration invalidName
+	in statemachine validator

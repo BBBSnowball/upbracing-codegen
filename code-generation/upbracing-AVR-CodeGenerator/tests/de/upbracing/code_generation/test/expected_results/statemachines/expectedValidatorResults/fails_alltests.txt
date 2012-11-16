@@ -1,0 +1,161 @@
+ERROR: More than one states have same name!
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_3
+	in super state '%sup_2'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: More than 1 start states
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: No initial state
+	in region region_
+	in super state super_3
+	in region region_2
+	in super state sup_2
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: '$normal_1' is not a valid C identifier!
+	in normal state '$normal_1'
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: normal state normal_1 --> normal state '$normal_1' (before(10ms))
+	in normal state '$normal_1'
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: '$region_1' is not a valid C identifier!
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start_1
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: 'reg#_2' is not a valid C identifier!
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: '%sup_2' is not a valid C identifier!
+	in super state '%sup_2'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: State has no incoming transitions!
+	in super state '%sup_2'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region region_3
+	in super state '%sup_2'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: '$normal_1' is not a valid C identifier!
+	in normal state '$normal_1'
+	in region region_3
+	in super state '%sup_2'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: super state '%sup_2' --> initial state start ([true])
+	in initial state start
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: State has no incoming transitions!
+	in normal state normal_2
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: 'norma;_3' is not a valid C identifier!
+	in normal state 'norma;_3'
+	in region 'reg#_2'
+	in super state sup_1
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: super state super_3 --> super state sup_2 (wait(10ms) [a==b])
+	in super state sup_2
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial transitions cannot have a condition
+	in transition: initial state start --> normal state normal_1 ([a==b])
+	in initial state start
+	in region region_1
+	in super state sup_2
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: State has no incoming transitions!
+	in normal state normal_2
+	in region region_1
+	in super state sup_2
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Initial transitions cannot be triggered by an event
+	in transition: initial state start --> super state super_3 (add)
+	in initial state start
+	in region region_2
+	in super state sup_2
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: super state sup_1 --> super state super_3 (add : wait(10ms))
+	in super state super_3
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal_1 --> normal state normal_2 (add : wait(5ms))
+	in normal state normal_2
+	in region region_1
+	in super state super_3
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'wait', but condition or event not empty
+	in transition: normal state normal_2 --> normal state normal_3 (wait(3ms) [a==b])
+	in normal state normal_3
+	in region region_1
+	in super state super_3
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: normal state normal_3 --> normal state normal_4 (before(10ms))
+	in normal state normal_4
+	in region region_1
+	in super state super_3
+	in StateMachineForGeneration fails_first4_cases
+	in statemachine validator

@@ -1,0 +1,7 @@
+One level state machine with unnamed states and region
+
+State : start
+State : end
+State : state1
+State : superstate2
+Region : region3
