@@ -1,0 +1,44 @@
+ERROR: More than one states have same name!
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: More than one regions have same name!
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_3
+	in super state super_2
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: More than 1 start states
+	in region region_3
+	in super state super_2
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: More than 1 start states
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: 'no%mal_2' is not a valid C identifier!
+	in normal state 'no%mal_2'
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: '$region_1' is not a valid C identifier!
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: '#normal' is not a valid C identifier!
+	in normal state '#normal'
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator
+ERROR: '$region_1' is not a valid C identifier!
+	in region '$region_1'
+	in super state sup_1
+	in StateMachineForGeneration dup_invalidnames_moreInitial
+	in statemachine validator

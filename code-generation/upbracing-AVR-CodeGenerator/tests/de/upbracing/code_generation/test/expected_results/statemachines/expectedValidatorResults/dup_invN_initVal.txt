@@ -1,0 +1,92 @@
+ERROR: More than one states have same name!
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: More than one states have same name!
+	in region region_1
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: More than 1 start states
+	in region region_2
+	in super state '%super_2'
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: More than 1 start states
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: More than 1 start states
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: '#normal_1' is not a valid C identifier!
+	in normal state '#normal_1'
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: normal state normal_1 --> initial state start ([true])
+	in initial state start
+	in region region_1
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region region_1
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: '$normal_1' is not a valid C identifier!
+	in normal state '$normal_1'
+	in region region_1
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: initial state start --> initial state start_1 ([true])
+	in initial state start_1
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start_1
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: '%super_2' is not a valid C identifier!
+	in super state '%super_2'
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial states cannot have incoming transitions!
+	in transition: initial state start --> initial state start_1 ([true])
+	in initial state start_1
+	in region region_2
+	in super state '%super_2'
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator
+ERROR: Initial state must have exactly one outgoing transition
+	in initial state start_1
+	in region region_2
+	in super state '%super_2'
+	in region region_3
+	in super state sup_1
+	in StateMachineForGeneration dup_invNames_initVal
+	in statemachine validator

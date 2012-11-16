@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Statecharts:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Statecharts="http://statechart" basePeriod="1s">
+  <transitions source="//@states.0" destination="//@states.1"/>
+  <transitions source="//@states.1" destination="//@states.3" transitionInfo="wait(10ms)"/>
+  <transitions source="//@states.3" destination="//@states.2" transitionInfo="sum: before(10ms)"/>
+  <transitions source="//@states.2" destination="//@states.4" transitionInfo="end"/>
+  <transitions source="//@states.2/@regions.0/@states.0" destination="//@states.2/@regions.0/@states.1"/>
+  <transitions source="//@states.2/@regions.0/@states.1" destination="//@states.2/@regions.0/@states.2" transitionInfo="wait(10ms)"/>
+  <transitions source="//@states.2/@regions.1/@states.0" destination="//@states.2/@regions.1/@states.1"/>
+  <transitions source="//@states.2/@regions.1/@states.1" destination="//@states.2/@regions.1/@states.2" transitionInfo="[a>b]"/>
+  <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.0" parent="/"/>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.0" outgoingTransitions="//@transitions.1" parent="/" name="state"/>
+  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.2" outgoingTransitions="//@transitions.3" name="super_state">
+    <regions name="region_1" parent="//@states.2">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.4"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.4" outgoingTransitions="//@transitions.5" name="state_1"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.5" name="state_1"/>
+    </regions>
+    <regions name="region_2" parent="//@states.2">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.6"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.6" outgoingTransitions="//@transitions.7" name="state_2"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.7" name="state_3"/>
+    </regions>
+  </states>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.2" parent="/" name="state"/>
+  <states xsi:type="Statecharts:FinalState" incomingTransitions="//@transitions.3"/>
+</Statecharts:StateMachine>

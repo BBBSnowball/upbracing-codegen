@@ -1,0 +1,5 @@
+ERROR: Initial transitions cannot be triggered by an event
+	in transition: initial state initial_state --> final state final_state (add)
+	in initial state initial_state
+	in StateMachineForGeneration initalHasEvent
+	in statemachine validator

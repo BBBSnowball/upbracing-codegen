@@ -1,0 +1,5 @@
+ERROR: Transition has waitType 'before' but neither condition nor event
+	in transition: super state super --> normal state normal (before(10ms))
+	in normal state normal
+	in StateMachineForGeneration transitionHasNoConditionOrEvent
+	in statemachine validator

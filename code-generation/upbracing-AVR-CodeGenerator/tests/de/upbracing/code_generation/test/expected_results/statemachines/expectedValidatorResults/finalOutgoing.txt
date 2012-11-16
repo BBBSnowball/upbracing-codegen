@@ -1,0 +1,18 @@
+ERROR: Final states cannot have outgoing transitions!
+	in final state end
+	in StateMachineForGeneration final
+	in statemachine validator
+ERROR: Final states cannot have outgoing transitions!
+	in final state end
+	in region region_1
+	in super state super_1
+	in StateMachineForGeneration final
+	in statemachine validator
+ERROR: Final states cannot have outgoing transitions!
+	in final state end
+	in region region_3
+	in super state super_2
+	in region region_2
+	in super state super_1
+	in StateMachineForGeneration final
+	in statemachine validator
