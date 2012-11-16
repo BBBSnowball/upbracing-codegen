@@ -1,7 +1,20 @@
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar/
 JRUBY=jruby-complete-1.7.0.jar
 
+# put gems in folder GEM_HOME
 export GEM_HOME=./GEM_HOME
+
 java -jar $JRUBY -S gem install xml-simple
 java -jar $JRUBY -S gem install rake
+# ANSI color codes for Windows
+# http://www.ruby-forum.com/topic/184875
+java -jar $JRUBY -S gem install --source http://gems.github.com aslakhellesoy-ansicolor
+# We can also use ansicon or ConEmu for Windows. ConEmu supports 256 colors.
+# http://superuser.com/a/441853
+java -jar $JRUBY -S gem install paint
+
+#NOTE on Ubuntu you have to create a symlink: cd /lib/x86_64-linux-gnu/ ; sudo ln -s libncurses.so.5.9 libncurses.so
+java -jar $JRUBY -S gem install rbcurse
+
+# pack gems into a jar file
 jar cf ruby-gems.jar -C GEM_HOME .

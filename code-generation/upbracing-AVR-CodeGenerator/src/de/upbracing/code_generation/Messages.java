@@ -233,9 +233,18 @@ public class Messages {
 		void pop();
 	}
 	
+	/** a context listener */
+	public interface ContextListener {
+		/** called, after an item has been pushed on the context stack */
+		void contextPushed(Object context_item);
+		/** called, after an item has been removed from the context stack */
+		void contextPopped(Object context_item);
+	}
+	
 	private List<Message> messages = new LinkedList<Message>();
 	private LinkedList<Object> context = new LinkedList<Object>();
 	private List<MessageListener> listeners = new LinkedList<MessageListener>();
+	private List<ContextListener> context_listeners = new LinkedList<ContextListener>();
 	private Map<Class<?>, ObjectFormatter<Object>> formatters
 		= new HashMap<Class<?>, ObjectFormatter<Object>>();
 	
@@ -247,6 +256,16 @@ public class Messages {
 	/** remove a message listener */
 	public void removeMessageListener(MessageListener listener) {
 		listeners.remove(listener);
+	}
+
+	/** add a context listener */
+	public void addContextListener(ContextListener listener) {
+		context_listeners.add(listener);
+	}
+	
+	/** remove a context listener */
+	public void removeContextListener(ContextListener listener) {
+		context_listeners.remove(listener);
 	}
 	
 	/** add an object formatter
@@ -443,6 +462,10 @@ public class Messages {
 	 */
 	public ContextItem pushContext(final Object context_item) {
 		context.addLast(context_item);
+
+		// notify listeners
+		for (ContextListener l : context_listeners)
+			l.contextPushed(context_item);
 		
 		final int context_size = context.size();
 		
@@ -464,7 +487,12 @@ public class Messages {
 				if (top != context_item)
 					throw new IllegalStateException("You tried to pop the wrong item");
 				
+				// remove it
 				context.removeLast();
+
+				// notify listeners
+				for (ContextListener l : context_listeners)
+					l.contextPopped(context_item);
 			}
 		};
 	}
@@ -477,7 +505,13 @@ public class Messages {
 	 */
 	@Deprecated
 	public Object popContext() {
-		return context.removeLast();
+		Object context_item = context.removeLast();
+
+		// notify listeners
+		for (ContextListener l : context_listeners)
+			l.contextPopped(context_item);
+		
+		return context_item;
 	}
 	
 	/** return a list of all messages

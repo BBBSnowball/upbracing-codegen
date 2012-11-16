@@ -28,7 +28,7 @@ for jar in jruby-complete-1.7.0.jar ruby-gems.jar \
 do
 	CP="$CP:$CODE_GENERATOR_DIR/libs/$jar"
 done
-CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR"
+CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR:$CODE_GENERATOR_DIR/bin"
 
 if [ -n "$NG" ] ; then
 	# start nailgun server, unless it is already running

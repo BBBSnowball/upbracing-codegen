@@ -34,6 +34,13 @@ TARGET_DIR="gen"
 # SERIALPORT = "/dev/ttyUSB0"	# can be a Proc object
 require 'userconfig.rb'
 
+# some default values
+{ :COLOR => :auto, :UI => :simple }.each do |key,value|
+	unless Object.constants.include? key
+		Object.const_set key, value
+	end
+end
+
 # make sure that we have all the constants we expect
 user_config_error = false
 [:AVRDUDE, :SERIALPORT].each do |name|
@@ -146,7 +153,7 @@ task "test-all" => :test_all do end
 
 
 # default action is building everything (for now - might change that to running the tests)
-task :default => :build_all
+task :default => :build_all do end
 
 
 # clean task removes all build output files and directories
@@ -188,6 +195,8 @@ class Project
 
 				# build
 				sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
+
+				puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
 			end
 		end
 	end
@@ -508,6 +517,8 @@ class Project
 		# create compile tasks
 		objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
 
+		return nil unless objs and not objs.empty?
+
 		# get libraries (probably a future value (Proc))
 		libs = get_libs(features_header_file, source_dir, name, configuration, sources)
 
@@ -548,8 +559,13 @@ class Project
 end
 
 class TestHelper
+	attr_accessor :toolkit
 	attr_accessor :avrdude, :serialport
 	attr_accessor :name, :build_dir, :source_dir, :configuration
+
+	def start
+		$toolkit = @toolkit
+	end
 
 	def erase_processor
 		system "#{@avrdude} -e"
@@ -652,6 +668,9 @@ class Project
 	def run_jruby_script(script_filename, classpath = nil, global_variables = {})
 		engine = Ruby.newInstance
 
+		init_code = global_variables[:init]
+		global_variables.delete :init
+
 		global_variables.each do |key, value|
 			#TODO support methods
 			if key =~ /^[A-Z]/
@@ -693,6 +712,9 @@ class Project
 		# change to directory of the script file
 		engine.current_directory = File.expand_path(File.dirname(script_filename))
 
+		# run init code
+		engine.executeScript(init_code, "init code") if init_code
+
 		# execute test script
 		engine.executeScript(File.read(script_filename), script_filename)
 	end
@@ -718,6 +740,13 @@ class Project
 		end
 	end
 
+	def get_toolkit
+		unless $toolkit
+			$toolkit = Java::de::upbracing::code_generation::tests::TestUILoader.createToolkit(UI)
+		end
+		return $toolkit
+	end
+
 	def run_test(dir, configuration)
 		source_dir = dir
 		name = name_from_source_dir source_dir
@@ -732,6 +761,9 @@ class Project
 		test_helper.serialport    = SERIALPORT
 		test_helper.configuration = configuration
 
+		toolkit = get_toolkit
+		test_helper.toolkit = toolkit
+
 		test_script = get_test_script(dir, configuration)
 
 		test = task "test-#{name}-#{configuration}" => get_test_dependencies(dir, test_helper) do
@@ -744,9 +776,11 @@ class Project
 			begin
 				run_jruby_script test_script, classpath,				\
 					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 	\
-					"$helper" => test_helper
+					"$helper" => test_helper,							\
+					:init => "$helper.start"
 			rescue Exception => ex
 				puts "Exception in test script #{test_script}:"
+				puts ex.class
 				puts ex.message
 				puts ex.backtrace.join("\n")
 			end
@@ -754,6 +788,8 @@ class Project
 
 		# alias for this task because I always get it wrong ;-)
 		task "run-#{name}-#{configuration}" => test
+
+		task "test-#{name}" => test
 
 		#TODO How can we enforce the order? Does rake honour the order that
 		#     we use for adding the dependencies?
