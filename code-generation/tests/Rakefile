@@ -298,7 +298,7 @@ class Project
 	end
 
 	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
-		[]
+		["#/../../avr-programs/upbracing-common"]
 	end
 
 	def cflags(source_dir, source_file, target_dir, configuration)
@@ -306,10 +306,10 @@ class Project
 		dir_flags = dirs.map { |dir|
 			if dir.start_with? "#/"
 				rel_path = dir[2..-1]
-			elsif dir.starts_with? "/"
+			elsif dir.start_with? "/"
 				rel_path = dir
 			else
-				rel_path = File.join(source_dir, rel_path)
+				rel_path = File.join(source_dir, dir)
 			end
 			" '-I#{rel_path}'"
 		}.join
@@ -516,6 +516,13 @@ class Project
 
 		# create compile tasks
 		objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
+
+		# make sure that we generate before we compile
+		if gen_task
+			objs.each do |obj|
+				obj.enhance [gen_task]
+			end
+		end
 
 		return nil unless objs and not objs.empty?
 
