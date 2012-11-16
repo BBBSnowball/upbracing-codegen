@@ -34,6 +34,13 @@ TARGET_DIR="gen"
 # SERIALPORT = "/dev/ttyUSB0"	# can be a Proc object
 require 'userconfig.rb'
 
+# some default values
+{ :COLOR => :auto, :UI => :simple }.each do |key,value|
+	unless Object.constants.include? key
+		Object.const_set key, value
+	end
+end
+
 # make sure that we have all the constants we expect
 user_config_error = false
 [:AVRDUDE, :SERIALPORT].each do |name|
@@ -117,6 +124,13 @@ def any_is_newer(old_files, new_files)
 end
 
 
+class Dir
+	def self.empty?(dir)
+		Dir.entries(dir).grep(/^(?!\.\.?$)/).empty?
+	end
+end
+
+
 # task generate_all tests all of them
 task :generate_all do end
 
@@ -139,7 +153,11 @@ task "test-all" => :test_all do end
 
 
 # default action is building everything (for now - might change that to running the tests)
-task :default => :build_all
+task :default => :build_all do end
+
+
+# clean task removes all build output files and directories
+task :clean do end
 
 
 class Project
@@ -177,6 +195,8 @@ class Project
 
 				# build
 				sh "cd '#{cartos_build_dir}' ; make 'libcaRtos-#{md5}.a'"
+
+				puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
 			end
 		end
 	end
@@ -260,6 +280,12 @@ class Project
 				do_generate(dir, target_dir, config_file)
 			#end
 		end
+
+		clean = task "clean for #{config_file}" do
+			rm generated_files, :force => true
+			rmdir target_dir if Dir.exists? target_dir
+		end
+		task :clean => clean
 
 		return gen_task
 	end
@@ -363,8 +389,8 @@ class Project
 	end
 
 	def name_from_source_dir(source_dir)
-		name = File.basename(source_dir)
-		name.sub(/^[0-9]+[-_ ]?/, "")
+		name = File.basename(source_dir) 	#TODO this won't work for nested folders
+		name.sub(/^[0-9]+[-_ ]?/, "").gsub(/[\/\\][0-9]+[-_ ]?/, "/").gsub(/[\/\\]/, "-")
 	end
 
 	def get_target_dir(source_dir, configuration)
@@ -491,6 +517,8 @@ class Project
 		# create compile tasks
 		objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
 
+		return nil unless objs and not objs.empty?
+
 		# get libraries (probably a future value (Proc))
 		libs = get_libs(features_header_file, source_dir, name, configuration, sources)
 
@@ -519,18 +547,31 @@ class Project
 		# make sure that the hex file is generated, if someone calls build-all
 		task :build_all => build_task
 
+		# clean task
+		clean = task "clean-#{name}-#{configuration}" do
+			rm_rf target_dir
+		end
+		task "clean-#{name}" => clean
+
 		# return hex file task
 		flash_hex_file
 	end
+end
 
+class TestHelper
+	attr_accessor :toolkit
+	attr_accessor :avrdude, :serialport
+	attr_accessor :name, :build_dir, :source_dir, :configuration
 
-	## run tests
-
-	def erase_processor
-		sh "#{AVRDUDE} -e"
+	def start
+		$toolkit = @toolkit
 	end
 
-	def flash_processor_action(build_dir, name, parts = [:flash])
+	def erase_processor
+		system "#{@avrdude} -e"
+	end
+
+	def flash_processor_action(parts = [:flash])
 		parts = [parts] if parts.is_a? String or parts.is_a? Symbol
 		return { :dependencies => [], :action => lambda {}, :cmdline => "" } if parts.empty?
 
@@ -550,20 +591,85 @@ class Project
 				raise "Unsupported type of memory: #{part}"
 			end
 
-			file = File.join(build_dir, "#{name}.#{ext}")
+			file = File.join(@build_dir, "#{@name}.#{ext}")
 			dependencies << file
 			commands += " '-U#{type}:w:#{File.expand_path(file)}:a'"
 		end
 
-		cmdline = AVRDUDE+commands
+		cmdline = @avrdude + commands
 
-		{ :dependencies => dependencies, :action => lambda { sh cmdline }, :cmdline => cmdline }
+		{ :dependencies => dependencies, :cmdline => cmdline }
 	end
+
+	def flash_processor(parts = [:flash])
+		system flash_processor_action(parts)[:cmdline]
+	end
+end
+
+class Project
+
+	## build Java helpers that are specific to this project
+
+	ToolProvider = Java::javax::tools::ToolProvider
+
+	def get_java_sources(java_source_dir)
+		FileList[File.join(java_source_dir, "**", "*.java")]
+	end
+
+	def compiler_classpath(java_source_dir)
+		Java::java::lang::System.getProperty("java.class.path")
+	end
+
+	def run_compiler(java_source_dir, java_output_dir)
+		classpath = compiler_classpath(java_source_dir)
+		args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
+			+ get_java_sources(java_source_dir)
+		ToolProvider::getSystemJavaCompiler.run(nil, nil, nil, *args)
+	end
+
+	def get_java_source_dir(project_dir)
+		File.join(project_dir, "java")
+	end
+
+	def get_java_output_dir(project_dir)
+		File.join(project_dir, "bin", "java")
+	end
+
+	def create_java_task(project_dir)
+		java_source_dir = get_java_source_dir(project_dir)
+		if File.exists? java_source_dir
+			java_output_dir = get_java_output_dir(project_dir)
+
+			create_java_task2(project_dir, java_source_dir, java_output_dir)
+		else
+			nil
+		end
+	end
+
+	def create_java_task2(project_dir, java_source_dir, java_output_dir)
+		directory java_output_dir
+
+		java_sources = get_java_sources(java_source_dir)
+		class_files = java_sources.map { |x| x.sub(java_source_dir, java_output_dir).sub(/\.[^.]+$/, ".class") }
+
+		compile_java_task = many_files "compile java files in #{java_source_dir}", class_files
+
+		compile_java_task.enhance([file(java_output_dir)] + java_sources) do
+			run_compiler(java_source_dir, java_output_dir)
+		end
+
+		compile_java_task
+	end
+
+	## run tests
 
 	Ruby = Java::org::jruby::Ruby
 
-	def run_jruby_script(script_filename, global_variables = {})
+	def run_jruby_script(script_filename, classpath = nil, global_variables = {})
 		engine = Ruby.newInstance
+
+		init_code = global_variables[:init]
+		global_variables.delete :init
 
 		global_variables.each do |key, value|
 			#TODO support methods
@@ -594,11 +700,20 @@ class Project
 			end
 		end
 
+		# add some entries to the classpath
+		if classpath
+			engine.defineReadonlyVariable("$additional_classpath", classpath)
+			engine.executeScript("$additional_classpath.each { |x| $CLASSPATH << x }", "extend classpath")
+		end
+
 		# load some helpers
 		engine.executeScript(File.read("test-helpers.rb"), "test-helpers.rb")
 
 		# change to directory of the script file
 		engine.current_directory = File.expand_path(File.dirname(script_filename))
+
+		# run init code
+		engine.executeScript(init_code, "init code") if init_code
 
 		# execute test script
 		engine.executeScript(File.read(script_filename), script_filename)
@@ -608,59 +723,105 @@ class Project
 		File.join(dir, "run-test.rb")
 	end
 
+	def get_test_dependencies(project_dir, test_helper)
+		test_helper.flash_processor_action()[:dependencies].map { |x| File.join(project_dir, x) }
+	end
+
+	def create_test_helper(name, build_dir)
+		TestHelper.new
+	end
+
+	def test_classpath(project_dir, test_helper)
+		java_source_dir = get_java_source_dir(project_dir)
+		if File.exists? java_source_dir
+			[get_java_output_dir(project_dir)]
+		else
+			[]
+		end
+	end
+
+	def get_toolkit
+		unless $toolkit
+			$toolkit = Java::de::upbracing::code_generation::tests::TestUILoader.createToolkit(UI)
+		end
+		return $toolkit
+	end
+
 	def run_test(dir, configuration)
-		name = name_from_source_dir dir
+		source_dir = dir
+		name = name_from_source_dir source_dir
 
 		build_dir = get_target_dir(dir, configuration)
 
-		# get dependencies and commandline for flashing program to processor
-		flash_info = flash_processor_action(build_dir, name)
-		flash_cmdline = flash_info[:cmdline]
+		test_helper = create_test_helper(name, build_dir)
+		test_helper.name          = name
+		test_helper.build_dir     = relative_path build_dir,  dir
+		test_helper.source_dir    = relative_path source_dir, dir
+		test_helper.avrdude       = AVRDUDE
+		test_helper.serialport    = SERIALPORT
+		test_helper.configuration = configuration
 
-		# write flash command line to temporary file
-		#flash_cmdline_file = Tempfile.new("flashcmd")
-		#open(flash_cmdline_file, "w") do |f|
-		#	f.write(flash_cmdline)
-		#end
+		toolkit = get_toolkit
+		test_helper.toolkit = toolkit
 
 		test_script = get_test_script(dir, configuration)
 
-		test = task "test-#{name}-#{configuration}" => flash_info[:dependencies] do
+		test = task "test-#{name}-#{configuration}" => get_test_dependencies(dir, test_helper) do
 			puts "Running test '#{dir}' (#{configuration})..."
 
 			raise "Test script not found at '#{test_script}'" unless File.exists? test_script
+
+			classpath = test_classpath(dir, test_helper)
+
 			begin
-				run_jruby_script test_script, 						\
-					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, \
-					"$flash_cmdline" => flash_cmdline
-					#:erase_processor2 => method(:erase_processor), \
-					#:sh => method(:sh)
+				run_jruby_script test_script, classpath,				\
+					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 	\
+					"$helper" => test_helper,							\
+					:init => "$helper.start"
 			rescue Exception => ex
-				puts "Exception in test script #{File.join(dir, "run-test.rb")}:"
+				puts "Exception in test script #{test_script}:"
+				puts ex.class
 				puts ex.message
 				puts ex.backtrace.join("\n")
 			end
 		end
 
+		# alias for this task because I always get it wrong ;-)
+		task "run-#{name}-#{configuration}" => test
+
+		task "test-#{name}" => test
+
 		#TODO How can we enforce the order? Does rake honour the order that
 		#     we use for adding the dependencies?
 		task :test_all => test
-
-		#flash_cmdline_file.delete
 	end
 
 
 	# main method
 
-	def create_tasks(dir)
+	def create_tasks(dir, dependencies_for_run)
+		compile_java_task = create_java_task(dir)
+
 		configurations(:build).each do |configuration|
 			# build hex file
-			build dir, configuration
+			build_task = build dir, configuration
+
+			build_task.enhance [compile_java_task] if compile_java_task
 		end
+
+		# clean task
+		name = name_from_source_dir dir
+		clean = task "clean-#{name}" do
+			target_dir = get_target_dir(dir, "")
+			rmdir target_dir if Dir.exists?(target_dir) and Dir.empty?(target_dir)
+		end
+		task :clean => clean
 
 		configurations(:test).each do |configuration|
 			# run test
-			run_test dir, configuration
+			run_task = run_test dir, configuration
+
+			run_task.enhance dependencies_for_run
 		end
 	end
 
@@ -759,18 +920,25 @@ def load_project_config(dir)
 	return project
 end
 
+# compile task for helpers project
+JAVA_HELPERS=File.join("..", "tests-java-helpers")
+compile_helpers = Project.new.create_java_task2(JAVA_HELPERS,
+	File.join(JAVA_HELPERS, "src"),
+	File.join(JAVA_HELPERS, "bin"))
+task :build_all => compile_helpers
+
 # add tasks for all directories which have certain files
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
 project_dirs = magic_files.map { |file| File.dirname(file) }
 project_dirs.uniq!
-project_dirs.sort 	#TODO is sort is too intelligent
+project_dirs.sort!
 project_dirs.each do |dir|
 	puts "project: #{dir}"
 	# special case: 'common' directory is not a test
 	if dir != "common/"
 		project = load_project_config(dir)
 
-		project.create_tasks(dir) if project
+		project.create_tasks(dir, [compile_helpers]) if project
 
 		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
 	end

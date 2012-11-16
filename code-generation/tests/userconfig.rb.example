@@ -9,3 +9,14 @@ SERIALPORT = lambda { Dir["/dev/ttyUSB*"].first }
 
 # use COM10 (Windows)
 #SERIALPORT = "COM10"
+
+# use color in terminal ?
+#COLOR=false	# no color
+#COLOR=true		# use 16 colors, always
+COLOR=:auto		# try to recognize correct setting
+#COLOR=256		# use 256 colors
+
+# user interface
+UI = :simple	# text
+#UI = :ncurses	# text UI with windows (only for Linux)
+#UI = :swing	# graphical, not finished -> Krishna
