@@ -14,6 +14,12 @@ import de.upbracing.code_generation.tests.context.ExternalProgramContext.Monitor
 /** like {@link Toolkit}, but it has a lot of convenience functions */
 public class RichToolkit implements Toolkit {
 	private Toolkit inner;
+	private PwdProvider pwd_provider;
+	
+	/** see {@link RichToolkit#execProgram(String, String[], String[], File)} */
+	public interface PwdProvider {
+		String makeAbsolute(String path);
+	}
 
 	public RichToolkit(Toolkit inner) {
 		super();
@@ -38,7 +44,7 @@ public class RichToolkit implements Toolkit {
 	 */
 	public int run(String name, String[] commandline, String[] environment,
 			File dir) throws InterruptedException {
-		ExternalProgramContext pc = inner.exec(name, commandline, environment, dir);
+		ExternalProgramContext pc = inner.execProgram(name, commandline, environment, dir);
 		
 		return processIO(pc);
 	}
@@ -145,11 +151,33 @@ public class RichToolkit implements Toolkit {
 	}
 	
 	public ExternalProgramContext exec(String name, String[] commandline) throws InterruptedException {
-		return exec(name, commandline, null, null);
+		return execProgram(name, commandline, null, null);
 	}
 	
 	public ExternalProgramContext exec(String[] commandline) throws InterruptedException {
-		return exec(commandline[0], commandline, null, null);
+		return execProgram(commandline[0], commandline, null, null);
+	}
+
+	public ExternalProgramContext execProgram(String name, String[] commandline,
+			String[] environment, File dir) {
+		// Ruby and Java disagree about the current directory because
+		// Java cannot change it, so JRuby uses it's own copy of the
+		// current dir. Unfortunately, the OS cannot know that and
+		// start the process in the wrong directory. We fix that by
+		// always putting in the path, which we obviously have to
+		// get from JRuby.
+		if ((dir == null || !dir.isAbsolute()) && pwd_provider != null)
+			dir = new File(pwd_provider.makeAbsolute(dir != null ? dir.getPath() : null));
+			
+		return inner.execProgram(name, commandline, environment, dir);
+	}
+	
+	public PwdProvider getPwdProvider() {
+		return pwd_provider;
+	}
+
+	public void setPwdProvider(PwdProvider pwd_provider) {
+		this.pwd_provider = pwd_provider;
 	}
 
 	public String ask() {
@@ -164,6 +192,12 @@ public class RichToolkit implements Toolkit {
 		if (validator == null)
 			validator = NoValidator.instance;
 		return inner.ask(prompt, validator);
+	}
+
+	public String ask(String prompt, String validator_regex) {
+		if (validator_regex == null)
+			return ask(prompt, (Validator)null);
+		return inner.ask(prompt, new RegexValidator(validator_regex));
 	}
 
 	public void waitForUser() {
@@ -212,11 +246,6 @@ public class RichToolkit implements Toolkit {
 
 	public void showInstructions(String instructions) {
 		inner.showInstructions(instructions);
-	}
-
-	public ExternalProgramContext exec(String name, String[] commandline,
-			String[] environment, File dir) {
-		return inner.exec(name, commandline, environment, dir);
 	}
 	
 }

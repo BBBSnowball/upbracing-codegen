@@ -566,6 +566,26 @@ class Project
 	end
 end
 
+# Provide information about JRuby's notion of the current
+# directory to RichToolkit. We have to do that because
+# JRuby keeps its own copy of the current directory
+# because in Java it cannot be changed.
+# makeAbsolute methods has to be created in test script context to
+# capture the right copy of the current directory (even in JRuby
+# we have more than one *g*). Therefore, we save it as a string
+# and execute it later.
+RubyPWdProviderCode = <<EOF
+class RubyPWdProvider
+	include Java::de::upbracing::code_generation::tests::RichToolkit::PwdProvider
+
+	def makeAbsolute(path)
+		#puts "makeAbsolute(\#{path.inspect}) -> \#{File.expand_path(path || ".").inspect}"
+		File.expand_path(path || ".")
+	end
+end
+$toolkit.pwd_provider = RubyPWdProvider.new
+EOF
+
 class TestHelper
 	attr_accessor :toolkit
 	attr_accessor :avrdude, :serialport
@@ -791,7 +811,7 @@ class Project
 				run_jruby_script test_script, classpath,				\
 					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 	\
 					"$helper" => test_helper,							\
-					:init => "$helper.start"
+					:init => "$helper.start" + "\n" + RubyPWdProviderCode
 			rescue Exception => ex
 				puts "Exception in test script #{test_script}:"
 				puts ex.class

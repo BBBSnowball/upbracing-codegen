@@ -29,6 +29,6 @@ public interface Toolkit {
 	// start an external program
 	// The output is redirected to streams and the method
 	// doesn't wait for the program to exit.
-	ExternalProgramContext exec(String name, String[] commandline,
+	ExternalProgramContext execProgram(String name, String[] commandline,
 			String[] environment, File dir);
 }
