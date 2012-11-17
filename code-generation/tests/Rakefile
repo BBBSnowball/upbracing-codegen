@@ -389,7 +389,8 @@ class Project
 	end
 
 	def name_from_source_dir(source_dir)
-		name = File.basename(source_dir) 	#TODO this won't work for nested folders
+		#name = File.basename(source_dir) 	#TODO this won't work for nested folders
+		name = source_dir
 		name.sub(/^[0-9]+[-_ ]?/, "").gsub(/[\/\\][0-9]+[-_ ]?/, "/").gsub(/[\/\\]/, "-")
 	end
 
