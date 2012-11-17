@@ -11,4 +11,10 @@ class << $project
     	# we don't want to run this for test-all
     	# -> do nothing
     end
+
+    def configurations(which)
+    	# Debug and Release don't make much sense because
+    	# we're not building anything
+    	["default"]
+    end
 end

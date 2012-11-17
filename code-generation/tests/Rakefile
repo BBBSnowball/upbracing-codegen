@@ -803,8 +803,11 @@ class Project
 		task "run-#{name}-#{configuration}" => test
 
 		task "test-#{name}" => test
+		task "run-#{name}" => test
 
 		add_to_test_all(dir, configuration, test)
+
+		return test
 	end
 
 
@@ -836,7 +839,7 @@ class Project
 		end
 	end
 
-	def configurations which
+	def configurations(which)
 		case which
 		when :build
 			BUILD_CONFIGURATIONS
