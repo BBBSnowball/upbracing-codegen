@@ -152,9 +152,10 @@ public class SimpleToolkit implements Toolkit {
 
 	@Override
 	public void waitForUser(String prompt) {
-		if (prompt != null)
-			prompt += "\n";
-		else
+		if (prompt != null) {
+			if (!prompt.endsWith("\n"))
+				prompt += "\n";
+		} else
 			prompt = "";
 		
 		//TODO better implementation, if we can put the terminal into raw mode
@@ -172,12 +173,14 @@ public class SimpleToolkit implements Toolkit {
 
 	@Override
 	public void showInstructions(String instructions) {
-		System.out.println(instructions);
+		System.out.print(instructions);
+		if (!instructions.endsWith("\n"))
+			System.out.println();
 		waitForUser(null);
 	}
 
 	@Override
-	public ExternalProgramContext exec(String name, String[] commandline,
+	public ExternalProgramContext execProgram(String name, String[] commandline,
 			String[] environment, File dir) {
 		ExternalProgramContext context = new ExternalProgramContext(
 				name, messages, commandline, environment, dir);
