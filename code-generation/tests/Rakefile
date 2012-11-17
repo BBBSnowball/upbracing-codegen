@@ -754,6 +754,12 @@ class Project
 		return $toolkit
 	end
 
+	def add_to_test_all(dir, configuration, test)
+		#TODO How can we enforce the order? Does rake honour the order that
+		#     we use for adding the dependencies?
+		task :test_all => test
+	end
+
 	def run_test(dir, configuration)
 		source_dir = dir
 		name = name_from_source_dir source_dir
@@ -798,9 +804,7 @@ class Project
 
 		task "test-#{name}" => test
 
-		#TODO How can we enforce the order? Does rake honour the order that
-		#     we use for adding the dependencies?
-		task :test_all => test
+		add_to_test_all(dir, configuration, test)
 	end
 
 
