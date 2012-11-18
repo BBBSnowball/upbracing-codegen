@@ -62,6 +62,20 @@ require 'tempfile'
 require 'digest/md5'
 require 'java'
 
+begin
+	require 'paint'
+rescue
+	# dummy implementation of Paint
+	class Paint
+		def self.[](string, *options)
+			return string
+		end
+
+		def mode
+			0
+		end
+	end
+end
 
 def md5sum(file)
 	Digest::MD5.hexdigest(File.read(file))
@@ -586,6 +600,100 @@ end
 $toolkit.pwd_provider = RubyPWdProvider.new
 EOF
 
+PIOType = Java::de::upbracing::code_generation::tests::context::ProgramIO::Type
+StringBuffer = Java::java::lang::StringBuffer
+Messages = Java::de::upbracing::code_generation::Messages
+Severity = Messages::Severity
+
+begin
+	OutputFormatter = Java::de::upbracing::code_generation::tests::simple::SimpleToolkit::OutputFormatter
+rescue NameError
+	# simple UI not available
+	OutputFormatter = nil
+end
+if OutputFormatter
+	class PaintOutputFormatter
+		include OutputFormatter
+
+		def alter_lines(text)
+			text.lines.map { |line| yield line }.join
+		end
+
+		def alter_lines2(text)
+			alter_lines(text) do |line|
+				if line.end_with? "\n"
+					line = line.sub(/\n$/, "")
+					(yield line, true) + "\n"
+				else
+					yield line, false
+				end
+			end
+		end
+
+		def left_bar(bar, text)
+			alter_lines(text) { |line| bar + line }
+		end
+
+		def printPrompt(prompt)
+			if prompt and not prompt.empty?
+				prompt = left_bar(Paint[" ", nil, :blue] + " ", prompt)
+				print prompt
+			end
+		end
+
+		def printInstructions(instructions)
+			instructions = instructions.sub(/\n*$/, '')
+			puts left_bar(Paint["I", :black, :white] + " ", instructions)
+		end
+
+		def printProgramIO(data, type)
+			foreground = case type
+			when PIOType::IN
+				[:green]
+			when PIOType::OUT
+				[:white, :bright]
+			when PIOType::ERROR
+				[:red, :bright, :bold]
+			else
+				raise "unknown type of program IO: #{type}"
+			end
+
+			#data = data.gsub(/[^ -z]/) { |x| sprintf("\\x%02x", x.ord) }
+
+			print alter_lines2(data) { |line| Paint[line, *foreground, [50,50,50]] }
+		end
+
+		def reportProgramResult(program, result)
+			name = program.name
+			#name = Paint[program.name, nil, [50,50,50]]
+
+			if result.isSuccessful
+				puts "#{name} finished successfully"
+			else
+				puts name + ": " + Paint[result.message, :red]
+			end
+		end
+
+		def showMessage(msg)
+			sb = StringBuffer.new
+			msg.format(sb, "  ")
+			color = case msg.severity
+			when Severity::FATAL, Severity::ERROR
+				[:red, :bright, :bold]
+			when Severity::WARNING
+				Paint.mode == 256 and ["#ff4a12", :bold] or [:yellow, :bold]
+			else
+				[:bold]	#nil
+			end
+			if color and Paint.mode > 0
+				print sb.toString.sub(/^(.*):/, Paint["\\1", *color] + ":")
+			else
+				print sb.toString
+			end
+		end
+	end
+end
+
 class TestHelper
 	attr_accessor :toolkit
 	attr_accessor :avrdude, :serialport
@@ -594,6 +702,7 @@ class TestHelper
 	# set up environment for tests; called automatically
 	def start
 		$toolkit = @toolkit
+		@toolkit.inner.output_formatter = PaintOutputFormatter.new if OutputFormatter
 	end
 
 	# delegate method calls to RichToolkit ($toolkit) or
