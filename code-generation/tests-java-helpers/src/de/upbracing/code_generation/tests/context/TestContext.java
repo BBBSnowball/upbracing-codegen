@@ -41,7 +41,7 @@ public class TestContext {
 	}
 	
 	protected void setResult(Result result) {
-		Result old_result = result;
+		Result old_result = this.result;
 		
 		this.result = result;
 		
