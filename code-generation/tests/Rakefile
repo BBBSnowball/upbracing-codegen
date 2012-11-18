@@ -591,8 +591,23 @@ class TestHelper
 	attr_accessor :avrdude, :serialport
 	attr_accessor :name, :build_dir, :source_dir, :configuration
 
+	# set up environment for tests; called automatically
 	def start
 		$toolkit = @toolkit
+	end
+
+	# delegate method calls to RichToolkit ($toolkit) or
+	# the real Toolkit ($toolkit.inner), if this object
+	# cannot handle them
+	def method_missing(m, *args, &block)
+		if toolkit.respond_to? m
+			toolkit.send(m, *args, &block)
+		elsif toolkit.inner.respond_to? m
+			toolkit.inner.send(m, *args, &block)
+		else
+			# error
+			super(m, *args, &block)
+		end
 	end
 
 	def erase_processor

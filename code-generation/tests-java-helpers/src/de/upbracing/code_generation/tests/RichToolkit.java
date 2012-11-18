@@ -23,6 +23,14 @@ public class RichToolkit implements Toolkit {
 		super();
 		this.inner = inner;
 	}
+	
+	/** get real toolkit instance
+	 * 
+	 * @return the toolkit
+	 */
+	public Toolkit getInner() {
+		return inner;
+	}
 
 	/** start an external program
 	 * 
