@@ -124,17 +124,17 @@ see this output:
  a report for each started process.)
 
 abc  def g
--> exit code 0
+-> exit code 0 (success)
 #{Dir.pwd}
--> exit code 0
+-> exit code 0 (success)
 #{File.dirname(Dir.pwd)}
--> exit code 0
+-> exit code 0 (success)
 abc'"$USER%PATH%&:?*	<def>g abc'"$USER%PATH%&:?*	<def>g
--> exit code 0
+-> exit code 0 (success)
 42
--> exit code 0
+-> exit code 0 (success)
 <some error message by cat or type>
--> exit code not 0
+-> exit code not 0 (success)
 EOF
 # a dummy string to make my editor happy
 # passed to a dummy function to make lint happy
@@ -226,7 +226,8 @@ while File.exists? not_existing_file
 	$toolkit.showInstructions "Very funny! Please remove #{not_existing_file}!"
 end
 process_context = $toolkit.exec_program "file-not-found", [is_windows ? "type" : "cat", not_existing_file], nil, nil
-stream = BufferedReader.new(InputStreamReader.new(process_context.process.input_stream))
+stream = BufferedReader.new(InputStreamReader.new(process_context.process.error_stream))
+line = stream.readLine()
 exit_code = cleanup_process(process_context)
 if exit_code == 0
 	puts "expected UNCLEAN exit (file not found), but got #{exit_code}"
@@ -234,6 +235,7 @@ else
 	puts "exit code is #{exit_code}, which is fine"
 	puts "Don't worry about the error message by 'cat' (or 'type')."
 end
+puts "WARN: Error message doesn't contain the file name: #{line}" unless line.include? not_existing_file
 
 #TODO
 # - implement printing of exit code, if it is not 0 and ask the user whether it is printed
