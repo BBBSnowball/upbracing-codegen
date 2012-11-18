@@ -8,11 +8,31 @@ indicates a function that is ignored
 without notice.
 EOF
 
-test_ctx = TestContext.new "1 showInstructions"
-ctx = $toolkit.messages.pushContext test_ctx
+# for debugging: only run some tests
+def test_active(number, name)
+	# run all tests
+	true
+end
+
+$test_number = 0
+def test(name)
+	$test_number += 1
+
+	return unless test_active $test_number, name
+
+	test_context = TestContext.new "#{$test_number} #{name}"
+	ctx = $toolkit.messages.pushContext test_context
+
+	yield $test_number, name, test_context
+
+	test_context.finished
+	ctx.pop
+end
+
+test "showInstructions" do
 
 $toolkit.showInstructions <<EOF
-Test 1
+Test #{$test_number}
 This text should be presented as
 test instructions. They must be
 visible until you dismiss them.
@@ -31,13 +51,12 @@ to look them up later.
    scrolling up, sorry)
 EOF
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "2 waitForUser"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "waitForUser" do
 
 $toolkit.wait_for_user <<EOF
-Test 2
+Test #{$test_number}
 You should see this text and
 the program must wait for you.
 
@@ -49,13 +68,12 @@ the program must wait for you.
   do that?
 EOF
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "3 ask"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "ask" do
 
 answer = $toolkit.ask <<EOF, nil
-Test 3
+Test #{$test_number}
 - Do you understand that the
   program expects some input?
 - Please enter the number 42
@@ -63,17 +81,16 @@ Test 3
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "42" ? "ok" : "wrong"}"
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "4 ask with Validator"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "ask with Validator" do
 
 #NOTE Don't do it like that! The
 #     RichToolkit provides a wrapper
 #     that we don't use here.
 validator = Java::de::upbracing::code_generation::tests::RegexValidator.new "^a+z$"
 answer = $toolkit.ask <<EOF, validator
-Test 4
+Test #{$test_number}
 Unless you are using the simple UI:
 (input without quotation marks,
  do not click 'ok' or press enter)
@@ -97,13 +114,12 @@ For all UI:
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "aaaz" ? "ok" : "wrong"}"
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "5 askOptions"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "askOptions" do
 
 answer = $toolkit.askOptions <<EOF, nil, "red", "green", "yellow"
-Test 5
+Test #{$test_number}
 - Do you understand that the program
   expects some input?
 - Do you understand that you should
@@ -115,10 +131,9 @@ Test 5
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "green" ? "ok" : "wrong"}"
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "6 askOptions with OptionShaper"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "askOptions with OptionShaper" do
 
 OptionShaper = Java::de::upbracing::code_generation::tests::OptionShaper
 class DummyShaper
@@ -132,7 +147,7 @@ class DummyShaper
 	end
 end
 answer = $toolkit.askOptions <<EOF, DummyShaper.new, "red", "green", "yellow"
-Test 6
+Test #{$test_number}
 - If you can enter an arbitrary
   text, please enter: "r"
   (should be accepted)
@@ -141,13 +156,12 @@ Test 6
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "red" ? "ok" : "wrong"}"
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "7 run programs"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+test "run programs" do
 
 $toolkit.showInstructions <<EOF
-Test 7
+Test #{$test_number}
 I will run some programs now. You should
 see this output:
 (The exit status may be reported in a
@@ -269,11 +283,9 @@ end
 puts "WARN: Error message doesn't contain the file name: #{line}" unless line.include? not_existing_file
 
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "8 messages"
-ctx = $toolkit.messages.pushContext test_ctx
+end
 
+test "messages" do
 
 msgs = $toolkit.messages
 
@@ -285,19 +297,22 @@ msgs.error "E"
 msgs.fatal "F"
 
 $toolkit.showInstructions <<EOF
-Test 8
+Test #{$test_number}
 You should see six messages with text
 A, B, ..., F and severity trace, debug,
 info, warn, error and fatal.
 EOF
 
-test_ctx.finished
-ctx.pop
-test_ctx = TestContext.new "9 allTestsFinished"
-ctx = $toolkit.messages.pushContext test_ctx
+end
+
+
+# add all further tests at this point
+
+
+test "allTestsFinished" do
 
 $toolkit.showInstructions <<EOF
-Test 9
+Test #{$test_number}
 The tests end here. The UI should print
 a summary of failed tests. This summary
 should include exactly those tests
@@ -307,10 +322,9 @@ EOF
 
 $toolkit.all_tests_finished
 
-test_ctx.finished
-ctx.pop
+end
 
-#NOTE Enter new tests before this test and update the number accordingly.
+#NOTE Add new tests before the "allTestsFinished" test.
 
 #TODO
 # - use messages -> a context for each test case
