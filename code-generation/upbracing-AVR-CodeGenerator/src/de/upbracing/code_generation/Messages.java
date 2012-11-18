@@ -192,14 +192,18 @@ public class Messages {
 			sb.append(NL);
 		}
 		
-		public void format(StringBuffer sb) {
+		public void format(StringBuffer sb, String context_indent) {
 			sb.append(getSeverity().getPrefix());
 			
 			sb.append(getMessage());
 			
-			getContext().toLongString("\t", sb);
+			getContext().toLongString(context_indent, sb);
 			
 			sb.append(NL);
+		}
+		
+		public void format(StringBuffer sb) {
+			format(sb, "\t");
 		}
 	}
 	

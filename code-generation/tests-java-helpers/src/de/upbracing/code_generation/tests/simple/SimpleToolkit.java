@@ -60,10 +60,6 @@ public class SimpleToolkit implements Toolkit {
 	public Messages getMessages() {
 		return messages;
 	}
-	
-	public void printPrompt(String prompt) {
-		System.out.print(prompt);
-	}
 
 	@Override
 	public String ask(String prompt, Validator validator) {
@@ -207,9 +203,7 @@ public class SimpleToolkit implements Toolkit {
 
 	@Override
 	public void showInstructions(String instructions) {
-		System.out.print(instructions);
-		if (!instructions.endsWith("\n"))
-			System.out.println();
+		printInstructions(instructions);
 		waitForUser(null);
 	}
 
@@ -247,27 +241,6 @@ public class SimpleToolkit implements Toolkit {
 			}
 		});
 	}
-
-	private void printProgramIO(String data, Type type) {
-		//TODO
-		System.out.print(data);
-	}
-
-	private void reportProgramResult(ExternalProgramContext context,
-			Result result) {
-		String name = context.getName();
-		
-		if (result.isSuccessful())
-			System.out.println(name + " finished successfully");
-		else
-			System.out.println(name + ": " + result.getMessage());
-	}
-
-	private void showMessage(Message msg) {
-		StringBuffer sb = new StringBuffer();
-		msg.format(sb);
-		System.out.println(sb.toString());
-	}
 	
 	@Override
 	public void allTestsFinished() {
@@ -285,4 +258,76 @@ public class SimpleToolkit implements Toolkit {
 			System.out.println(sb.toString());
 		}
 	}
+	
+	public interface OutputFormatter {
+		void printProgramIO(String data, Type type);
+		void reportProgramResult(ExternalProgramContext context, Result result);
+		void showMessage(Message msg);
+		void printPrompt(String prompt);
+		void printInstructions(String instructions);
+	}
+	
+	public static class DefaultOutputFormatter implements OutputFormatter {
+		public void printProgramIO(String data, Type type) {
+			System.out.print(data);
+		}
+	
+		public void reportProgramResult(ExternalProgramContext context,
+				Result result) {
+			String name = context.getName();
+			
+			if (result.isSuccessful())
+				System.out.println(name + " finished successfully");
+			else
+				System.out.println(name + ": " + result.getMessage());
+		}
+	
+		public void showMessage(Message msg) {
+			StringBuffer sb = new StringBuffer();
+			msg.format(sb, "  ");
+			System.out.println(sb.toString());
+		}
+		
+		public void printPrompt(String prompt) {
+			System.out.print(prompt);
+		}
+	
+		public void printInstructions(String instructions) {
+			System.out.print(instructions);
+			if (!instructions.endsWith("\n"))
+				System.out.println();
+		}
+	}
+	
+	private OutputFormatter outputFormatter = new DefaultOutputFormatter();
+	
+	public OutputFormatter getOutputFormatter() {
+		return outputFormatter;
+	}
+	
+	public void setOutputFormatter(OutputFormatter outputFormatter) {
+		this.outputFormatter = outputFormatter;
+	}
+
+	protected void printProgramIO(String data, Type type) {
+		outputFormatter.printProgramIO(data, type);
+	}
+
+	protected void reportProgramResult(ExternalProgramContext context,
+			de.upbracing.code_generation.tests.context.Result result) {
+		outputFormatter.reportProgramResult(context, result);
+	}
+
+	protected void showMessage(Message msg) {
+		outputFormatter.showMessage(msg);
+	}
+
+	protected void printPrompt(String prompt) {
+		outputFormatter.printPrompt(prompt);
+	}
+
+	protected void printInstructions(String instructions) {
+		outputFormatter.printInstructions(instructions);
+	}
+
 }
