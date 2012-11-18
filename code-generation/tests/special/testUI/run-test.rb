@@ -1,3 +1,4 @@
+TestContext = Java::de::upbracing::code_generation::tests::context::TestContext
 
 $toolkit.showInstructions <<EOF
 Test 0
@@ -6,6 +7,9 @@ that no number is left out, as this
 indicates a function that is ignored
 without notice.
 EOF
+
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.showInstructions <<EOF
 Test 1
@@ -27,6 +31,11 @@ to look them up later.
    scrolling up, sorry)
 EOF
 
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
+
 $toolkit.wait_for_user <<EOF
 Test 2
 You should see this text and
@@ -40,6 +49,11 @@ the program must wait for you.
   do that?
 EOF
 
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
+
 answer = $toolkit.ask <<EOF, nil
 Test 3
 - Do you understand that the
@@ -48,6 +62,11 @@ Test 3
 - Does the program continue?
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "42" ? "ok" : "wrong"}"
+
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
 
 #NOTE Don't do it like that! The
 #     RichToolkit provides a wrapper
@@ -78,6 +97,11 @@ For all UI:
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "aaaz" ? "ok" : "wrong"}"
 
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
+
 answer = $toolkit.askOptions <<EOF, nil, "red", "green", "yellow"
 Test 5
 - Do you understand that the program
@@ -90,6 +114,11 @@ Test 5
   continue, if you enter: "green"
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "green" ? "ok" : "wrong"}"
+
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
 
 OptionShaper = Java::de::upbracing::code_generation::tests::OptionShaper
 class DummyShaper
@@ -111,6 +140,11 @@ Test 6
   choose "red".
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "red" ? "ok" : "wrong"}"
+
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.showInstructions <<EOF
 Test 7
@@ -234,6 +268,13 @@ else
 end
 puts "WARN: Error message doesn't contain the file name: #{line}" unless line.include? not_existing_file
 
+
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
+
+
 msgs = $toolkit.messages
 
 msgs.trace "A"
@@ -250,6 +291,11 @@ A, B, ..., F and severity trace, debug,
 info, warn, error and fatal.
 EOF
 
+test_ctx.finished
+ctx.pop
+test_ctx = TestContext.new "3 ask"
+ctx = $toolkit.messages.pushContext test_ctx
+
 $toolkit.showInstructions <<EOF
 Test 9
 The tests end here. The UI should print
@@ -261,8 +307,12 @@ EOF
 
 $toolkit.all_tests_finished
 
+test_ctx.finished
+ctx.pop
+
 #NOTE Enter new tests before this test and update the number accordingly.
 
 #TODO
 # - use messages -> a context for each test case
 #   (ask user for result and report it to the UI)
+# - automatically update parent of a test -> where?
