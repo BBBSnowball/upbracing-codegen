@@ -956,6 +956,17 @@ def load_project_config(dir)
 end
 
 # compile task for helpers project
+#TODO This causes a NoSuchMethodError, if one of the changed
+#     classes has a non-static inner class which accesses
+#     some private or protected information in the parent
+#     class. The compiler creates accessor methods and those
+#     seem to be missing or inconsistent (like access$000).
+# =>  Eclipse should do the build for us, so we should make
+#     extra sure that we don't repeat it, unless we really
+#     have to. At the moment, we rebuild if any source is
+#     newer than any target. Instead we should match source
+#     and target and compare only them. One target per source
+#     is enough, so we don't have to worry about inner classes.
 JAVA_HELPERS=File.join("..", "tests-java-helpers")
 compile_helpers = Project.new.create_java_task2(JAVA_HELPERS,
 	File.join(JAVA_HELPERS, "src"),
