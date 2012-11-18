@@ -39,6 +39,7 @@ if [ -n "$NG" ] ; then
 else
 	# use JamVM because it starts faster (4 seconds instead of 8 for server VM)
 	# http://blog.headius.com/2010/03/jruby-startup-time-tips.html
-	VMOPTS=-jamvm
+	#VMOPTS=-jamvm 	# faster startup, but annoying debug output (JVM_ResumeThread...)
+	VMOPTS=-client
 	java $VMOPTS -cp "$CP" org.jruby.Main -S rake "$@"
 fi
