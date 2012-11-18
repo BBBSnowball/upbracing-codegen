@@ -6,7 +6,7 @@ if [ -z "$JAVA_HELPERS"] ; then
 	JAVA_HELPERS="../tests-java-helpers/bin"
 fi
 if [ -z "$JAVA_PARSER_TOOLS_BIN" ] ; then
-	JAVA_PARSER_TOOLS_BIN="../java-parser-tools"
+	JAVA_PARSER_TOOLS_BIN="../java-parser-tools/bin"
 fi
 if [ -z "$TIMER_CONFIG_JAR" ] ; then
 	TIMER_CONFIG_JAR="../upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"
