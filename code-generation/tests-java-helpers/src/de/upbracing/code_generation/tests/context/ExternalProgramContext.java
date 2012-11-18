@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
@@ -164,5 +165,21 @@ public class ExternalProgramContext extends TestContext {
 
 	public void reportError(String message) {
 		setResult(new Result.Error(message));
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("external program ");
+		sb.append(getName());
+		sb.append(":");
+		for (String arg : commandline) {
+			sb.append(" ");
+			if (Pattern.matches("\\A[-a-zA-Z0-9_/\\:]+\\z", arg))
+				sb.append(arg);
+			else
+				sb.append("'" + arg.replace("'", "\\'") + "'");
+		}
+		return sb.toString();
 	}
 }

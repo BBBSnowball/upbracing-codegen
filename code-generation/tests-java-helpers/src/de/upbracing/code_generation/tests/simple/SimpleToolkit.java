@@ -6,21 +6,55 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
 
 import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.Context;
+import de.upbracing.code_generation.Messages.ContextListener;
+import de.upbracing.code_generation.Messages.Message;
+import de.upbracing.code_generation.Messages.MessageListener;
 import de.upbracing.code_generation.tests.OptionShaper;
 import de.upbracing.code_generation.tests.Toolkit;
 import de.upbracing.code_generation.tests.Validator;
 import de.upbracing.code_generation.tests.context.Result;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
 import de.upbracing.code_generation.tests.context.ProgramIO;
+import de.upbracing.code_generation.tests.context.TestContext;
 import de.upbracing.code_generation.tests.context.ProgramIO.ProgramIOListener;
 import de.upbracing.code_generation.tests.context.ProgramIO.Type;
 import de.upbracing.code_generation.tests.context.Result.ErrorOrFailure;
 
 public class SimpleToolkit implements Toolkit {
-	private Messages messages = new Messages();
+	private Messages messages;
 	private BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+	
+	private LinkedList<Context> failed_contexts = new LinkedList<Context>();
+	
+	public SimpleToolkit() {
+		messages = new Messages();
+		
+		messages.addContextListener(new ContextListener() {
+			@Override
+			public void contextPushed(Object context_item) {
+			}
+			
+			@Override
+			public void contextPopped(Object context_item) {
+				if (context_item instanceof TestContext) {
+					// remember failed tests
+					if (!((TestContext)context_item).getResult().isSuccessful())
+						failed_contexts.add(messages.getContext());
+				}
+			}
+		});
+		
+		messages.addMessageListener(new MessageListener() {
+			@Override
+			public void message(Message msg) {
+				showMessage(msg);
+			}
+		});
+	}
 
 	@Override
 	public Messages getMessages() {
@@ -227,5 +261,28 @@ public class SimpleToolkit implements Toolkit {
 			System.out.println(name + " finished successfully");
 		else
 			System.out.println(name + ": " + result.getMessage());
+	}
+
+	private void showMessage(Message msg) {
+		StringBuffer sb = new StringBuffer();
+		msg.format(sb);
+		System.out.println(sb.toString());
+	}
+	
+	@Override
+	public void allTestsFinished() {
+		for (Context ctx : failed_contexts) {
+			StringBuffer sb = new StringBuffer();
+			
+			TestContext test = (TestContext) ctx.getTopmostItem();
+			Result result = test.getResult();
+			sb.append(result.getStatus());
+			sb.append(": ");
+			sb.append(result.getMessage());
+			
+			ctx.toLongString("  ", sb);
+
+			System.out.println(sb.toString());
+		}
 	}
 }

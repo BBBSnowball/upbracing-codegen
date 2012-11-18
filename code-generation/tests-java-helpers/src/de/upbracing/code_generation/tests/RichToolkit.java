@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
@@ -248,4 +246,8 @@ public class RichToolkit implements Toolkit {
 		inner.showInstructions(instructions);
 	}
 	
+	@Override
+	public void allTestsFinished() {
+		inner.allTestsFinished();
+	}
 }

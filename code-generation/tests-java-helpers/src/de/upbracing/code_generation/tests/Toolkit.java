@@ -31,4 +31,8 @@ public interface Toolkit {
 	// doesn't wait for the program to exit.
 	ExternalProgramContext execProgram(String name, String[] commandline,
 			String[] environment, File dir);
+	
+	// tell the UI that all tests are done
+	// It should notify the user and show a summary of the results.
+	void allTestsFinished();
 }

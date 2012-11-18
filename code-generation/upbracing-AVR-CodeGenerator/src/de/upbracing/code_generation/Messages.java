@@ -64,6 +64,10 @@ public class Messages {
 			return context;
 		}
 		
+		public Object getTopmostItem() {
+			return context.get(context.size()-1);
+		}
+		
 		public List<String> getFormattedContext() {
 			List<String> strings = new ArrayList<String>(context.size());
 			for (Object obj : context) {
@@ -486,13 +490,13 @@ public class Messages {
 				Object top = context.getLast();
 				if (top != context_item)
 					throw new IllegalStateException("You tried to pop the wrong item");
-				
-				// remove it
-				context.removeLast();
 
 				// notify listeners
 				for (ContextListener l : context_listeners)
 					l.contextPopped(context_item);
+				
+				// remove it
+				context.removeLast();
 			}
 		};
 	}
@@ -505,13 +509,21 @@ public class Messages {
 	 */
 	@Deprecated
 	public Object popContext() {
-		Object context_item = context.removeLast();
-
 		// notify listeners
 		for (ContextListener l : context_listeners)
-			l.contextPopped(context_item);
+			l.contextPopped(context.getLast());
+
+		Object context_item = context.removeLast();
 		
 		return context_item;
+	}
+	
+	/** get a copy of the current context
+	 * 
+	 * @return the context
+	 */
+	public Context getContext() {
+		return new Context(context);
 	}
 	
 	/** return a list of all messages

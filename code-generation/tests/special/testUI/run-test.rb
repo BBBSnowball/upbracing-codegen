@@ -1,4 +1,3 @@
-if false
 
 $toolkit.showInstructions <<EOF
 Test 0
@@ -112,8 +111,6 @@ Test 6
   choose "red".
 EOF
 $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "red" ? "ok" : "wrong"}"
-
-end
 
 $toolkit.showInstructions <<EOF
 Test 7
@@ -237,9 +234,35 @@ else
 end
 puts "WARN: Error message doesn't contain the file name: #{line}" unless line.include? not_existing_file
 
+msgs = $toolkit.messages
+
+msgs.trace "A"
+msgs.debug "B"
+msgs.info  "C"
+msgs.warn  "D"
+msgs.error "E"
+msgs.fatal "F"
+
+$toolkit.showInstructions <<EOF
+Test 8
+You should see six messages with text
+A, B, ..., F and severity trace, debug,
+info, warn, error and fatal.
+EOF
+
+$toolkit.showInstructions <<EOF
+Test 9
+The tests end here. The UI should print
+a summary of failed tests. This summary
+should include exactly those tests
+mentioned here:
+- file-not-found program
+EOF
+
+$toolkit.all_tests_finished
+
+#NOTE Enter new tests before this test and update the number accordingly.
+
 #TODO
-# - implement printing of exit code, if it is not 0 and ask the user whether it is printed
-# - implement messages
-# - test messages
 # - use messages -> a context for each test case
 #   (ask user for result and report it to the UI)

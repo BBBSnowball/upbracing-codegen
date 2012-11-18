@@ -58,4 +58,9 @@ public class TestContext {
 		if (result instanceof Result.Running)
 			setResult(Result.Success.instance);
 	}
+	
+	@Override
+	public String toString() {
+		return "test " + getName();
+	}
 }
