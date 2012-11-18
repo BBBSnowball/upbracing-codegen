@@ -132,7 +132,7 @@ public class RichToolkit implements Toolkit {
 		return run(commandline[0], commandline, null, null);
 	}
 
-	public int run(String name, String commandline) throws InterruptedException {
+	/*public int run(String name, String commandline) throws InterruptedException {
 		return run(name, splitCommandline(commandline), null, null);
 	}
 
@@ -148,7 +148,7 @@ public class RichToolkit implements Toolkit {
 		while (tokens.hasMoreTokens())
 			tokens2.add(tokens.nextToken());
 		return tokens2.toArray(new String[tokens2.size()]);
-	}
+	}*/
 	
 	public ExternalProgramContext exec(String name, String[] commandline) throws InterruptedException {
 		return execProgram(name, commandline, null, null);
