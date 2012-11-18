@@ -8,7 +8,7 @@ indicates a function that is ignored
 without notice.
 EOF
 
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "1 showInstructions"
 ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.showInstructions <<EOF
@@ -33,7 +33,7 @@ EOF
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "2 waitForUser"
 ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.wait_for_user <<EOF
@@ -65,7 +65,7 @@ $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "42" ? "ok" : 
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "4 ask with Validator"
 ctx = $toolkit.messages.pushContext test_ctx
 
 #NOTE Don't do it like that! The
@@ -99,7 +99,7 @@ $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "aaaz" ? "ok" 
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "5 askOptions"
 ctx = $toolkit.messages.pushContext test_ctx
 
 answer = $toolkit.askOptions <<EOF, nil, "red", "green", "yellow"
@@ -117,7 +117,7 @@ $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "green" ? "ok"
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "6 askOptions with OptionShaper"
 ctx = $toolkit.messages.pushContext test_ctx
 
 OptionShaper = Java::de::upbracing::code_generation::tests::OptionShaper
@@ -143,7 +143,7 @@ $toolkit.showInstructions "I got #{answer.inspect} -> #{answer == "red" ? "ok" :
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "7 run programs"
 ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.showInstructions <<EOF
@@ -271,7 +271,7 @@ puts "WARN: Error message doesn't contain the file name: #{line}" unless line.in
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "8 messages"
 ctx = $toolkit.messages.pushContext test_ctx
 
 
@@ -293,7 +293,7 @@ EOF
 
 test_ctx.finished
 ctx.pop
-test_ctx = TestContext.new "3 ask"
+test_ctx = TestContext.new "9 allTestsFinished"
 ctx = $toolkit.messages.pushContext test_ctx
 
 $toolkit.showInstructions <<EOF
