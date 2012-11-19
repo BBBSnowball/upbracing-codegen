@@ -1,5 +1,4 @@
-puts $flash_cmdline
-system $flash_cmdline
+$helper.flash_processor
 
 puts "You should have seen the test output on the serial console."
 
