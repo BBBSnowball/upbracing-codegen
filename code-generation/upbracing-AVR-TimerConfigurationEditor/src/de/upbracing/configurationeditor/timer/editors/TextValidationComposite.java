@@ -48,10 +48,12 @@ public class TextValidationComposite extends Composite {
 		super(parent, style);
 		
 		GridLayout gl = new GridLayout(3, false);
-		setLayout(gl);
 		
 		if (unit != null)
-			setLayout(new GridLayout(4, false));
+			gl = new GridLayout(4, false);
+		
+		gl.marginWidth = 0;
+		setLayout(gl);
 		
 		Label label = new Label(this, SWT.NONE);
 		label.setText(labelText);

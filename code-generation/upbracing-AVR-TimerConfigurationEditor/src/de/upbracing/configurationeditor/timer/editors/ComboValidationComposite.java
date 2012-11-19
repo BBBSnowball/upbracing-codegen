@@ -45,6 +45,7 @@ public class ComboValidationComposite extends Composite {
 			columns = 3;
 		
 		GridLayout gl = new GridLayout(columns, false);
+		gl.marginWidth = 0;
 		setLayout(gl);
 		
 		Label label = new Label(this, SWT.NONE);
