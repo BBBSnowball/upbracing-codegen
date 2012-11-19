@@ -256,7 +256,6 @@ public class ValidatorTest
 		// - ICR: 1s (OK)
 		//   -> No quantization error
 		//   -> Expected register value: 31249
-		//   -> Expect OK
 		uc.setIcrPeriod(1.0);
 		assertEquals(1.0, uc.getIcrPeriod(), 0.0);
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getIcrPeriod()), 0.0);
@@ -265,17 +264,15 @@ public class ValidatorTest
 		// - OCRnA: 0.99001s (OK - quantization error less than 5%) 
 		//   -> Quantized Time: 0.990016s
 		//   -> Expected quantized register value: 30937
-		//   -> Expect WARNING
 		uc.setOcrAPeriod(0.99001);
 		assertEquals(0.99001, uc.getOcrAPeriod(), 0.0);
 		assertFalse(((Double) v.calculateQuantizedPeriod(uc.getOcrAPeriod())).equals(0.99001));
 		assertEquals(0.990016, v.calculateQuantizedPeriod(uc.getOcrAPeriod()), 0.0);
 		assertEquals(ValidationResult.OK, v.getOcrAPeriodError());
 		assertEquals(30937, v.calculateRegisterValue(v.calculateQuantizedPeriod(uc.getOcrAPeriod())));
-		// - OCRnB: 2.1s (ERROR)
+		// - OCRnB: 2.1s (ERROR: greater than MAX)
 		//   -> No quantization error, but
 		//   -> Expected register value: 65624 (> 65535)
-		//   -> expect ERROR
 		uc.setOcrBPeriod(2.1);
 		assertEquals(2.1, uc.getOcrBPeriod(), 0.0);
 		assertEquals(2.1, v.calculateQuantizedPeriod(uc.getOcrBPeriod()), 0.0);
@@ -338,7 +335,7 @@ public class ValidatorTest
 		assertEquals(0.990016, v.calculateQuantizedPeriod(uc.getOcrAPeriod()), 0.0);
 		assertEquals(ValidationResult.ERROR, v.getOcrAPeriodError());
 		assertEquals(15469, v.calculateRegisterValue(v.calculateQuantizedPeriod(uc.getOcrAPeriod())));
-		// - OCRnB: 4.2s (ERROR: greather than MAX)
+		// - OCRnB: 4.2s (ERROR: greater than MAX)
 		//   -> No quantization error, but
 		//   -> Expected register value: 65625 (> 65535)
 		uc.setOcrBPeriod(4.2);
@@ -352,7 +349,6 @@ public class ValidatorTest
 		uc.setOcrCPeriod(1.0);
 		assertEquals(1.0, uc.getOcrCPeriod(), 0.0);
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getOcrCPeriod()), 0.0);
-		String txt = v.getOcrCPeriodErrorText();
 		assertEquals(ValidationResult.ERROR, v.getOcrCPeriodError());
 		assertEquals(15625,	v.calculateRegisterValue(uc.getOcrCPeriod()));
 	}
