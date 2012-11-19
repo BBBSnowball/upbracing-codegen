@@ -160,6 +160,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		});
 		
 		redrawDescriptionImageIfPropertyChanges("description");
+		redrawDescriptionImageIfPropertyChanges("ocrAPeriod");
 		redrawDescriptionImageIfPropertyChanges("ocrBPeriod");
 		redrawDescriptionImageIfPropertyChanges("ocrCPeriod");
 	}
