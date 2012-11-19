@@ -9,6 +9,8 @@ import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
@@ -40,6 +42,10 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	protected TimerConfigurationEditor editor;
 	protected UseCaseViewModel model;
 	protected String ls = System.getProperty("line.separator");
+	protected CollapsibleComposite icrComposite;
+	protected CollapsibleComposite ocrAComposite;
+	protected CollapsibleComposite ocrBComposite;
+	protected CollapsibleComposite ocrCComposite;
 	private Group settingsGroup;
 	private Group summaryGroup;
 	private ConfigurationExpandItemComposite expandItem;
@@ -77,7 +83,7 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		// Left Side: Settings Group
 		settingsGroup = new Group(this, SWT.NONE);
 		settingsGroup.setText("Settings:");
-		gl = new GridLayout(1, false);
+		gl = new GridLayout(2, false);
 		settingsGroup.setLayout(gl);
 		d = new GridData();
 		d.verticalAlignment = SWT.TOP;
@@ -85,6 +91,9 @@ public abstract class AConfigurationCompositeBase extends Composite {
 		setFontStyle(settingsGroup, SWT.BOLD);
 			// Prescale Combo
 			ComboValidationComposite prescaleC = new ComboValidationComposite(settingsGroup, SWT.NONE, "Prescale divisor:", model, "prescale", null, PrescaleFactors.values());
+			d = new GridData();
+			d.horizontalSpan = 2;
+			prescaleC.setLayoutData(d);
 			prescaleC.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent arg0) {
@@ -188,6 +197,9 @@ public abstract class AConfigurationCompositeBase extends Composite {
 	protected void createTopRegisterSelection(Composite parent, Object[] choices, String choicesProperty) {
 		
 		ComboValidationComposite topComposite = new ComboValidationComposite(parent, SWT.NONE, "Top value register:", model, choicesProperty, model.getValidator(), choices);
+		GridData d = new GridData();
+		d.horizontalSpan = 2;
+		topComposite.setLayoutData(d);
 		
 		topComposite.getCombo().addPostSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
@@ -196,6 +208,64 @@ public abstract class AConfigurationCompositeBase extends Composite {
 				expandItem.updateLayout();
 			}
 		});
+	}
+	
+	protected void createPeriodComposites() {
+		icrComposite = createPeriodComposite("icrName", "icrPeriod", "icrVisibility");
+		ocrAComposite = createPeriodComposite("ocrAName", "ocrAPeriod", null);
+		ocrBComposite = createPeriodComposite("ocrBName", "ocrBPeriod", "ocrChannelsVisibility");
+		ocrCComposite = createPeriodComposite("ocrCName", "ocrCPeriod", "ocrChannelsVisibility");
+	}
+	
+	private CollapsibleComposite createPeriodComposite(String nameProperty, 
+			String periodProperty, 
+			String enabledProperty) {
+		CollapsibleComposite scComp = new CollapsibleComposite(settingsGroup, SWT.BORDER);
+		GridData d = new GridData();
+		d.horizontalSpan = 2;
+		d.horizontalAlignment = SWT.FILL;
+		d.grabExcessHorizontalSpace = true;
+		scComp.setLayoutData(d);
+		GridLayout l = new GridLayout(2, false);
+		scComp.setLayout(l);
+		
+		DataBindingContext c;
+		c = new DataBindingContext();
+		if (enabledProperty != null) {
+			c.bindValue(SWTObservables.observeEnabled(scComp), 
+					BeansObservables.observeValue(model, enabledProperty));
+		}
+		
+		// Label for Register Name:
+		Label lbPrefix = new Label(scComp, SWT.NONE);
+		lbPrefix.getShell().setBackgroundMode(SWT.INHERIT_DEFAULT); 
+		d = new GridData();
+		d.grabExcessHorizontalSpace = true;
+		d.horizontalAlignment = SWT.FILL;
+		d.horizontalSpan = 2;
+		lbPrefix.setLayoutData(d);
+		c = new DataBindingContext();
+		c.bindValue(SWTObservables.observeText(lbPrefix), 
+				BeansObservables.observeValue(model, nameProperty));
+		setFontStyle(lbPrefix, SWT.BOLD);
+		
+		// Validated Period Text Box:
+		TextValidationComposite tFreq = new TextValidationComposite(scComp, 
+				SWT.NONE,
+				"Duty cycle:",
+				model, periodProperty, 
+				model.getValidator(),
+				"s",
+				Double.class);
+		d = new GridData();
+		d.horizontalSpan = 2;
+		tFreq.setLayoutData(d);
+		tFreq.getTextBox().addModifyListener(new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent arg0) {
+			editor.setDirty(true);
+		}});	
+		return scComp;
 	}
 	
 	protected void setFontStyle(Control c, int style) {
