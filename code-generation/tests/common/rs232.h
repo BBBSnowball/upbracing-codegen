@@ -68,6 +68,10 @@ inline static uint8_t usart_recv(void) {
 	return UDRx;
 }
 
+inline static uint8_t usart_recv_char_available(void) {
+	return (UCSRxA & (1<<RXCx));
+}
+
 void usart_send_str(const char* s);
 
 void usart_send_str_P(const char* s);
