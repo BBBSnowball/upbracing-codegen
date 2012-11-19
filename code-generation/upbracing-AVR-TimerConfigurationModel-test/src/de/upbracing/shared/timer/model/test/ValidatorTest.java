@@ -148,14 +148,14 @@ public class ValidatorTest
 		assertEquals(0.04992, v.calculateQuantizedPeriod(uc.getIcrPeriod()), 0.0);
 		assertEquals(ValidationResult.OK, v.getIcrPeriodError());
 		assertEquals(194, v.calculateRegisterValue(uc.getIcrPeriod()));
-		// - OCRA: 0.05s (WARNING)
+		// - OCRA: 0.05s (OK - quantization error less than 5%)
 		//   -> Quantization time: 0.04992s
 		//   -> Expected register value: 194
 		uc.setOcrAPeriod(0.05);
 		assertEquals(0.05, uc.getOcrAPeriod(), 0.0);
 		assertFalse(((Double) v.calculateQuantizedPeriod(uc.getOcrAPeriod())).equals(0.05));
 		assertEquals(0.04992, v.calculateQuantizedPeriod(uc.getOcrAPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getOcrAPeriodError());
+		assertEquals(ValidationResult.OK, v.getOcrAPeriodError());
 		assertEquals(194, v.calculateRegisterValue(v.calculateQuantizedPeriod(uc.getOcrAPeriod())));
 		// - ICR: 0.1s (ERROR)
 		//   -> Quantized time: 0.99968s
@@ -195,14 +195,14 @@ public class ValidatorTest
 		uc.setPrescale(PrescaleFactors.ONETHOUSANDANDTWENTYFOUR);
 		assertEquals(PrescaleFactors.ONETHOUSANDANDTWENTYFOUR, uc.getPrescale());
 		assertEquals(1024, uc.getPrescale().getNumeric());
-		// - ICR: 0.04992s (WARNING)
+		// - ICR: 0.04992s (OK - quantization error less than 5%)
 		//   -> Quantized time: 0.050176
 		//   -> Expected register value: 98
 		uc.setIcrPeriod(0.04992);
 		assertEquals(0.04992, uc.getIcrPeriod(), 0.0);
 		assertFalse(((Double) v.calculateQuantizedPeriod(uc.getOcrAPeriod())).equals(0.04992));
 		assertEquals(0.050176, v.calculateQuantizedPeriod(uc.getIcrPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getIcrPeriodError());
+		assertEquals(ValidationResult.OK, v.getIcrPeriodError());
 		assertEquals(98, v.calculateRegisterValue(uc.getIcrPeriod()));
 		// - OCRA: 0.100352s (OK)
 		//   -> No quantization error	
@@ -246,6 +246,9 @@ public class ValidatorTest
 		// - Timer 1 (16 Bit)
 		uc.setTimer(TimerEnum.TIMER1);
 		assertEquals(TimerEnum.TIMER1, uc.getTimer());
+		// Set ICR as TOP register
+		uc.setFastPWMTop(PWMTopValues.ICR);
+		assertEquals(PWMTopValues.ICR, uc.getFastPWMTop());
 		// - Prescale divisor 256
 		uc.setPrescale(PrescaleFactors.TWOHUNDREDANDSIXTYFIVE);
 		assertEquals(PrescaleFactors.TWOHUNDREDANDSIXTYFIVE, uc.getPrescale());
@@ -253,26 +256,23 @@ public class ValidatorTest
 		// - ICR: 1s (OK)
 		//   -> No quantization error
 		//   -> Expected register value: 31249
-		//   -> Expect OK
 		uc.setIcrPeriod(1.0);
 		assertEquals(1.0, uc.getIcrPeriod(), 0.0);
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getIcrPeriod()), 0.0);
 		assertEquals(ValidationResult.OK, v.getIcrPeriodError());
 		assertEquals(31249, v.calculateRegisterValue(uc.getIcrPeriod()));
-		// - OCRnA: 0.99001s (WARNING) 
+		// - OCRnA: 0.99001s (OK - quantization error less than 5%) 
 		//   -> Quantized Time: 0.990016s
 		//   -> Expected quantized register value: 30937
-		//   -> Expect WARNING
 		uc.setOcrAPeriod(0.99001);
 		assertEquals(0.99001, uc.getOcrAPeriod(), 0.0);
 		assertFalse(((Double) v.calculateQuantizedPeriod(uc.getOcrAPeriod())).equals(0.99001));
 		assertEquals(0.990016, v.calculateQuantizedPeriod(uc.getOcrAPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getOcrAPeriodError());
+		assertEquals(ValidationResult.OK, v.getOcrAPeriodError());
 		assertEquals(30937, v.calculateRegisterValue(v.calculateQuantizedPeriod(uc.getOcrAPeriod())));
-		// - OCRnB: 2.1s (ERROR)
+		// - OCRnB: 2.1s (ERROR: greater than MAX)
 		//   -> No quantization error, but
 		//   -> Expected register value: 65624 (> 65535)
-		//   -> expect ERROR
 		uc.setOcrBPeriod(2.1);
 		assertEquals(2.1, uc.getOcrBPeriod(), 0.0);
 		assertEquals(2.1, v.calculateQuantizedPeriod(uc.getOcrBPeriod()), 0.0);
@@ -281,11 +281,10 @@ public class ValidatorTest
 		// - OCRnC: 1s (OK)
 		//	 -> No quantization error
 		//   -> Expected register value: 31249
-		//   -> Smaller than top value: expect WARNING
 		uc.setOcrCPeriod(1.0);
 		assertEquals(1.0, uc.getOcrCPeriod(), 0.0);
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getOcrCPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getOcrCPeriodError());
+		assertEquals(ValidationResult.OK, v.getOcrCPeriodError());
 		assertEquals(31249,	v.calculateRegisterValue(uc.getOcrCPeriod()));
 	}
 	
@@ -317,6 +316,8 @@ public class ValidatorTest
 		uc.setPrescale(PrescaleFactors.TWOHUNDREDANDSIXTYFIVE);
 		assertEquals(PrescaleFactors.TWOHUNDREDANDSIXTYFIVE, uc.getPrescale());
 		assertEquals(256, uc.getPrescale().getNumeric());
+		// Validate constant 255 TOP value:
+		assertEquals(PWMTopValues.BIT8, uc.getPhaseCorrectPWMTop());
 		// - ICR: 1s (OK)
 		//   -> No quantization error
 		//   -> Expected register value: 15625
@@ -325,16 +326,16 @@ public class ValidatorTest
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getIcrPeriod()), 0.0);
 		assertEquals(ValidationResult.OK, v.getIcrPeriodError());
 		assertEquals(15625, v.calculateRegisterValue(uc.getIcrPeriod()));
-		// - OCRnA: 0.99001s (WARNING) 
+		// - OCRnA: 0.99001s (ERROR: longer than top period value (16.32ms)) 
 		//   -> Quantized Time: 0.990016s
-		//   -> Expected quantized register value: 15469
+		//   -> Expected quantized register value: 15469 (> 255)
 		uc.setOcrAPeriod(0.99001);
 		assertEquals(0.99001, uc.getOcrAPeriod(), 0.0);
 		assertFalse(((Double) v.calculateQuantizedPeriod(uc.getOcrAPeriod())).equals(0.99001));
 		assertEquals(0.990016, v.calculateQuantizedPeriod(uc.getOcrAPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getOcrAPeriodError());
+		assertEquals(ValidationResult.ERROR, v.getOcrAPeriodError());
 		assertEquals(15469, v.calculateRegisterValue(v.calculateQuantizedPeriod(uc.getOcrAPeriod())));
-		// - OCRnB: 4.2s (ERROR)
+		// - OCRnB: 4.2s (ERROR: greater than MAX)
 		//   -> No quantization error, but
 		//   -> Expected register value: 65625 (> 65535)
 		uc.setOcrBPeriod(4.2);
@@ -342,14 +343,13 @@ public class ValidatorTest
 		assertEquals(4.2, v.calculateQuantizedPeriod(uc.getOcrBPeriod()), 0.0);
 		assertEquals(ValidationResult.ERROR, v.getOcrBPeriodError());
 		assertEquals(65625, v.calculateRegisterValue(uc.getOcrBPeriod()));
-		// - OCRnC: 1s (OK)
+		// - OCRnC: 1s (ERROR: longer than top period value (16.32ms))
 		//	 -> No quantization error
-		//   -> Expected register value: 15625
-		//   -> Smaller than top value: expect WARNING		
+		//   -> Expected register value: 15625		
 		uc.setOcrCPeriod(1.0);
 		assertEquals(1.0, uc.getOcrCPeriod(), 0.0);
 		assertEquals(1.0, v.calculateQuantizedPeriod(uc.getOcrCPeriod()), 0.0);
-		assertEquals(ValidationResult.WARNING, v.getOcrCPeriodError());
+		assertEquals(ValidationResult.ERROR, v.getOcrCPeriodError());
 		assertEquals(15625,	v.calculateRegisterValue(uc.getOcrCPeriod()));
 	}
 

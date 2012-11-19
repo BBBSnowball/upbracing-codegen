@@ -1,2 +1,0 @@
-#include $(CODE_GENERATOR_DIR)/makefile.targets-inc
-include $(CARTOS_DIR)/makefile.targets-application

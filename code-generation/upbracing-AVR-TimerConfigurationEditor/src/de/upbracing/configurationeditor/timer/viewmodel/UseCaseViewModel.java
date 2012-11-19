@@ -264,6 +264,8 @@ public class UseCaseViewModel extends AViewModelBase {
 		// Trigger new channel names
 		changes.firePropertyChange("icrName", null, null);
 		changes.firePropertyChange("ocrAName", null, null);
+		changes.firePropertyChange("ocrBName", null, null);
+		changes.firePropertyChange("ocrCName", null, null);
 		// Trigger visbilities		
 		changes.firePropertyChange("icrVisibility", null, null);
 		changes.firePropertyChange("ocrChannelsVisibility", null, null);
