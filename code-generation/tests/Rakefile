@@ -32,7 +32,13 @@ TARGET_DIR="gen"
 # This file must set these constants:
 # AVRDUDE = "avrdude -cjtag2 -pc128 -Pusb"
 # SERIALPORT = "/dev/ttyUSB0"	# can be a Proc object
-require 'userconfig.rb'
+begin
+	require 'userconfig.rb'
+rescue LoadError
+	puts "ERROR: Couldn't load userconfig.rb"
+	puts "Please create that file. See userconfig.rb.example"
+	exit 1
+end
 
 # some default values
 { :COLOR => :auto, :UI => :simple }.each do |key,value|
