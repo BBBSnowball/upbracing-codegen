@@ -14,7 +14,11 @@ java -jar $JRUBY -S gem install --source http://gems.github.com aslakhellesoy-an
 java -jar $JRUBY -S gem install paint
 
 #NOTE on Ubuntu you have to create a symlink: cd /lib/x86_64-linux-gnu/ ; sudo ln -s libncurses.so.5.9 libncurses.so
+#     => not anymore - we can fix the name in userconfig.rb
 java -jar $JRUBY -S gem install rbcurse
+
+#java -jar $JRUBY -S gem install live_console	# -> not working
+# we are using a JRuby built-in instead: org.jruby.demo.IRBConsole.main(new String[0]);
 
 # pack gems into a jar file
 jar cf ruby-gems.jar -C GEM_HOME .
