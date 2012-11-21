@@ -3,7 +3,7 @@
 
 $(OBJS): ../config/Os_application_dependent_code.c
 
-FEATURES_MD5 = $(shell md5sum ../config/Os_cfg_features.h | sed -ne 's/^\([0-9a-fA-F]\+\)\s\+.*$$/\1/p')
+FEATURES_MD5 = $(shell if which md5sum &>/dev/null; then md5sum ../config/Os_cfg_features.h | sed -ne 's/^\([0-9a-fA-F]\+\)\s\+.*$$/\1/p' ; else md5 -q ../config/Os_cfg_features.h ; fi)
 
 all: libcaRtos-$(FEATURES_MD5).a
 
