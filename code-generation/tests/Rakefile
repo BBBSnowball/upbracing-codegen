@@ -73,8 +73,12 @@ def task(*args, &block)
 				block.call(*args2)
 			rescue
 				if $logger
-					$logger.error "Error: #{$!}\n" + $!.backtrace.join("\n")
+					$logger.error "Error: #{$!}\n" + $!.backtrace.join("\n") rescue nil
 				end
+
+				# print message to normale console
+				FFI::NCurses::endwin rescue nil
+
 				raise
 			end
 		end
@@ -786,17 +790,26 @@ class Rake::Application
 	end
 
 	# print errors to log
+	alias :display_error_message_original :display_error_message
 	def display_error_message(ex)
 		# save to log, if we have one
 		log = $log || $logger
 		if log
-			msg = "#{ex.class.name}: #{ex.message}\n" + ex.backtrace.join("\n")
-			msg += "\n  Tasks: #{ex.chain}" if ex.respond_to?(:chain) && ex.chain
-			log.error(msg)
+			begin
+				msg = "#{ex.class.name}: #{ex.message}\n" + ex.backtrace.join("\n")
+				msg += "\n  Tasks: #{ex.chain}" if ex.respond_to?(:chain) && ex.chain
+				log.error(msg)
+			rescue
+				# ignore
+				puts "error logging message"
+			end
 		end
 
+		# print message to normale console
+		FFI::NCurses::endwin rescue nil
+
 		# let Rake do its stuff -> print to console
-		super(ex)
+		display_error_message_original(ex)
 	end
 end
 
@@ -1038,7 +1051,7 @@ class Project
 
 		test_script = get_test_script(dir, configuration)
 
-		test = task "test-#{name}-#{configuration}" => get_test_dependencies(dir, test_helper) do
+		test = task "test-#{name}-#{configuration}" => get_test_dependencies(dir, test_helper) do |selftask|
 			puts "Running test '#{dir}' (#{configuration})..."
 
 			raise "Test script not found at '#{test_script}'" unless File.exists? test_script
@@ -1051,18 +1064,24 @@ class Project
 					"$helper" => test_helper,							\
 					:init => "$helper.start" + "\n" + RubyPWdProviderCode
 			rescue Exception => ex
-				puts "Exception in test script #{test_script}:"
-				puts ex.class
-				puts ex.message
-				puts ex.backtrace.join("\n")
+				#TODO use toolkit.messages
 
-				if toolkit.inner.log
-					toolkit.inner.log.error {
-						"Exception in test script #{test_script}:\n" +
-						"\t" + ex.class.to_s + "\n" +
-						"\t" + ex.message.to_s + "\n" +
-						"\t" + ex.backtrace.join("\n\t")
-					}
+				# get full backtrace
+				bt = ex.backtrace.join("\r\n\t")
+				
+				# cut trace after run_test method
+				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\tin task #{selftask}")
+
+				message = "Exception in test script #{test_script}:\r\n" +
+					"\t" + ex.class.to_s + "\r\n" +
+					"\t" + ex.message.to_s + "\r\n" +
+					"\t" + bt
+
+				puts message
+
+				log = toolkit.inner.log || $log || $logger
+				if log
+					log.error message.gsub("\r\n", "\n")
 				end
 			end
 		end
