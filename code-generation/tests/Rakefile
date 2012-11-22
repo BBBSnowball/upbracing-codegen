@@ -626,6 +626,12 @@ end
 $toolkit.pwd_provider = RubyPWdProvider.new
 EOF
 
+begin
+	Java::de::upbracing::code_generation::tests::serial::SerialHelper::DEFAULT_PORT = SERIALPORT
+rescue NameError
+	# SerialHelper not available
+end
+
 PIOType = Java::de::upbracing::code_generation::tests::context::ProgramIO::Type
 StringBuffer = Java::java::lang::StringBuffer
 Messages = Java::de::upbracing::code_generation::Messages

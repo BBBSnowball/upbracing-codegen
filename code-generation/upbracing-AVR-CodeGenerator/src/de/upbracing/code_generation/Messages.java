@@ -1,6 +1,8 @@
 package de.upbracing.code_generation;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -256,6 +258,25 @@ public class Messages {
 	private Map<Class<?>, ObjectFormatter<Object>> formatters
 		= new HashMap<Class<?>, ObjectFormatter<Object>>();
 	
+	public Messages() {
+		addObjectFormatter(Throwable.class, new ObjectFormatter<Throwable>() {
+			@Override
+			public String format(int type, Throwable obj) {
+				String msg = obj.getClass().getName() + ": " + obj.getMessage();
+				if (type == LONG) {
+					StringWriter w = new StringWriter();
+					w.append('\n');
+					obj.printStackTrace(new PrintWriter(w));
+					msg += w.getBuffer().toString();
+				}
+				if (obj.getCause() != null) {
+					msg += format(type, obj.getCause());
+				}
+				return msg;
+			}
+		});
+	}
+	
 	/** add a message listener */
 	public void addMessageListener(MessageListener listener) {
 		listeners.add(listener);
@@ -462,6 +483,34 @@ public class Messages {
 	 */
 	public Message fatal(String format, Object... args) {
 		return addMessage(Severity.FATAL, format, args);
+	}
+
+	/** format and add a message with severity ERROR
+	 * 
+	 * @param exception the Exception to log 
+	 * @return the message object
+	 */
+	public Message error(Throwable exception) {
+		return addMessage(Severity.ERROR, exception);
+	}
+
+	/** format and add a message with severity FATAL
+	 * 
+	 * @param exception the Exception to log
+	 * @return the message object
+	 */
+	public Message fatal(Throwable exception) {
+		return addMessage(Severity.FATAL, exception);
+	}
+
+	/** format and add a message with severity FATAL
+	 * 
+	 * @param severity severity of the message
+	 * @param exception the Exception to log
+	 * @return the message object
+	 */
+	public Message addMessage(Severity severity, Throwable exception) {
+		return addMessage(severity, "%s", exception);
 	}
 	
 	/** append to context
