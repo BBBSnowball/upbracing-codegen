@@ -64,6 +64,26 @@ end
 exit 1 if user_config_error
 
 
+# wrap test scripts to print errors to $logger
+alias :test_alias :test
+def task(*args, &block)
+	if block
+		task(*args) do |*args2|
+			begin
+				block.call(*args2)
+			rescue
+				if $logger
+					$logger.error "Error: #{$!}\n" + $!.backtrace.join("\n")
+				end
+				raise
+			end
+		end
+	else
+		task(*args)
+	end
+end
+
+
 require 'tempfile'
 require 'digest/md5'
 require 'java'
@@ -700,6 +720,80 @@ if OutputFormatter
 	end
 end
 
+def is_windows
+	RUBY_PLATFORM =~ /win32/i or (RUBY_PLATFORM == "java" and Java::java::lang::System.getProperty("os.name") =~ /Windows/)
+end
+
+class NCursesUI
+	include Java::de::upbracing::code_generation::tests::TestUI
+
+	def name
+		return "ncurses"
+	end
+
+	def available
+		# We really cannot know whether NCurses is available. Probably we
+		# could use newwin, but I cannot find any useful documentation and
+		# its implementation in ffi-ncurses seems to be wrong (4 parameters).
+		# Best guess: If we have colors, we can probably use ncurses.
+		#Paint.mode > 0 and not is_windows
+		return false unless Paint.mode > 0
+
+		# We need to make sure that we have the library.
+		begin
+			require 'ffi-ncurses'
+		rescue LoadError => e
+			puts "WARN: Couldn't load ncurses native library."
+			puts "  " + e.to_s
+		end
+	end
+
+	def createToolkit
+		require 'ncurses-ui.rb'
+		NCursesToolkit.new
+	end
+end
+
+begin
+	Java::de::upbracing::code_generation::tests::ncurses::NCursesUI::setRubyUI NCursesUI.new
+rescue
+	puts "WARN: Couldn't pass wrapper class for ncurses UI to Java. ncurses UI won't be available."
+end
+
+# hook into Rake to notify $toolkit on shutdown
+class Rake::Application
+	# Rake::Application is already running, so we have to make
+	# sure that we hook a method that is not running, but will
+	# be called
+	# top_level will be called after load_rakefile, so we use that
+	# around that (in method run) is a call to
+	# standard_exception_handling which uses exit(false). This seems
+	# to thwart the addShutdownHook that NCursesToolkit uses
+	alias :top_level_original :top_level
+	def top_level(*args, &block)
+		begin
+			puts "In hooked top_level"
+			top_level_original(*args, &block)
+		ensure
+			$toolkit.tearDown if $toolkit
+		end
+	end
+
+	# print errors to log
+	def display_error_message(ex)
+		# save to log, if we have one
+		log = $log || $logger
+		if log
+			msg = "#{ex.class.name}: #{ex.message}\n" + ex.backtrace.join("\n")
+			msg += "\n  Tasks: #{ex.chain}" if ex.respond_to?(:chain) && ex.chain
+			log.error(msg)
+		end
+
+		# let Rake do its stuff -> print to console
+		super(ex)
+	end
+end
+
 class TestHelper
 	attr_accessor :toolkit
 	attr_accessor :avrdude, :serialport
@@ -708,7 +802,9 @@ class TestHelper
 	# set up environment for tests; called automatically
 	def start
 		$toolkit = @toolkit
-		@toolkit.inner.output_formatter = PaintOutputFormatter.new if OutputFormatter
+		@toolkit.inner.output_formatter = PaintOutputFormatter.new if OutputFormatter \
+					and @toolkit.inner.is_a? Java::de::upbracing::code_generation::tests::simple::SimpleToolkit
+		@toolkit.start
 	end
 
 	# delegate method calls to RichToolkit ($toolkit) or
@@ -900,7 +996,13 @@ class Project
 
 	def get_toolkit
 		unless $toolkit
-			$toolkit = Java::de::upbracing::code_generation::tests::TestUILoader.createToolkit(UI)
+			ui = UI
+			if ui.is_a? Array
+				ui = ui.map {|x| x.to_s}
+			else
+				ui = [ui.to_s]
+			end
+			$toolkit = Java::de::upbracing::code_generation::tests::TestUILoader.createToolkit(ui)
 		end
 		return $toolkit
 	end
@@ -947,6 +1049,15 @@ class Project
 				puts ex.class
 				puts ex.message
 				puts ex.backtrace.join("\n")
+
+				if toolkit.inner.log
+					toolkit.inner.log.error {
+						"Exception in test script #{test_script}:\n" +
+						"\t" + ex.class.to_s + "\n" +
+						"\t" + ex.message.to_s + "\n" +
+						"\t" + ex.backtrace.join("\n\t")
+					}
+				end
 			end
 		end
 

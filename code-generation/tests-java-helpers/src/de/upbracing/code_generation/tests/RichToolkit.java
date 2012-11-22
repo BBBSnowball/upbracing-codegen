@@ -258,4 +258,13 @@ public class RichToolkit implements Toolkit {
 	public void allTestsFinished() {
 		inner.allTestsFinished();
 	}
+	
+	@Override
+	public void start() {
+		inner.start();
+	}
+
+	public void tearDown() {
+		inner.tearDown();
+	}
 }

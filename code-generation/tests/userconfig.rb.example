@@ -17,6 +17,14 @@ COLOR=:auto		# try to recognize correct setting
 #COLOR=256		# use 256 colors
 
 # user interface
-UI = :simple	# text
+#UI = :simple	# text
 #UI = :ncurses	# text UI with windows (only for Linux)
 #UI = :swing	# graphical, not finished -> Krishna
+# choose the first one that is available
+UI = [:swing, :ncurses, :simple]
+
+# You may have to set the name of your ncurses library, if
+# the OS doesn't have a symlink with the right name
+# (especially without any version)
+# This is for Ubuntu 12.04
+#ENV["RUBY_FFI_NCURSES_LIB"] = "libncurses.so.5"

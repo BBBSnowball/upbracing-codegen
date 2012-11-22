@@ -6,7 +6,7 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
 
 public interface Toolkit {
-	//NOTE A lot of value can be null, e.g. prompt and validator
+	//NOTE A lot of arguments can be null, e.g. prompt and validator
 	
 	// we use a messages object to report messages
 	// The UI uses listeners to get the data.
@@ -35,4 +35,10 @@ public interface Toolkit {
 	// tell the UI that all tests are done
 	// It should notify the user and show a summary of the results.
 	void allTestsFinished();
+	
+	// called before the first test is run
+	void start();
+	
+	// called after the last test
+	void tearDown();
 }
