@@ -61,25 +61,143 @@ ProgramIOListener = ProgramIO::ProgramIOListener
 #Severity = Messages::Severity
 ErrorOrFailure = Java::de::upbracing::code_generation::tests::context::Result::ErrorOrFailure
 
+COLOR_DARK_GRAY = 8
+COLOR_DARK_YELLOW = 9
+COLOR_ORANGE = 10
+COLOR_DEFAULT = -1
+
 class NCursesToolkit
 	include Toolkit
 	include Messages::ContextListener
 	include Messages::MessageListener
 	include ProgramIOListener
 
-	def initialize
+	class IOType
+		attr_accessor :source, :stream, :mode
+
+		def initialize(source, stream, mode = :default)
+			@source = source
+			@stream = stream
+			@mode = mode
+		end
+
+		def ==(b)
+			return false unless self.class == b.class
+			[:source, :stream, :mode].each do |key|
+				av = self.send(key)
+				bv = b.send(key)
+				return false unless av == bv
+			end
+			return true
+		end
+
+		def hash
+			[self, @source, @stream, @mode].hash
+		end
+	end
+
+	def initialize		
+		# we cannot print to the screen, so we might need a log
+		$log = $logger = @log = Logger.new "ncurses-ui.log"
+		$log.info "NCursesToolkit::initialize"
+
+		#DEBUG
+		class <<$log
+			def close
+				raise "Please don't close the log"
+			end
+		end
+
 		@messages = Messages.new
 		@messages.addContextListener self
+		@messages.addMessageListener self
 
 		@failed_contexts = []
+
+		@io_types = {
+			:default              => IOType.new(:default, :out),
+			:default_error        => IOType.new(:default, :out, :error),
+
+			:program_stdin        => IOType.new(:program, :out),
+			:program_stdout       => IOType.new(:program, :in),
+			:program_stderr       => IOType.new(:program, :in_err),
+			:program_stdout_skip  => IOType.new(:program, :in,     :skip),
+			:program_stderr_skip  => IOType.new(:program, :in_err, :skip),
+
+			:serial_in            => IOType.new(:serial, :in),
+			:serial_out           => IOType.new(:serial, :out),
+			:serial_in_skip       => IOType.new(:serial, :in, :skip),
+
+			:prompt_marker        => IOType.new(:user,   :out, :prompt_marker),
+			:instruction_marker   => IOType.new(:user,   :out, :instruction_marker),
+		}
+		Severity.values.each do |severity|
+			name = severity.name.downcase.intern
+			header = "#{name}_header".intern
+			@io_types[name] = IOType.new(:messages, :in, name)
+			@io_types[header] = IOType.new(:messages, :in, header)
+		end
+	end
+
+	def color_for(name, io_type)
+		fg = nil
+		bg = nil
+		case io_type.source
+		when :default
+			bg = COLOR_DEFAULT	# FFI::NCurses::COLOR_BLACK
+			if io_type.mode == :error
+				fg = FFI::NCurses::COLOR_RED
+			else
+				fg = FFI::NCurses::COLOR_WHITE
+			end
+		when :program
+			# in ncurses BLACK is gray - weird!
+			# And the custom color break foreground color, so
+			# we cannot use it :-(
+			# TODO fix ^^ I don't think we can rely on such behaviour.
+			bg = FFI::NCurses::COLOR_BLACK	#COLOR_DARK_GRAY
+			if io_type.stream == :in_err
+				fg = FFI::NCurses::COLOR_RED
+			else
+				fg = FFI::NCurses::COLOR_WHITE
+			end
+		when :serial
+			bg = COLOR_DARK_YELLOW
+			if io_type.stream == :in
+				fg = COLOR_DEFAULT	#FFI::NCurses::COLOR_BLACK
+			else
+				fg = FFI::NCurses::COLOR_BLUE
+			end
+		when :user
+			case io_type.mode
+			when :prompt_marker
+				bg = FFI::NCurses::COLOR_BLUE
+				fg = FFI::NCurses::COLOR_BLACK
+			when :instruction_marker
+				bg = FFI::NCurses::COLOR_WHITE
+				fg = FFI::NCurses::COLOR_BLACK
+			else
+				raise "unsupported type of user I/O: #{io_type.mode}"
+			end
+		when :messages
+			bg = COLOR_DEFAULT	#FFI::NCurses::COLOR_BLACK
+			case io_type.mode
+			when :fatal_header, :error_header
+				fg = FFI::NCurses::COLOR_RED
+			when :warning_header
+				fg = FFI::NCurses::COLOR_YELLOW 	#COLOR_ORANGE
+			else
+				fg = FFI::NCurses::COLOR_WHITE
+			end
+		else
+			raise "unsupported source: #{io_type.source}"
+		end
+		[fg, bg]
 	end
 
 	def start
 		return if @started
 		@started = true
-
-		# we cannot print to the screen, so we might need a log
-		$log = $logger = @log = Logger.new "ncurses-ui.log"
 
 		# start console on network port because standard input will be used by ncurses
 		#lc = LiveConsole.new :socket, :port => 3333, :bind => binding
@@ -125,6 +243,7 @@ class NCursesToolkit
 	end
 
 	def _setup_screen
+		#DEBUG
 		if false
 			FFI::NCurses::printw("Hello World !!!")
 			FFI::NCurses::refresh
@@ -136,6 +255,51 @@ class NCursesToolkit
 			win.refresh
 			FFI::NCurses::getch
 		end
+
+
+		FFI::NCurses::start_color
+
+		# transparent background
+		FFI::NCurses::use_default_colors
+
+		#DEBUG
+		if false
+			FFI::NCurses::init_pair(1, FFI::NCurses::COLOR_RED, FFI::NCurses::COLOR_BLUE)
+			FFI::NCurses::attron(FFI::NCurses::COLOR_PAIR(1))
+			FFI::NCurses::printw("blub in red and blue")
+			FFI::NCurses::getch
+		end
+
+		FFI::NCurses::init_color(COLOR_DARK_GRAY, 200, 200, 200)
+		FFI::NCurses::init_color(COLOR_DARK_YELLOW, 300, 300, 0)
+		FFI::NCurses::init_color(COLOR_ORANGE, 1000, 0x4a*1000/256, 0x12*1000/256)
+
+		# I want a black that is black - not gray!
+		#FFI::NCurses::init_color(FFI::NCurses::COLOR_BLACK, 0, 0, 0)
+		#FFI::NCurses::init_color(COLOR_BLACK, 0, 0, 0)
+
+		@colors = {}
+		@io_types.each do |key,value|
+			@colors[key] = color_for(key, value)
+		end
+
+		@unique_colors = @colors.values.uniq
+		@color_pairs = {}
+		i = 0
+		@unique_colors.each do |color|
+			i += 1
+			@log.info("color pair #{i}: #{color.inspect}")
+			FFI::NCurses::init_pair(i, *color)
+			@colors.each do |key,value|
+				@color_pairs[key] = i if value == color
+			end
+		end
+
+		# set default to white text on black background
+		# (I don't like the gray background that ncurses
+		#  sets as default.)
+		#FFI::NCurses::bkgd(FFI::NCurses::COLOR_PAIR(@color_pairs[:default]))
+
 
 		lines = FFI::NCurses.LINES
 		cols  = FFI::NCurses.COLS
@@ -157,7 +321,7 @@ class NCursesToolkit
 
 			while !@finished
 				key = FFI::NCurses::getch
-				if key
+				if key and key != FFI::NCurses::ERR
 					#TODO
 					@output.printw "Got key: #{key}\n"
 					@output.refresh unless @finished
@@ -179,6 +343,9 @@ class NCursesToolkit
 		@finished = true
 
 		@thread.join 2 if @thread
+
+		@output.printw("\nRake is shutting down\nWaiting for you to press a key\n")
+		@output.refresh
 
 		# This time we want to wait -> no halfdelay
 		FFI::NCurses::nocbreak
@@ -281,11 +448,11 @@ class NCursesToolkit
 	def waitForUser(prompt)
 		#TODO
 		prompt ||= ""
-		prompt += "\n" unless prompt.end_with?("\n")
+		prompt += "\n" unless prompt.end_with?("\n") or prompt.empty?
 		
 		#TODO better implementation, if we can put the terminal into raw mode
 		
-		prompt += "Press enter to continue";
+		prompt += "Press enter to continue\n";
 		
 		printPrompt(prompt);
 		
@@ -352,21 +519,20 @@ class NCursesToolkit
 	end
 
 	def programIO(data, type)
-		foreground = case type
+		iotype = case type
 		when PIOType::IN
-			[:green]
+			:program_stdin
 		when PIOType::OUT
-			[:white, :bright]
+			:program_stdout
 		when PIOType::ERROR
-			[:red, :bright, :bold]
+			:program_stderr
 		else
 			raise "unknown type of program IO: #{type}"
 		end
 
 		#data = data.gsub(/[^ -z]/) { |x| sprintf("\\x%02x", x.ord) }
 
-		@output.printw alter_lines2(data) { |line| Paint[line, *foreground, [50,50,50]] }
-		@output.refresh
+		print_attr(data, FFI::NCurses::COLOR_PAIR(@color_pairs[iotype]))
 	end
 
 	class MonitorProcessStatus
@@ -394,19 +560,11 @@ class NCursesToolkit
 	def message(msg)
 		sb = StringBuffer.new
 		msg.format(sb, "  ")
-		color = case msg.severity
-		when Severity::FATAL, Severity::ERROR
-			[:red, :bright, :bold]
-		when Severity::WARNING
-			Paint.mode == 256 and ["#ff4a12", :bold] or [:yellow, :bold]
-		else
-			[:bold]	#nil
-		end
-		if color and Paint.mode > 0
-			print sb.toString.sub(/^(.*):/, Paint["\\1", *color] + ":")
-		else
-			print sb.toString
-		end
+		color = FFI::NCurses::COLOR_PAIR(@color_pairs["#{msg.severity.name.downcase}_header".intern])
+		x = /^([^:]*)(:.*$)/m.match(sb.to_s)
+		print_attr x[1], (color | FFI::NCurses::A_BOLD)
+		@output.printw(x[2])
+		@output.refresh
 	end
 
 
@@ -425,50 +583,63 @@ class NCursesToolkit
 		end
 	end
 
-	def left_bar(bar, text)
-		alter_lines(text) { |line| bar + line }
+	def print_attr(text, attr)
+		@output.attron attr
+		@output.printw text
+		@output.attroff attr
+	end
+
+	def printLeftBar(bar, bar_attr, text)
+		nl_at_end = text.end_with? "\n"
+		text = text.sub(/\n$/, "")
+
+		text.lines.each do |line|
+			#@output.attron(bar_attr)
+			#@output.printw(bar)
+			#@output.attroff(bar_attr)
+			print_attr(bar, bar_attr)
+			@output.printw(" ")
+			@output.printw(line)
+		end
+
+		@output.printw "\n" if nl_at_end
+
+		@output.refresh
 	end
 
 	def printPrompt(prompt)
 		if prompt and not prompt.empty?
-			prompt = left_bar(Paint[" ", nil, :blue] + " ", prompt)
-			@output.printw prompt
-			@output.refresh
+			#prompt.sub(/\n$/, "").lines.each do |line|
+			#	c = FFI::NCurses::COLOR_PAIR(@color_pairs[:prompt_marker])
+			#	@output.attron(c | FFI::NCurses::A_BOLD)
+			#	@output.printw(" ")
+			#	@output.attroff(c | FFI::NCurses::A_BOLD)
+			#	@output.printw(" ")
+			#	@output.printw(line)
+			#end
+			#@output.printw("\n")
+			#@output.refresh
+
+			c = FFI::NCurses::COLOR_PAIR(@color_pairs[:prompt_marker])
+			printLeftBar " ", (c | FFI::NCurses::A_BOLD), prompt
 		end
 	end
 
 	def printInstructions(instructions)
-		instructions = instructions.sub(/\n*$/, '')
-		@output.printw left_bar(Paint["I", :black, :white] + " ", instructions) + "\n"
-		@output.refresh
-	end
-
-	def printProgramIO(data, type)
-		foreground = case type
-		when PIOType::IN
-			[:green]
-		when PIOType::OUT
-			[:white, :bright]
-		when PIOType::ERROR
-			[:red, :bright, :bold]
-		else
-			raise "unknown type of program IO: #{type}"
-		end
-
-		#data = data.gsub(/[^ -z]/) { |x| sprintf("\\x%02x", x.ord) }
-
-		@output.printw alter_lines2(data) { |line| Paint[line, *foreground, [50,50,50]] }
-		@output.refresh
+		instructions = instructions.sub(/\n*$/, '\n')
+		c = FFI::NCurses::COLOR_PAIR(@color_pairs[:instruction_marker])
+		printLeftBar "I", (c | FFI::NCurses::A_BOLD), instructions
 	end
 
 	def reportProgramResult(program, result)
 		name = program.name
-		#name = Paint[program.name, nil, [50,50,50]]
 
 		if result.isSuccessful
 			@output.printw "#{name} finished successfully\n"
 		else
-			@output.printw name + ": " + Paint[result.message, :red] + "\n"
+			@output.printw name + ": "
+			c = FFI::NCurses::COLOR_PAIR(@color_pairs[:default_error])
+			print_attr result.message + "\n", c
 		end
 		@output.refresh
 	end
@@ -478,6 +649,7 @@ class NCursesToolkit
 		x = Object.new
 		class << x
 			def readLine
+				sleep 0.5
 				case rand(3)
 				when 0
 					return "red"
