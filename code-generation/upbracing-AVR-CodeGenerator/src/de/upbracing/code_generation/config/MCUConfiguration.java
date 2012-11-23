@@ -259,6 +259,10 @@ public class MCUConfiguration {
 	 */
 	public void loadTimerConfiguration(String path) throws FileNotFoundException {
 		timer = ConfigurationModel.Load(path);
+		if (timer == null) {
+			timer = new ConfigurationModel();
+			messages.addMessage(Severity.ERROR, "Cannot find configuration file \"" + path + "\". Empty timer configuration is used!");
+		}
 	}
 	
 	/** 
