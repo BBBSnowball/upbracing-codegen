@@ -2,6 +2,7 @@ package de.upbracing.shared.timer.model;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -104,6 +105,11 @@ public class ConfigurationModel {
 	 * @throws FileNotFoundException
 	 */
 	public static ConfigurationModel Load(String path) throws FileNotFoundException {
+		
+		// Check, if file exists:
+		File f = new File(path);
+		if (!f.exists())
+			return null;
 		
 		// Just load the previously serialized file from "path"
 		FileInputStream str = new FileInputStream(path);
