@@ -636,7 +636,15 @@ rescue NameError
 	# SerialHelper not available
 end
 
-PIOType = Java::de::upbracing::code_generation::tests::context::ProgramIO::Type
+begin
+	PIOType = Java::de::upbracing::code_generation::tests::context::ProgramIO::Type
+rescue LoadError, NameError
+	puts "Please build the tests-java-helpers project with Eclipse. You need to import"
+	puts "the project and all dependency projects into your Eclipse workspace."
+	exit 1
+ensure
+	puts $!.class
+end
 StringBuffer = Java::java::lang::StringBuffer
 Messages = Java::de::upbracing::code_generation::Messages
 Severity = Messages::Severity
