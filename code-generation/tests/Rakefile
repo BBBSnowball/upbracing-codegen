@@ -642,8 +642,6 @@ rescue LoadError, NameError
 	puts "Please build the tests-java-helpers project with Eclipse. You need to import"
 	puts "the project and all dependency projects into your Eclipse workspace."
 	exit 1
-ensure
-	puts $!.class
 end
 StringBuffer = Java::java::lang::StringBuffer
 Messages = Java::de::upbracing::code_generation::Messages
@@ -905,7 +903,12 @@ class Project
 		classpath = compiler_classpath(java_source_dir)
 		args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
 			+ get_java_sources(java_source_dir)
-		ToolProvider::getSystemJavaCompiler.run(nil, nil, nil, *args)
+		compiler = ToolProvider::getSystemJavaCompiler
+		if not compiler
+			puts "Couldn't get the Java compiler. Please use a JDK to run rake."
+			exit 1
+		end
+		compiler.run(nil, nil, nil, *args)
 	end
 
 	def get_java_source_dir(project_dir)
