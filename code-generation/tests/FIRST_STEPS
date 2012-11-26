@@ -1,0 +1,54 @@
+How to setup our projects on Windows
+
+1. install JDK (Java Development Kit; JRE is not enough!)
+2. install Eclipse with GMF and Eugenia (Software\Eclipse)
+3. add AVR-Eclipse plugin (eclipse-plugins-3rdPart.zip)
+4. import most projects in the code-generation folder
+   java-parser-tools
+   StatechartEditor
+   StatechartEditorFeature
+   StatechartEditor.diagram
+   tests
+   tests-java-helpers
+   upbracing-AVR-CodeGenerator
+   (upbracing-AVR-TimerConfigurationEditor)
+   (upbracing-AVR-TimerConfigurationFeature)
+   upbracing-AVR-TimerConfigurationModel
+5. reset code-generation/upbracing-AVR-CodeGenerator/.jetproperties
+   to the version in GIT because Eclipse messes it up, when you
+   import the project
+   run: git checkout code-generation/upbracing-AVR-CodeGenerator/.jetproperties
+   You need to update the project in Eclipse.
+6. delete the folder 'de' inside upbracing-AVR-CodeGenerator
+   (created because of wrong .jetproperties file)
+7. build project upbracing-AVRTimerConfigurationModel
+   If it cannot find the Java compiler, please make sure that Eclipse uses
+   a JDK and not JRE.
+8. Refresh the project. There should be the folder 'dist' with a JAR file.
+9. open StatechartEditor/metamodel and run "Eugenia -> Generate GMF editor"
+   in the context menu (right click) of statecharts.emf
+10. You may have to run "Build project" on StatechartEditor to get rid
+    of the error messages.
+11. If you want multi-line text fields in the statecharts editor, you
+    must make sure that it uses a few modified files. You can find them in
+    the GIT, but we don't care for now.
+9. The other projects should be fine now. All projects should build
+   without errors.
+10. Create code-generation/tests/userconfig.rb using the example file
+11. Import caRTOS project (in folder caRTOS/XMEGAOs/os)
+12. Build caRTOS (XMegaOs) project. Please built all configurations (Debug and Release).
+13. Make sure all the important tools are in the PATH environment variable:
+    - WinAVR: 'bin' and 'utils\bin'
+    - JDK: 'bin' folder with java.exe and javac.exe
+    - Eagle Version 5: 'bin' folder
+    You should be able to run the following tools from the command line:
+    - java -version
+    - javac -version
+    - avr-gcc
+    - md5sum
+    - eagle
+14. open a terminal
+ a) change to the code-generation/tests folder
+ b) run rake-Windows.bat to build all test projects
+ c) attach programmer, test board and serial adapter
+ d) run all tests: rake-Windows.bat test-all
