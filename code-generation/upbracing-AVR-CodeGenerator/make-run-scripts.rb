@@ -112,6 +112,6 @@ java -cp "} + unix_classpath + %{" org.jruby.Main "$@"
 end
 
 File.open("run.bat", "w") do |f|
-  f.write(%{rem Meaning of %~dp0 -> see http://weblogs.asp.net/whaggard/archive/2005/01/28/get-directory-path-of-an-executing-batch-file.aspx
-java -cp "} + win_classpath + %{" de.upbracing.code_generation.Main %*})
+  f.write(%{@rem Meaning of %~dp0 -> see http://weblogs.asp.net/whaggard/archive/2005/01/28/get-directory-path-of-an-executing-batch-file.aspx
+@java -cp "} + win_classpath + %{" de.upbracing.code_generation.Main %*})
 end

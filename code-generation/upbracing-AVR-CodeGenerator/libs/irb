@@ -1,2 +1,3 @@
 #!/bin/sh
-java -cp jruby-complete-1.7.0.jar:ruby-gems.jar:. org.jruby.Main -S irb "$@"
+DIR="$(dirname "$0")"
+java -cp "$DIR/jruby-complete-1.7.0.jar:$DIR/ruby-gems.jar:." org.jruby.Main -S irb "$@"

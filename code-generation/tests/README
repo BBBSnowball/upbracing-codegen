@@ -12,7 +12,7 @@ In most cases, you want to give it a task name, which can be:
 - build-NAME-CONFIGURATION, build a single test; NAME and CONFIGURATION as for test-NAME-CONFIGURATION
 - a file name that can be built, e.g. some-project/bin/Release/main.o
 
-You have to create a userconfig.rb file which contains some information about your set-up, e.g. programming interface and serial port. Please have a look at userconfig.rb.example
+You have to create a userconfig.rb file which contains some information about your set-up, e.g. programming interface and serial port. Please have a look at userconfig.rb.example. The user configuration is specific to you / your computer, so it doesn't go into the GIT. There is only one userconfig.rb, which lives in the tests folder (not for each project!).
 
 
 If you want to add a test project, you simply create a new folder and put the files in it (at least main.c, project.rb, config.rb or run-test.rb).

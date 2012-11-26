@@ -14,6 +14,7 @@ import de.upbracing.code_generation.Messages.ContextListener;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
 import de.upbracing.code_generation.tests.OptionShaper;
+import de.upbracing.code_generation.tests.OptionValidator;
 import de.upbracing.code_generation.tests.Toolkit;
 import de.upbracing.code_generation.tests.Validator;
 import de.upbracing.code_generation.tests.context.Result;
@@ -54,6 +55,10 @@ public class SimpleToolkit implements Toolkit {
 				showMessage(msg);
 			}
 		});
+	}
+	
+	@Override
+	public void start() {
 	}
 
 	@Override
@@ -146,39 +151,6 @@ public class SimpleToolkit implements Toolkit {
 		else
 			return answer;
 	}
-	
-	private class OptionValidator implements Validator {
-		private OptionShaper shaper;
-		private String[] options;
-
-		public OptionValidator(OptionShaper shaper, String[] options) {
-			this.shaper = shaper;
-			this.options = options;
-		}
-
-		@Override
-		public Result validate(String text) {
-			if (text.equals("\n"))
-				// we don't want a second line
-				return Result.INVALID;
-			
-			String shaped_option = (shaper != null ? shaper.process(text) : text);
-			
-			boolean incomplete = false;
-			for (String valid_option : options) {
-				if (valid_option.equals(shaped_option))
-					return Result.VALID;
-				else if (valid_option.startsWith(shaped_option))
-					incomplete = true;
-			}
-			
-			if (incomplete)
-				return Result.INCOMPLETE;
-			else
-				return Result.INVALID;
-		}
-		
-	}
 
 	@Override
 	public void waitForUser(String prompt) {
@@ -187,8 +159,6 @@ public class SimpleToolkit implements Toolkit {
 				prompt += "\n";
 		} else
 			prompt = "";
-		
-		//TODO better implementation, if we can put the terminal into raw mode
 		
 		prompt += "Press enter to continue";
 		
@@ -257,6 +227,11 @@ public class SimpleToolkit implements Toolkit {
 
 			System.out.println(sb.toString());
 		}
+	}
+	
+	@Override
+	public void tearDown() {
+		allTestsFinished();
 	}
 	
 	public interface OutputFormatter {
