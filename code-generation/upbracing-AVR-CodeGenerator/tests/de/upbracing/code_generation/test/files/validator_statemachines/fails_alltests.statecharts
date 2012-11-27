@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Statecharts:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Statecharts="http://statechart" basePeriod="1">
+<Statecharts:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Statecharts="http://statechart" basePeriod="1s">
   <transitions source="//@states.0" destination="//@states.1"/>
   <transitions source="//@states.0" destination="//@states.2"/>
   <transitions source="//@states.0" destination="//@states.3"/>
@@ -8,7 +8,7 @@
   <transitions source="//@states.4/@regions.1/@states.0/@regions.0/@states.0" destination="//@states.4/@regions.1/@states.0/@regions.0/@states.2"/>
   <transitions source="//@states.4/@regions.1/@states.0/@regions.0/@states.0" destination="//@states.4/@regions.1/@states.0/@regions.0/@states.1"/>
   <transitions source="//@states.4/@regions.1/@states.0/@regions.0/@states.1" destination="//@states.4/@regions.1/@states.0/@regions.0/@states.3" transitionInfo="[a==b]"/>
-  <transitions source="//@states.4" destination="//@states.5" transitionInfo="begin: before(10)"/>
+  <transitions source="//@states.4" destination="//@states.5" transitionInfo="begin: before(10ms)"/>
   <transitions source="//@states.5/@regions.0/@states.0" destination="//@states.5/@regions.0/@states.1" transitionInfo="[a==b]"/>
   <transitions source="//@states.5/@regions.0/@states.2" destination="//@states.5/@regions.0/@states.1" transitionInfo="wait(10ms)"/>
   <transitions source="//@states.5/@regions.1/@states.1" destination="//@states.5/@regions.1/@states.0" transitionInfo="add"/>
@@ -20,57 +20,57 @@
   <transitions source="//@states.7" destination="//@states.5" transitionInfo="wait(10ms) [a==b]"/>
   <transitions source="//@states.2" destination="//@states.7" transitionInfo="wait(10ms)"/>
   <transitions source="//@states.2" destination="//@states.3" transitionInfo="before(10ms)"/>
-  <transitions source="//@states.7/@regions.0/@states.0" destination="//@states.7/@regions.0/@states.1"/>
+  <transitions source="//@states.7/@regions.0/@states.0" destination="//@states.7/@regions.0/@states.1" transitionInfo=""/>
   <transitions source="//@states.7/@regions.0/@states.1" destination="//@states.7/@regions.0/@states.2" transitionInfo="add : wait(5ms)"/>
   <transitions source="//@states.7/@regions.0/@states.2" destination="//@states.7/@regions.0/@states.3" transitionInfo="wait(3ms) [a==b]"/>
   <transitions source="//@states.7/@regions.0/@states.3" destination="//@states.7/@regions.0/@states.4" transitionInfo="before(10ms)"/>
-  <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.0 //@transitions.1 //@transitions.2"/>
-  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.0" name="normal_1"/>
-  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.18 //@transitions.19" name="normal_1"/>
-  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.2 //@transitions.19" outgoingTransitions="//@transitions.3" name="$normal_1"/>
-  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.3" outgoingTransitions="//@transitions.8 //@transitions.16" name="sup_1">
-    <regions name="$region_1">
-      <states xsi:type="Statecharts:InitialState"/>
-      <states xsi:type="Statecharts:InitialState" name="start_1"/>
+  <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.0 //@transitions.1 //@transitions.2" parent="/"/>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.0" parent="/" name="normal_1"/>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.18 //@transitions.19" parent="/" name="normal_1"/>
+  <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.2 //@transitions.19" outgoingTransitions="//@transitions.3" parent="/" name="$normal_1"/>
+  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.3" outgoingTransitions="//@transitions.8 //@transitions.16" parent="/" name="sup_1">
+    <regions name="$region_1" parent="//@states.4">
+      <states xsi:type="Statecharts:InitialState" parent="//@states.4/@regions.0"/>
+      <states xsi:type="Statecharts:InitialState" parent="//@states.4/@regions.0" name="start_1"/>
     </regions>
-    <regions name="reg#_2">
-      <states xsi:type="Statecharts:SuperState" outgoingTransitions="//@transitions.4" name="%sup_2">
-        <regions name="region_3">
-          <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.5 //@transitions.6"/>
-          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.6" outgoingTransitions="//@transitions.7" name="normal_1"/>
-          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.5" name="normal_1"/>
-          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.7" name="$normal_1"/>
+    <regions name="reg#_2" parent="//@states.4">
+      <states xsi:type="Statecharts:SuperState" outgoingTransitions="//@transitions.4" parent="//@states.4/@regions.1" name="%sup_2">
+        <regions name="region_3" parent="//@states.4/@regions.1/@states.0">
+          <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.5 //@transitions.6" parent="//@states.4/@regions.1/@states.0/@regions.0"/>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.6" outgoingTransitions="//@transitions.7" parent="//@states.4/@regions.1/@states.0/@regions.0" name="normal_1"/>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.5" parent="//@states.4/@regions.1/@states.0/@regions.0" name="normal_1"/>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.7" parent="//@states.4/@regions.1/@states.0/@regions.0" name="$normal_1"/>
         </regions>
       </states>
-      <states xsi:type="Statecharts:InitialState" incomingTransitions="//@transitions.4"/>
-      <states xsi:type="Statecharts:NormalState" outgoingTransitions="//@transitions.12" name="normal_2"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.12" name="norma;_3"/>
+      <states xsi:type="Statecharts:InitialState" incomingTransitions="//@transitions.4" parent="//@states.4/@regions.1"/>
+      <states xsi:type="Statecharts:NormalState" outgoingTransitions="//@transitions.12" parent="//@states.4/@regions.1" name="normal_2"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.12" parent="//@states.4/@regions.1" name="norma;_3"/>
     </regions>
   </states>
-  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.8 //@transitions.17" outgoingTransitions="//@transitions.15" name="sup_2">
-    <regions name="region_1">
-      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.9"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.9 //@transitions.10" name="normal_1"/>
-      <states xsi:type="Statecharts:NormalState" outgoingTransitions="//@transitions.10" name="normal_2"/>
+  <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.8 //@transitions.17" outgoingTransitions="//@transitions.15" parent="/" name="sup_2">
+    <regions name="region_1" parent="//@states.5">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.9" parent="//@states.5/@regions.0"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.9 //@transitions.10" parent="//@states.5/@regions.0" name="normal_1"/>
+      <states xsi:type="Statecharts:NormalState" outgoingTransitions="//@transitions.10" parent="//@states.5/@regions.0" name="normal_2"/>
     </regions>
     <regions name="region_2">
-      <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.11" name="super_3">
-        <regions name="region_">
-          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.14" outgoingTransitions="//@transitions.13" name="normal_2"/>
-          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.13" outgoingTransitions="//@transitions.14" name="normal_3"/>
+      <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.11" parent="//@states.5/@regions.1" name="super_3">
+        <regions name="region_" parent="//@states.7">
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.14" outgoingTransitions="//@transitions.13" parent="//@states.5/@regions.1/@states.0/@regions.0" name="normal_2"/>
+          <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.13" outgoingTransitions="//@transitions.14" parent="//@states.5/@regions.1/@states.0/@regions.0" name="normal_3"/>
         </regions>
       </states>
-      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.11"/>
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.11" parent="//@states.5/@regions.1"/>
     </regions>
   </states>
-  <states xsi:type="Statecharts:FinalState" incomingTransitions="//@transitions.15"/>
+  <states xsi:type="Statecharts:FinalState" incomingTransitions="//@transitions.15" parent="/"/>
   <states xsi:type="Statecharts:SuperState" incomingTransitions="//@transitions.16 //@transitions.18" outgoingTransitions="//@transitions.17" name="super_3">
-    <regions name="region_1">
-      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.20"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.20" outgoingTransitions="//@transitions.21" name="normal_1"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.21" outgoingTransitions="//@transitions.22" name="normal_2"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.22" outgoingTransitions="//@transitions.23" name="normal_3"/>
-      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.23" name="normal_4"/>
+    <regions name="region_1" parent="//@states.7">
+      <states xsi:type="Statecharts:InitialState" outgoingTransitions="//@transitions.20" parent="//@states.5/@regions.0"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.20" outgoingTransitions="//@transitions.21" parent="//@states.5/@regions.0" name="normal_1"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.21" outgoingTransitions="//@transitions.22" parent="//@states.5/@regions.0" name="normal_2"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.22" outgoingTransitions="//@transitions.23" parent="//@states.5/@regions.0" name="normal_3"/>
+      <states xsi:type="Statecharts:NormalState" incomingTransitions="//@transitions.23" parent="//@states.5/@regions.0" name="normal_4"/>
     </regions>
   </states>
 </Statecharts:StateMachine>
