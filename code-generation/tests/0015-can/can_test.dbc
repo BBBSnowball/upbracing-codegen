@@ -42,28 +42,46 @@ BO_ 2147483655 InitTestphase: 2 TestBoard
 BO_ 2147483666 TestMessage1: 1 TestBoard
  SG_ TestSignal : 0|8@1+ (1,0) [0|1] ""  TestBoard
 
-BO_ 2147483670 TestMessage2C: 8 TestBoard
+BO_ 2147483667 TestMessage2A: 1 TestBoard
+ SG_ TestSignal2A : 0|8@1+ (1,0) [0|1] ""  TestBoard
+
+BO_ 2147483668 TestMessage2B: 1 TestBoard
+ SG_ TestSignal2B : 0|8@1+ (1,0) [0|1] ""  TestBoard
+
+BO_ 2147483870 TestMessage3A: 6 TestBoard
+ SG_ TestSignal3A : 32|16@1+ (1,0) [0|0] ""  TestBoard
+
+BO_ 2147483871 TestMessage3B: 6 TestBoard
+ SG_ TestSignal3B : 32|16@1+ (1,0) [0|0] ""  TestBoard
+
+BO_ 2147483872 TestMessage4C: 8 TestBoard
  SG_ TestSignalC1 : 55|16@0- (1,0) [0|0] ""  TestBoard
  SG_ TestSignalB1 : 39|16@0- (1,0) [0|0] ""  TestBoard
  SG_ DummySignal : 23|16@0- (1,0) [0|0] ""  DummyBoard
  SG_ TestSignalA1 : 7|16@0- (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483776 TestMessage2R: 6 TestBoard
+BO_ 2147483873 TestMessage4R: 6 TestBoard
  SG_ TestSignalC2 : 32|16@1+ (1,0) [0|0] ""  TestBoard
  SG_ TestSignalB2 : 16|16@1+ (1,0) [0|0] ""  TestBoard
  SG_ TestSignalA2 : 0|16@1+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483876 TestMessage3A: 6 TestBoard
- SG_ TestSignalA : 32|16@1+ (1,0) [0|0] ""  TestBoard
+BO_ 2147483880 TestMessage5A: 2 TestBoard
+ SG_ TestSignal5A : 0|16@1+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483877 TestMessage3B: 6 TestBoard
- SG_ TestSignalB : 32|16@1+ (1,0) [0|0] ""  TestBoard
+BO_ 2147483881 TestMessage5B: 2 TestBoard
+ SG_ TestSignal5B : 7|16@0+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483878 TestMessage4A: 1 TestBoard
- SG_ TestSignal4A : 0|8@1+ (1,0) [0|1] ""  TestBoard
+BO_ 2147483882 TestMessage5C: 2 TestBoard
+ SG_ TestSignal5C : 0|16@1+ (1,0) [0|0] ""  TestBoard
 
-BO_ 2147483879 TestMessage4B: 1 TestBoard
- SG_ TestSignal4B : 0|8@1+ (1,0) [0|1] ""  TestBoard
+BO_ 2147483883 TestMessage5D: 2 TestBoard
+ SG_ TestSignal5D : 7|16@0+ (1,0) [0|0] ""  TestBoard
+
+BO_ 2147483884 TestMessage6A: 1 TestBoard
+ SG_ TestSignal6A : 0|8@1+ (1,0) [0|1] ""  TestBoard
+
+BO_ 2147483885 TestMessage6B: 1 TestBoard
+ SG_ TestSignal6B : 0|8@1+ (1,0) [0|1] ""  TestBoard
 
 BO_ 2147484567 DummyMessage: 6 DummyBoard
  SG_ DummySignalB : 32|16@1+ (1,0) [0|0] ""  TestBoard
