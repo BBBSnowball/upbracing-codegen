@@ -935,7 +935,8 @@ class TestHelper
 
 	def flash_processor_action(parts = [:flash])
 		parts = [parts] if parts.is_a? String or parts.is_a? Symbol
-		return { :dependencies => [], :action => lambda {}, :cmdline => "" } if parts.empty?
+		puts "parts: #{parts.inspect}, empty? #{parts.empty?}"
+		return { "dependencies" => [], "cmdline" => "" } if parts.empty?
 
 		dependencies = []
 		commands = ""
@@ -960,11 +961,12 @@ class TestHelper
 
 		cmdline = @avrdude + commands
 
-		{ :dependencies => dependencies, :cmdline => cmdline }
+		{ "dependencies" => dependencies, "cmdline" => cmdline }
 	end
 
 	def flash_processor(parts = [:flash])
-		system flash_processor_action(parts)[:cmdline]
+		#TODO use Toolkit
+		system flash_processor_action(parts)["cmdline"]
 	end
 end
 
@@ -1091,7 +1093,7 @@ class Project
 	end
 
 	def get_test_dependencies(project_dir, test_helper)
-		test_helper.flash_processor_action()[:dependencies].map { |x| File.join2(project_dir, x) }
+		test_helper.flash_processor_action()["dependencies"].map { |x| File.join2(project_dir, x) }
 	end
 
 	def create_test_helper(name, build_dir)
