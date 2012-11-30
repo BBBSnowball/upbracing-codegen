@@ -116,7 +116,7 @@ public class CanGenerator extends AbstractGenerator {
 		//Create MOBs		
 		Map<String, Mob> mobs = new HashMap<String, Mob>();
 		
-		int mobNumber = 1;
+		int mobNumber = 0;
 		
 		// RX Messages
 		for (DBCMessage msg : dbcEcu.getRxMsgs()) {

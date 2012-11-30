@@ -25,6 +25,12 @@ if is_windows
 			end
 		end
 	end
+else
+	class File
+		class <<self
+			alias join2 join
+		end
+	end
 end
 
 # FileList cannot handle backslash in file names, so we

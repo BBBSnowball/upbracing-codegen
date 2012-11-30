@@ -210,7 +210,7 @@ for (Mob mob : dbcEcu.getMobs()) {
 t.finish(" ");
 %>
 
-	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size() + 1%>
+	MOB_GENERAL_MESSAGE_TRANSMITTER = <%=dbcEcu.getMobs().size()%>
 } MessageObjectID;
 
 #include "can_at90.h"

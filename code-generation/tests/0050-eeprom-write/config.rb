@@ -1,0 +1,1 @@
+$config.EEPROM.add(abc, char)
