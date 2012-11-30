@@ -19,7 +19,7 @@ void usart_init(void) {
 	// normal mode
 	UCSRxA = 0;
 	// set frame format 8N1
-	UCSRxC = (3<<UCSZx);
+	UCSRxC = (1<<UCSZx0) | (1<<UCSZx1);
 	// enable RX and TX
 	UCSRxB = (1<<RXENx) | (1<<TXENx);
 

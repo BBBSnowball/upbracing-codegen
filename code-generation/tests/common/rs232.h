@@ -24,7 +24,8 @@
 #define TXENx  TXEN0
 
 #define UCSRxC UCSR0C
-#define UCSZx  UCSZ0
+#define UCSZx0 UCSZ00
+#define UCSZx1 UCSZ01
 
 #define UBRRxH UBRR0H
 #define UBRRxL UBRR0L
@@ -42,7 +43,8 @@
 #define TXENx  TXEN1
 
 #define UCSRxC UCSR1C
-#define UCSZx  UCSZ1
+#define UCSZx0 UCSZ10
+#define UCSZx1 UCSZ11
 
 #define UBRRxH UBRR1H
 #define UBRRxL UBRR1L
