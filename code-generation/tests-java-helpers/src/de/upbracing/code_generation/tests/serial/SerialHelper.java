@@ -1,21 +1,34 @@
 package de.upbracing.code_generation.tests.serial;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import de.upbracing.code_generation.Messages.ContextItem;
+import de.upbracing.code_generation.tests.RichToolkit;
+import de.upbracing.code_generation.tests.TestFailedException;
 import de.upbracing.code_generation.tests.Toolkit;
+import de.upbracing.code_generation.tests.context.StringMatcher;
 import de.upbracing.code_generation.tests.streams.MonitoredInputStream;
 import de.upbracing.code_generation.tests.streams.MonitoredOutputStream;
 
 import gnu.io.NRSerialPort;
 
 public class SerialHelper {
-	/** default serial port */
-	public static String DEFAULT_PORT = null;
+	/* default serial port */
+	//public static String[] DEFAULT_PORTS = null;
+	/** used to get the default serial ports */
+	public static SerialPortProvider DEFAULT_PORTS = null;
+	
+	public interface SerialPortProvider {
+		String[] getSerialPorts();
+	}
 	
 	/** Gets the list of available RS232 ports.
 	 * 
@@ -26,6 +39,8 @@ public class SerialHelper {
 	}
 	
 	private Toolkit toolkit;
+	private RichToolkit rich_toolkit;
+	private int port_no;
 	private NRSerialPort port;
 	private MonitoredInputStream mIns;
 	private MonitoredOutputStream mOut;
@@ -36,9 +51,24 @@ public class SerialHelper {
 	 * 
 	 * @param toolkit the toolkit that should be used to ask
 	 *                for missing information
+	 * @param port_no 0 is the first serial port, 1 is the second
 	 */
-	public SerialHelper(Toolkit toolkit) {
+	public SerialHelper(Toolkit toolkit, int port_no) {
 		this.toolkit = toolkit;
+		this.port_no = port_no;
+	}
+	
+	/** Insert RichToolkit
+	 * 
+	 * This must be done after instantiation because RichToolkit cannot
+	 * influence the creation of this object and Toolkit doesn't know
+	 * about RichToolkit
+	 */
+	public void setRichToolkit(RichToolkit rich_toolkit) {
+		if (toolkit == null || rich_toolkit.getInner() != toolkit)
+			throw new IllegalArgumentException("The RichToolkit must match the Toolkit");
+		
+		this.rich_toolkit = rich_toolkit;
 	}
 	
 	/** Release resources used by this object. You mustn't
@@ -55,13 +85,17 @@ public class SerialHelper {
 	 */
 	private boolean init(int baud) {
 		//TODO NRSerialPort prints to System.err - we should use toolkit.getMessages instead
-		if (DEFAULT_PORT != null && !DEFAULT_PORT.trim().isEmpty()) {
-			port = new NRSerialPort(DEFAULT_PORT, baud);
+		String[] default_ports = null;
+		if (DEFAULT_PORTS != null)
+			default_ports = DEFAULT_PORTS.getSerialPorts();
+		if (default_ports != null && default_ports[port_no] != null 
+				&& !default_ports[port_no].trim().isEmpty()) {
+			port = new NRSerialPort(default_ports[port_no], baud);
 			if (port.connect())
 				// successfull
 				return true;
 			else
-				toolkit.getMessages().warn("default serial port '%s' couldn't be opened", DEFAULT_PORT);
+				toolkit.getMessages().warn("default serial port '%s' couldn't be opened", default_ports[port_no]);
 		}
 		
 		do {
@@ -142,6 +176,8 @@ public class SerialHelper {
 	 * @return wrapped {@link MonitoredInputStream}
 	 */
 	public MonitoredInputStream getInputStream() {
+		if (mIns == null)
+			throw new IllegalStateException("not open! call ensureBaudrate first");
 		return mIns;
 	}
 	
@@ -150,6 +186,8 @@ public class SerialHelper {
 	 * @return wrapped {@link MonitoredOutputStream}
 	 */
 	public MonitoredOutputStream getOutputStream() {
+		if (mOut == null)
+			throw new IllegalStateException("not open! call ensureBaudrate first");
 		return mOut;
 	}
 	
@@ -192,5 +230,76 @@ public class SerialHelper {
 	}
 	public synchronized void removeBaudrateChangedListener(SerialBaudrateChangedListener l) {
 		listeners.remove(l);
+	}
+	
+	
+	public void expectString(String expected, int timeout_millis) throws TestFailedException {
+		// create a matcher
+		StringMatcher m = new StringMatcher(this, expected);
+		
+		// put the matcher into the context, if possible
+		ContextItem context = null;
+		if (toolkit != null)
+			context = toolkit.getMessages().pushContext(m);
+		
+		// run matcher
+		m.run(timeout_millis);
+		
+		// remove it from context (if we pushed it)
+		if (context != null)
+			context.pop();
+	}
+	
+	public void expectString(byte[] expected, int timeout_millis) throws TestFailedException {
+		// create a matcher
+		StringMatcher m = new StringMatcher(this, expected);
+		
+		// put the matcher into the context, if possible
+		ContextItem context = null;
+		if (toolkit != null)
+			context = toolkit.getMessages().pushContext(m);
+		
+		// run matcher
+		m.run(timeout_millis);
+		
+		// remove it from context (if we pushed it)
+		if (context != null)
+			context.pop();
+	}
+
+	// default timeout: 30 sec
+	public void expectString(String expected) throws TestFailedException {
+		expectString(expected, 30*1000);
+	}
+
+	// default timeout: 30 sec
+	public void expectString(byte[] expected) throws TestFailedException {
+		expectString(expected, 30*1000);
+	}
+
+	private static byte[] readStream(InputStream stream, int length) throws IOException {
+		byte buf[] = new byte[length];
+		int i = 0;
+		int len;
+		while (i < length && (len = stream.read(buf, 0, length-i)) > 0)
+			i += len;
+		if (i < length)
+			throw new IOException("premature end of stream");
+		return buf;
+	}
+
+	public void expectFile(String filename, int timeout_millis) throws IOException, TestFailedException {
+		if (rich_toolkit != null)
+			filename = rich_toolkit.makeAbsolute(filename);
+		
+		File f = new File(filename);
+		byte[] expected = readStream(new FileInputStream(f), (int)f.length());
+		
+		expectString(expected, timeout_millis);
+	}
+
+	// default timeout: 30 sec
+	public void expectFile(String filename) throws IOException, TestFailedException {
+		expectFile(filename, 30*1000);
 	}
 }

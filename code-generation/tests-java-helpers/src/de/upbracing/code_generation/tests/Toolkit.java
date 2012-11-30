@@ -4,6 +4,7 @@ import java.io.File;
 
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
+import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 public interface Toolkit {
 	//NOTE A lot of arguments can be null, e.g. prompt and validator
@@ -41,4 +42,7 @@ public interface Toolkit {
 	
 	// called after the last test
 	void tearDown();
+	
+	// get SerialHelper object which can be used to access the serial line
+	SerialHelper getSerialHelper(int port_no);
 }

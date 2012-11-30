@@ -168,7 +168,7 @@ public interface Result {
 		}
 		
 		public Error(Throwable exception) {
-			super(exception.getMessage());
+			super(exception.getClass().getName() + ": " + exception.getMessage());
 			
 			this.exception = exception;
 		}

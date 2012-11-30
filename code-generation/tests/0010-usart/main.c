@@ -38,7 +38,8 @@ int main(void) {
 	uint8_t switch_state = PINE & 0xf4;
 
 	usart_init();
-	usart_send_str("USART test\r\n");
+
+	usart_send_str("\r\n\r\nUSART test\r\n");
 	usart_send_str_P(PSTR("string from program memory\r\n"));
 
 	usart_send_str_P(PSTR("testing usart_send_number:\r\n"));

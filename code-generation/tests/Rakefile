@@ -717,11 +717,38 @@ end
 $toolkit.pwd_provider = RubyPWdProvider.new
 EOF
 
+
 begin
-	Java::de::upbracing::code_generation::tests::serial::SerialHelper::DEFAULT_PORT = SERIALPORT
+	#puts "Setting serial port: #{SERIALPORT.inspect} - #{[*SERIALPORT].inspect}"
+	#Java::de::upbracing::code_generation::tests::serial::SerialHelper::DEFAULT_PORTS = [*SERIALPORT]
+	SerialHelper = Java::de::upbracing::code_generation::tests::serial::SerialHelper
 rescue NameError
 	# SerialHelper not available
+	SerialHelper = nil
 end
+
+if SerialHelper
+	class DefaultSerialPortProvider
+		include SerialHelper::SerialPortProvider
+
+		def initialize(ports)
+			@ports = ports
+		end
+
+		def getSerialPorts
+			[*@ports].map do |x|
+				if x.is_a? Proc
+					x.call
+				else
+					x
+				end
+			end
+		end
+	end
+	SerialHelper::DEFAULT_PORTS = DefaultSerialPortProvider.new SERIALPORT
+	puts SerialHelper::DEFAULT_PORTS.inspect
+end
+
 
 begin
 	PIOType = Java::de::upbracing::code_generation::tests::context::ProgramIO::Type
@@ -733,6 +760,7 @@ end
 StringBuffer = Java::java::lang::StringBuffer
 Messages = Java::de::upbracing::code_generation::Messages
 Severity = Messages::Severity
+TestFailed = Java::de::upbracing::code_generation::tests::TestFailedException
 
 begin
 	OutputFormatter = Java::de::upbracing::code_generation::tests::simple::SimpleToolkit::OutputFormatter
@@ -819,6 +847,14 @@ if OutputFormatter
 			else
 				print sb.toString
 			end
+		end
+
+		def printSerialIO(data, is_input, port_no)
+			foreground = if is_input then [:green] else [:white, :bright] end
+
+			#data = data.gsub(/[^ -z]/) { |x| sprintf("\\x%02x", x.ord) }
+
+			print alter_lines2(data) { |line| Paint[line, *foreground, [0,0,100]] }
 		end
 	end
 end
@@ -935,7 +971,6 @@ class TestHelper
 
 	def flash_processor_action(parts = [:flash])
 		parts = [parts] if parts.is_a? String or parts.is_a? Symbol
-		puts "parts: #{parts.inspect}, empty? #{parts.empty?}"
 		return { "dependencies" => [], "cmdline" => "" } if parts.empty?
 
 		dependencies = []
@@ -1159,6 +1194,15 @@ class Project
 					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 	\
 					"$helper" => test_helper,							\
 					:init => "$helper.start" + "\n" + RubyPWdProviderCode
+			rescue TestFailed => ex
+				message = "Test failed: " + ex.message
+
+				log = toolkit.inner.messages || $log || $logger
+				if log
+					log.error message.gsub("\r\n", "\n")
+				else
+					puts message
+				end
 			rescue Exception => ex
 				#TODO use toolkit.messages
 
@@ -1173,11 +1217,11 @@ class Project
 					"\t" + ex.message.to_s + "\r\n" +
 					"\t" + bt
 
-				puts message
-
-				log = toolkit.inner.log || $log || $logger
+				log = toolkit.inner.messages || $log || $logger
 				if log
 					log.error message.gsub("\r\n", "\n")
+				else
+					puts message
 				end
 			end
 		end

@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext.MonitoredProcess;
+import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 /** like {@link Toolkit}, but it has a lot of convenience functions */
 public class RichToolkit implements Toolkit {
@@ -17,6 +18,15 @@ public class RichToolkit implements Toolkit {
 	/** see {@link RichToolkit#execProgram(String, String[], String[], File)} */
 	public interface PwdProvider {
 		String makeAbsolute(String path);
+	}
+	
+	public String makeAbsolute(String path) {
+		if (pwd_provider != null)
+			return pwd_provider.makeAbsolute(path);
+		else {
+			getMessages().warn("No PwdProvider is set, so this path will be used unchanged: %s", path);
+			return path;
+		}
 	}
 
 	public RichToolkit(Toolkit inner) {
@@ -266,5 +276,23 @@ public class RichToolkit implements Toolkit {
 
 	public void tearDown() {
 		inner.tearDown();
+	}
+	
+	@Override
+	public SerialHelper getSerialHelper(int port_no) {
+		return inner.getSerialHelper(port_no);
+	}
+
+	
+	public SerialHelper getFirstSerial() {
+		return getSerialHelper(0);
+	}
+	
+	public SerialHelper getSecondSerial() {
+		return getSerialHelper(1);
+	}
+	
+	public SerialHelper getSerial() {
+		return getFirstSerial();
 	}
 }

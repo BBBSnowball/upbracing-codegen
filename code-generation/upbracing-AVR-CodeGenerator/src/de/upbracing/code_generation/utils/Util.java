@@ -21,6 +21,7 @@ public class Util {
 		int len;
 		while ((len = reader.read(buf)) > 0)
 			sb.append(buf, 0, len);
+		reader.close();
 		return sb.toString();
 	}
 
