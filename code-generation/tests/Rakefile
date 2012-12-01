@@ -761,6 +761,7 @@ StringBuffer = Java::java::lang::StringBuffer
 Messages = Java::de::upbracing::code_generation::Messages
 Severity = Messages::Severity
 TestFailed = Java::de::upbracing::code_generation::tests::TestFailedException
+TestResult = Java::de::upbracing::code_generation::tests::context::Result
 
 begin
 	OutputFormatter = Java::de::upbracing::code_generation::tests::simple::SimpleToolkit::OutputFormatter
@@ -1190,10 +1191,11 @@ class Project
 			classpath = test_classpath(dir, test_helper)
 
 			begin
-				run_jruby_script test_script, classpath,				\
-					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 	\
-					"$helper" => test_helper,							\
-					:init => "$helper.start" + "\n" + RubyPWdProviderCode
+				run_jruby_script test_script, classpath,					\
+					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 		\
+					"$helper" => test_helper,								\
+					:init => "$helper.start" + "\n" + RubyPWdProviderCode,	\
+					:TestResult => TestResult
 			rescue TestFailed => ex
 				message = "Test failed: " + ex.message
 

@@ -93,5 +93,5 @@ int main(void) {
 	TEST_NUMBER2("36#az", 10*36 + 35, 36, 2);
 	TEST_NUMBER2("36#0az", 10*36 + 35, 36, 3);
 
-	usart_send_str_P(PSTR("done\r\n\r\n"));
+	usart_send_str_P(PSTR("done\r\ntest\r\n\r\n"));
 }

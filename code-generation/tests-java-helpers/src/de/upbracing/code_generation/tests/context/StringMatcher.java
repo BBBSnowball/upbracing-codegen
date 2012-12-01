@@ -115,8 +115,10 @@ public class StringMatcher extends TestContext implements Runnable {
 				// compare
 				for (int i=0;i<real_len;i++) {
 					if (expected[matched_chars] != buf[i]) {
-						setResult(new Result.Error("mismatch at " + i + ": '" + buf[i] + "' != '" + expected[matched_chars] + "'"));
-						break;
+						setResult(new Result.Error(String.format(
+								"mismatch at %d: 0x%02x '%c' != 0x%02x '%c'",
+								i, buf[i], buf[i], expected[matched_chars], expected[matched_chars])));
+						return;
 					}
 					
 					++matched_chars;

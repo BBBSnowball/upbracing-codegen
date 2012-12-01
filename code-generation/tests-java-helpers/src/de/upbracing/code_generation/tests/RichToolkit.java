@@ -6,7 +6,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext;
+import de.upbracing.code_generation.tests.context.Result;
+import de.upbracing.code_generation.tests.context.TestContext;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext.MonitoredProcess;
 import de.upbracing.code_generation.tests.serial.SerialHelper;
 
@@ -294,5 +297,46 @@ public class RichToolkit implements Toolkit {
 	
 	public SerialHelper getSerial() {
 		return getFirstSerial();
+	}
+	
+	public SimpleTestContext startTest(String name) {
+		return new SimpleTestContext(name, getMessages());
+	}
+
+	// a TestContext with a public setResult method
+	// We also add a few more methods for convenience.
+	public class SimpleTestContext extends TestContext {
+		private ContextItem context_item;
+
+		public SimpleTestContext(String name, Messages messages) {
+			super(name);
+
+			context_item = messages.pushContext(this);
+		}
+		
+		public void pop() {
+			context_item.pop();
+		}
+
+		@Override
+		public void setResult(Result result) {
+			super.setResult(result);
+		}
+		
+		public void fail(String message) {
+			setResult(new Result.Failure(message));
+		}
+		
+		public void error(String message) {
+			setResult(new Result.Error(message));
+		}
+		
+		public void error(Throwable error) {
+			setResult(new Result.Error(error));
+		}
+		
+		public void succeed() {
+			setResult(Result.Success.instance);
+		}
 	}
 }

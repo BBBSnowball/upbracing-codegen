@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -240,7 +241,31 @@ public class SimpleToolkit implements Toolkit {
 	
 	@Override
 	public void tearDown() {
+		// print summary
 		allTestsFinished();
+		
+		// close serial ports
+		// RXTX has a thread which would keep the
+		// program running, so we have to clean that up.
+		for (SerialHelper x : serials) {
+			if (x == null)
+				continue;
+			
+			// read available data, if there is some
+			// -> will be printed instead of discarded
+			if (x.isOpen()) {
+				InputStream in = x.getInputStream();
+				try {
+					if (in.available() > 0)
+						in.skip(Math.min(1024, in.available()));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			// close and dispose
+			x.dispose();
+		}
 	}
 	
 	public interface OutputFormatter {

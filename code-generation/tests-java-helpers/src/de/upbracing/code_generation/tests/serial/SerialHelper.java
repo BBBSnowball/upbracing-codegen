@@ -242,12 +242,14 @@ public class SerialHelper {
 		if (toolkit != null)
 			context = toolkit.getMessages().pushContext(m);
 		
-		// run matcher
-		m.run(timeout_millis);
-		
-		// remove it from context (if we pushed it)
-		if (context != null)
-			context.pop();
+		try {
+			// run matcher
+			m.run(timeout_millis);
+		} finally {
+			// remove it from context (if we pushed it)
+			if (context != null)
+				context.pop();
+		}
 	}
 	
 	public void expectString(byte[] expected, int timeout_millis) throws TestFailedException {
@@ -259,12 +261,14 @@ public class SerialHelper {
 		if (toolkit != null)
 			context = toolkit.getMessages().pushContext(m);
 		
-		// run matcher
-		m.run(timeout_millis);
-		
-		// remove it from context (if we pushed it)
-		if (context != null)
-			context.pop();
+		try {
+			// run matcher
+			m.run(timeout_millis);
+		} finally {
+			// remove it from context (if we pushed it)
+			if (context != null)
+				context.pop();
+		}
 	}
 
 	// default timeout: 30 sec
@@ -301,5 +305,9 @@ public class SerialHelper {
 	// default timeout: 30 sec
 	public void expectFile(String filename) throws IOException, TestFailedException {
 		expectFile(filename, 30*1000);
+	}
+
+	public boolean isOpen() {
+		return mIns != null && mOut != null;
 	}
 }
