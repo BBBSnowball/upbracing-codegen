@@ -21,14 +21,11 @@ import de.upbracing.code_generation.tests.streams.MonitoredOutputStream;
 import gnu.io.NRSerialPort;
 
 public class SerialHelper {
-	/* default serial port */
-	//public static String[] DEFAULT_PORTS = null;
-	/** used to get the default serial ports */
-	public static SerialPortProvider DEFAULT_PORTS = null;
-	
 	public interface SerialPortProvider {
 		String[] getSerialPorts();
 	}
+	
+	private SerialPortProvider default_ports;
 	
 	/** Gets the list of available RS232 ports.
 	 * 
@@ -64,11 +61,12 @@ public class SerialHelper {
 	 * influence the creation of this object and Toolkit doesn't know
 	 * about RichToolkit
 	 */
-	public void setRichToolkit(RichToolkit rich_toolkit) {
+	public void setRichToolkit(RichToolkit rich_toolkit, SerialPortProvider ports) {
 		if (toolkit == null || rich_toolkit.getInner() != toolkit)
 			throw new IllegalArgumentException("The RichToolkit must match the Toolkit");
 		
 		this.rich_toolkit = rich_toolkit;
+		this.default_ports = ports;
 	}
 	
 	/** Release resources used by this object. You mustn't
@@ -84,40 +82,45 @@ public class SerialHelper {
 	 * @param baud baud rate
 	 */
 	private boolean init(int baud) {
+		boolean connected = false;
+		
 		//TODO NRSerialPort prints to System.err - we should use toolkit.getMessages instead
 		String[] default_ports = null;
-		if (DEFAULT_PORTS != null)
-			default_ports = DEFAULT_PORTS.getSerialPorts();
+		if (this.default_ports != null)
+			default_ports = this.default_ports.getSerialPorts();
 		if (default_ports != null && default_ports[port_no] != null 
 				&& !default_ports[port_no].trim().isEmpty()) {
 			port = new NRSerialPort(default_ports[port_no], baud);
 			if (port.connect())
 				// successfull
-				return true;
+				connected = true;
 			else
 				toolkit.getMessages().warn("default serial port '%s' couldn't be opened", default_ports[port_no]);
 		}
 		
-		do {
-			SortedSet<String> ports = new TreeSet<String>(NRSerialPort.getAvailableSerialPorts());
-			ports.add("rescan");
-			ports.add("other");
-			String portname = toolkit.askOptions("Please select a serial port or 'rescan' to update the list.", null, ports.toArray(new String[ports.size()]));
-			
-			if (portname.equals("rescan"))
-				continue;
-			else if (portname.equals("other"))
-				portname = toolkit.ask("Serial port:", null);
-			
-			port = new NRSerialPort(portname, baud);
-			if (!port.connect()) {
-				toolkit.getMessages().error("Couldn't open serial port '%s'");
-			}
-		} while (port == null || !port.isConnected());
+		if (!connected) {
+			do {
+				SortedSet<String> ports = new TreeSet<String>(NRSerialPort.getAvailableSerialPorts());
+				ports.add("rescan");
+				ports.add("other");
+				String portname = toolkit.askOptions("Please select a serial port or 'rescan' to update the list.", null, ports.toArray(new String[ports.size()]));
+				
+				if (portname.equals("rescan"))
+					continue;
+				else if (portname.equals("other"))
+					portname = toolkit.ask("Serial port:", null);
+				
+				port = new NRSerialPort(portname, baud);
+				if (!port.connect()) {
+					toolkit.getMessages().error("Couldn't open serial port '%s'");
+				}
+			} while (port == null || !port.isConnected());
+		}
 		
-		setupStreams();
+		if (connected)
+			setupStreams();
 		
-		return true;
+		return connected;
 	}
 	
 	/** Creates a new {@link SerialHelper} object, opens the specified port.

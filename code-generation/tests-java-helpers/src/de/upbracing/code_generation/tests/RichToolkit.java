@@ -12,6 +12,7 @@ import de.upbracing.code_generation.tests.context.Result;
 import de.upbracing.code_generation.tests.context.TestContext;
 import de.upbracing.code_generation.tests.context.ExternalProgramContext.MonitoredProcess;
 import de.upbracing.code_generation.tests.serial.SerialHelper;
+import de.upbracing.code_generation.tests.serial.SerialHelper.SerialPortProvider;
 
 /** like {@link Toolkit}, but it has a lot of convenience functions */
 public class RichToolkit implements Toolkit {
@@ -283,7 +284,9 @@ public class RichToolkit implements Toolkit {
 	
 	@Override
 	public SerialHelper getSerialHelper(int port_no) {
-		return inner.getSerialHelper(port_no);
+		SerialHelper serial = inner.getSerialHelper(port_no);
+		serial.setRichToolkit(this, default_ports);
+		return serial;
 	}
 
 	
@@ -338,5 +341,13 @@ public class RichToolkit implements Toolkit {
 		public void succeed() {
 			setResult(Result.Success.instance);
 		}
+	}
+	
+	
+	/** used to get the default serial ports */
+	private SerialPortProvider default_ports = null;
+	
+	public void setSerialPortProvider(SerialPortProvider ports) {
+		this.default_ports = ports;
 	}
 }

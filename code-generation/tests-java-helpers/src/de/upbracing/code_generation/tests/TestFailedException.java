@@ -4,6 +4,7 @@ import de.upbracing.code_generation.tests.context.Result;
 
 @SuppressWarnings("serial")
 public class TestFailedException extends Exception {
+	private Result result;
 
 	public TestFailedException() {
 		super();
@@ -26,6 +27,11 @@ public class TestFailedException extends Exception {
 		
 		if (result.isSuccessful())
 			throw new IllegalArgumentException("You cannot have a TestFailed with a successful result!");
+		
+		this.result = result;
 	}
 
+	public Result getResult() {
+		return result;
+	}
 }

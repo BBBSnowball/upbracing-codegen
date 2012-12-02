@@ -745,8 +745,6 @@ if SerialHelper
 			end
 		end
 	end
-	SerialHelper::DEFAULT_PORTS = DefaultSerialPortProvider.new SERIALPORT
-	puts SerialHelper::DEFAULT_PORTS.inspect
 end
 
 
@@ -844,7 +842,7 @@ if OutputFormatter
 				[:bold]	#nil
 			end
 			if color and Paint.mode > 0
-				print sb.toString.sub(/^(.*):/, Paint["\\1", *color] + ":")
+				print sb.toString.sub(/^(.*?):/, Paint["\\1", *color] + ":")
 			else
 				print sb.toString
 			end
@@ -949,6 +947,7 @@ class TestHelper
 		$toolkit = @toolkit
 		@toolkit.inner.output_formatter = PaintOutputFormatter.new if OutputFormatter \
 					and @toolkit.inner.is_a? Java::de::upbracing::code_generation::tests::simple::SimpleToolkit
+		@toolkit.serial_port_provider = DefaultSerialPortProvider.new SERIALPORT if SerialHelper
 		@toolkit.start
 	end
 
@@ -1195,9 +1194,31 @@ class Project
 					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 		\
 					"$helper" => test_helper,								\
 					:init => "$helper.start" + "\n" + RubyPWdProviderCode,	\
-					:TestResult => TestResult
+					:TestResult => TestResult, :SerialHelper => SerialHelper
 			rescue TestFailed => ex
 				message = "Test failed: " + ex.message
+
+				throwable = ex.cause || ex.result && ex.result.status == "error" && ex.result.exception
+				if throwable
+					# get full backtrace
+					bt = throwable.backtrace.join("\r\n\t\t")
+					
+					# cut trace after run_test method
+					bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
+
+					message += "\r\n\t\t" + bt
+
+					message += "\r\n\tin test:"
+				end
+
+				# get full backtrace
+				bt = ex.backtrace.join("\r\n\t\t")
+				
+				# cut trace after run_test method
+				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
+
+				message += "\r\n\t\t" + bt
+
 
 				log = toolkit.inner.messages || $log || $logger
 				if log

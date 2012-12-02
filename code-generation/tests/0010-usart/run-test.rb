@@ -1,13 +1,3 @@
-# We try calling some Java stuff in the tests-java-helpers
-# project. It doesn't really belong here...
-#TODO remove or put in a better place
-
-# This should print 42
-puts Java::blub::Blub::magic
-# And so does this
-puts Java::foo::Bar.new.getIt
-
-puts Java::de::upbracing::code_generation::tests::serial::SerialHelper.DEFAULT_PORTS.inspect
 
 # erase processor to make sure we get no further
 # stuff on the serial line
@@ -17,6 +7,9 @@ $helper.erase_processor
 # We do that before flashing the processor to get
 # all the output. 
 $helper.first_serial.ensure_baudrate 9600
+
+# we need some delay between invocations of avrdude
+sleep 3
 
 # write the program on the processor
 $helper.flash_processor
