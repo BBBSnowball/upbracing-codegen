@@ -25,14 +25,35 @@ There are several things that you can put in a test folder:
 - config.rb: If this file is present, the code generators will be run. The output will be in folder "gen".
 - project.rb: You can use that file to tweak all parts of the build process. It must create an instance of Project and put it into the global variable $project. You can use your own subclass of Project and overwrite some methods to change its behaviour. See the Rakefile for details on the Project class. Please remove all global variables (except $project) and constants (including your classes) that you have created because the scripts share the global namespace. You should create an instance of ProjectWithCommon, if you want to use files from the "common" directory. You can then use its "add_common" method to add libraries or single files, e.g. $project.add_common :rs232
 - run-test.rb: This script will be called to run the test. It should write the program to the microcontroller. For an automated test, it will then listen on the serial line and validate the data coming from the MCU. For a manual test, it prints detailed information to the console and accepts user input. If you don't want to do that in JRuby, you can let the script execute a Java method.
-- Java source files: to be done
+- Java source files: Java source files in the 'java' directory of each project are compiled and available for the test script.
 
 
 Common files:
 
 You can put C sources and headers into the common directory, if you think they might be useful for more than one test. You can use a project.rb file to use those files in your project (see above or look at the existing project.rb files).
 
-The tests-helpers project contains Java classes that can be used by several projects (e.g. regular expression tools). [to be done]
+The tests-java-helpers project contains Java classes that can be used by several projects (e.g. regular expression tools).
+
+
+config.rb script
+
+You should manipulate the $config object to get the configuration you want to have. It is an instance of MCUConfiguration. Please see the Java source of MCUConfiguration and related classes.
+
+
+project.rb script
+
+You have to put an instance of the Project class into the global variable $project. You can overwrite a lot of method to tweak the build process. Please see Rakefile for available classes and methods to overwrite. I suggest doing it that way:
+
+# create an instance of Project (or ProjectWithCommon)
+$project = Project.new
+
+# reopen the instance to change it
+class << $project
+	# overwrite methods here
+	def example(arg1, arg2)
+		...
+	end
+end
 
 
 run-test.rb script
@@ -41,7 +62,20 @@ The test scripts should be very short and easy to read. One must be able to writ
 
 At the moment, we use the console to communicate with the user: Output is printed on the console, test results (success, failure, error) are reported to the console and user input is read from the console.
 
-to be done: We will have an interface that can be used to notify the user, report test results, instruct the user for manual testing and ask for user input. There will be two implementations for this interface: One is using the console and the other has a GUI (Java+Swing).
+In the script you can access a few global variables: $helper contains an instance of TestHelper (see Rakefile) and $toolkit contains an instance of RichToolkit (see tests-java-helpers). The type of $toolkit.inner depends on the UI that is active, so you shouldn't rely on any methods of that interface. The methods of $toolkit and $toolkit.inner are available on $helper by some Ruby magic, so you can use $helper for everything. For further documentation, please see the Java source files for Toolkit and RichToolkit.
+
+Please use the Toolkit for user interaction and running problems. If you employ other means, this will cause problems!
+
+You can call methods on an object using the usual Java syntax. You can either use the Java method names or the rewritten Rubyish names:
+- camelCase is rewritten to underscore_style (a.some_method will call a.someMethod())
+- getters become properties (a.property will call a.getProperty())
+- setters become properties as well (a.property = 42 will call a.setProperty(42))
+
+The syntax for creating a new object is Classname.new(constructor args)
+The classname is written Java::package::names::Classname
+You can create appreviations: TestFailed = Java::de::upbracing::code_generation::tests::TestFailedException
+You can also call static methods: Java::de::upbracing::code_generation::tests::YourHelper.run($helper, $toolkit)
+NOTE: $helper doesn't implement any interface, so you will have trouble using it in Java. 
 
 
 Test GUI

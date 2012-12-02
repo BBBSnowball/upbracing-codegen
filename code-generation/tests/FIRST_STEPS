@@ -24,7 +24,12 @@ How to setup our projects on Windows
 7. build project upbracing-AVRTimerConfigurationModel
    If it cannot find the Java compiler, please make sure that Eclipse uses
    a JDK and not JRE.
+   NOTE: If the file 'de.upbracing.timer.configurationmodel.jar' exists in the
+         'dist' folder (and is up to date), you can skip steps 7 and 8.
 8. Refresh the project. There should be the folder 'dist' with a JAR file.
+   If this file doesn't exist, you need to fix the project setup and repeat
+   step 7. The project is using an external ANT builder. You can also run
+   ANT manually to build the file.
 9. open StatechartEditor/metamodel and run "Eugenia -> Generate GMF editor"
    in the context menu (right click) of statecharts.emf
 10. You may have to run "Build project" on StatechartEditor to get rid
