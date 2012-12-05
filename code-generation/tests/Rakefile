@@ -439,7 +439,8 @@ class Project
 		# Code generation will generate several files, but maybe only
 		# some of them are actually created. Therefore, we track the
 		# generation time using an additional file.
-		gen_task = many_files "generate for #{config_file}", generated_files, File.join2(target_dir, "last_gen_time")
+		dummy_file = File.join2(target_dir, "last_gen_time")
+		gen_task = many_files "generate for #{config_file}", generated_files, dummy_file
 
 		generated_files.each do |gen|
 			file gen => gen_task
@@ -453,13 +454,17 @@ class Project
 		end
 
 		clean = task "clean for #{config_file}" do
-			rm generated_files, :force => true
+			rm [dummy_file] + generated_files, :force => true
 			rmdir target_dir if Dir.exists? target_dir
 		end
 
 		task :generate_all => gen_task
 
 		task "clean-#{name}" => clean
+
+		configurations(:build).each do |configuration|
+			task "clean-#{name}-#{configuration}" => clean
+		end
 
 		task :clean => clean
 
@@ -779,6 +784,9 @@ class Project
 
 		# make sure that the hex file is generated, if someone calls build-all
 		task :build_all => build_task
+
+		# another task to build all configurations of this project
+		task "build-#{name}" => build_task
 
 		# clean task
 		clean = task "clean-#{name}-#{configuration}" do
