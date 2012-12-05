@@ -538,21 +538,32 @@ class Project
 		end
 
 		# if the dependency file exists, we read its contents
+		can_read_dependencies = false
 		if File.exists? dependency_file
 			# read file contents
 			x = File.read(dependency_file)
 			# unwrap lines (backslash can escape a newline)
 			x = x.gsub("\\\n", "")
 			# get first line
-			x = x.lines.first.strip
-			# remove target name (before colon)
-			x = x.sub(/^[^:]*:\s*/, "")
-			# split on spaces
-			x = x.split(/\s+/)
-			# add dependencies to compile task
-			#puts "dependencies for #{target}: #{x.inspect}"
-			t.enhance x
-		else
+			x = x.lines.first
+
+			if x
+				# remove target name (before colon)
+				x = x.strip.sub(/^[^:]*:\s*/, "")
+				# split on spaces
+				x = x.split(/\s+/)
+				# add dependencies to compile task
+				#puts "dependencies for #{target}: #{x.inspect}"
+				t.enhance x
+
+				# remember that we are sucessfully using the dependency file
+				can_read_dependencies = true
+			else
+				puts "WARN: Ignoring empty dependencies file '#{dependency_file}'"
+			end
+		end
+
+		unless can_read_dependencies
 			# we don't know the dependencies -> always compile
 			force = task unique_task_id("force") { }
 			t.enhance [force]
