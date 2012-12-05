@@ -287,36 +287,44 @@ class Project
 	def build_caRTOS(features_header_file, configuration = "Debug")
 		#TODO make this a special kind of task and implement needed?
 		task unique_task_id("caRTOS-lib") => features_header_file do |t|
-			md5 = md5sum(features_header_file)
-			target = File.join2(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
-			cartos_build_dir = File.join2(CARTOS_DIR, configuration)
-			# rebuilt, if  library doesn't exist or any input file is newer
-			# NOTE We cannot let 'make' decide because 'make' wouldn't rebuilt
-			#      any file that has been compiled for a newer, totally different features
-			#      file, if we keep the mtime of the features header.
-			#      Therefore, we have to force a rebuild by touching the features header.
-			os_deps = FileList[ ["*.c", "*.h", "*.inc"].map { |ext| File.join2(CARTOS_DIR, "**", ext) } ]
-			unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file) \
-					and os_deps.all? { |dep| File.mtime(target) >= File.mtime(dep) }
-				# rebuild
+			# don't do anything, if we don't have a features header file
+			# (This can happen, if we expected it to be generated, but it
+			#  wasn't because it hasn't been configured in the config file.
+			#  This is perfectly ok.)
+			if File.exists? features_header_file
+				md5 = md5sum(features_header_file)
+				target = File.join2(CARTOS_DIR, configuration, "libcaRtos-#{md5}.a")
+				cartos_build_dir = File.join2(CARTOS_DIR, configuration)
+				# rebuilt, if  library doesn't exist or any input file is newer
+				# NOTE We cannot let 'make' decide because 'make' wouldn't rebuilt
+				#      any file that has been compiled for a newer, totally different features
+				#      file, if we keep the mtime of the features header.
+				#      Therefore, we have to force a rebuild by touching the features header.
+				os_deps = FileList[ ["*.c", "*.h", "*.inc"].map { |ext| File.join2(CARTOS_DIR, "**", ext) } ]
+				unless File.exists?(target) and File.mtime(target) >= File.mtime(features_header_file) \
+						and os_deps.all? { |dep| File.mtime(target) >= File.mtime(dep) }
+					# rebuild
 
-				# we cannot generate the Makefile - Eclipse has to do that for us
-				unless File.exists? File.join2(cartos_build_dir, "makefile")
-					raise "No Makefile found. Please use Eclipse to build caRTOS with configuration #{configuration} and try again."
+					# we cannot generate the Makefile - Eclipse has to do that for us
+					unless File.exists? File.join2(cartos_build_dir, "makefile")
+						raise "No Makefile found. Please use Eclipse to build caRTOS with configuration #{configuration} and try again."
+					end
+
+					# copy features header to OS
+					features_header_for_build = File.join2(CARTOS_DIR, "config", "Os_cfg_features.h")
+					cp features_header_file, features_header_for_build
+
+					# touch features header to force rebuild
+					touch features_header_for_build
+
+					# build
+					esc = shell_quote
+					sh "cd #{esc}#{cartos_build_dir}#{esc} #{cmd_sep} make #{esc}libcaRtos-#{md5}.a#{esc}"
+
+					puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
 				end
-
-				# copy features header to OS
-				features_header_for_build = File.join2(CARTOS_DIR, "config", "Os_cfg_features.h")
-				cp features_header_file, features_header_for_build
-
-				# touch features header to force rebuild
-				touch features_header_for_build
-
-				# build
-				esc = shell_quote
-				sh "cd #{esc}#{cartos_build_dir}#{esc} #{cmd_sep} make #{esc}libcaRtos-#{md5}.a#{esc}"
-
-				puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
+			else
+				puts "INFO: Not linking with caRTOS because the feature file hasn't been generated."
 			end
 		end
 	end
@@ -327,15 +335,13 @@ class Project
 	# config_file => task
 	@@generator_task_cache = {}
 
-	def generator_task(config_file)
+	def generator_task(name, config_file)
 		# use cached value, if it exists
 		return @@generator_task_cache[config_file] if @@generator_task_cache[config_file]
 
-		gen_task = create_generator_task(config_file)
+		gen_task = create_generator_task(name, config_file)
 
 		@@generator_task_cache[config_file] = gen_task
-
-		task :generate_all => gen_task
 
 		return gen_task
 	end
@@ -378,7 +384,7 @@ class Project
 		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} #{esc}#{config_file}#{esc}"
 	end
 
-	def create_generator_task(config_file)
+	def create_generator_task(name, config_file)
 		dir = File.dirname(config_file)
 
 		target_dir = code_generator_target_dir(config_file)
@@ -411,6 +417,11 @@ class Project
 			rm generated_files, :force => true
 			rmdir target_dir if Dir.exists? target_dir
 		end
+
+		task :generate_all => gen_task
+
+		task "clean-#{name}" => clean
+
 		task :clean => clean
 
 		return gen_task
@@ -448,12 +459,17 @@ class Project
 		CFLAGS[configuration] + dir_flags
 	end
 
-	def do_compile(cflags, source, target)
-		# only compile, put output in .o file
-		sh "#{shell_quote}#{CC}#{shell_quote} #{cflags} -c -o #{shell_quote}#{target}#{shell_quote} #{shell_quote}#{source}#{shell_quote}"
+	def do_compile(cflags, source, target, optional)
+		# We ignore source files that may have been generated, but don't exist.
+		unless optional and not File.exists?(source)
+			# only compile, put output in .o file
+			sh "#{shell_quote}#{CC}#{shell_quote} #{cflags} -c -o #{shell_quote}#{target}#{shell_quote} #{shell_quote}#{source}#{shell_quote}"
+		else
+			puts "INFO: not compiling '#{source}' because it doesn't exist"
+		end
 	end
 
-	def compile(source_dir, source_file, target_dir, configuration)
+	def compile(source_dir, source_file, target_dir, configuration, optional)
 		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "")
 
 		target = File.join2(target_dir, target_file)
@@ -479,7 +495,7 @@ class Project
 		directory real_target_dir
 
 		t = file target => [source, file(real_target_dir)] do
-			do_compile(cflags, source, target)
+			do_compile(cflags, source, target, optional)
 		end
 
 		# if the dependency file exists, we read its contents
@@ -506,13 +522,22 @@ class Project
 		return t
 	end
 
+	def resolve_procs(xs)
+		xs = xs.call() if xs.is_a? Proc
+		xs.flat_map { |x| if x.is_a? Proc then x.call() || [] else [x] end }
+	end
+
 	def link_elf(source_dir, target_dir, name, configuration, objs, libs)
 		map_file = File.join2(target_dir, "#{name}.map")
 		target = File.join2(target_dir, "#{name}.elf")
-		objs_str = objs.map {|x| "#{shell_quote}#{x}#{shell_quote}"}.join(" ")
-		file target => objs do
-			libs = libs.call() if libs.is_a? Proc
+		file target => objs.map { |obj| obj[:task] } do
+			# libs may be a Proc
+			libs = resolve_procs(libs)
 			libs_str = libs.map {|x| "-l#{shell_quote}#{x}#{shell_quote}"}.join(" ")
+
+			obj_files = resolve_procs(objs.map { |obj| obj[:for_linker] })
+			objs_str = obj_files.map {|x| "#{shell_quote}#{x}#{shell_quote}"}.join(" ")
+
 			sh "#{shell_quote}#{LD}#{shell_quote} #{shell_quote}-Wl,-Map,#{map_file}#{shell_quote} -L#{shell_quote}#{File.join2(CARTOS_DIR, configuration)}#{shell_quote} #{LDFLAGS[configuration]} -o #{shell_quote}#{target}#{shell_quote} #{objs_str} #{libs_str}"
 		end
 	end
@@ -621,7 +646,7 @@ class Project
 		if generator_config and File.exists? generator_config
 			# create generator task
 			#TODO put generated files in bin folder?
-			gen_task = generator_task(generator_config)
+			gen_task = generator_task(name, generator_config)
 
 			# remember generated source files because we have to compile them
 			generated_sources = get_generated_sources(source_dir, generator_config, gen_task)
@@ -637,22 +662,41 @@ class Project
 			features_header_file = maybe_features_header_file if maybe_features_header_file and File.exists? maybe_features_header_file
 		end
 
+
 		# find all source files (*.c)
 		sources = find_sources(source_dir)
 		sources += generated_sources
 		sources += additional_source_files(source_dir, name, configuration)
+
+		# remember that the generated source files can be ignored, if they don't exist
+		optional_sources = generated_sources
+
 		# strip prefix from sources
 		sources = sources.map { |source| relative_path source, source_dir }
+		optional_sources = optional_sources.map { |source| relative_path source, source_dir }
+
 		# remove duplicates (generated sources will be found, if they already exist)
 		sources.uniq!
+		optional_sources.uniq!
+
 
 		# create compile tasks
-		objs = sources.map { |source|  compile(source_dir, source, target_dir, configuration) }
+		objs = sources.map { |source|
+			optional = optional_sources.include?(source)
+			obj_task = compile(source_dir, source, target_dir, configuration, optional)
+			if not optional
+				obj_file_for_linker = obj_task
+			else
+				# the file is optional -> only pass to linker, if source exists
+				obj_file_for_linker = lambda { File.exists?(source) && obj_task }
+			end
+			{ :task => obj_task, :for_linker => obj_file_for_linker }
+		}
 
 		# make sure that we generate before we compile
 		if gen_task
 			objs.each do |obj|
-				obj.enhance [gen_task]
+				obj[:task].enhance [gen_task]
 			end
 		end
 
