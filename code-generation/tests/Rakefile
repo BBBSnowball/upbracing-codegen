@@ -68,6 +68,34 @@ def cmd_sep
 end
 
 
+# compile Java sources for helpers project
+# We have to do this before we load any Java classes:
+# - We load the base classes before we give control back to,
+#   so we need to compile now, if not even the base classes
+#   are present.
+# - If we load part of a class and later recompile it, we may
+#   end up with inconsistent classes (and get NoSuchMethodError
+#   on a field access).
+# Unfortunately, this means that we have to duplicate some of
+# the code in Project#run_java_compiler.
+ToolProvider = Java::javax::tools::ToolProvider
+def run_java_compiler(java_source_dir, java_output_dir)
+	classpath = Java::java::lang::System.getProperty("java.class.path")
+	args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
+		+ FileList[File.join(java_source_dir, "**", "*.java")]
+	compiler = ToolProvider::getSystemJavaCompiler
+	if not compiler
+		puts "Couldn't get the Java compiler. Please use a JDK to run rake."
+		exit 1
+	end
+	compiler.run(nil, nil, nil, *args)
+end
+JAVA_HELPERS=File.join2("..", "tests-java-helpers")
+compile_helpers = run_java_compiler(
+	File.join2(JAVA_HELPERS, "src"),
+	File.join2(JAVA_HELPERS, "bin"))
+
+
 CODE_GENERATOR_DIR = ENV["CODE_GENERATOR_DIR"] || File.join2("..", "upbracing-AVR-CodeGenerator")
 CARTOS_DIR = ENV["CARTOS_DIR"] || File.join2("..", "..", "caRTOS", "XMEGAOs", "os")
 
@@ -1064,8 +1092,6 @@ class Project
 
 	## build Java helpers that are specific to this project
 
-	ToolProvider = Java::javax::tools::ToolProvider
-
 	def get_java_sources(java_source_dir)
 		FileList[File.join(java_source_dir, "**", "*.java")]
 	end
@@ -1074,7 +1100,7 @@ class Project
 		Java::java::lang::System.getProperty("java.class.path")
 	end
 
-	def run_compiler(java_source_dir, java_output_dir)
+	def run_java_compiler(java_source_dir, java_output_dir)
 		classpath = compiler_classpath(java_source_dir)
 		args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
 			+ get_java_sources(java_source_dir)
@@ -1114,7 +1140,7 @@ class Project
 		compile_java_task = many_files "compile java files in #{java_source_dir}", class_files
 
 		compile_java_task.enhance([file(java_output_dir)] + java_sources) do
-			run_compiler(java_source_dir, java_output_dir)
+			run_java_compiler(java_source_dir, java_output_dir)
 		end
 
 		compile_java_task
@@ -1438,24 +1464,6 @@ def load_project_config(dir)
 
 	return project
 end
-
-# compile task for helpers project
-#TODO This causes a NoSuchMethodError, if one of the changed
-#     classes has a non-static inner class which accesses
-#     some private or protected information in the parent
-#     class. The compiler creates accessor methods and those
-#     seem to be missing or inconsistent (like access$000).
-# =>  Eclipse should do the build for us, so we should make
-#     extra sure that we don't repeat it, unless we really
-#     have to. At the moment, we rebuild if any source is
-#     newer than any target. Instead we should match source
-#     and target and compare only them. One target per source
-#     is enough, so we don't have to worry about inner classes.
-JAVA_HELPERS=File.join2("..", "tests-java-helpers")
-compile_helpers = Project.new.create_java_task2(JAVA_HELPERS,
-	File.join2(JAVA_HELPERS, "src"),
-	File.join2(JAVA_HELPERS, "bin"))
-task :build_all => compile_helpers
 
 # add tasks for all directories which have certain files
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
