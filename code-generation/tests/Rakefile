@@ -187,11 +187,14 @@ def md5sum(file)
 end
 
 
+# represents a task with more than one output file
+# It can either track all outputs or use a dummy file.
 class ManyFilesTask < Rake::Task
-	attr_accessor :dependent_files
+	attr_accessor :dependent_files, :dummy_file
 
 	def needed?
-		@dependent_files.each do |file|
+		targets = if dummy_file then [dummy_file] else @dependent_files end
+		targets.each do |file|
 			file = file.name.to_s if file.is_a? Rake::FileTask
 			if !File.exists?(file) or out_of_date?(File.mtime(file))
 				puts "#{self} is outdated because of #{file} (exists: #{File.exists? file})"
@@ -213,11 +216,17 @@ class ManyFilesTask < Rake::Task
 		}
 		return false
 	end
+
+	def execute(*args)
+		super(*args)
+		Rake::touch dummy_file if dummy_file
+	end
 end
 
-def many_files(name, dependent_files, *args, &block)
+def many_files(name, dependent_files, dummy_file = nil, *args, &block)
 	task = ManyFilesTask.define_task(name, *args, &block)
 	task.dependent_files = dependent_files
+	task.dummy_file = dummy_file
 	task
 end
 
@@ -393,14 +402,16 @@ class Project
 
 		# dependencies
 		dependencies = _stripped_lines(`#{code_generator} -D`)
-		#puts "dependencies of code gen: #{dependencies.inspect}"
 		dependent_tasks = dependencies.map { |dep| file dep }
 		#puts "dependent on code gen: #{dependent_tasks.inspect}"
 
 		# generated files
 		generated_files = _stripped_lines(`#{code_generator} -w`)
 
-		gen_task = many_files "generate for #{config_file}", generated_files
+		# Code generation will generate several files, but maybe only
+		# some of them are actually created. Therefore, we track the
+		# generation time using an additional file.
+		gen_task = many_files "generate for #{config_file}", generated_files, File.join2(target_dir, "last_gen_time")
 
 		generated_files.each do |gen|
 			file gen => gen_task
