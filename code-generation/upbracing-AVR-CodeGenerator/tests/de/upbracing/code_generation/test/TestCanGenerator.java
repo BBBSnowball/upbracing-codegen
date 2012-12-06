@@ -22,6 +22,8 @@ import de.upbracing.eculist.ECUDefinition;
 
 public class TestCanGenerator {
 
+	public final String NL = System.getProperties().getProperty("line.separator");
+
 	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
 
@@ -309,25 +311,18 @@ public class TestCanGenerator {
 		canconfig.getMessage("Kupplung_Calibration").setRxMob("Kupplung");
 
 		//Code modification for receive handler
-/*		canconfig.getMessage("Gear").setBeforeRx(
-				"//This code for gear is included before rx\n"+
-				"//Blablabla");
-		canconfig.getMessage("Gear").setAfterRx(
-				"//This code for gear is included after rx\n"+
-				"//Hahaha. Next Line");
-		*/
 		DBCSignalConfig signalconfig = (DBCSignalConfig) canconfig.getMessage("Kupplung_Soll").getSignals().get("Kupplung_Soll");
 		signalconfig.setPutValue(
-				"if (!demo_mode) {\n" + 
-				"	display_values[DI_Kupplung_Soll].value8 = value;\n" +
-				"	display_values[DI_Kupplung_Soll].changed = 1;\n" +
-				"}\n");
+				"if (!demo_mode) {" + NL + 
+				"	display_values[DI_Kupplung_Soll].value8 = value;" + NL +
+				"	display_values[DI_Kupplung_Soll].changed = 1;" + NL +
+				"}" + NL);
 		signalconfig.setAfterRx("clutch_calibration_mode = false;");	
 		
 		signalconfig = (DBCSignalConfig) canconfig.getMessage("Kupplung_Calibration").getSignals().get("Kupplung_RAW");
 		signalconfig.setPutValue(
-				"display_values[DI_Kupplung_Soll].value8 = value / 4;\n" +
-				"display_values[DI_Kupplung_Soll].changed = 1;\n");
+				"display_values[DI_Kupplung_Soll].value8 = value / 4;" + NL +
+				"display_values[DI_Kupplung_Soll].changed = 1;" + NL);
 		signalconfig.setAfterRx("clutch_calibration_mode = true;");
 		
 		canconfig.getMessage("Bootloader_SelectNode").setRxHandler(

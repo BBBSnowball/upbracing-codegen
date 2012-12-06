@@ -60,22 +60,22 @@ rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel
 #include "can_valuetables.h"
 
 typedef enum {
-	MOB_Bootloader_SelectNode = 1,   // CAN ID: 0x0, receive
-	MOB_Bootloader_1          = 2,   // CAN ID: 0x1, receive
-	MOB_RS232_FORWARD_DATA    = 2,   // CAN ID: 0x1, receive, alias for Bootloader_1
-	MOB_ClutchGetPos          = 3,   // CAN ID: 0x5ff, receive
-	MOB_Kupplung              = 4,   // CAN ID: 0x10x, receive
-	MOB_Gear                  = 5,   // CAN ID: 0x71x, receive
-	MOB_Sensoren              = 6,   // CAN ID: 0x80x, receive
-	MOB_Sensoren_2            = 7,   // CAN ID: 0x81x, receive
-	MOB_OpenSquirt_Engine     = 8,   // CAN ID: 0x88x, receive
-	MOB_OpenSquirt_Sensoren1  = 9,   // CAN ID: 0x108x, receive
-	MOB_Geschwindigkeit       = 10,  // CAN ID: 0x110x, receive
-	MOB_Lenkrad_main2display  = 11,  // CAN ID: 0x4201x, receive
-	MOB_Launch                = 12,  // CAN ID: 0x60x, send
-	MOB_Radio                 = 13,  // CAN ID: 0x90x, send
+	MOB_Bootloader_SelectNode = 0,   // CAN ID: 0x0, receive
+	MOB_Bootloader_1          = 1,   // CAN ID: 0x1, receive
+	MOB_RS232_FORWARD_DATA    = 1,   // CAN ID: 0x1, receive, alias for Bootloader_1
+	MOB_ClutchGetPos          = 2,   // CAN ID: 0x5ff, receive
+	MOB_Kupplung              = 3,   // CAN ID: 0x10x, receive
+	MOB_Gear                  = 4,   // CAN ID: 0x71x, receive
+	MOB_Sensoren              = 5,   // CAN ID: 0x80x, receive
+	MOB_Sensoren_2            = 6,   // CAN ID: 0x81x, receive
+	MOB_OpenSquirt_Engine     = 7,   // CAN ID: 0x88x, receive
+	MOB_OpenSquirt_Sensoren1  = 8,   // CAN ID: 0x108x, receive
+	MOB_Geschwindigkeit       = 9,   // CAN ID: 0x110x, receive
+	MOB_Lenkrad_main2display  = 10,  // CAN ID: 0x4201x, receive
+	MOB_Launch                = 11,  // CAN ID: 0x60x, send
+	MOB_Radio                 = 12,  // CAN ID: 0x90x, send
 
-	MOB_GENERAL_MESSAGE_TRANSMITTER = 14
+	MOB_GENERAL_MESSAGE_TRANSMITTER = 13
 } MessageObjectID;
 
 #include "can_at90.h"
