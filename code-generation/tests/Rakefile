@@ -420,6 +420,13 @@ class Project
 		string.lines.map {|x| x.strip}.select {|x| not x.empty? }.to_a
 	end
 
+	# the '-D' and '-w' arguments are meant to be used in a Makefile, so
+	# the output is escaped properly (well, as much as is possible, at least...)
+	# -> we need to remove those escapes
+	def _unescape(str)
+		str.gsub(/\\([:#\\?*%~\[\]$])/, "\\1")
+	end
+
 	#TODO rewrite it to work on Windows (C:\\ and \\ for absolute paths)
 	def relative_path(path, parent_dir)
 		path2 = File.expand_path path
@@ -450,12 +457,12 @@ class Project
 		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
 
 		# dependencies
-		dependencies = _stripped_lines(`#{code_generator} -D`)
+		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
 		dependent_tasks = dependencies.map { |dep| file dep }
 		#puts "dependent on code gen: #{dependent_tasks.inspect}"
 
 		# generated files
-		generated_files = _stripped_lines(`#{code_generator} -w`)
+		generated_files = _stripped_lines(_unescape(`#{code_generator} -w`))
 
 		# Code generation will generate several files, but maybe only
 		# some of them are actually created. Therefore, we track the
@@ -642,7 +649,7 @@ class Project
 
 	def get_generated_features_header_file(source_dir, generator_config, gen_task, generated_sources)
 		#TODO: allow in other places, e.g. root of test folder
-		File.join2(source_dir, "gen", "Os_cfg_features.h")
+		File.join2(source_dir, TARGET_DIR, "Os_cfg_features.h")
 	end
 
 	def get_libs(features_header_file, source_dir, name, configuration, sources)
@@ -1073,6 +1080,24 @@ class Rake::Application
 			result
 		rescue Exception
 			0
+		end
+	end
+
+	# fix task names, if we're running on windows
+	if is_windows
+		def fix_task_name(name)
+			return name unless name.is_a? String
+
+			name.gsub(/[\\\/]+/, "\\")
+		end
+
+		def resolve_args(*args)
+			result = super(*args)
+			# result is [task_name, arg_name_list, prerequisites]
+			result[0] = fix_task_name(result[0])
+			result[2] = result[2] && result[2].map { |p| fix_task_name(p) }
+
+			result
 		end
 	end
 end
