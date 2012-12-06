@@ -1558,3 +1558,11 @@ project_dirs.each do |dir|
 		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
 	end
 end
+
+# put a dummy comment in all tasks, if the user really wants to see all of them
+if ENV['ALL_TASKS'] && !ENV['ALL_TASKS'].empty? && Rake::application::options.show_tasks
+	Rake::application::tasks.each do |t|
+		puts t
+		t.comment ||= ""
+	end
+end
