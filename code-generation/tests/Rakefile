@@ -68,6 +68,43 @@ def cmd_sep
 end
 
 
+# make sure we are running in JRuby
+begin
+	Java::java::lang::Object
+rescue NameError
+	puts "ERROR: Please run rake using JRuby!"
+	exit 1
+end
+
+
+# compile Java sources for helpers project
+# We have to do this before we load any Java classes:
+# - We load the base classes before we give control back to,
+#   so we need to compile now, if not even the base classes
+#   are present.
+# - If we load part of a class and later recompile it, we may
+#   end up with inconsistent classes (and get NoSuchMethodError
+#   on a field access).
+# Unfortunately, this means that we have to duplicate some of
+# the code in Project#run_java_compiler.
+ToolProvider = Java::javax::tools::ToolProvider
+def run_java_compiler(java_source_dir, java_output_dir)
+	classpath = Java::java::lang::System.getProperty("java.class.path")
+	args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
+		+ FileList[File.join(java_source_dir, "**", "*.java")]
+	compiler = ToolProvider::getSystemJavaCompiler
+	if not compiler
+		puts "Couldn't get the Java compiler. Please use a JDK to run rake."
+		exit 1
+	end
+	compiler.run(nil, nil, nil, *args)
+end
+JAVA_HELPERS=File.join2("..", "tests-java-helpers")
+compile_helpers = run_java_compiler(
+	File.join2(JAVA_HELPERS, "src"),
+	File.join2(JAVA_HELPERS, "bin"))
+
+
 CODE_GENERATOR_DIR = ENV["CODE_GENERATOR_DIR"] || File.join2("..", "upbracing-AVR-CodeGenerator")
 CARTOS_DIR = ENV["CARTOS_DIR"] || File.join2("..", "..", "caRTOS", "XMEGAOs", "os")
 
@@ -141,7 +178,7 @@ def task(*args, &block)
 		task(*args) do |*args2|
 			begin
 				block.call(*args2)
-			rescue
+			rescue Exception
 				if $logger
 					$logger.error "Error: #{$!}\n" + $!.backtrace.join("\n") rescue nil
 				end
@@ -263,6 +300,7 @@ end
 task :generate_all do end
 
 # make generate-all an alias for generate_all (only on the command line!)
+desc "run code-generator for all projects"
 task "generate-all" => :generate_all do end
 
 
@@ -270,6 +308,7 @@ task "generate-all" => :generate_all do end
 task :build_all do end
 
 # make build-all an alias for build_all (only on the command line!)
+desc "build all configurations for all projects"
 task "build-all" => :build_all do end
 
 
@@ -277,6 +316,7 @@ task "build-all" => :build_all do end
 task :test_all do end
 
 # make test-all an alias for test_all (only on the command line!)
+desc "run all tests"
 task "test-all" => :test_all do end
 
 
@@ -285,6 +325,7 @@ task :default => :build_all do end
 
 
 # clean task removes all build output files and directories
+desc "clean projects (delete all output files)"
 task :clean do end
 
 
@@ -293,9 +334,9 @@ class Project
 
 	## build caRTOS library
 
-	def build_caRTOS(features_header_file, configuration = "Debug")
+	def build_caRTOS(name, features_header_file, configuration = "Debug")
 		#TODO make this a special kind of task and implement needed?
-		task unique_task_id("caRTOS-lib") => features_header_file do |t|
+		cartos_task = task unique_task_id("caRTOS-lib") => features_header_file do |t|
 			# don't do anything, if we don't have a features header file
 			# (This can happen, if we expected it to be generated, but it
 			#  wasn't because it hasn't been configured in the config file.
@@ -336,6 +377,14 @@ class Project
 				puts "INFO: Not linking with caRTOS because the feature file hasn't been generated."
 			end
 		end
+
+		desc "build caRTOS library for project #{name} (configuration #{configuration})"
+		t2 = task "build-caRTOS-#{name}-#{configuration}" => cartos_task
+
+		desc "build caRTOS library for project #{name} (all configurations)"
+		task "build-caRTOS-#{name}" => t2
+
+		return cartos_task
 	end
 
 
@@ -371,6 +420,13 @@ class Project
 		string.lines.map {|x| x.strip}.select {|x| not x.empty? }.to_a
 	end
 
+	# the '-D' and '-w' arguments are meant to be used in a Makefile, so
+	# the output is escaped properly (well, as much as is possible, at least...)
+	# -> we need to remove those escapes
+	def _unescape(str)
+		str.gsub(/\\([:#\\?*%~\[\]$])/, "\\1")
+	end
+
 	#TODO rewrite it to work on Windows (C:\\ and \\ for absolute paths)
 	def relative_path(path, parent_dir)
 		path2 = File.expand_path path
@@ -401,17 +457,18 @@ class Project
 		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
 
 		# dependencies
-		dependencies = _stripped_lines(`#{code_generator} -D`)
+		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
 		dependent_tasks = dependencies.map { |dep| file dep }
 		#puts "dependent on code gen: #{dependent_tasks.inspect}"
 
 		# generated files
-		generated_files = _stripped_lines(`#{code_generator} -w`)
+		generated_files = _stripped_lines(_unescape(`#{code_generator} -w`))
 
 		# Code generation will generate several files, but maybe only
 		# some of them are actually created. Therefore, we track the
 		# generation time using an additional file.
-		gen_task = many_files "generate for #{config_file}", generated_files, File.join2(target_dir, "last_gen_time")
+		dummy_file = File.join2(target_dir, "last_gen_time")
+		gen_task = many_files "generate for #{config_file}", generated_files, dummy_file
 
 		generated_files.each do |gen|
 			file gen => gen_task
@@ -424,16 +481,18 @@ class Project
 			#end
 		end
 
+		#desc "clean up files generated for '#{config_file}'"
 		clean = task "clean for #{config_file}" do
-			rm generated_files, :force => true
+			rm [dummy_file] + generated_files, :force => true
 			rmdir target_dir if Dir.exists? target_dir
 		end
 
+		desc "run code-generator for project #{name} (config file: #{config_file})"
+		task "codegen-#{name}" => gen_task
+
 		task :generate_all => gen_task
 
-		task "clean-#{name}" => clean
-
-		task :clean => clean
+		task "clean-#{name}-common" => clean
 
 		return gen_task
 	end
@@ -510,21 +569,32 @@ class Project
 		end
 
 		# if the dependency file exists, we read its contents
+		can_read_dependencies = false
 		if File.exists? dependency_file
 			# read file contents
 			x = File.read(dependency_file)
 			# unwrap lines (backslash can escape a newline)
 			x = x.gsub("\\\n", "")
 			# get first line
-			x = x.lines.first.strip
-			# remove target name (before colon)
-			x = x.sub(/^[^:]*:\s*/, "")
-			# split on spaces
-			x = x.split(/\s+/)
-			# add dependencies to compile task
-			#puts "dependencies for #{target}: #{x.inspect}"
-			t.enhance x
-		else
+			x = x.lines.first
+
+			if x
+				# remove target name (before colon)
+				x = x.strip.sub(/^[^:]*:\s*/, "")
+				# split on spaces
+				x = x.split(/\s+/)
+				# add dependencies to compile task
+				#puts "dependencies for #{target}: #{x.inspect}"
+				t.enhance x
+
+				# remember that we are sucessfully using the dependency file
+				can_read_dependencies = true
+			else
+				puts "WARN: Ignoring empty dependencies file '#{dependency_file}'"
+			end
+		end
+
+		unless can_read_dependencies
 			# we don't know the dependencies -> always compile
 			force = task unique_task_id("force") { }
 			t.enhance [force]
@@ -579,7 +649,7 @@ class Project
 
 	def get_generated_features_header_file(source_dir, generator_config, gen_task, generated_sources)
 		#TODO: allow in other places, e.g. root of test folder
-		File.join2(source_dir, "gen", "Os_cfg_features.h")
+		File.join2(source_dir, TARGET_DIR, "Os_cfg_features.h")
 	end
 
 	def get_libs(features_header_file, source_dir, name, configuration, sources)
@@ -634,6 +704,7 @@ class Project
 
 	def create_size_task(source_dir, target_dir, name, elf, configuration)
 		# print size
+		desc "print size of compiled program for project #{name}"
 		task "#{name}-size-#{configuration}" => elf do
 			sh "#{shell_quote}#{OBJSIZE}#{shell_quote} --format=avr --mcu=at90can128 #{shell_quote}#{elf.name}#{shell_quote}"
 		end
@@ -722,7 +793,7 @@ class Project
 		# make sure we build the caRTOS library before linking the application
 		# (only if we have a features header file)
 		if features_header_file
-			cartos_lib_task = build_caRTOS(features_header_file, configuration)
+			cartos_lib_task = build_caRTOS(name, features_header_file, configuration)
 
 			# add dependency to linker task
 			elf.enhance [cartos_lib_task] if cartos_lib_task
@@ -736,15 +807,22 @@ class Project
 
 		create_size_task(source_dir, target_dir, name, elf, configuration)
 
+		desc "build program for project #{name} (configuration: #{configuration})"
 		build_task = task("build-#{name}-#{configuration}" => flash_hex_file) {}
 
 		# make sure that the hex file is generated, if someone calls build-all
 		task :build_all => build_task
 
+		# another task to build all configurations of this project
+		desc "build program for project #{name} (all configurations)"
+		task "build-#{name}" => build_task
+
 		# clean task
+		desc "remove output files of project #{name} (configuration: #{configuration}, including shared files)"
 		clean = task "clean-#{name}-#{configuration}" do
 			rm_rf target_dir
 		end
+		desc "remove output files of project #{name} (all configurations)"
 		task "clean-#{name}" => clean
 
 		# return hex file task
@@ -945,7 +1023,7 @@ end
 
 begin
 	Java::de::upbracing::code_generation::tests::ncurses::NCursesUI::setRubyUI NCursesUI.new
-rescue
+rescue Exception
 	puts "WARN: Couldn't pass wrapper class for ncurses UI to Java. ncurses UI won't be available."
 end
 
@@ -961,7 +1039,6 @@ class Rake::Application
 	alias :top_level_original :top_level
 	def top_level(*args, &block)
 		begin
-			puts "In hooked top_level"
 			top_level_original(*args, &block)
 		ensure
 			$toolkit.tearDown if $toolkit
@@ -978,7 +1055,7 @@ class Rake::Application
 				msg = "#{ex.class.name}: #{ex.message}\n" + ex.backtrace.join("\n")
 				msg += "\n  Tasks: #{ex.chain}" if ex.respond_to?(:chain) && ex.chain
 				log.error(msg)
-			rescue
+			rescue Exception
 				# ignore
 				puts "error logging message"
 			end
@@ -990,7 +1067,41 @@ class Rake::Application
 		# let Rake do its stuff -> print to console
 		display_error_message_original(ex)
 	end
+
+	# Java cannot successfully call stty or tput because it passes a
+	# dummy terminal to child processes. Therefore, we try to use
+	# ncurses instead.
+	def dynamic_width
+		@dynamic_width ||= begin
+			require 'ffi-ncurses'
+			FFI::NCurses::initscr
+			result = FFI::NCurses.COLS
+			FFI::NCurses::endwin
+			result
+		rescue Exception
+			0
+		end
+	end
+
+	# fix task names, if we're running on windows
+	if is_windows
+		def fix_task_name(name)
+			return name unless name.is_a? String
+
+			name.gsub(/[\\\/]+/, "\\")
+		end
+
+		def resolve_args(*args)
+			result = super(*args)
+			# result is [task_name, arg_name_list, prerequisites]
+			result[0] = fix_task_name(result[0])
+			result[2] = result[2] && result[2].map { |p| fix_task_name(p) }
+
+			result
+		end
+	end
 end
+
 
 class TestHelper
 	attr_accessor :toolkit
@@ -1064,8 +1175,6 @@ class Project
 
 	## build Java helpers that are specific to this project
 
-	ToolProvider = Java::javax::tools::ToolProvider
-
 	def get_java_sources(java_source_dir)
 		FileList[File.join(java_source_dir, "**", "*.java")]
 	end
@@ -1074,7 +1183,7 @@ class Project
 		Java::java::lang::System.getProperty("java.class.path")
 	end
 
-	def run_compiler(java_source_dir, java_output_dir)
+	def run_java_compiler(java_source_dir, java_output_dir)
 		classpath = compiler_classpath(java_source_dir)
 		args = ["-cp", classpath, "-sourcepath", java_source_dir, "-d", java_output_dir] \
 			+ get_java_sources(java_source_dir)
@@ -1094,18 +1203,18 @@ class Project
 		File.join2(project_dir, "bin", "java")
 	end
 
-	def create_java_task(project_dir)
+	def create_java_task(name, project_dir)
 		java_source_dir = get_java_source_dir(project_dir)
 		if File.exists? java_source_dir
 			java_output_dir = get_java_output_dir(project_dir)
 
-			create_java_task2(project_dir, java_source_dir, java_output_dir)
+			create_java_task2(name, project_dir, java_source_dir, java_output_dir)
 		else
 			nil
 		end
 	end
 
-	def create_java_task2(project_dir, java_source_dir, java_output_dir)
+	def create_java_task2(name, project_dir, java_source_dir, java_output_dir)
 		directory java_output_dir
 
 		java_sources = get_java_sources(java_source_dir)
@@ -1113,9 +1222,22 @@ class Project
 
 		compile_java_task = many_files "compile java files in #{java_source_dir}", class_files
 
+		# create an alias for compiling the Java file, but only
+		# advertise it in the list of tasks, if we actually have
+		# some files to compile
+		desc "compile Java helpers in #{java_source_dir}" unless java_sources.empty?
+		task "compile-java-#{name}" => compile_java_task
+
 		compile_java_task.enhance([file(java_output_dir)] + java_sources) do
-			run_compiler(java_source_dir, java_output_dir)
+			run_java_compiler(java_source_dir, java_output_dir)
 		end
+
+		desc "clean compiled Java files for project #{name}" unless java_sources.empty?
+		clean_java = task "clean-java-#{name}" do
+			rm_rf java_output_dir
+		end
+
+		task "clean-#{name}-common" => clean_java
 
 		compile_java_task
 	end
@@ -1319,23 +1441,29 @@ class Project
 	# main method
 
 	def create_tasks(dir, dependencies_for_run)
-		compile_java_task = create_java_task(dir)
+		name = name_from_source_dir dir
 
+		compile_java_task = create_java_task(name, dir)
+
+		# build tasks
 		configurations(:build).each do |configuration|
 			# build hex file
 			build_task = build dir, configuration
 
 			build_task.enhance [compile_java_task] if compile_java_task
+
+			task "clean-#{name}-#{configuration}" => "clean-#{name}-common"
 		end
 
-		# clean task
-		name = name_from_source_dir dir
-		clean = task "clean-#{name}" do
+		# clean tasks
+		desc "remove output files of project #{name} (all configurations)"
+		clean = task "clean-#{name}" => "clean-#{name}-common" do
 			target_dir = get_target_dir(dir, "")
 			rmdir target_dir if Dir.exists?(target_dir) and Dir.empty?(target_dir)
 		end
 		task :clean => clean
 
+		# test tasks
 		configurations(:test).each do |configuration|
 			# run test
 			run_task = run_test dir, configuration
@@ -1439,24 +1567,6 @@ def load_project_config(dir)
 	return project
 end
 
-# compile task for helpers project
-#TODO This causes a NoSuchMethodError, if one of the changed
-#     classes has a non-static inner class which accesses
-#     some private or protected information in the parent
-#     class. The compiler creates accessor methods and those
-#     seem to be missing or inconsistent (like access$000).
-# =>  Eclipse should do the build for us, so we should make
-#     extra sure that we don't repeat it, unless we really
-#     have to. At the moment, we rebuild if any source is
-#     newer than any target. Instead we should match source
-#     and target and compare only them. One target per source
-#     is enough, so we don't have to worry about inner classes.
-JAVA_HELPERS=File.join2("..", "tests-java-helpers")
-compile_helpers = Project.new.create_java_task2(JAVA_HELPERS,
-	File.join2(JAVA_HELPERS, "src"),
-	File.join2(JAVA_HELPERS, "bin"))
-task :build_all => compile_helpers
-
 # add tasks for all directories which have certain files
 magic_files = FileList["**/run-test.rb", "**/config.rb", "**/project.rb", "**/main.c", "**/main-*.c"]
 project_dirs = magic_files.map { |file| File.dirname(file) }
@@ -1471,5 +1581,13 @@ project_dirs.each do |dir|
 		project.create_tasks(dir, [compile_helpers]) if project
 
 		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
+	end
+end
+
+# put a dummy comment in all tasks, if the user really wants to see all of them
+if ENV['ALL_TASKS'] && !ENV['ALL_TASKS'].empty? && Rake::application::options.show_tasks
+	Rake::application::tasks.each do |t|
+		puts t
+		t.comment ||= ""
 	end
 end

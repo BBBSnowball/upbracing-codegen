@@ -20,6 +20,8 @@ public class DBCConfig extends DBC {
 	private String header_declarations;
 	private String cfile_declarations;
 	private MCUConfiguration config;
+	
+	public final String NL = System.getProperties().getProperty("line.separator");
 
 	public DBCConfig(DBC dbc, MCUConfiguration config) {
 		super(dbc.getVersion());
@@ -161,7 +163,7 @@ public class DBCConfig extends DBC {
 
 	private String combineDeclarations(String a, String b) {
 		if (a != null)
-			return a + "\n" + b;
+			return a + NL + b;
 		else
 			return b;
 	}

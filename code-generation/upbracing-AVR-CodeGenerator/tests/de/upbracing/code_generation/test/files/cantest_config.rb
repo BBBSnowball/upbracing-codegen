@@ -3,6 +3,7 @@ ecus = read_ecu_list("ecu-list-cantest.xml")
 $config.ecus = ecus
 
 $config.can = parse_dbc("cantest.dbc")
+NL = $config.can.NL
 
 $config.selectEcu("Lenkrad-Display")
 
@@ -16,15 +17,15 @@ $config.can.getMessage("Kupplung_Soll").rxMob = "Kupplung"
 $config.can.getMessage("Kupplung_Calibration").rxMob = "Kupplung"
 
 $config.can.getMessage("Kupplung_Soll").getSignal("Kupplung_Soll").putValue = 
-	"if (!demo_mode) {\n" + 
-	"	display_values[DI_Kupplung_Soll].value8 = value;\n" +
-	"	display_values[DI_Kupplung_Soll].changed = 1;\n" +
-	"}\n"
+	"if (!demo_mode) {" + NL +
+	"	display_values[DI_Kupplung_Soll].value8 = value;" + NL +
+	"	display_values[DI_Kupplung_Soll].changed = 1;" + NL +
+	"}" + NL
 $config.can.getMessage("Kupplung_Soll").getSignal("Kupplung_Soll").afterRx = "clutch_calibration_mode = false;"
 		
 $config.can.getMessage("Kupplung_Calibration").getSignal("Kupplung_RAW").putValue = 
-	"display_values[DI_Kupplung_Soll].value8 = value / 4;\n" +
-	"display_values[DI_Kupplung_Soll].changed = 1;\n"
+	"display_values[DI_Kupplung_Soll].value8 = value / 4;" + NL +
+	"display_values[DI_Kupplung_Soll].changed = 1;" + NL
 $config.can.getMessage("Kupplung_Calibration").getSignal("Kupplung_RAW").afterRx = "clutch_calibration_mode = true;"
 		
 $config.can.getMessage("Bootloader_SelectNode").rxHandler = "handle_bootloader_selectnode();"
