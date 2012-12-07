@@ -699,7 +699,7 @@ class Project
 				obj_file_for_linker = obj_task
 			else
 				# the file is optional -> only pass to linker, if source exists
-				obj_file_for_linker = lambda { File.exists?(source) && obj_task }
+				obj_file_for_linker = lambda { File.exists?(File.join(source_dir, source)) && obj_task }
 			end
 			{ :task => obj_task, :for_linker => obj_file_for_linker }
 		}
