@@ -100,7 +100,7 @@ def run_java_compiler(java_source_dir, java_output_dir)
 	compiler.run(nil, nil, nil, *args)
 end
 JAVA_HELPERS=File.join2("..", "tests-java-helpers")
-compile_helpers = run_java_compiler(
+run_java_compiler(
 	File.join2(JAVA_HELPERS, "src"),
 	File.join2(JAVA_HELPERS, "bin"))
 
@@ -1578,7 +1578,7 @@ project_dirs.each do |dir|
 	if dir != "common/"
 		project = load_project_config(dir)
 
-		project.create_tasks(dir, [compile_helpers]) if project
+		project.create_tasks(dir, []) if project
 
 		#puts "-I: #{project.additional_include_dirs(nil,nil,nil,nil).inspect}"
 	end
@@ -1588,6 +1588,7 @@ end
 if ENV['ALL_TASKS'] && !ENV['ALL_TASKS'].empty? && Rake::application::options.show_tasks
 	Rake::application::tasks.each do |t|
 		puts t
+		puts "\t" + t.prerequisites.join("\n\t") if ENV['ALL_TASKS'].include?('deps')
 		t.comment ||= ""
 	end
 end
