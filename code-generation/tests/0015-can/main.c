@@ -17,8 +17,8 @@
 #include "semaphores/semaphore.h"
 #include "internal/Os_Error.h"
 
-#include "gen/can.h"
 #include "gen/global_variables.h"
+#include "gen/can.h"
 #include "gen/Os_cfg_application.h"
 
 #include "rs232.h"
@@ -37,9 +37,9 @@ int main(void) {
 	// Init usart
 	usart_init();
 	PORTA = 0x02;
-	usart_send_str("\nStarting CAN test.");
+	usart_send_str("\nStarting CAN test.\n");
 
-	usart_send_str("\nInitialize CAN mobs.");
+	usart_send_str("Initialize CAN mobs.\n");
 	can_init_mobs();
 
 	_delay_ms(100);
@@ -60,7 +60,7 @@ int main(void) {
 void modeSetup() {
 	// Assume slave mode and wait until either the master sends a message to start the test
 	// or the control pc sends the ASCII value "M" over RS232 and change to master mode
-	usart_send_str("\nWaiting for mode setup.");
+	usart_send_str("Waiting for mode setup.\n");
 
 	char c;
 
@@ -69,48 +69,50 @@ void modeSetup() {
 			c = usart_recv();
 			if (c == 'M') {
 				testmaster = true;
-				usart_send_str("\nSet board to master mode.");
+				usart_send_str("Set board to master mode.\n");
 				send_InitTestphase_nowait(CANTEST_VERSION, CANTEST_INIT_REQUEST);
-				usart_send_str("\nWaiting for slave board...");
+				usart_send_str("Waiting for slave board...\n");
 			} else {
-				usart_send_str("\nERROR: Unknown command.");
+				usart_send_str("ERROR: Unknown command.\n");
 			}
 		}
 	}
 
 	if (testmaster) {
 		if (getTestNumber() != CANTEST_INIT_ACK)
-			usart_send_str("\nERROR: Slave board reply is not an ACK.");
+			usart_send_str("ERROR: Slave board reply is not an ACK.\n");
 	} else {
 		if (getTestNumber() == CANTEST_INIT_REQUEST) {
 			PORTA = 0x81; // Two edge LEDs on
-			usart_send_str("\nSet board to slave mode");
-			usart_send_str("\nWARNING: This board does not output the test results.");
+			usart_send_str("Set board to slave mode\n");
+			usart_send_str("WARNING: This board does not output the test results.\n");
 			send_InitTestphase_nowait(CANTEST_VERSION, CANTEST_INIT_ACK);
 		}
 	}
 
 	if (getTestVersion() != CANTEST_VERSION) {
-		usart_send_str("\nERROR: Other board uses different test version.");
+		usart_send_str("ERROR: Other board uses different test version.\n");
 	}
 }
 
 void assertValue(int32_t expected, int32_t compare) {
 	if (expected == compare) {
-		usart_send_str("\nTest successful!");
+		usart_send_str("Test successful!\n");
 	} else {
-		usart_send_str("\nTest failed. Expected ");
+		usart_send_str("Test failed. Expected ");
 		usart_send_number(expected, 16, 2);
 		usart_send_str(", but received ");
 		usart_send_number(compare, 16, 2);
+		usart_send_str("\n");
+
 	}
 }
 
 void assert2Values(int32_t expected1, int32_t expected2, int32_t compare1, int32_t compare2) {
 	if (expected1 == compare1 && expected2 == compare2) {
-		usart_send_str("\nTest successful!");
+		usart_send_str("Test successful!\n");
 	} else {
-		usart_send_str("\nTest failed. Expected (");
+		usart_send_str("Test failed. Expected (");
 		usart_send_number(expected1, 16, 2);
 		usart_send_str(", ");
 		usart_send_number(expected2, 16, 2);
@@ -119,16 +121,16 @@ void assert2Values(int32_t expected1, int32_t expected2, int32_t compare1, int32
 		usart_send_number(compare1, 16, 2);
 		usart_send_str(", ");
 		usart_send_number(compare2, 16, 2);
-		usart_send_str(")");
+		usart_send_str(")\n");
 	}
 }
 
 void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 				   int32_t compare1, int32_t compare2, int32_t compare3) {
 	if (expected1 == compare1 && expected2 == compare2 && expected3 == compare3) {
-		usart_send_str("\nTest successful!");
+		usart_send_str("Test successful!\n");
 	} else {
-		usart_send_str("\nTest failed. Expected (");
+		usart_send_str("Test failed. Expected (");
 		usart_send_number(expected1, 16, 2);
 		usart_send_str(", ");
 		usart_send_number(expected2, 16, 2);
@@ -141,28 +143,28 @@ void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 		usart_send_number(compare2, 16, 2);
 		usart_send_str(", ");
 		usart_send_number(compare3, 16, 2);
-		usart_send_str(")");
+		usart_send_str(")\n");
 	}
 }
 
 void testMaster() {
 	PORTA = 0x18; // Two middle LEDs on
 
-	usart_send_str("\nStarting tests as master");
+	usart_send_str("Starting tests as master\n");
 
-	usart_send_str("\n\nTest 1/6: Simple 1 byte reply test");
+	usart_send_str("\nTest 1/6: Simple 1 byte reply test\n");
 	send_TestMessage1_nowait(CANTEST_TEST1_VALUE);
 	while(!getTestSignal()); // Wait for the reply
 	assertValue(CANTEST_TEST1_VALUE, getTestSignal());
 
-	usart_send_str("\n\nTest 2/6: Using the general MOB transmitter");
+	usart_send_str("\nTest 2/6: Using the general MOB transmitter\n");
 	send_TestMessage2A_nowait(CANTEST_TEST2A_VALUE);
 	send_TestMessage2B_nowait(CANTEST_TEST2B_VALUE);
 	while(!getTestSignal2A() && !getTestSignal2B()); // Wait for the reply
 	assert2Values(CANTEST_TEST2A_VALUE, CANTEST_TEST2B_VALUE,
 				 getTestSignal2A(), getTestSignal2B());
 
-	usart_send_str("\n\nTest 3/6: Multiple messages in one MOB");
+	usart_send_str("\nTest 3/6: Multiple messages in one MOB\n");
 	send_TestMessage3A_nowait(CANTEST_TEST3A_VALUE);
 	send_TestMessage3B_nowait(CANTEST_TEST3B_VALUE);
 	while(!getTestSignal3A() && !getTestSignal3B()){ // Wait for the reply
@@ -171,7 +173,7 @@ void testMaster() {
 	assert2Values(CANTEST_TEST3A_VALUE, CANTEST_TEST3B_VALUE,
 				 getTestSignal3A(), getTestSignal3B());
 
-	usart_send_str("\n\nTest 4/6: Multiple signals and endianness test");
+	usart_send_str("\nTest 4/6: Multiple signals and endianness test\n");
 	//The 0x666 is a dummy value that is not used by the other board
 	send_TestMessage4C_nowait(CANTEST_TEST4A_VALUE, 0x0666, CANTEST_TEST4B_VALUE, CANTEST_TEST4C_VALUE);
 	while(!getTestSignalA2() && !getTestSignalB2() && !getTestSignalC2()){ // Wait for the reply
@@ -180,7 +182,7 @@ void testMaster() {
 	assert3Values(CANTEST_TEST4A_VALUE, CANTEST_TEST4B_VALUE, CANTEST_TEST4C_VALUE,
 				  getTestSignalA2(), getTestSignalB2(), getTestSignalC2());
 
-	usart_send_str("\n\nTest 5/6: Testing sending and receiving partly without generated code");
+	usart_send_str("\nTest 5/6: Testing sending and receiving partly without generated code\n");
 	send_TestMessage5A_nowait(CANTEST_TEST5A_VALUE);
 	while(!getTestSignal5B()){ // Wait for the reply
 		_delay_ms(100); // don't stay in critical sections all the time
@@ -194,7 +196,7 @@ void testMaster() {
 	assertValue(CANTEST_TEST5D_VALUE, getTestSignal5D());
 
 	// Set the test signal to be send later by the periodic task
-	usart_send_str("\n\nTest 6/6: Sending periodic messages with an OS task");
+	usart_send_str("\nTest 6/6: Sending periodic messages with an OS task\n");
 	setTestSignal6A(CANTEST_TEST6_VALUE);
 }
 
@@ -257,19 +259,21 @@ void TestMessage6A_onReceive() {
 void TestMessage6B_onReceive() {
 	if (testmaster) { // This one is for the master
 		if (getTestSignal6B() == CANTEST_TEST6_VALUE + counter) {
-			usart_send_str("\nReceived periodic message ");
+			usart_send_str("Received periodic message ");
 			usart_send_number(counter+1, 10, 1);
-			usart_send_str("of 10");
+			usart_send_str("of 10\n");
 			if (counter == 9) {
-				usart_send_str("\nTest successful!");
+				usart_send_str("Test successful!\n");
 			}
 
 			counter++;
 		} else {
-			usart_send_str("\nTest failed. Expected ");
+			usart_send_str("Test failed. Expected ");
 			usart_send_number(CANTEST_TEST6_VALUE, 16, 2);
 			usart_send_str(", but received ");
 			usart_send_number(getTestSignal6B(), 16, 2);
+			usart_send_str("\n");
+
 		}
 	}
 }
