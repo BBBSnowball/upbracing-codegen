@@ -14,7 +14,4 @@ sleep 3
 $helper.flash_processor
 
 # check output on serial console
-$helper.first_serial.expect_string "Starting CAN test.\n"
-$helper.first_serial.expect_string "Initialize CAN mobs.\n"
-$helper.first_serial.expect_string "Waiting for mode setup.\n"
-$helper.first_serial.getOutputStream().write('M')
+$helper.first_serial.expect_string "Starting multiple tasks test.\n"
