@@ -14,4 +14,4 @@ sleep 3
 $helper.flash_processor
 
 # check output on serial console
-$helper.first_serial.expect_string "Starting starving tasks test.\n"
+$helper.first_serial.expect_string "Starting nested critical sections test.\n"
