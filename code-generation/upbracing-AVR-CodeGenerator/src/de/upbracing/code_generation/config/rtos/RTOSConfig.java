@@ -263,11 +263,13 @@ public class RTOSConfig {
 			return;
 		}
 		
-		
 		// freq = clock / (2*prescaler*(1+ocr_value))
-		// -> ocr_value = clock / (freq * 2*prescaler) - 1
+		// NOTE: This is wrong. This only holds true for toggling waveform generation.
+		// The correct formula is:
+		// freq = clock / (prescaler*(1+ocr_value)
+		// -> ocr_value = clock / (freq * prescaler) - 1
 		for (int prescaler : prescalers) {
-			int ocr_value = Math.round(clock / (tick_frequency * 2 * prescaler) - 1);
+			int ocr_value = Math.round(clock / (tick_frequency * prescaler) - 1);
 			if (ocr_value == 0x10000)
 				ocr_value = 0xffff;
 			if (ocr_value <= 0xffff) {
@@ -287,7 +289,9 @@ public class RTOSConfig {
 	 * @return the real timer frequency
 	 */
 	public float getRealTickFrequency() {
-		return clock / (2*timer_prescaler*(1+timer_count_to));
+		// NOTE (Peer): This formula was intended for toggling waveform generation
+		// -> I removed the (*2) factor which resolved the error.
+		return clock / (timer_prescaler*(1+timer_count_to));
 	}
 	
 	/** get valid prescaler values for the chosen processor
