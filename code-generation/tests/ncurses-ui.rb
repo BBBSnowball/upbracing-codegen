@@ -344,8 +344,10 @@ class NCursesToolkit
 
 		@thread.join 2 if @thread
 
-		@output.printw("\nRake is shutting down\nWaiting for you to press a key\n")
-		@output.refresh
+		if @output
+			@output.printw("\nRake is shutting down\nWaiting for you to press a key\n")
+			@output.refresh
+		end
 
 		# This time we want to wait -> no halfdelay
 		FFI::NCurses::nocbreak
