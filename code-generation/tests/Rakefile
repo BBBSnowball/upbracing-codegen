@@ -201,6 +201,9 @@ require 'java'
 
 begin
 	require 'paint'
+
+	# disable Paint, if we don't have a tty
+	Paint::mode = 0 unless STDOUT.tty?
 rescue LoadError, NameError
 	# dummy implementation of Paint
 	class Paint
