@@ -119,6 +119,9 @@ public class TextValidationComposite extends Composite {
 				if (!Character.isDigit(arg0.character) && arg0.keyCode != '.')
 					arg0.doit = false;
 				
+				
+				if (text.getText().contains(".") && arg0.keyCode == '.')
+					arg0.doit = false;
 				}
 			});
 		}

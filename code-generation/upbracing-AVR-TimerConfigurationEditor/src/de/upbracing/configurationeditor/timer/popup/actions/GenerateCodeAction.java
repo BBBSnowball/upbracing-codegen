@@ -13,8 +13,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.ISelectionService;
@@ -24,6 +22,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import de.upbracing.code_generation.ITemplate;
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.Messages.Message;
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.generators.TimerGenerator;
 import de.upbracing.eculist.ECUDefinition;
@@ -53,87 +54,100 @@ public class GenerateCodeAction implements IObjectActionDelegate {
 	public void run(IAction action) {
 		run(getSelectedFile());		
 	}
-
+	
 	public void run(IFile file) {
 		// Get file/model to generate code for:
         if (file != null) {
         	
-            // Generate the code
-    		try {
-				MCUConfiguration mcu = new MCUConfiguration(true);
-				mcu.setEcus(new ArrayList<ECUDefinition>());
-				
-				// Get the configuration file name:
-				String projectFileName = file.getRawLocation().toFile().getName();
-				projectFileName = projectFileName.substring(0, projectFileName.indexOf("."));
-				// Get the model:
-				String fullPath = file.getRawLocation().toOSString();
+        	// Get the model:
+			String fullPath = file.getRawLocation().toOSString();
+			try {
 				ConfigurationModel model = ConfigurationModel.Load(fullPath);
-				if (model == null) {
-					// TODO: Handle loading errors
-					MessageBox m = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-					m.setText("Error");
-					m.setMessage("Cannot load the model from path \"" + fullPath + "\".");
-					m.open();
+				run(file, model);
+			} catch (FileNotFoundException e) {
+				showMessageDialog(shell, Severity.ERROR, "AT90CAN Timer Code Generator", "Cannot load Timer Configuration file from path \"" + fullPath + "\".");
+			}
+    
+        }
+	}
+	
+	public void run(IFile file, ConfigurationModel model) {
+        // Generate the code
+		try {
+			MCUConfiguration mcu = new MCUConfiguration(true);
+			mcu.setEcus(new ArrayList<ECUDefinition>());
+			
+			// Get the configuration file name:
+			String projectFileName = file.getRawLocation().toFile().getName();
+			projectFileName = projectFileName.substring(0, projectFileName.indexOf("."));
+			mcu.setTimerConfig(model);
+			
+			// Create Generator:
+			TimerGenerator gen = new TimerGenerator(projectFileName);
+			ITemplate cTemp = gen.getFiles().get(projectFileName + ".c");
+			ITemplate hTemp = gen.getFiles().get(projectFileName + ".h");
+			
+			// Validate the model and get the messages
+			gen.validate(mcu, true, null);
+			Messages messages = mcu.getMessages();
+			
+			// Generate code:
+			String cFileContents = cTemp.generate(mcu, projectFileName);
+			String headerContents = hTemp.generate(mcu, projectFileName);
+			
+			// If there are messages, show error/warning dialog
+			String dialogTxt = "";
+			Severity s = Severity.INFO;
+			for (Message message : messages.getMessages()) {
+				// Store highest severity
+				if (message.getSeverity().ordinal() > s.ordinal())
+					s = message.getSeverity();
+				// Append message
+				dialogTxt += message.getMessage() + System.getProperty("line.separator");
+			}
+			if (s.ordinal() > Severity.INFO.ordinal()) {
+				showMessageDialog(shell, s, "AT90CAN Timer Code Generator", dialogTxt);
+			}
+			
+			String pathPrefix = ((IPath) file.getRawLocation().clone()).removeLastSegments(1).toOSString();
+			if (pathPrefix != null) {
+				// Write out both files:
+				try {
+					// Store the generated code on disk:
+					PrintWriter w = new PrintWriter(pathPrefix + "/" + projectFileName + ".c");
+					w.print(cFileContents);
+					w.flush();
+					w.close();
+					w = new PrintWriter(pathPrefix + "/" + projectFileName + ".h");
+					w.print(headerContents);
+					w.flush();
+					w.close();
+					// Refresh files in workspace
+					file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".c").refreshLocal(0, null);
+					file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".h").refreshLocal(0, null);
+				} catch (FileNotFoundException e) {
+					// TODO Give useful error message here!
+					showMessageDialog(shell, Severity.ERROR, "AT90CAN Timer Code Generator", "Cannot open file \"" + pathPrefix + "/" + projectFileName + ".h" + "\" for writing.");
+					e.printStackTrace();
+					return;
+				} catch (CoreException e) {
+					// TODO Handle refresh error
+					showMessageDialog(shell, Severity.ERROR, "AT90CAN Timer Code Generator", "Something went wrong during code generation.");
+					e.printStackTrace();
 					return;
 				}
-				mcu.setTimerConfig(model);
-				
-				// Generate code:
-				TimerGenerator gen = new TimerGenerator(projectFileName);
-				ITemplate cTemp = gen.getFiles().get(projectFileName + ".c");
-				ITemplate hTemp = gen.getFiles().get(projectFileName + ".h");
-				String cFileContents = cTemp.generate(mcu, projectFileName);
-				String headerContents = hTemp.generate(mcu, projectFileName);
-				
-				String pathPrefix = ((IPath) file.getRawLocation().clone()).removeLastSegments(1).toOSString();
-				if (pathPrefix != null) {
-					// Write out both files:
-					try {
-						// Store the generated code on disk:
-						PrintWriter w = new PrintWriter(pathPrefix + "/" + projectFileName + ".c");
-						w.print(cFileContents);
-						w.flush();
-						w.close();
-						w = new PrintWriter(pathPrefix + "/" + projectFileName + ".h");
-						w.print(headerContents);
-						w.flush();
-						w.close();
-						// Refresh files in workspace
-						file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".c").refreshLocal(0, null);
-						file.getProject().getFile(file.getParent().getProjectRelativePath().toOSString() + "/" + projectFileName + ".h").refreshLocal(0, null);
-					} catch (FileNotFoundException e) {
-						// TODO Give useful error message here!
-						MessageBox m = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-						m.setText("Error");
-						m.setMessage("Cannot open file \"" + pathPrefix + "/" + projectFileName + ".h" + "\" for writing.");
-						m.open();
-						e.printStackTrace();
-						return;
-					} catch (CoreException e) {
-						// TODO Handle refresh error
-						MessageBox m = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-						m.setText("Error");
-						m.setMessage("Something went wrong during code generation.");
-						m.open();
-						e.printStackTrace();
-						return;
-					}
-				}
 			}
-			catch (Exception e) {
-				MessageBox m = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-				m.setText("Error");
-				m.setText("Something went wrong\r\n" + e.getMessage());
-				return;
+			if (s.ordinal() > Severity.INFO.ordinal()) {
+				// Finished with errors message
+				showMessageDialog(shell, s, "AT90CAN Timer Code Generator", "Generate Code exited with errors or warnings.");
+			} else {
+				// Success message
+				showMessageDialog(shell, s, "AT90CAN Timer Code Generator", "Generate code was executed successfully.");
 			}
-        }
-		
-        // Success message
-		MessageDialog.openInformation(
-			shell,
-			"AT90CAN Timer Code Generator",
-			"Generate Code was executed successfully.");
+		}
+		catch (Exception e) {
+			showMessageDialog(shell, Severity.ERROR, "AT90CAN Timer Code Generator", "Something went wrong\r\n" + e.getMessage());
+		}
 	}
 	
 	/**
@@ -160,4 +174,14 @@ public class GenerateCodeAction implements IObjectActionDelegate {
         return file;
 	}
 
+	private void showMessageDialog(Shell shell, Severity severity, String title, String message) {
+		if (severity.equals(Severity.ERROR)) {
+			MessageDialog.openError(shell, title, message);
+		} else if (severity.equals(Severity.WARNING)) {
+			MessageDialog.openWarning(shell, title, message);
+		} else {
+			MessageDialog.openInformation(shell, title, message);
+		}
+	}
+	
 }

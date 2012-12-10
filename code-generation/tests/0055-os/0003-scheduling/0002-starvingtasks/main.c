@@ -28,7 +28,7 @@ int main(void) {
 	// Init usart
 	usart_init();
 	PORTA = 0x02;
-	usart_send_str("\nStarting starving task test.\n");
+	usart_send_str("\nStarting starving tasks test.\n");
 
 	StartOS();
 
