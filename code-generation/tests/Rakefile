@@ -1006,13 +1006,19 @@ class NCursesUI
 		#Paint.mode > 0 and not is_windows
 		return false unless Paint.mode > 0
 
+		# we need a tty for input and output
+		return false unless STDIN.tty? and STDOUT.tty?
+
 		# We need to make sure that we have the library.
 		begin
 			require 'ffi-ncurses'
 		rescue LoadError => e
 			puts "WARN: Couldn't load ncurses native library."
 			puts "  " + e.to_s
+			return false
 		end
+
+		return true
 	end
 
 	def createToolkit
