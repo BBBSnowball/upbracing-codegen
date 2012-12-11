@@ -1,0 +1,5 @@
+This test measures the overhead produced by the OS when doing context switching etc.
+It increments a counter for one second and then lets two OS tasks increment a counter for one second.
+
+The difference is then shown as a percentage.
+This test is considered to be successful when the overhead is less than 10%.

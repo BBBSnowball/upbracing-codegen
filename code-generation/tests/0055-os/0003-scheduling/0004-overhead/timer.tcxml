@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.7.0" class="java.beans.XMLDecoder">
+ <object class="de.upbracing.shared.timer.model.ConfigurationModel">
+  <void property="configurations">
+   <void method="add">
+    <object class="de.upbracing.shared.timer.model.UseCaseModel">
+     <void property="compareInterruptA">
+      <boolean>true</boolean>
+     </void>
+     <void property="mode">
+      <object class="java.lang.Enum" method="valueOf">
+       <class>de.upbracing.shared.timer.model.enums.TimerOperationModes</class>
+       <string>CTC</string>
+      </object>
+     </void>
+     <void property="name">
+      <string>one_second</string>
+     </void>
+     <void property="ocrAPeriod">
+      <double>1.0</double>
+     </void>
+     <void property="prescale">
+      <object class="java.lang.Enum" method="valueOf">
+       <class>de.upbracing.shared.timer.model.enums.PrescaleFactors</class>
+       <string>TWOHUNDREDANDSIXTYFIVE</string>
+      </object>
+     </void>
+     <void property="timer">
+      <object class="java.lang.Enum" method="valueOf">
+       <class>de.upbracing.shared.timer.model.enums.TimerEnum</class>
+       <string>TIMER3</string>
+      </object>
+     </void>
+    </object>
+   </void>
+  </void>
+ </object>
+</java>
