@@ -2,6 +2,8 @@ package de.upbracing.shared.timer.model;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -95,6 +97,18 @@ public class ConfigurationModel {
 	public void removeConfiguration(UseCaseModel m) {
 		if (configurations.contains(m))
 			configurations.remove(m);
+	}
+	
+	public static ConfigurationModel GetClone(ConfigurationModel model) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		XMLEncoder oos = new XMLEncoder(baos);
+		oos.writeObject(model);
+		oos.flush();
+		oos.close();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toString().getBytes());
+		XMLDecoder ois = new XMLDecoder(bais);
+		return (ConfigurationModel) ois.readObject();
 	}
 	
 	// Save/Load Methods:
