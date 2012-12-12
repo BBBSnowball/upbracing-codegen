@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/jruby-complete-1.7.0.jar" sourcepath="/upbracing-AVR-CodeGenerator/libs/jruby-1.7.0.preview1/src"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/ruby-gems.jar"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-CodeGenerator/libs/simple-xml-2.6.4.jar"/>
-	<classpathentry kind="lib" path="/upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"/>
-	<classpathentry kind="lib" path="libs/nrjavaserial-3.8.4.jar" sourcepath="libs/nrjavaserial-read-only/nrjavaserial/src/main/java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java-parser-tools"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/upbracing-AVR-CodeGenerator"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/jruby-complete-1.7.0.jar" sourcepath="/upbracing-AVR-CodeGenerator/libs/jruby-1.7.0.preview1/src"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/ruby-gems.jar"/>
+	<classpathentry exported="true" kind="lib" path="/upbracing-AVR-CodeGenerator/libs/simple-xml-2.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/coll/project/program/program/code-generation/de.upbracing.timer.configurationmodel.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/nrjavaserial-3.8.4.jar" sourcepath="libs/nrjavaserial-read-only/nrjavaserial/src/main/java"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/java-parser-tools"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/upbracing-AVR-CodeGenerator"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

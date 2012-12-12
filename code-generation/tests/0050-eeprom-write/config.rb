@@ -1,1 +1,1 @@
-$config.EEPROM.add(abc, char)
+$config.eeprom.add("a", "uint8_t")

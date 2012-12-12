@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry exported="true" kind="lib" path="include/de.upbracing.code_generation.jar" sourcepath="/upbracing-AVR-CodeGenerator"/>
-	<classpathentry exported="true" kind="lib" path="include/de.upbracing.timer.configurationmodel.jar" sourcepath="/upbracing-AVR-TimerConfigurationModel"/>
+	<classpathentry exported="true" kind="lib" path="D:/coll/project/program/program/code-generation/upbracing-AVR-TimerConfigurationEditor/include/de.upbracing.timer.configurationmodel.jar" sourcepath="/upbracing-AVR-TimerConfigurationModel"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
