@@ -196,6 +196,9 @@ public class Main {
 		// only print dependencies, if the -d option is given
 		// This can be used to specify dependencies in a Makefile.
 		if (cmd.hasOption("d") || cmd.hasOption("D")) {
+			// the config file itself is always a dependency
+			System.out.println(escapeForMakefile(config_file));
+			
 			String config_directory = new File(config_file).getParent();
 			for (String dependency : getDependencies(config_file)) {
 				if (!new File(dependency).isAbsolute())

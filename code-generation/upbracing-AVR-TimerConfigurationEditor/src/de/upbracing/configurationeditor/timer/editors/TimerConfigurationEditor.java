@@ -31,6 +31,7 @@ import org.eclipse.ui.part.EditorPart;
 import de.upbracing.configurationeditor.timer.popup.actions.GenerateCodeAction;
 import de.upbracing.configurationeditor.timer.viewmodel.ConfigurationViewModel;
 import de.upbracing.configurationeditor.timer.viewmodel.UseCaseViewModel;
+import de.upbracing.shared.timer.model.ConfigurationModel;
 
 /**
  * This is the graphical timer configuration editor, which is loaded by Eclipse.
@@ -245,7 +246,13 @@ public class TimerConfigurationEditor extends EditorPart {
 			public void handleEvent(Event arg0) {
 				
 				GenerateCodeAction action = new GenerateCodeAction();
-				action.run(file);
+				action.setActivePart(null, getEditor());
+				// Create a clone of the configurationModel to ensure, that the "original"
+				// won't get corrupted during validation (this happens before
+				// code generation). The validation may remove Use Case configurations
+				// from the ConfgurationModel resulting in a corrupt editor state.
+				// -> This is avoided with the ConfigurationModel clone :)
+				action.run(file, ConfigurationModel.GetClone(model.getModel()));
 			}});
 
 		this.finishedLoading = true;

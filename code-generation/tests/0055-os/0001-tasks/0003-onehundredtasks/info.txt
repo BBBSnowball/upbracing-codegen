@@ -1,0 +1,4 @@
+This test sets up 100 tasks which simply count and one monitoring task,
+that prints and resets the counters each second.
+
+The counter values should be equal (+-1) for each variable.

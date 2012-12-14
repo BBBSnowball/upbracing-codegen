@@ -11,6 +11,9 @@ import de.upbracing.dbc.DBCMessage;
  * @author sven
  */
 public class CanGeneratorHelper {
+	
+	public static final String NL = System.getProperties().getProperty("line.separator");
+	
 	/**
 	 * Returns the id of a message with an optional suffix
 	 * 
@@ -34,8 +37,8 @@ public class CanGeneratorHelper {
 
 		if (code == null || indent == null) return false;
 		
-		for(String line : code.split("\n")) {
-			stringBuffer.append("\n" + indent + line);
+		for(String line : code.split(NL)) {
+			stringBuffer.append(NL + indent + line);
 		}
 		
 		return code.length() > 0;

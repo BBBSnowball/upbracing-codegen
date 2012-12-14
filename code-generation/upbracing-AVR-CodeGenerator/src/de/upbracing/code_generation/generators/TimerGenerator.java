@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import de.upbracing.code_generation.TimerHeaderTemplate;
 import de.upbracing.code_generation.TimerCFileTemplate;
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.validation.ConfigurationModelValidator;
@@ -41,12 +42,17 @@ public class TimerGenerator extends AbstractGenerator {
 		for (UseCaseModel m: config.getTimerConfig().getConfigurations()) {
 
 			UseCaseModelValidator ucValidator = new UseCaseModelValidator(config.getTimerConfig(), m);
+			String message;
 			if (ucValidator.validate().equals(ValidationResult.ERROR)) {
 				// This is not really a showstopper, but the user should be warned,
 				// that this particular UseCaseConfiguration cannot be generated.
-				System.err.println("ERROR: Timer configuration \"" + m.getName() + "\" is not properly configured.\n       -> No code is generated for this Use Case!");
+				message = "Timer configuration \"" + m.getName() + "\" is not properly configured. -> No code is generated for this Use Case!";
+				config.getMessages().addMessage(Severity.ERROR, message);
 				// Remove the faulty models from code generation process (Part 1)
 				faultyModels.add(m);
+			} else if (ucValidator.validate().equals(ValidationResult.WARNING)) {
+				message = "Timer configuration \"" + m.getName() + "\" was validated with warnings. -> Code is generated, but it may not function as expected.";
+				config.getMessages().addMessage(Severity.WARNING, message);
 			}
 		}
 		

@@ -1,0 +1,5 @@
+This test tests what happens when the OS is started with zero tasks configured.
+
+It should only ONCE transmit the start message
+"Starting zero tasks test. This message must only show once."
+After the message shows, the two middle LEDs must be lid continuously.
