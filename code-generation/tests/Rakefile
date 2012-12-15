@@ -171,6 +171,22 @@ end
 exit 1 if user_config_error
 
 
+# dummy methods in case select-projects.rb doesn't
+# exist or doesn't define them
+def should_build_project(name, directory, configuration)
+	true
+end
+def should_test_project(name, directory, configuration)
+	true
+end
+begin
+	require 'select-projects.rb'
+rescue LoadError
+	# don't care
+	puts "INFO: Cannot load select-projects.rb"
+end
+
+
 # wrap test scripts to print errors to $logger
 alias :test_alias :test
 def task(*args, &block)
@@ -332,6 +348,19 @@ desc "clean projects (delete all output files)"
 task :clean do end
 
 
+# build and clean for selected tasks
+desc "build selected projects (select-projects.rb)"
+task "build-selected" => :build_selected do end
+task :build_selected do end
+desc "clean selected projects (select-projects.rb)"
+task "clean-selected" => :clean_selected do end
+task :clean_selected do end
+desc "test selected projects (select-projects.rb)"
+task "test-selected" => :test_selected do end
+task "run-selected" => :test_selected do end
+task :test_selected do end
+
+
 class Project
 	include Rake::DSL
 
@@ -419,6 +448,7 @@ class Project
 		codegen_args = Java::de::upbracing::code_generation::CodeGenerationMain::Arguments.new
 		codegen_args.config_file = config_file
 		codegen_args.target_directory = target_dir
+		codegen_args.temp_directory = "bin"
 		return codegen_args
 	end
 
@@ -452,7 +482,7 @@ class Project
 
 		esc = shell_quote
 
-		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} #{esc}#{config_file}#{esc}"
+		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} -T bin #{esc}#{config_file}#{esc}"
 	end
 
 	def create_generator_task(name, config_file)
@@ -499,6 +529,11 @@ class Project
 		task :generate_all => gen_task
 
 		task "clean-#{name}-common" => clean
+
+		if should_build_project(name, dir, nil)
+			task :build_selected => gen_task
+			task :clean_selected => clean
+		end
 
 		return gen_task
 	end
@@ -830,6 +865,11 @@ class Project
 		end
 		desc "remove output files of project #{name} (all configurations)"
 		task "clean-#{name}" => clean
+
+		if should_build_project(name, source_dir, configuration)
+			task :build_selected => build_task
+			task :clean_selected => clean
+		end
 
 		# return hex file task
 		flash_hex_file
@@ -1446,6 +1486,10 @@ class Project
 
 		add_to_test_all(dir, configuration, test)
 
+		if should_test_project(name, dir, configuration)
+			task :test_selected => test
+		end
+
 		return test
 	end
 
@@ -1548,6 +1592,7 @@ def load_project_config(dir)
 		# set default values
 		$project = nil
 		$keep_constants = []
+		$tempdir = "bin"
 
 		# not using ScriptEngineManager because this might cause problems in other
 		# parts of the program ("Bad file descriptor" exceptions)
@@ -1557,6 +1602,7 @@ def load_project_config(dir)
 
 			#TODO give it a chance to alter the test object, as well
 			jruby.put "Project", Project
+			jruby.put "tempdir", $tempdir
 
 			old_pwd = Dir.pwd
 			jruby.put("directory", dir)

@@ -31,6 +31,7 @@ public class Main {
 		opts.addOption("D", "all-dependencies", false, "like -d, but includes the class path of the generator");
 		opts.addOption("h", "help", false, "Print this help");
 		opts.addOption("C", "directory", true, "Generate files in directory");
+		opts.addOption("T", "temp-directory", true, "Put intermediate files in this directory");
 		
 		// parse the program arguments
 		Arguments config = new Arguments();
@@ -52,6 +53,8 @@ public class Main {
 		// all files will go into the target directory, which is the
 		// current directory, unless it is set with a cli argument
 		config.setTargetDirectory(cmd.getOptionValue('C', "."));
+		
+		config.setTempDirectory(cmd.getOptionValue('T', config.getTargetDirectory()));
 		
 		// configuration file should be the only left-over argument
 		args = cmd.getArgs();
@@ -89,7 +92,7 @@ public class Main {
 		}
 		
 		// load config file
-		MCUConfiguration mcu_config = Helpers.loadConfig(config.getConfigFile());
+		MCUConfiguration mcu_config = loadConfig(config);
 		
 		// generate the files
 		if (!runGenerators(mcu_config, config.getTargetDirectory()))

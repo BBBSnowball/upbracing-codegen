@@ -8,7 +8,7 @@ import java.util.HashMap;
 import javax.script.ScriptException;
 import org.junit.Test;
 
-import de.upbracing.code_generation.Helpers;
+import de.upbracing.code_generation.CodeGenerationMain;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
 import de.upbracing.code_generation.config.MCUConfiguration;
@@ -27,7 +27,7 @@ public class TestCanGenerator {
 	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
 
-		MCUConfiguration config = Helpers.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
+		MCUConfiguration config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
 		
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");

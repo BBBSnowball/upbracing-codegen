@@ -2,6 +2,7 @@ package de.upbracing.code_generation;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -23,6 +25,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import de.upbracing.code_generation.config.MCUConfiguration;
 
 public final class CodeGenerationMain {
@@ -31,24 +37,38 @@ public final class CodeGenerationMain {
 	/** Represents code generation arguments */
 	public static class Arguments {
 		private String config_file;
-		private String target_directory;
+		private String target_directory, temp_directory;
 		
 		public String getConfigFile() {
 			return config_file;
 		}
+		
 		public void setConfigFile(String config_file) {
 			this.config_file = config_file;
 		}
+		
 		public String getTargetDirectory() {
 			return target_directory;
 		}
+		
 		public void setTargetDirectory(String target_directory) {
 			if (!target_directory.endsWith("/"))
 				target_directory += "/";
 			this.target_directory = target_directory;
 		}
+		
 		public boolean hasConfigFile() {
 			return config_file != null;
+		}
+		
+		public String getTempDirectory() {
+			return temp_directory;
+		}
+		
+		public void setTempDirectory(String temp_directory) {
+			if (!temp_directory.endsWith("/"))
+				temp_directory += "/";
+			this.temp_directory = temp_directory;
 		}
 	}
 
@@ -146,6 +166,13 @@ public final class CodeGenerationMain {
 		return dependencies;
 	}
 
+	/** Get all dependencies (not only from config file)
+	 * 
+	 * @param config code generator configuration
+	 * @param complete include classpath dependencies (very many files!)
+	 * @return	a list of dependencies
+	 * @throws IOException	if the config file cannot be read
+	 */
 	public static Collection<String> getDependencies(Arguments config, boolean complete)
 			throws IOException {
 		List<String> files = new ArrayList<String>();
@@ -182,6 +209,11 @@ public final class CodeGenerationMain {
 		return files;
 	}
 
+	/** Get all files that could be generated
+	 * 
+	 * @param config code generator configuration
+	 * @return list of files
+	 */
 	public static Collection<String> getGeneratedFiles(Arguments config) {
 		List<String> files = new ArrayList<String>();
 		for (IGenerator gen : findGenerators()) {
@@ -389,5 +421,94 @@ public final class CodeGenerationMain {
 		} else
 			return true;
 	}
+	
+	
+	/**
+	 * load a JRuby configuration file
+	 * 
+	 * @param stream InputStream for the configuration file. It should be encoded with utf-8.
+	 * @return the configuration object
+	 * @throws ScriptException if the config script contains errors or raises an exception
+	 */
+	public static MCUConfiguration loadConfig(InputStream stream, String script_filename, String directory, Map<String, Object> global_vars) throws ScriptException {
+		// use JSR 223 API to invoke JRuby
+		ScriptEngineManager factory = new ScriptEngineManager();
+		ScriptEngine engine = factory.getEngineByName("jruby");
+		if (engine == null)
+			throw new RuntimeException("Couldn't find the JRuby engine!");
+		
+		//TODO set class path for JRuby, so the config.rb script can 'require' other files
+		// System.setProperty("org.jruby.embed.class.path", ...);
 
+		// create a configuration object and put it into the script engine
+		MCUConfiguration config = new MCUConfiguration();
+		engine.put("config", config);
+		
+		for (Entry<String, Object> pair : global_vars.entrySet())
+			engine.put(pair.getKey(), pair.getValue());
+		
+		engine.eval("require 'config-helpers.rb'");
+		
+		// go to directory of the script
+		String old_pwd = null;
+		if (directory != null) {
+			old_pwd = engine.eval("Dir.pwd").toString();
+			engine.put("directory", directory);
+			engine.eval("Dir.chdir($directory)");
+			MCUConfiguration.setCurrentDirectory(directory);
+		}
+		
+		// execute the script
+		engine.put(ScriptEngine.FILENAME, script_filename);
+		Reader script_reader = new InputStreamReader(stream, Charset.forName("utf-8"));
+		engine.eval(script_reader);
+		try {
+			script_reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// restore working directory
+		if (old_pwd != null) {
+			engine.put("directory", directory);
+			engine.eval("Dir.chdir($directory)");
+		}
+		
+		// return the configuration object
+		config = (MCUConfiguration) engine.get("config");
+		return config;
+	}
+	
+	/**
+	 * load a JRuby configuration file
+	 * 
+	 * @param file File name of the configuration file. It should be encoded with utf-8.
+	 * @return the configuration object
+	 * @throws ScriptException if the config script contains errors or raises an exception
+	 * @throws FileNotFoundException if the config file cannot be opened
+	 */
+	public static MCUConfiguration loadConfig(String file) throws FileNotFoundException, ScriptException {
+		return loadConfig(
+				new FileInputStream(file),
+				file,
+				new File(file).getAbsoluteFile().getParent(),
+				Collections.<String,Object>emptyMap());
+	}
+	
+	/**
+	 * load a JRuby configuration file
+	 * 
+	 * @param config code generator configuration
+	 * @return the configuration object
+	 * @throws ScriptException if the config script contains errors or raises an exception
+	 * @throws FileNotFoundException if the config file cannot be opened
+	 */
+	public static MCUConfiguration loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
+		String file = config.getConfigFile();
+		return loadConfig(
+				new FileInputStream(file),
+				file,
+				new File(file).getAbsoluteFile().getParent(),
+				Collections.<String,Object>singletonMap("tempdir", config.getTempDirectory()));
+	}
 }
