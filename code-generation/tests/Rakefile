@@ -1542,33 +1542,60 @@ FileInputStream = Java::java::io::FileInputStream
 def load_project_config(dir)
 	project_config = File.join2(dir, "project.rb")
 	if File.exists? project_config
-		jruby = ScriptEngineManager.new.getEngineByName("jruby")
-		raise "Couldn't find the JRuby engine!" unless jruby
-
-		#TODO give it a chance to alter the test object, as well
-		jruby.put "Project", Project
-
-		old_pwd = Dir.pwd
-		jruby.put("directory", dir)
-		jruby.eval("Dir.chdir($directory)")
-
-		jruby.put(ScriptEngine.FILENAME, project_config)
-
 		# save list of constants
 		all_consts = Object.constants.clone
 
-		script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"))
-		jruby.eval script_reader
-		script_reader.close()
+		# set default values
+		$project = nil
+		$keep_constants = []
 
-		# restore working directory
-		Dir.chdir old_pwd
+		# not using ScriptEngineManager because this might cause problems in other
+		# parts of the program ("Bad file descriptor" exceptions)
+		if false
+			jruby = ScriptEngineManager.new.getEngineByName("jruby")
+			raise "Couldn't find the JRuby engine!" unless jruby
 
-		project = jruby.get("project")
+			#TODO give it a chance to alter the test object, as well
+			jruby.put "Project", Project
+
+			old_pwd = Dir.pwd
+			jruby.put("directory", dir)
+			jruby.eval("Dir.chdir($directory)")
+
+			jruby.put(ScriptEngine.FILENAME, project_config)
+
+			script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"))
+			jruby.eval script_reader
+			script_reader.close()
+
+			# restore working directory
+			Dir.chdir old_pwd
+
+			project = jruby.get("project")
+			keep_constants = jruby.get("keep_constants")
+		else
+			# read file contents before changing directory
+			contents = File.read(project_config)
+
+			# change to project directory
+			old_pwd = Dir.pwd
+			Dir.chdir(dir)
+
+			# evaluate code
+			#TODO: use global binding
+			project = eval(contents, nil, project_config) || $project
+
+			# go back to previous directory
+			Dir.chdir old_pwd
+
+			keep_constants = $keep_constants
+		end
+
+		raise "project.rb hasn't set $project" unless project
 
 		# remove constants that have been created by the script
 		#puts "new constants after loading #{project_config}: " + (Object.constants - all_consts).inspect
-		keep_constants = jruby.get("keep_constants") || []
+		keep_constants = keep_constants || []
 		(Object.constants - all_consts - keep_constants).each do |const_name|
 			Object.send(:remove_const, const_name)
 		end
