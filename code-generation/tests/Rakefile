@@ -414,9 +414,12 @@ class Project
 		File.join2(dir, TARGET_DIR)
 	end
 
-	def code_generator_cmdline_for_dependencies(target_dir, config_file)
-		esc = shell_quote
-		"#{esc}#{CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} #{esc}#{config_file}#{esc}"
+	def code_generator_arguments(target_dir, config_file)
+		# config for code generator
+		codegen_args = Java::de::upbracing::code_generation::CodeGenerationMain::Arguments.new
+		codegen_args.config_file = config_file
+		codegen_args.target_directory = target_dir
+		return codegen_args
 	end
 
 	def _stripped_lines(string)
@@ -457,15 +460,15 @@ class Project
 
 		target_dir = code_generator_target_dir(config_file)
 
-		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
+		codegen_args = code_generator_arguments(target_dir, config_file)
 
 		# dependencies
-		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
+		dependencies = Java::de::upbracing::code_generation::CodeGenerationMain.getDependencies(codegen_args, true)
 		dependent_tasks = dependencies.map { |dep| file dep }
-		#puts "dependent on code gen: #{dependent_tasks.inspect}"
+		#puts "dependent on code gen for #{name}: #{dependent_tasks.inspect}"
 
 		# generated files
-		generated_files = _stripped_lines(_unescape(`#{code_generator} -w`))
+		generated_files = Java::de::upbracing::code_generation::CodeGenerationMain.getGeneratedFiles(codegen_args)
 
 		# Code generation will generate several files, but maybe only
 		# some of them are actually created. Therefore, we track the

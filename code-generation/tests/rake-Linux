@@ -12,6 +12,9 @@ fi
 if [ -z "$TIMER_CONFIG_JAR" ] ; then
 	TIMER_CONFIG_JAR="../upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"
 fi
+if [ -z "$STATECHART_BIN" ] ; then
+	STATECHART_BIN="../StatechartEditor/bin"
+fi
 
 if [ -z "$NG" ] ; then NG="`which nailgun`" ; fi
 if [ -z "$NG" ] ; then NG="`which ng-nailgun`" ; fi
@@ -29,7 +32,7 @@ for jar in jruby-complete-1.7.0.jar ruby-gems.jar \
 do
 	CP="$CP:$CODE_GENERATOR_DIR/libs/$jar"
 done
-CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR:$CODE_GENERATOR_DIR/bin:$NRSERIAL_JAR"
+CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR:$CODE_GENERATOR_DIR/bin:$NRSERIAL_JAR:$STATECHART_BIN"
 
 if [ -n "$NG" ] ; then
 	# start nailgun server, unless it is already running
