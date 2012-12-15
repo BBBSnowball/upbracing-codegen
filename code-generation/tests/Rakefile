@@ -452,6 +452,12 @@ class Project
 		return codegen_args
 	end
 
+	def code_generator_cmdline_for_dependencies(codegen_args)
+		esc = shell_quote
+		"#{esc}#{CODE_GENERATOR_BIN}#{esc} -C #{esc}#{codegen_args.target_directory}#{esc} #{esc}#{codegen_args.config_file}#{esc}" \
+			+ (codegen_args.temp_directory ? " -T #{esc}#{codegen_args.temp_directory}#{esc}" : "")
+	end
+
 	def _stripped_lines(string)
 		string.lines.map {|x| x.strip}.select {|x| not x.empty? }.to_a
 	end
@@ -491,9 +497,11 @@ class Project
 		target_dir = code_generator_target_dir(config_file)
 
 		codegen_args = code_generator_arguments(target_dir, config_file)
+		code_generator = code_generator_cmdline_for_dependencies(codegen_args)
 
 		# dependencies
-		dependencies = Java::de::upbracing::code_generation::CodeGenerationMain.getDependencies(codegen_args, true)
+		#dependencies = Java::de::upbracing::code_generation::CodeGenerationMain.getDependencies(codegen_args, true, ".")
+		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
 		dependent_tasks = dependencies.map { |dep| file dep }
 		#puts "dependent on code gen for #{name}: #{dependent_tasks.inspect}"
 

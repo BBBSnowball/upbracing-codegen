@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -173,7 +174,8 @@ public final class CodeGenerationMain {
 	 * @return	a list of dependencies
 	 * @throws IOException	if the config file cannot be read
 	 */
-	public static Collection<String> getDependencies(Arguments config, boolean complete)
+	public static Collection<String> getDependencies(Arguments config, boolean complete,
+				String... ignored_classpath_entries)
 			throws IOException {
 		List<String> files = new ArrayList<String>();
 		
@@ -188,9 +190,14 @@ public final class CodeGenerationMain {
 		}
 		
 		if (complete) {
+			Set<String> ignored_classpath_entries_set
+				= new HashSet<String>(Arrays.asList(ignored_classpath_entries));
 			String classpath[] = System.getProperty("java.class.path")
 					.split(""+File.pathSeparatorChar);
 			for (String entry : classpath) {
+				if (ignored_classpath_entries_set.contains(entry))
+					continue;
+				
 				File f = new File(entry);
 				if (f.isFile())
 					// a JAR file
