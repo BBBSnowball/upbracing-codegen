@@ -60,12 +60,14 @@ def generate_pins_from_eagle(eagle_sch_file, output)
 end
 
 def load_pins_from_eagle(eagle_sch_file)
+  pins_file = File.join($tempdir || ".", "pins_from_eagle.rb")
+  
   #TODO This generates a file. This fact should be available to the Makefile.
   generate_pins_from_eagle(
     eagle_sch_file,
-    "pins_from_eagle.rb")
+    pins_file)
   
-  require './pins_from_eagle.rb'
+  require pins_file
 end
 
 def string_or_regex_matches(pattern, str)

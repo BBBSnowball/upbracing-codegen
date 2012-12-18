@@ -171,6 +171,22 @@ end
 exit 1 if user_config_error
 
 
+# dummy methods in case select-projects.rb doesn't
+# exist or doesn't define them
+def should_build_project(name, directory, configuration)
+	true
+end
+def should_test_project(name, directory, configuration)
+	true
+end
+begin
+	require 'select-projects.rb'
+rescue LoadError
+	# don't care
+	puts "INFO: Cannot load select-projects.rb"
+end
+
+
 # wrap test scripts to print errors to $logger
 alias :test_alias :test
 def task(*args, &block)
@@ -332,6 +348,19 @@ desc "clean projects (delete all output files)"
 task :clean do end
 
 
+# build and clean for selected tasks
+desc "build selected projects (select-projects.rb)"
+task "build-selected" => :build_selected do end
+task :build_selected do end
+desc "clean selected projects (select-projects.rb)"
+task "clean-selected" => :clean_selected do end
+task :clean_selected do end
+desc "test selected projects (select-projects.rb)"
+task "test-selected" => :test_selected do end
+task "run-selected" => :test_selected do end
+task :test_selected do end
+
+
 class Project
 	include Rake::DSL
 
@@ -414,9 +443,19 @@ class Project
 		File.join2(dir, TARGET_DIR)
 	end
 
-	def code_generator_cmdline_for_dependencies(target_dir, config_file)
+	def code_generator_arguments(target_dir, config_file)
+		# config for code generator
+		codegen_args = Java::de::upbracing::code_generation::CodeGenerationMain::Arguments.new
+		codegen_args.config_file = config_file
+		codegen_args.target_directory = target_dir
+		codegen_args.temp_directory = "bin"
+		return codegen_args
+	end
+
+	def code_generator_cmdline_for_dependencies(codegen_args)
 		esc = shell_quote
-		"#{esc}#{CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} #{esc}#{config_file}#{esc}"
+		"#{esc}#{CODE_GENERATOR_BIN}#{esc} -C #{esc}#{codegen_args.target_directory}#{esc} #{esc}#{codegen_args.config_file}#{esc}" \
+			+ (codegen_args.temp_directory ? " -T #{esc}#{codegen_args.temp_directory}#{esc}" : "")
 	end
 
 	def _stripped_lines(string)
@@ -449,7 +488,7 @@ class Project
 
 		esc = shell_quote
 
-		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} #{esc}#{config_file}#{esc}"
+		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} -T bin #{esc}#{config_file}#{esc}"
 	end
 
 	def create_generator_task(name, config_file)
@@ -457,16 +496,17 @@ class Project
 
 		target_dir = code_generator_target_dir(config_file)
 
-		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
+		codegen_args = code_generator_arguments(target_dir, config_file)
+		code_generator = code_generator_cmdline_for_dependencies(codegen_args)
 
 		# dependencies
-		puts "code_generator: #{code_generator.inspect}"
+		#dependencies = Java::de::upbracing::code_generation::CodeGenerationMain.getDependencies(codegen_args, true, ".")
 		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
 		dependent_tasks = dependencies.map { |dep| file dep }
-		#puts "dependent on code gen: #{dependent_tasks.inspect}"
+		#puts "dependent on code gen for #{name}: #{dependent_tasks.inspect}"
 
 		# generated files
-		generated_files = _stripped_lines(_unescape(`#{code_generator} -w`))
+		generated_files = Java::de::upbracing::code_generation::CodeGenerationMain.getGeneratedFiles(codegen_args)
 
 		# Code generation will generate several files, but maybe only
 		# some of them are actually created. Therefore, we track the
@@ -497,6 +537,11 @@ class Project
 		task :generate_all => gen_task
 
 		task "clean-#{name}-common" => clean
+
+		if should_build_project(name, dir, nil)
+			task :build_selected => gen_task
+			task :clean_selected => clean
+		end
 
 		return gen_task
 	end
@@ -828,6 +873,11 @@ class Project
 		end
 		desc "remove output files of project #{name} (all configurations)"
 		task "clean-#{name}" => clean
+
+		if should_build_project(name, source_dir, configuration)
+			task :build_selected => build_task
+			task :clean_selected => clean
+		end
 
 		# return hex file task
 		flash_hex_file
@@ -1444,6 +1494,10 @@ class Project
 
 		add_to_test_all(dir, configuration, test)
 
+		if should_test_project(name, dir, configuration)
+			task :test_selected => test
+		end
+
 		return test
 	end
 
@@ -1540,33 +1594,62 @@ FileInputStream = Java::java::io::FileInputStream
 def load_project_config(dir)
 	project_config = File.join2(dir, "project.rb")
 	if File.exists? project_config
-		jruby = ScriptEngineManager.new.getEngineByName("jruby")
-		raise "Couldn't find the JRuby engine!" unless jruby
-
-		#TODO give it a chance to alter the test object, as well
-		jruby.put "Project", Project
-
-		old_pwd = Dir.pwd
-		jruby.put("directory", dir)
-		jruby.eval("Dir.chdir($directory)")
-
-		jruby.put(ScriptEngine.FILENAME, project_config)
-
 		# save list of constants
 		all_consts = Object.constants.clone
 
-		script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"))
-		jruby.eval script_reader
-		script_reader.close()
+		# set default values
+		$project = nil
+		$keep_constants = []
+		$tempdir = "bin"
 
-		# restore working directory
-		Dir.chdir old_pwd
+		# not using ScriptEngineManager because this might cause problems in other
+		# parts of the program ("Bad file descriptor" exceptions)
+		if false
+			jruby = ScriptEngineManager.new.getEngineByName("jruby")
+			raise "Couldn't find the JRuby engine!" unless jruby
 
-		project = jruby.get("project")
+			#TODO give it a chance to alter the test object, as well
+			jruby.put "Project", Project
+			jruby.put "tempdir", $tempdir
+
+			old_pwd = Dir.pwd
+			jruby.put("directory", dir)
+			jruby.eval("Dir.chdir($directory)")
+
+			jruby.put(ScriptEngine.FILENAME, project_config)
+
+			script_reader = InputStreamReader.new(FileInputStream.new(project_config), Charset.forName("utf-8"))
+			jruby.eval script_reader
+			script_reader.close()
+
+			# restore working directory
+			Dir.chdir old_pwd
+
+			project = jruby.get("project")
+			keep_constants = jruby.get("keep_constants")
+		else
+			# read file contents before changing directory
+			contents = File.read(project_config)
+
+			# change to project directory
+			old_pwd = Dir.pwd
+			Dir.chdir(dir)
+
+			# evaluate code
+			#TODO: use global binding
+			project = eval(contents, nil, project_config) || $project
+
+			# go back to previous directory
+			Dir.chdir old_pwd
+
+			keep_constants = $keep_constants
+		end
+
+		raise "project.rb hasn't set $project" unless project
 
 		# remove constants that have been created by the script
 		#puts "new constants after loading #{project_config}: " + (Object.constants - all_consts).inspect
-		keep_constants = jruby.get("keep_constants") || []
+		keep_constants = keep_constants || []
 		(Object.constants - all_consts - keep_constants).each do |const_name|
 			Object.send(:remove_const, const_name)
 		end
