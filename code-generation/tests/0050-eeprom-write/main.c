@@ -16,6 +16,8 @@
 //#include "semaphore.h"
 //#include "Os_error.h"
 #include "gen/eeprom_accessors.h"
+#include "D:\coll\project\program\program\code-generation\tests\common\rs232.h"
+#include "D:\coll\project\program\program\code-generation\tests\common\rs232-helpers.h"
 
 volatile uint8_t j = 1;
 volatile uint8_t shift = 0;
@@ -51,12 +53,12 @@ int main(void)
 	
 	// Init Os
 	//StartOS();
-	
+	usart_init();
 	WRITE_A(20);
 	
 	val = READ_A();
 	
-	usart_send_str(&val);
+	usart_send_number(&val,10,0);
 
 	//NOTE: Since OS is used, program will never get here!
     //while(1);
