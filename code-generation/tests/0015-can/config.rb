@@ -59,6 +59,7 @@ $config.can.getMessage("TestMessage6A").getSignal("TestSignal6A").readValueTask 
 
 
 # Set up receive handlers
+$config.can.getMessage("InitTestphase").afterRx = "InitTestphase_onReceive();"
 $config.can.getMessage("TestMessage1").afterRx = "TestMessage1_onReceive();"
 $config.can.getMessage("TestMessage2A").afterRx = "TestMessage2A_onReceive();"
 $config.can.getMessage("TestMessage2B").afterRx = "TestMessage2B_onReceive();"

@@ -31,7 +31,10 @@ int main(void) {
 	testmaster = FALSE;
 	counter = 0;
 
-	DDRA = 0xff; // Set LED Pins as output
+	DDRA = 0xff; // Set LED pins as output
+	DDRE = 0x00; // Set button pins as input
+	PORTE = 0xf4; // Enable pull ups for buttons
+
 	PORTA = 0x01;
 
 	// Init usart
@@ -39,10 +42,16 @@ int main(void) {
 	PORTA = 0x02;
 	usart_send_str("\nStarting CAN test.\n");
 
+	usart_send_str("Initialize CAN with 500kbps.\n");
+	can_init_500kbps();
+
 	usart_send_str("Initialize CAN mobs.\n");
 	can_init_mobs();
 
 	_delay_ms(100);
+
+	// Interrupts are needed to receive can messages
+	sei();
 
 	// Set up as either master or slave mode
 	modeSetup();
@@ -60,6 +69,8 @@ int main(void) {
 void modeSetup() {
 	// Assume slave mode and wait until either the master sends a message to start the test
 	// or the control pc sends the ASCII value "M" over RS232 and change to master mode
+
+	PORTA = 0x04;
 	usart_send_str("Waiting for mode setup.\n");
 
 	char c;
@@ -76,7 +87,18 @@ void modeSetup() {
 				usart_send_str("ERROR: Unknown command.\n");
 			}
 		}
+		// Alternatively the board can be set to master by pressing the center button
+		if (~PINE & (1<<2)) {
+			testmaster = true;
+			usart_send_str("Set board to master mode.\n");
+			send_InitTestphase_nowait(CANTEST_VERSION, CANTEST_INIT_REQUEST);
+			usart_send_str("Waiting for slave board...\n");
+
+			while(~PINE & (1<<2)); // Wait until the button has been released
+		}
 	}
+
+	PORTA = 0x08;
 
 	if (testmaster) {
 		if (getTestNumber() != CANTEST_INIT_ACK)
@@ -86,65 +108,63 @@ void modeSetup() {
 			PORTA = 0x81; // Two edge LEDs on
 			usart_send_str("Set board to slave mode\n");
 			usart_send_str("WARNING: This board does not output the test results.\n");
-			send_InitTestphase_nowait(CANTEST_VERSION, CANTEST_INIT_ACK);
 		}
 	}
 
 	if (getTestVersion() != CANTEST_VERSION) {
-		usart_send_str("ERROR: Other board uses different test version.\n");
+		usart_send_str("ERROR: The other board uses a different test version.\n");
 	}
 }
 
 void assertValue(int32_t expected, int32_t compare) {
 	if (expected == compare) {
-		usart_send_str("Test successful!\n");
+		usart_send_str("Test successful! Expected ");
 	} else {
 		usart_send_str("Test failed. Expected ");
-		usart_send_number(expected, 16, 2);
-		usart_send_str(", but received ");
-		usart_send_number(compare, 16, 2);
-		usart_send_str("\n");
-
 	}
+	usart_send_number(expected, 16, 2);
+	usart_send_str(", received ");
+	usart_send_number(compare, 16, 2);
+	usart_send_str("\n");
 }
 
 void assert2Values(int32_t expected1, int32_t expected2, int32_t compare1, int32_t compare2) {
 	if (expected1 == compare1 && expected2 == compare2) {
-		usart_send_str("Test successful!\n");
+		usart_send_str("Test successful! Expected (");
 	} else {
 		usart_send_str("Test failed. Expected (");
-		usart_send_number(expected1, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(expected2, 16, 2);
-
-		usart_send_str("), but received (");
-		usart_send_number(compare1, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(compare2, 16, 2);
-		usart_send_str(")\n");
 	}
+	usart_send_number(expected1, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(expected2, 16, 2);
+
+	usart_send_str("), received (");
+	usart_send_number(compare1, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(compare2, 16, 2);
+	usart_send_str(")\n");
 }
 
 void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 				   int32_t compare1, int32_t compare2, int32_t compare3) {
 	if (expected1 == compare1 && expected2 == compare2 && expected3 == compare3) {
-		usart_send_str("Test successful!\n");
+		usart_send_str("Test successful! Expected (");
 	} else {
 		usart_send_str("Test failed. Expected (");
-		usart_send_number(expected1, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(expected2, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(expected3, 16, 2);
-
-		usart_send_str("), but received (");
-		usart_send_number(compare1, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(compare2, 16, 2);
-		usart_send_str(", ");
-		usart_send_number(compare3, 16, 2);
-		usart_send_str(")\n");
 	}
+	usart_send_number(expected1, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(expected2, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(expected3, 16, 2);
+
+	usart_send_str("), received (");
+	usart_send_number(compare1, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(compare2, 16, 2);
+	usart_send_str(", ");
+	usart_send_number(compare3, 16, 2);
+	usart_send_str(")\n");
 }
 
 void testMaster() {
@@ -160,14 +180,14 @@ void testMaster() {
 	usart_send_str("\nTest 2/6: Using the general MOB transmitter\n");
 	send_TestMessage2A_nowait(CANTEST_TEST2A_VALUE);
 	send_TestMessage2B_nowait(CANTEST_TEST2B_VALUE);
-	while(!getTestSignal2A() && !getTestSignal2B()); // Wait for the reply
+	while(!getTestSignal2A() || !getTestSignal2B()); // Wait for the reply
 	assert2Values(CANTEST_TEST2A_VALUE, CANTEST_TEST2B_VALUE,
 				 getTestSignal2A(), getTestSignal2B());
 
 	usart_send_str("\nTest 3/6: Multiple messages in one MOB\n");
 	send_TestMessage3A_nowait(CANTEST_TEST3A_VALUE);
 	send_TestMessage3B_nowait(CANTEST_TEST3B_VALUE);
-	while(!getTestSignal3A() && !getTestSignal3B()){ // Wait for the reply
+	while(!getTestSignal3A() || !getTestSignal3B()){ // Wait for the reply
 		_delay_ms(100); // don't stay in critical sections all the time
 	}
 	assert2Values(CANTEST_TEST3A_VALUE, CANTEST_TEST3B_VALUE,
@@ -176,7 +196,7 @@ void testMaster() {
 	usart_send_str("\nTest 4/6: Multiple signals and endianness test\n");
 	//The 0x666 is a dummy value that is not used by the other board
 	send_TestMessage4C_nowait(CANTEST_TEST4A_VALUE, 0x0666, CANTEST_TEST4B_VALUE, CANTEST_TEST4C_VALUE);
-	while(!getTestSignalA2() && !getTestSignalB2() && !getTestSignalC2()){ // Wait for the reply
+	while(!getTestSignalA2() || !getTestSignalB2() || !getTestSignalC2()){ // Wait for the reply
 		_delay_ms(100); // don't stay in critical sections all the time
 	}
 	assert3Values(CANTEST_TEST4A_VALUE, CANTEST_TEST4B_VALUE, CANTEST_TEST4C_VALUE,
@@ -187,13 +207,14 @@ void testMaster() {
 	while(!getTestSignal5B()){ // Wait for the reply
 		_delay_ms(100); // don't stay in critical sections all the time
 	}
-	assertValue(CANTEST_TEST5B_VALUE, getTestSignal5B());
 	// Now send message 5C manually and wait for the reply. (The receive handler also works manually)
 	sendMessage5C();
 	while(!getTestSignal5D()){ // Wait for the reply
 		_delay_ms(100); // don't stay in critical sections all the time
 	}
-	assertValue(CANTEST_TEST5D_VALUE, getTestSignal5D());
+	assert2Values(CANTEST_TEST5B_VALUE, CANTEST_TEST5D_VALUE,
+				  getTestSignal5B(), getTestSignal5D());
+
 
 	// Set the test signal to be send later by the periodic task
 	usart_send_str("\nTest 6/6: Sending periodic messages with an OS task\n");
@@ -202,6 +223,12 @@ void testMaster() {
 
 
 // Receive methods for slave mode
+
+void InitTestphase_onReceive() {
+	if (!testmaster) {
+		send_InitTestphase_nowait(CANTEST_VERSION, CANTEST_INIT_ACK);
+	}
+}
 
 void TestMessage1_onReceive() {
 	if (!testmaster) {
@@ -261,7 +288,7 @@ void TestMessage6B_onReceive() {
 		if (getTestSignal6B() == CANTEST_TEST6_VALUE + counter) {
 			usart_send_str("Received periodic message ");
 			usart_send_number(counter+1, 10, 1);
-			usart_send_str("of 10\n");
+			usart_send_str(" of 10\n");
 			if (counter == 9) {
 				usart_send_str("Test successful!\n");
 			}
@@ -273,7 +300,6 @@ void TestMessage6B_onReceive() {
 			usart_send_str(", but received ");
 			usart_send_number(getTestSignal6B(), 16, 2);
 			usart_send_str("\n");
-
 		}
 	}
 }
@@ -283,7 +309,7 @@ void sendMessage5B(BOOL error) {
 	CANPAGE = (MOB_GENERAL_MESSAGE_TRANSMITTER<<4);
 	can_mob_wait_for_transmission_of_current_mob();
 	CANSTMOB = 0;
-	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_TestMessage5D, CAN_TestMessage5D_IsExtended);
+	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_TestMessage5B, CAN_TestMessage5B_IsExtended);
 	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
 
 	if (error) {
@@ -292,8 +318,8 @@ void sendMessage5B(BOOL error) {
 		CANMSG = 0x00;
 	} else {
 		// Message 5B is "0" = big endian. (MSB first)
-		CANMSG = (CANTEST_TEST5B_VALUE && 0xFF00) >> 8;
-		CANMSG = CANTEST_TEST5B_VALUE && 0x00FF;
+		CANMSG = (CANTEST_TEST5B_VALUE & 0xFF00) >> 8;
+		CANMSG = CANTEST_TEST5B_VALUE & 0x00FF;
 	}
 
 	can_mob_transmit_nowait(MOB_GENERAL_MESSAGE_TRANSMITTER);
@@ -307,8 +333,8 @@ void sendMessage5C() {
 	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
 
 	// Message 5C is "1" = little endian. (LSB first)
-	CANMSG = CANTEST_TEST5C_VALUE && 0x00FF;
-	CANMSG = (CANTEST_TEST5C_VALUE && 0xFF00) >> 8;
+	CANMSG = CANTEST_TEST5C_VALUE & 0x00FF;
+	CANMSG = (CANTEST_TEST5C_VALUE & 0xFF00) >> 8;
 
 	can_mob_transmit_nowait(MOB_GENERAL_MESSAGE_TRANSMITTER);
 }
@@ -320,12 +346,12 @@ void TestMessage5A_receiveHandler() {
 
 	// First byte should be the least significant byte
 	byte = CANMSG;
-	if (byte == CANTEST_TEST5A_VALUE && 0x00FF) {
 
+	if (byte == (uint8_t)(CANTEST_TEST5A_VALUE & 0x00FF)) {
 		// Second byte should be the most significant byte
 		byte = CANMSG;
-		if (byte == (CANTEST_TEST5A_VALUE && 0xFF00) >> 8) {
 
+		if (byte == (CANTEST_TEST5A_VALUE & 0xFF00) >> 8) {
 			// Test passed. Send message B back manually
 			sendMessage5B(FALSE);
 			return;

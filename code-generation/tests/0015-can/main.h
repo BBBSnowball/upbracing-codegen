@@ -41,6 +41,7 @@ void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 
 void testMaster();
 
+void InitTestphase_onReceive();
 void TestMessage1_onReceive();
 void TestMessage2A_onReceive();
 void TestMessage2B_onReceive();
