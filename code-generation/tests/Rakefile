@@ -460,6 +460,7 @@ class Project
 		code_generator = code_generator_cmdline_for_dependencies(target_dir, config_file)
 
 		# dependencies
+		puts "code_generator: #{code_generator.inspect}"
 		dependencies = _stripped_lines(_unescape(`#{code_generator} -D`))
 		dependent_tasks = dependencies.map { |dep| file dep }
 		#puts "dependent on code gen: #{dependent_tasks.inspect}"
