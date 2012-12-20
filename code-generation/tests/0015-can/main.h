@@ -31,6 +31,7 @@
 
 BOOL testmaster;
 int counter;
+uint8_t receiveFlags;
 
 void modeSetup();
 
