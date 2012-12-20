@@ -589,7 +589,7 @@ class Project
 	end
 
 	def compile(source_dir, source_file, target_dir, configuration, optional)
-		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "")
+		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "").sub(/(..\/)*/,"")
 
 		target = File.join2(target_dir, target_file)
 		if source_file.start_with? "#/"
