@@ -14,16 +14,23 @@ sleep 3
 $helper.flash_processor
 
 # Initialization
+test0 = $helper.start_test "Initialization"
+begin
 $helper.first_serial.expect_string "\nStarting CAN test.\n"
 $helper.first_serial.expect_string "Initialize CAN with 500kbps.\n"
 $helper.first_serial.expect_string "Initialize CAN mobs.\n"
 $helper.first_serial.expect_string "Waiting for mode setup.\n"
-puts "Send char M to board:" 
+$toolkit.messages.info "Send char M to board" 
 $helper.first_serial.getOutputStream().write(0x4D) # sends the char 'M' to set the board to master mode
 puts "\n"
 $helper.first_serial.expect_string "Set board to master mode.\n"
 $helper.first_serial.expect_string "Waiting for slave board...\n"
 $helper.first_serial.expect_string "Starting tests as master.\n"
+  test0.succeed
+rescue Java::de::upbracing::code_generation::tests::TestFailedException
+  test0.fail "Failed."
+end
+test0.pop
 
 # Test 1
 test1 = $helper.start_test "Test 1: Simple 1 byte reply test"
@@ -94,14 +101,14 @@ begin
     #Measure time
     t = Time.now - t_start
     t_start = Time.now
-    
-    puts "Time for this message: #{t} seconds"
+
+    $toolkit.messages.info "Time for this message: #{t} seconds"
     if t < 0.9
-      puts "Test failed. The message was to quick. It should not be quicker than 0.9 seconds."
+      $toolkit.messages.error "Test failed. The message was to quick. It should not be quicker than 0.9 seconds."
       raise Java::de::upbracing::code_generation::tests::TestFailedException.new
     end
     if t > 1.1
-      puts "Test failed. The message took to long. It should not take longer than 1.1 seconds"
+      $toolkit.messages.error "Test failed. The message took to long. It should not take longer than 1.1 seconds"
       raise Java::de::upbracing::code_generation::tests::TestFailedException.new
     end
   end
