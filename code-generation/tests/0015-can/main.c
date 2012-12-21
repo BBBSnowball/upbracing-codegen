@@ -173,7 +173,7 @@ void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 void testMaster() {
 	PORTA = 0x18; // Two middle LEDs on
 
-	usart_send_str("Starting tests as master\n");
+	usart_send_str("Starting tests as master.\n");
 
 	usart_send_str("\nTest 1/6: Simple 1 byte reply test\n");
 	send_TestMessage1_nowait(CANTEST_TEST1_VALUE);
