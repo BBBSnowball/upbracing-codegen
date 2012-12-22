@@ -13,25 +13,17 @@
 #	error Expecting AT90CAN128. Either update your project configuration / Makefile or the code generator configuration.
 #endif
 
-#define OS_CFG_CC BCC1
-
 //TODO put as much as possible into program memory constants or
 //     initialization functions in OS_cfg_generated.c
+//#if F_CPU != 8000000
+//#	error Wrong CPU frequency!
+//#endif
 #define OS_TIMER_PRESCALE			TIMER_PRESCALE_64_bm
-#define OS_TIMER_COMPARE_VALUE		12499
+#define OS_TIMER_COMPARE_VALUE		24999
 
 // category: drivers/usart
 
 // enable USART driver
 #define USART_ENABLE_DRIVER
-
-// category: os/core
-
-// conformance mode (task features)
-#define OS_CFG_CC BCC1
-#define OS_CFG_CC_BCC1
-#undef  OS_CFG_CC_BCC2
-#undef  OS_CFG_CC_ECC1
-#undef  OS_CFG_CC_ECC2
 
 #endif /* OS_CFG_FEATURES_H_ */

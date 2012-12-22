@@ -21,6 +21,9 @@
 
 //TODO put as much as possible into program memory constants or
 //     initialization functions in OS_cfg_generated.c
+//#if F_CPU != <%= rtos.getClock() %>
+//#	error Wrong CPU frequency!
+//#endif
 #define OS_TIMER_PRESCALE			TIMER_PRESCALE_<%= rtos.getTimerPrescaler() %>_bm
 #define OS_TIMER_COMPARE_VALUE		<%= rtos.getTimerCountTo() %>
 
