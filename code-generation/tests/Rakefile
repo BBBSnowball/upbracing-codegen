@@ -346,6 +346,7 @@ task :default => :build_all do end
 # clean task removes all build output files and directories
 desc "clean projects (delete all output files)"
 task :clean do end
+task "clean-all" => :clean do end
 
 
 # build and clean for selected tasks
@@ -527,7 +528,7 @@ class Project
 
 		#desc "clean up files generated for '#{config_file}'"
 		clean = task "clean for #{config_file}" do
-			rm [dummy_file] + generated_files, :force => true
+			rm [dummy_file] + generated_files.to_a, :force => true
 			rmdir target_dir if Dir.exists? target_dir
 		end
 
@@ -536,7 +537,7 @@ class Project
 
 		task :generate_all => gen_task
 
-		task "clean-#{name}-common" => clean
+		task "clean-#{name}-common" => clean do end
 
 		if should_build_project(name, dir, nil)
 			task :build_selected => gen_task
@@ -1297,7 +1298,7 @@ class Project
 			rm_rf java_output_dir
 		end
 
-		task "clean-#{name}-common" => clean_java
+		task "clean-#{name}-common" => clean_java do end
 
 		compile_java_task
 	end
@@ -1516,7 +1517,10 @@ class Project
 
 			build_task.enhance [compile_java_task] if compile_java_task
 
-			task "clean-#{name}-#{configuration}" => "clean-#{name}-common"
+			# create the clean_common task, in case it doesn't already exist
+			clean_common = task("clean-#{name}-common") do end
+
+			task "clean-#{name}-#{configuration}" => clean_common
 		end
 
 		# clean tasks
