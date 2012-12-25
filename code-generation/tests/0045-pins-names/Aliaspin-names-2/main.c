@@ -1,59 +1,43 @@
 #include<avr/wdt.h>
 
 int main() {
-	//receive data from the PC for request of the test of the first gear
-	if (usart_recv() == "First_gear") {
+	usart_init();
+
+	if (usart_recv() == "LOW_FUEL") {
 		//confirm the request
-		usart_send_str("First gear test started");
+		usart_send_str("Low fuel test started");
+		//begin the test
+		HIGH(LOW_FUEL);
+		OUTPUT(LOW_FUEL);
 
-		//start the testing
-		HIGH(FIRST_GEAR);
-		OUTPUT(FIRST_GEAR);
-
-		//turn off the led after the mini test has finished
+		//if test passed turn off the LED
 		if (usart_recv() == "turn_off")
-			LOW(FIRST_GEAR);
+			LOW(LOW_FUEL);
 	}
 
-	//receive data from the PC for request of the test of the second gear
-	if (usart_recv() == "Second_gear") {
+	if (usart_recv() == "ENGINE_FAILURE") {
 		//confirm the request
-		usart_send_str("Second gear test started");
+		usart_send_str("Engine failure test started");
+		//begin the test
+		HIGH(ENGINE_FAILURE);
+		OUTPUT(ENGINE_FAILURE);
 
-		//start the testing
-		HIGH(SECOND_GEAR);
-		OUTPUT(SECOND_GEAR);
-
-		//turn off the led after the the mini test has finished
+		//if test passes turn off the LED
 		if (usart_recv() == "turn_off")
-			LOW(SECOND_GEAR);
+			LOW(ENGINE_FAILURE);
 	}
 
-	//receive data from the PC for request of the test of the third gear
-	if (usart_recv() == "Third_gear") {
+	if (usart_recv() == "HEADLIGHT_NOT_WORKING") {
 		//confirm the request
-		usart_send_str("Third gear test started");
+		usart_send_str("Headlight not working test started");
 
-		//start the testing
-		HIGH(THIRD_GEAR);
-		OUTPUT(THIRD_GEAR);
+		//begin the test
+		HIGH(HEADLIGHT_NOT_WORKING);
+		OUTPUT(HEADLIGHT_NOT_WORKING);
 
-		//turn off the led after the mini test has ended
-		if(usart_recv() == "turn_off")
-			LOW(THIRD_GEAR);
+		//if test passes turn off the LED
+		if (usart_rec() == "turn_off")
+			LOW(HEADLIGHT_NOT_WORKING);
 	}
 
-	//receive data from the PC for request of the test of the fourth gear
-	if (usart_recv() == "Fourth_gear") {
-		//confirm  the request
-		usart_send_str("Fouth gear test started");
-
-		//start the testing
-		HIGH(FOURTH_GEAR);
-		OUTPUT(FOURTH_GEAR);
-
-		//turn off the led after the mini test has ended
-		if (usart_recv() == "turn_off")
-			LOW(FOURTH_GEAR);
-	}
 }
