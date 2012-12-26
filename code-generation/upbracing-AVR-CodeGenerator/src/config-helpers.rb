@@ -124,10 +124,11 @@ SUSPENDED = Java::de::upbracing::code_generation::config::rtos::RTOSTask::TaskSt
 
 # tools for statemachines
 
-# get the factory that you can use to create Statecharts.* instances
-#NOTE I think you cannot do this in JRuby because it looks for "statecharts.*",
-#     if you ask for "Statecharts.*". JRuby seems to expect lower-case package
+# get the factory that you can use to create statemachine.* instances
+#NOTE I think you cannot do this in JRuby because it looks for "statemachine.*",
+#     if you ask for "statemachine.*". JRuby seems to expect lower-case package
 #     names only - not confirmed, but just my guess.
+#NOTE Now the name is lower-case, so we could do it in JRuby.
 def statemachine_factory
   JRubyHelpers::getStatemachineFactory
 end

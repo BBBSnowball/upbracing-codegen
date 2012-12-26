@@ -26,7 +26,8 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="de.upbracing.configurationeditor.timer"
-            name="AVR Timer Configuration">
+            name="AVR Timer Configuration"
+            parentCategory="de.upbracing.code_generation.category">
       </category>
       <wizard
             category="de.upbracing.configurationeditor.timer"
@@ -35,6 +36,10 @@
             id="de.upbracing.configurationeditor.timer.wizards.NewConfigurationFileWizard"
             name="New Timer Configuration">
       </wizard>
+      <category
+            id="de.upbracing.code_generation.category"
+            name="UPBracing Code-Generation">
+      </category>
    </extension>
    <extension
          point="org.eclipse.ui.popupMenus">

@@ -3,6 +3,8 @@ package de.upbracing.code_generation.generators.fsm;
 import java.util.*;
 import java.util.Map.Entry;
 
+import statemachine.*;
+
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.config.*;
@@ -10,7 +12,6 @@ import de.upbracing.code_generation.fsm.model.*;
 import de.upbracing.code_generation.fsm.model.StateVariables.AllOf;
 import de.upbracing.code_generation.fsm.model.StateVariables.VariableContainer;
 import de.upbracing.code_generation.utils.Util;
-import Statecharts.*;
 import static de.upbracing.code_generation.common.Times.formatTime;
 import static de.upbracing.code_generation.fsm.model.StateMachineForGeneration.*;
 

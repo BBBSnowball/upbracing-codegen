@@ -2,16 +2,17 @@ package de.upbracing.code_generation.generators.fsm;
 
 import java.util.regex.Pattern;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.SuperState;
-import Statecharts.Transition;
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateMachine;
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 

@@ -15,18 +15,19 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.StateMachine;
+import statemachine.SuperState;
+
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Validator;
 import de.upbracing.code_generation.test.TestHelpers;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.StateMachine;
-import Statecharts.SuperState;
 
 public class TestDuplicateNames {
 	Messages[] messages = new Messages[12] ;
