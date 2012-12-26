@@ -383,6 +383,9 @@ public class TestCanGenerator {
 		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setReadValueTask("34");
 		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setAfterReadValueTask("//Test after read value");
 
+		canconfig.getMessage("OpenSquirt_Sensoren1").getSignal("Temp_Wasser").setExpectedFactor(10, 1);
+		canconfig.getMessage("OpenSquirt_Sensoren1").getSignal("Boardspannung").setExpectedFactor(10, 1);
+
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");
 		
