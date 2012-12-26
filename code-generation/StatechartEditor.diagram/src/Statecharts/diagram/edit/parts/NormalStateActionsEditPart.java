@@ -56,7 +56,7 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5011;
+	public static final int VISUAL_ID = 5002;
 
 	/**
 	 * @generated
@@ -305,7 +305,7 @@ public class NormalStateActionsEditPart extends CompartmentEditPart implements
 		if (parser == null) {
 			parser = Statecharts.diagram.providers.StatechartsParserProvider
 					.getParser(
-							Statecharts.diagram.providers.StatechartsElementTypes.NormalState_2003,
+							Statecharts.diagram.providers.StatechartsElementTypes.NormalState_2001,
 							getParserElement(),
 							Statecharts.diagram.part.StatechartsVisualIDRegistry
 									.getType(Statecharts.diagram.edit.parts.NormalStateActionsEditPart.VISUAL_ID));

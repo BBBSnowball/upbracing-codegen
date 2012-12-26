@@ -19,6 +19,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/StatechartEditor"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java-parser-tools"/>
-	<classpathentry exported="true" kind="lib" path="D:/coll/project/program/program/code-generation/de.upbracing.timer.configurationmodel.jar"/>
+	<classpathentry kind="lib" path="/upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
