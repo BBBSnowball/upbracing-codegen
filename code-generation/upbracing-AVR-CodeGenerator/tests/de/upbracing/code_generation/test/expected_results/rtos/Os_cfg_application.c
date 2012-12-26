@@ -16,16 +16,16 @@ const uint8_t OS_NUMBER_OF_ALARMS = OS_NUMBER_OF_ALARMS_DEFINE;
 
 static uint8_t Task_Idle_Stack[512];
 #define TOP_OF_STACK_Idle \
-	(Task_Idle_Stack + sizeof(Task_Idle_Stack))
+	(Task_Idle_Stack + sizeof(Task_Idle_Stack) - 1)
 static uint8_t Task_Update_Stack[512];
 #define TOP_OF_STACK_Update \
-	(Task_Update_Stack + sizeof(Task_Update_Stack))
+	(Task_Update_Stack + sizeof(Task_Update_Stack) - 1)
 static uint8_t Task_Increment_Stack[512];
 #define TOP_OF_STACK_Increment \
-	(Task_Increment_Stack + sizeof(Task_Increment_Stack))
+	(Task_Increment_Stack + sizeof(Task_Increment_Stack) - 1)
 static uint8_t Task_Shift_Stack[512];
 #define TOP_OF_STACK_Shift \
-	(Task_Shift_Stack + sizeof(Task_Shift_Stack))
+	(Task_Shift_Stack + sizeof(Task_Shift_Stack) - 1)
 
 volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 {
@@ -33,7 +33,7 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		TOP_OF_STACK_Idle,      /* current stack pointer */
 		TOP_OF_STACK_Idle,      /* top of stack (upper end) */
 		READY,                  /* Task State */
-		Task_Idle,              /* Function Pointer */
+		TASKPTR(Idle),          /* Function Pointer */
 		0,                      /* Id/Priority */
 		PREEMPTABLE,            
 	},
@@ -41,7 +41,7 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		TOP_OF_STACK_Update,    /* current stack pointer */
 		TOP_OF_STACK_Update,    /* top of stack (upper end) */
 		SUSPENDED,              /* Task State */
-		Task_Update,            /* Function Pointer */
+		TASKPTR(Update),        /* Function Pointer */
 		1,                      /* Id/Priority */
 		PREEMPTABLE,            
 	},
@@ -49,7 +49,7 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		TOP_OF_STACK_Increment, /* current stack pointer */
 		TOP_OF_STACK_Increment, /* top of stack (upper end) */
 		SUSPENDED,              /* Task State */
-		Task_Increment,         /* Function Pointer */
+		TASKPTR(Increment),     /* Function Pointer */
 		2,                      /* Id/Priority */
 		PREEMPTABLE,            
 	},
@@ -57,7 +57,7 @@ volatile Os_Tcb os_tcbs[OS_NUMBER_OF_TCBS_DEFINE] =
 		TOP_OF_STACK_Shift,     /* current stack pointer */
 		TOP_OF_STACK_Shift,     /* top of stack (upper end) */
 		SUSPENDED,              /* Task State */
-		Task_Shift,             /* Function Pointer */
+		TASKPTR(Shift),         /* Function Pointer */
 		3,                      /* Id/Priority */
 		PREEMPTABLE,            
 	},

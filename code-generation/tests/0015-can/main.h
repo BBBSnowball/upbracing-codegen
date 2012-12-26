@@ -31,6 +31,7 @@
 
 BOOL testmaster;
 int counter;
+uint8_t receiveFlags;
 
 void modeSetup();
 
@@ -40,7 +41,9 @@ void assert3Values(int32_t expected1, int32_t expected2, int32_t expected3,
 				   int32_t compare1, int32_t compare2, int32_t compare3);
 
 void testMaster();
+void testSlave();
 
+void InitTestphase_onReceive();
 void TestMessage1_onReceive();
 void TestMessage2A_onReceive();
 void TestMessage2B_onReceive();

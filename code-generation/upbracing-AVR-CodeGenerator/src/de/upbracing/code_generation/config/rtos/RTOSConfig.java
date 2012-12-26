@@ -263,16 +263,22 @@ public class RTOSConfig {
 			return;
 		}
 		
-		// freq = clock / (2*prescaler*(1+ocr_value))
-		// NOTE: This is wrong. This only holds true for toggling waveform generation.
-		// The correct formula is:
-		// freq = clock / (prescaler*(1+ocr_value)
+		// freq = clock / (prescaler*(1+ocr_value))
 		// -> ocr_value = clock / (freq * prescaler) - 1
 		for (int prescaler : prescalers) {
 			int ocr_value = Math.round(clock / (tick_frequency * prescaler) - 1);
+			
+			// accept it, if it too high but only slightly so
 			if (ocr_value == 0x10000)
 				ocr_value = 0xffff;
+			
+			// can we use this prescaler?
 			if (ocr_value <= 0xffff) {
+				// yes, we can
+				// We usually want the lowest prescaler to get
+				// high accuracy. The prescalers are sorted from
+				// lowest to highest (ascending), so we use the
+				// first one that works.
 				timer_prescaler = prescaler;
 				timer_count_to = ocr_value;
 				tick_frequency_valid = true;

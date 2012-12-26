@@ -59,13 +59,13 @@ $config.can.getMessage("TestMessage6A").getSignal("TestSignal6A").readValueTask 
 
 
 # Set up receive handlers
-$config.can.getMessage("TestMessage1").afterRx = "TestMessage1_onReceive();"
-$config.can.getMessage("TestMessage2A").afterRx = "TestMessage2A_onReceive();"
-$config.can.getMessage("TestMessage2B").afterRx = "TestMessage2B_onReceive();"
-$config.can.getMessage("TestMessage3A").afterRx = "TestMessage3A_onReceive();"
-$config.can.getMessage("TestMessage3B").afterRx = "TestMessage3B_onReceive();"
-$config.can.getMessage("TestMessage4C").afterRx = "TestMessage4C_onReceive();"
-$config.can.getMessage("TestMessage5C").afterRx = "TestMessage5C_onReceive();"
+$config.can.getMessage("InitTestphase").afterRx = "receiveFlags |= (1<<0);"
+$config.can.getMessage("TestMessage1").afterRx = "receiveFlags |= (1<<1);"
+$config.can.getMessage("TestMessage2A").afterRx = "receiveFlags |= (1<<2);"
+$config.can.getMessage("TestMessage2B").afterRx = "receiveFlags |= (1<<3);"
+$config.can.getMessage("TestMessage3A").afterRx = "receiveFlags |= (1<<4);"
+$config.can.getMessage("TestMessage3B").afterRx = "receiveFlags |= (1<<5);"
+$config.can.getMessage("TestMessage4C").afterRx = "receiveFlags |= (1<<6);"
+$config.can.getMessage("TestMessage5C").afterRx = "receiveFlags |= (1<<7);"
 $config.can.getMessage("TestMessage6A").afterRx = "TestMessage6A_onReceive();"
 $config.can.getMessage("TestMessage6B").afterRx = "TestMessage6B_onReceive();"
-

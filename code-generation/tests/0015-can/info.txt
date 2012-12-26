@@ -1,6 +1,14 @@
 This test tests the code generators to generate the CAN sending and receiving methods.
 
 You need two test boards with AT90CAN to test it. Both boards need to be flashed with the same file.
-The first board is leading the test. It is connected with RS232 with the PC to verify the test outcomes.
-The second board is attached with a can connection to the first board.
-It must be powered on before the first board is starting the CAN test.
+The master board is leading the test. It is connected with RS232 with the PC to verify the test outcomes.
+The slave board is attached with a CAN connection to the master board.
+It must be powered on and flashed before the master board is starting the CAN test.
+
+When the 3rd LED is on, the boards are ready to receive mode setup information.
+The test will automatically send an 'M' over the serial line to set up the board to master mode.
+If mode setup didn't work, because the slave board wasn't ready yet or there was a connection problem,
+you can press the center button of the board connected to the PC, to set it up as the master board.
+It has the same effect as sending 'M' over the serial line.
+
+When the modes are set, the master boards two center LEDs are on, and the slave boards two edge LEDs are on.
