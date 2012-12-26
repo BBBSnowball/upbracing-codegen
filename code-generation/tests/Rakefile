@@ -227,7 +227,7 @@ rescue LoadError, NameError
 			return string
 		end
 
-		def mode
+		def self.mode
 			0
 		end
 	end
