@@ -13,7 +13,7 @@
    <extension point="org.eclipse.emf.ecore.generated_package">
       <package
             uri="http://statechart"
-            class="Statecharts.StatechartsPackage"/>
+            class="statemachine.StatechartsPackage"/>
    </extension>
 
 </plugin>

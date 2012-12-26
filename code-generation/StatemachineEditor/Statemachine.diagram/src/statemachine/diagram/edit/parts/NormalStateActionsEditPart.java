@@ -1,7 +1,7 @@
 /*
  * 
  */
-package Statecharts.diagram.edit.parts;
+package statemachine.diagram.edit.parts;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,17 +46,21 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import statemachine.diagram.edit.policies.StatemachineTextSelectionEditPolicy;
+import statemachine.diagram.part.StatemachineVisualIDRegistry;
+import statemachine.diagram.providers.StatemachineElementTypes;
+import statemachine.diagram.providers.StatemachineParserProvider;
 
 /**
  * @generated
  */
-public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
+public class NormalStateActionsEditPart extends CompartmentEditPart implements
 		ITextAwareEditPart {
 
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5015;
+	public static final int VISUAL_ID = 5014;
 
 	/**
 	 * @generated
@@ -86,7 +90,7 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public GlobalCodeCodeEditPart(View view) {
+	public NormalStateActionsEditPart(View view) {
 		super(view);
 	}
 
@@ -95,14 +99,12 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	 */
 	protected void createDefaultEditPolicies() {
 		super.createDefaultEditPolicies();
-		installEditPolicy(
-				EditPolicy.SELECTION_FEEDBACK_ROLE,
-				new Statecharts.diagram.edit.policies.StatechartsTextSelectionEditPolicy());
+		installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE,
+				new StatemachineTextSelectionEditPolicy());
 		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE,
 				new LabelDirectEditPolicy());
-		installEditPolicy(
-				EditPolicy.PRIMARY_DRAG_ROLE,
-				new Statecharts.diagram.edit.parts.StateMachineEditPart.NodeLabelDragPolicy());
+		installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
+				new StateMachineEditPart.NodeLabelDragPolicy());
 	}
 
 	/**
@@ -303,12 +305,12 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	 */
 	public IParser getParser() {
 		if (parser == null) {
-			parser = Statecharts.diagram.providers.StatechartsParserProvider
+			parser = StatemachineParserProvider
 					.getParser(
-							Statecharts.diagram.providers.StatechartsElementTypes.GlobalCode_2005,
+							StatemachineElementTypes.NormalState_2003,
 							getParserElement(),
-							Statecharts.diagram.part.StatechartsVisualIDRegistry
-									.getType(Statecharts.diagram.edit.parts.GlobalCodeCodeEditPart.VISUAL_ID));
+							StatemachineVisualIDRegistry
+									.getType(statemachine.diagram.edit.parts.NormalStateActionsEditPart.VISUAL_ID));
 		}
 		return parser;
 	}
@@ -319,8 +321,7 @@ public class GlobalCodeCodeEditPart extends CompartmentEditPart implements
 	protected DirectEditManager getManager() {
 		if (manager == null) {
 			setManager(new TextDirectEditManager2(this, null,
-					Statecharts.diagram.edit.parts.StatechartsEditPartFactory
-							.getTextCellEditorLocator(this)));
+					StatemachineEditPartFactory.getTextCellEditorLocator(this)));
 		}
 		return manager;
 	}

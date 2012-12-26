@@ -1,11 +1,12 @@
 /*
  * 
  */
-package Statecharts.diagram.edit.parts;
+package statemachine.diagram.edit.parts;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.draw2d.ConnectionLocator;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
@@ -21,9 +22,9 @@ import org.eclipse.gmf.runtime.common.ui.services.parser.IParser;
 import org.eclipse.gmf.runtime.common.ui.services.parser.IParserEditStatus;
 import org.eclipse.gmf.runtime.common.ui.services.parser.ParserEditStatus;
 import org.eclipse.gmf.runtime.common.ui.services.parser.ParserOptions;
-import org.eclipse.gmf.runtime.diagram.ui.editparts.CompartmentEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.ITextAwareEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.LabelEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editpolicies.LabelDirectEditPolicy;
 import org.eclipse.gmf.runtime.diagram.ui.l10n.DiagramColorRegistry;
 import org.eclipse.gmf.runtime.diagram.ui.label.ILabelDelegate;
@@ -46,17 +47,21 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import statemachine.diagram.edit.policies.StatemachineTextSelectionEditPolicy;
+import statemachine.diagram.part.StatemachineVisualIDRegistry;
+import statemachine.diagram.providers.StatemachineElementTypes;
+import statemachine.diagram.providers.StatemachineParserProvider;
 
 /**
  * @generated
  */
-public class SuperStateNameEditPart extends CompartmentEditPart implements
+public class TransitionTransitionInfoEditPart extends LabelEditPart implements
 		ITextAwareEditPart {
 
 	/**
 	 * @generated
 	 */
-	public static final int VISUAL_ID = 5008;
+	public static final int VISUAL_ID = 6001;
 
 	/**
 	 * @generated
@@ -86,7 +91,17 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	public SuperStateNameEditPart(View view) {
+	static {
+		registerSnapBackPosition(
+				StatemachineVisualIDRegistry
+						.getType(statemachine.diagram.edit.parts.TransitionTransitionInfoEditPart.VISUAL_ID),
+				new Point(0, 40));
+	}
+
+	/**
+	 * @generated
+	 */
+	public TransitionTransitionInfoEditPart(View view) {
 		super(view);
 	}
 
@@ -95,14 +110,19 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	 */
 	protected void createDefaultEditPolicies() {
 		super.createDefaultEditPolicies();
-		installEditPolicy(
-				EditPolicy.SELECTION_FEEDBACK_ROLE,
-				new Statecharts.diagram.edit.policies.StatechartsTextSelectionEditPolicy());
 		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE,
 				new LabelDirectEditPolicy());
-		installEditPolicy(
-				EditPolicy.PRIMARY_DRAG_ROLE,
-				new Statecharts.diagram.edit.parts.StateMachineEditPart.NodeLabelDragPolicy());
+		installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE,
+				new StatemachineTextSelectionEditPolicy());
+		installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
+				new StateMachineEditPart.LinkLabelDragPolicy());
+	}
+
+	/**
+	 * @generated
+	 */
+	public int getKeyPoint() {
+		return ConnectionLocator.MIDDLE;
 	}
 
 	/**
@@ -160,11 +180,16 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	}
 
 	/**
-	 * @generated
+	 * @not-generated
 	 */
-	public void setLabel(WrappingLabel figure) {
+	public void setLabel(IFigure figure) {
 		unregisterVisuals();
 		setFigure(figure);
+		if (figure instanceof WrappingLabel)
+			((WrappingLabel) figure).setTextWrap(true);
+		else
+			System.err
+					.println("WARN: Transition has a label that doesn't support wrapping. I cannot make that a multi-line label.");
 		defaultText = getLabelTextHelper(figure);
 		registerVisuals();
 		refreshVisuals();
@@ -302,12 +327,12 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	 */
 	public IParser getParser() {
 		if (parser == null) {
-			parser = Statecharts.diagram.providers.StatechartsParserProvider
+			parser = StatemachineParserProvider
 					.getParser(
-							Statecharts.diagram.providers.StatechartsElementTypes.SuperState_2002,
+							StatemachineElementTypes.Transition_4001,
 							getParserElement(),
-							Statecharts.diagram.part.StatechartsVisualIDRegistry
-									.getType(Statecharts.diagram.edit.parts.SuperStateNameEditPart.VISUAL_ID));
+							StatemachineVisualIDRegistry
+									.getType(statemachine.diagram.edit.parts.TransitionTransitionInfoEditPart.VISUAL_ID));
 		}
 		return parser;
 	}
@@ -318,8 +343,7 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	protected DirectEditManager getManager() {
 		if (manager == null) {
 			setManager(new TextDirectEditManager2(this, null,
-					Statecharts.diagram.edit.parts.StatechartsEditPartFactory
-							.getTextCellEditorLocator(this)));
+					StatemachineEditPartFactory.getTextCellEditorLocator(this)));
 		}
 		return manager;
 	}
@@ -560,22 +584,6 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	/**
 	 * @generated
 	 */
-	protected void addNotationalListeners() {
-		super.addNotationalListeners();
-		addListenerFilter("PrimaryView", this, getPrimaryView()); //$NON-NLS-1$
-	}
-
-	/**
-	 * @generated
-	 */
-	protected void removeNotationalListeners() {
-		super.removeNotationalListeners();
-		removeListenerFilter("PrimaryView"); //$NON-NLS-1$
-	}
-
-	/**
-	 * @generated
-	 */
 	protected void handleNotificationEvent(Notification event) {
 		Object feature = event.getFeature();
 		if (NotationPackage.eINSTANCE.getFontStyle_FontColor().equals(feature)) {
@@ -620,8 +628,31 @@ public class SuperStateNameEditPart extends CompartmentEditPart implements
 	 * @generated
 	 */
 	protected IFigure createFigure() {
-		// Parent should assign one using setLabel() method
-		return null;
+		IFigure label = createFigurePrim();
+		defaultText = getLabelTextHelper(label);
+		return label;
+	}
+
+	/**
+	 * @generated
+	 */
+	protected IFigure createFigurePrim() {
+		return new TransitionLabelFigure();
+	}
+
+	/**
+	 * @generated
+	 */
+	public class TransitionLabelFigure extends WrappingLabel {
+
+		/**
+		 * @generated NOT
+		 */
+		public TransitionLabelFigure() {
+			this.setText("Transition");
+			this.setTextWrap(true);
+		}
+
 	}
 
 }

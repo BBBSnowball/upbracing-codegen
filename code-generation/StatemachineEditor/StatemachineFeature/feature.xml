@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="UPBracingStatechartEditor"
-      label="UPBracingStatechartEditor"
+      id="UPBracingStatemachineEditor"
+      label="UPBracingStatemachineEditor"
       version="1.0.0.qualifier">
 
    <description url="http://www.example.com/description">
@@ -13,7 +13,7 @@
    </copyright>
 
    <license url="http://www.example.com/license">
-      All rights belong to the UPBracing Team. You mustn't use
+      All rights belong to the UPBracing Team. You mustn&apos;t use
       this software without permission. It might be released
       as open source at a later time.
    </license>

@@ -4,15 +4,16 @@
  *
  * $Id$
  */
-package Statecharts.impl;
+package statemachine.impl;
 
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.StatechartsPackage;
 
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.EObjectImpl;
+
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.StatemachinePackage;
 
 /**
  * <!-- begin-user-doc -->
@@ -43,7 +44,7 @@ public abstract class StateScopeImpl extends EObjectImpl implements StateScope
   @Override
   protected EClass eStaticClass()
   {
-    return StatechartsPackage.Literals.STATE_SCOPE;
+    return StatemachinePackage.Literals.STATE_SCOPE;
   }
 
   /**

@@ -4,12 +4,8 @@
  *
  * $Id$
  */
-package Statecharts.impl;
+package statemachine.impl;
 
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StatechartsPackage;
-import Statecharts.SuperState;
 
 import java.util.Collection;
 
@@ -27,6 +23,11 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
 
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StatemachinePackage;
+import statemachine.SuperState;
+
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Super State</b></em>'.
@@ -34,8 +35,8 @@ import org.eclipse.emf.ecore.util.InternalEList;
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link Statecharts.impl.SuperStateImpl#getName <em>Name</em>}</li>
- *   <li>{@link Statecharts.impl.SuperStateImpl#getRegions <em>Regions</em>}</li>
+ *   <li>{@link statemachine.impl.SuperStateImpl#getName <em>Name</em>}</li>
+ *   <li>{@link statemachine.impl.SuperStateImpl#getRegions <em>Regions</em>}</li>
  * </ul>
  * </p>
  *
@@ -91,7 +92,7 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   @Override
   protected EClass eStaticClass()
   {
-    return StatechartsPackage.Literals.SUPER_STATE;
+    return StatemachinePackage.Literals.SUPER_STATE;
   }
 
   /**
@@ -114,7 +115,7 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
     String oldName = name;
     name = newName;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, StatechartsPackage.SUPER_STATE__NAME, oldName, name));
+      eNotify(new ENotificationImpl(this, Notification.SET, StatemachinePackage.SUPER_STATE__NAME, oldName, name));
   }
 
   /**
@@ -126,7 +127,7 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     if (regions == null)
     {
-      regions = new EObjectContainmentEList<Region>(Region.class, this, StatechartsPackage.SUPER_STATE__REGIONS);
+      regions = new EObjectContainmentEList<Region>(Region.class, this, StatemachinePackage.SUPER_STATE__REGIONS);
     }
     return regions;
   }
@@ -155,7 +156,7 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     switch (featureID)
     {
-      case StatechartsPackage.SUPER_STATE__REGIONS:
+      case StatemachinePackage.SUPER_STATE__REGIONS:
         return ((InternalEList<?>)getRegions()).basicRemove(otherEnd, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -171,9 +172,9 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     switch (featureID)
     {
-      case StatechartsPackage.SUPER_STATE__NAME:
+      case StatemachinePackage.SUPER_STATE__NAME:
         return getName();
-      case StatechartsPackage.SUPER_STATE__REGIONS:
+      case StatemachinePackage.SUPER_STATE__REGIONS:
         return getRegions();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -190,10 +191,10 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     switch (featureID)
     {
-      case StatechartsPackage.SUPER_STATE__NAME:
+      case StatemachinePackage.SUPER_STATE__NAME:
         setName((String)newValue);
         return;
-      case StatechartsPackage.SUPER_STATE__REGIONS:
+      case StatemachinePackage.SUPER_STATE__REGIONS:
         getRegions().clear();
         getRegions().addAll((Collection<? extends Region>)newValue);
         return;
@@ -211,10 +212,10 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     switch (featureID)
     {
-      case StatechartsPackage.SUPER_STATE__NAME:
+      case StatemachinePackage.SUPER_STATE__NAME:
         setName(NAME_EDEFAULT);
         return;
-      case StatechartsPackage.SUPER_STATE__REGIONS:
+      case StatemachinePackage.SUPER_STATE__REGIONS:
         getRegions().clear();
         return;
     }
@@ -231,9 +232,9 @@ public class SuperStateImpl extends StateWithActionsImpl implements SuperState
   {
     switch (featureID)
     {
-      case StatechartsPackage.SUPER_STATE__NAME:
+      case StatemachinePackage.SUPER_STATE__NAME:
         return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
-      case StatechartsPackage.SUPER_STATE__REGIONS:
+      case StatemachinePackage.SUPER_STATE__REGIONS:
         return regions != null && !regions.isEmpty();
     }
     return super.eIsSet(featureID);

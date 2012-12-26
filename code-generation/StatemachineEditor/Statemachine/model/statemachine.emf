@@ -1,6 +1,6 @@
 @Ecore(invocationDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot", settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot", validationDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL/Pivot")
-@namespace(uri="http://statechart", prefix="Statecharts")
-package Statecharts;
+@namespace(uri="http://www.upbracing.de/code_generation/statemachine", prefix="statemachine")
+package statemachine;
 
 abstract class StateScope {
 	op StateParent getParent();
@@ -87,4 +87,3 @@ class GlobalCode extends NamedItem {
   attr String code = "";
   attr Boolean inHeaderFile = "false";
 }
-
