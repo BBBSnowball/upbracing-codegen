@@ -10,3 +10,4 @@ eagle_pins(/IC.*/, "GEAR_ANODE")
 pinAlias("LOW_FUEL", "ERROR_1")
 pinAlias("ENGINE_FAILURE", "ERROR_2")
 pinAlias("HEADLIGHT_NOT_WORKING", "ERROR_3")
+pinAlias("
