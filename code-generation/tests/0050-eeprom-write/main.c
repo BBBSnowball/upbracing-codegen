@@ -37,7 +37,8 @@ int main(void)
 	// Init GPIO: (demo: DDRA = 0xFF)
 	//GpioInit();
 	//PORTA = 0xFF;
-	uint8_t val;
+	uint8_t i, ver;
+	
 	
 	// Init the USART (57600 8N1)
 	//USARTInit(8);
@@ -54,11 +55,19 @@ int main(void)
 	// Init Os
 	//StartOS();
 	usart_init();
-	WRITE_A(20);
 	
-	val = READ_A();
+	ver = READ_CHECK();
+	if(ver == 0xff)
+	{
+		WRITE_A(10);
+		WRITE_CHECK(0xAA);
+	}
+	if(ver == 0xAA)
+	{
+		i = READ_A();
+		usart_send_number(i,10,0);
+	}
 	
-	usart_send_number(&val,10,0);
 
 	//NOTE: Since OS is used, program will never get here!
     //while(1);
