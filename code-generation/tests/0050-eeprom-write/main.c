@@ -11,33 +11,37 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Os.h"
-#include "USART.h"
-#include "Gpio.h"
-#include "semaphore.h"
-#include "Os_error.h"
-#include "eeprom_accessors.h"
+//#include "USART.h"
+//#include "Gpio.h"
+//#include "semaphore.h"
+//#include "Os_error.h"
+#include "gen/eeprom_accessors.h"
+#include "D:\coll\project\program\program\code-generation\tests\common\rs232.h"
+#include "D:\coll\project\program\program\code-generation\tests\common\rs232-helpers.h"
 
 volatile uint8_t j = 1;
 volatile uint8_t shift = 0;
 
 #if PROGRAM_MODE == TEST_SYNC_QUEUE
 //SEMAPHORE(led,1,4);
-SEMAPHORE_N(led,5,1);
+//SEMAPHORE_N(led,5,1);
 #elif PROGRAM_MODE == KRISHNA_204b6f
-SEMAPHORE(led,1,4);
+//SEMAPHORE(led,1,4);
 //SEMAPHORE_N(led,5,1);
 #endif
 
-QUEUE(ipc,10,1,2);
+//QUEUE(ipc,10,1,2);
 
 int main(void)
 {	
 	// Init GPIO: (demo: DDRA = 0xFF)
-	GpioInit();
-	PORTA = 0xFF;
+	//GpioInit();
+	//PORTA = 0xFF;
+	uint8_t i, ver;
+	
 	
 	// Init the USART (57600 8N1)
-	USARTInit(8);
+	//USARTInit(8);
 	
 	// NOTE(Peer):
 	// DO NOT enable Interrupts here
@@ -49,70 +53,23 @@ int main(void)
 	//sei();
 	
 	// Init Os
-	StartOS();
+	//StartOS();
+	usart_init();
+	
+	ver = READ_CHECK();
+	if(ver == 0xff)
+	{
+		WRITE_A(10);
+		WRITE_CHECK(0xAA);
+	}
+	if(ver == 0xAA)
+	{
+		i = READ_A();
+		usart_send_number(i,10,0);
+	}
+	
 
 	//NOTE: Since OS is used, program will never get here!
-    while(1);
+    //while(1);
 }
 
-TASK(Update)
-{
-	sem_token_t led_token1, read_token, queue_token2, led_tokens[10] ;
-	BOOL see, look;
-	char data[3];
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(6, "Update");
-
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-	
-	WRITE_ABC("a");
-	
-	#endif
-	
-	// Terminate this task
-	TerminateTask();
-}
-
-TASK(Increment)
-{
-	sem_token_t led_token2, free_token1, queue_token1;
-	BOOL check;
-	char val;
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(10, "Increment\n");
-	
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-
-	val = READ_ABC();
-	usart_send_str(&val);
-
-
-	#else
-	#endif
-	
-	// Terminate this task
-	TerminateTask();
-}
-
-TASK(Shift)
-{
-	
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(5,"Shift");
-
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-	#else
-	#endif
-	
-	// Terminate this task
-	TerminateTask();
-}
-
-void OS_error(OS_ERROR_CODE error)
-{
-	//TODO DO NOT use OS function to report the error!
-	usart_send_str("error");
-}
