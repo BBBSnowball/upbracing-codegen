@@ -19,28 +19,28 @@
    </license>
 
    <plugin
-         id="StatechartEditor"
+         id="Statemachine"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="StatechartEditor.diagram"
+         id="Statemachine.diagram"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="StatechartEditor.edit"
+         id="Statemachine.edit"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="StatechartEditor.editor"
+         id="Statemachine.editor"
          download-size="0"
          install-size="0"
          version="0.0.0"
