@@ -44,7 +44,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		if (config.getStatemachines().isEmpty()) {
 
 			stringBuffer.append("// no statemachines loaded\n"
-					+ "// use $config.statemachines.load(statechart_file)\n");
+					+ "// use $config.statemachines.load(statemachine_file)\n");
 
 		} else {
 

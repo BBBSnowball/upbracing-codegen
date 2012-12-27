@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine" basePeriod="1s">
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo=""/>
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo="wait(10ms)"/>
+  <transitions source="//@states.2" destination="//@states.3" transitionInfo="add"/>
+  <transitions source="//@states.5/@regions.0/@states.0" destination="//@states.5/@regions.0/@states.1"/>
+  <transitions source="//@states.3" destination="//@states.5" transitionInfo="subtract"/>
+  <transitions source="//@states.5" destination="//@states.4" transitionInfo="endtask"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.0" parent="/"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0" outgoingTransitions="//@transitions.1" parent="/" name="#state_normal"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.2" parent="/" name="2state"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.2" outgoingTransitions="//@transitions.4" parent="/"/>
+  <states xsi:type="statemachine:FinalState" incomingTransitions="//@transitions.5" parent="/"/>
+  <states xsi:type="statemachine:SuperState" incomingTransitions="//@transitions.4" outgoingTransitions="//@transitions.5" parent="/" name="">
+    <regions name="" parent="//@states.5">
+      <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.3" parent="//@states.5/@regions.0" name="strt"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.3" parent="//@states.5/@regions.0" name="_state"/>
+    </regions>
+  </states>
+</statemachine:StateMachine>

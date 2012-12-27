@@ -331,7 +331,7 @@ public class TestStateMachineValidator {
 		 */
 
 		config[0].getStatemachines().load("duplicate_names", URI.createURI(TestHelpers
-					.getResourceURL("files/validator_statemachines/duplicate_names.statecharts").toString()));
+					.getResourceURL("files/validator_statemachines/duplicate_names.statemachine").toString()));
 		
 		sb.setLength(0);
 		assertEquals(false, validate[0].validate());
@@ -344,7 +344,7 @@ public class TestStateMachineValidator {
 		
 		//load statemachine to the configuration
 		config[1].getStatemachines().load("invalidName", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/invalidName.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/invalidName.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -356,7 +356,7 @@ public class TestStateMachineValidator {
 		
 		//load statemachine to the configuration
 		config[2].getStatemachines().load("moreThanOneInitial_1", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/Initial_statemachine.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/Initial_statemachine.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -370,7 +370,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[3].getStatemachines().load("moreThanOneInitial_2", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/initial_superstate.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/initial_superstate.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -384,7 +384,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[4].getStatemachines().load("final", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/final_statemachine.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/final_statemachine.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -398,7 +398,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[5].getStatemachines().load("initial_incoming", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/initial_incoming.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/initial_incoming.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -412,7 +412,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[6].getStatemachines().load("initial_outgoing", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/initial_outgoing.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/initial_outgoing.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -426,7 +426,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[7].getStatemachines().load("initial_transitionInfo", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/initial_transitionInfo.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/initial_transitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -440,7 +440,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[8].getStatemachines().load("wait_transitionInfo", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/wait_transitionInfo.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/wait_TransitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -454,7 +454,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[9].getStatemachines().load("before_transitionInfo", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/before_transitionInfo.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/before_transitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -468,7 +468,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[10].getStatemachines().load("dup_inavalidnames", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/dup_invalidnames.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/dup_invalidnames.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -482,7 +482,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		config[11].getStatemachines().load("dup_invalidnames_moreInitial", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/dup_invName_moreInit.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/dup_invName_moreInit.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -497,7 +497,7 @@ public class TestStateMachineValidator {
 		
 
 		config[12].getStatemachines().load("dup_invNames_initVal", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/dup_invN_moreIn_IncIn.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/dup_invN_moreIn_IncIn.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
@@ -511,7 +511,7 @@ public class TestStateMachineValidator {
 		 * condition/event/wait transition
 		 */
 		config[13].getStatemachines().load("fails_first4_cases", URI.createURI(TestHelpers
-				.getResourceURL("files/validator_statemachines/fails_alltests.statecharts").toString()));
+				.getResourceURL("files/validator_statemachines/fails_alltests.statemachine").toString()));
 		
 		//reset stringbuffer
 		sb.setLength(0);
