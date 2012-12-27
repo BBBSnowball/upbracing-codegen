@@ -1,9 +1,16 @@
-package execute.tests;
+package executetests1;
+
+import java.io.*;
+
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.tests.RichToolkit;
+import de.upbracing.code_generation.tests.RichToolkit.SimpleTestContext;
+import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 public class ExecuteTests {
-	StringBuffer str = new StringBuffer();
+	static StringBuffer str = new StringBuffer();
 
-	public static executeTests(RichToolkit rich_tool) {
+	public static void executeTests(RichToolkit rich_tool) throws IOException {
 		//create instance of messages
 		Messages msg = rich_tool.getMessages();
 	
@@ -26,8 +33,7 @@ public class ExecuteTests {
 		out.write('T');
 		
 		//read the response from the MCU
-		while (int c = in.read() != -1) 
-				str.append(c);
+		incomingData(in);
 		
 		//check whether it is the expected response
 		if (str.toString().equals("Temperature test started\r\n")) {
@@ -54,9 +60,10 @@ public class ExecuteTests {
 				msg.error("The X------- (SET temperature error) test failed.");
 			
 			out.write('e');
+			incomingData(in);
 			
-			if(!rich_tool.askYesNo("X-------?")) 
-				msg.error("The X------- (IS_SET temperature error) test failed.");
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET temperature error test failed.");
 			
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
@@ -67,8 +74,7 @@ public class ExecuteTests {
 		str.setLength(0);
 		
 		//read the response from the MCU
-		while (int c = in.read()!= -1)
-				str.append(c);
+		incomingData(in);
 		
 		//check whether it is the expected response
 		if (str.toString().equals("Battery test started\r\n")) {
@@ -76,7 +82,7 @@ public class ExecuteTests {
 			//ask questions related to subtests
 			out.write('a');
 			
-			if (!rich_tool.askYesNo("-X------?")) {
+			if (!rich_tool.askYesNo("-X------?")) 
 				msg.error("The -X------ (HIGH battery error) test failed.");
 				
 			out.write('b');
@@ -95,10 +101,12 @@ public class ExecuteTests {
 				msg.error("The -X------ (SET battery error) test failed.");
 				
 			out.write('e');
-				
-			if(!rich_tool.askYesNo("-X------?")) 
-				msg.error("The -X------ (IS_SET battery error) test failed.");
-				
+
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET battery error test failed.");
+			
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
 		}
@@ -108,8 +116,7 @@ public class ExecuteTests {
 		str.setLength(0);
 		
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-				str.append(c);
+		incomingData(in);
 		
 		//check whether it is the expected response
 		if (str.toString().equals("Oil pressure test started\r\n")) {
@@ -117,7 +124,7 @@ public class ExecuteTests {
 			//ask questions related to subtests
 			out.write('a');
 			
-			if (!rich_tool.askYesNo("--X-----?")) {
+			if (!rich_tool.askYesNo("--X-----?")) 
 				msg.error("The --X----- (HIGH oil level error) test failed.");
 				
 			out.write('b');
@@ -136,10 +143,12 @@ public class ExecuteTests {
 				msg.error("The --X----- (SET oil level error) test failed.");
 				
 			out.write('e');
-				
-			if(!rich_tool.askYesNo("--X-----?")) 
-				msg.error("The --X----- (IS_SET oil level error) test failed.");
-				
+		
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET oil level error test failed.");
+			
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
 		}
@@ -149,8 +158,7 @@ public class ExecuteTests {
 		str.setLength(0);
 			
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-				str.append(c);
+		incomingData(in);
 			
 		//check whether it is the expected response
 		if (str.toString().equals("First gear test started\r\n")) {
@@ -158,7 +166,7 @@ public class ExecuteTests {
 			//ask questions related to sub tests
 			out.write('a');
 				
-			if (!rich_tool.askYesNo("---X----?")) {
+			if (!rich_tool.askYesNo("---X----?")) 
 				msg.error("The ---X---- (HIGH first gear error) test failed.");
 					
 			out.write('b');
@@ -177,9 +185,10 @@ public class ExecuteTests {
 				msg.error("The ---X---- (SET first gear error) test failed.");
 					
 			out.write('e');
-					
-			if(!rich_tool.askYesNo("---X----?")) 
-				msg.error("The ---X---- (IS_SET first gear error) test failed.");
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET first gear error test failed.");
 					
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
@@ -190,8 +199,7 @@ public class ExecuteTests {
 		str.setLength(0);
 				
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-			str.append(c);
+		incomingData(in);
 		
 		//check whether it is the expected response
 		if (str.toString().equals("Second gear test started\r\n")) {
@@ -199,7 +207,7 @@ public class ExecuteTests {
 			//ask questions related to sub tests
 			out.write('a');
 				
-			if (!rich_tool.askYesNo("----X---?")) {
+			if (!rich_tool.askYesNo("----X---?")) 
 				msg.error("The ----X--- (HIGH Second gear error) test failed.");
 					
 			out.write('b');
@@ -218,10 +226,11 @@ public class ExecuteTests {
 				msg.error("The ----X--- (SET Second gear error) test failed.");
 					
 			out.write('e');
-					
-			if(!rich_tool.askYesNo("----X---?")) 
-				msg.error("The ----X--- (IS_SET Second gear error) test failed.");
-					
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET second gear error test failed.");
+			
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
 		}	
@@ -231,15 +240,14 @@ public class ExecuteTests {
 		str.setLength(0);
 					
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-			str.append(c);
+		incomingData(in);
 			
 		if (str.toString().equals("Third gear test started\r\n")) {
 				
 			//ask questions related to sub tests
 			out.write('a');
 					
-			if (!rich_tool.askYesNo("-----X--?")) {
+			if (!rich_tool.askYesNo("-----X--?")) 
 				msg.error("The -----X-- (HIGH Third gear error) test failed.");
 						
 			out.write('b');
@@ -258,10 +266,11 @@ public class ExecuteTests {
 				msg.error("The -----X-- (SET Third gear error) test failed.");
 						
 			out.write('e');
-						
-			if(!rich_tool.askYesNo("-----X--?")) 
-				msg.error("The -----X-- (IS_SET Third gear error) test failed.");
-						
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET third gear error test failed.");
+			
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
 		}	
@@ -271,15 +280,14 @@ public class ExecuteTests {
 		str.setLength(0);
 						
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-			str.append(c);
+		incomingData(in);
 			
 		if (str.toString().equals("Fourth gear test started\r\n")) {
 					
 			//ask questions related to sub tests
 			out.write('a');
 						
-			if (!rich_tool.askYesNo("------X-?")) {
+			if (!rich_tool.askYesNo("------X-?")) 
 				msg.error("The ------X- (HIGH Fourth gear error) test failed.");
 							
 			out.write('b');
@@ -298,9 +306,10 @@ public class ExecuteTests {
 				msg.error("The ------X- (SET Fourth gear error) test failed.");
 							
 			out.write('e');
-							
-			if(!rich_tool.askYesNo("------X-?")) 
-				msg.error("The ------X- (IS_SET Fourth gear error) test failed.");
+			incomingData(in);
+			
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET fourth gear error test failed.");
 							
 			//tell the MCU to turn the LED low if the test has passed
 			out.write('0');
@@ -311,46 +320,54 @@ public class ExecuteTests {
 		str.setLength(0);
 							
 		//read the response from the MCU
-		while (int c= in.read()! = -1)
-			str.append(c);
-				
+		incomingData(in);
+		
 		if (str.toString().equals("Fifth gear test started\r\n")) {
 						
 		//ask questions related to sub tests
 		out.write('a');
 							
-		if (!rich_tool.askYesNo("-------X?")) {
-			msg.error("The -------X (HIGH Fifth gear error) test failed.");
+			if (!rich_tool.askYesNo("-------X?")) 
+				msg.error("The -------X (HIGH Fifth gear error) test failed.");
 								
-		out.write('b');
+				out.write('b');
 								
-		if(!rich_tool.askYesNo("--------?")) 
-			msg.error("The -------- (LOW Fifth gear error) test failed.");
+			if(!rich_tool.askYesNo("--------?")) 
+				msg.error("The -------- (LOW Fifth gear error) test failed.");
 							
-		out.write('c');
+			out.write('c');
 								
-		if(!rich_tool.askYesNo("-------X?")) 
-			msg.error("The -------X (TOGGLE Fifth gear error) test failed.");
+			if(!rich_tool.askYesNo("-------X?")) 
+				msg.error("The -------X (TOGGLE Fifth gear error) test failed.");
 								
-		out.write('d');
+			out.write('d');
 								
-		if(!rich_tool.askYesNo("-------X?")) 
-			msg.error("The -------X (SET Fifth gear error) test failed.");
+			if(!rich_tool.askYesNo("-------X?")) 
+				msg.error("The -------X (SET Fifth gear error) test failed.");
 								
-		out.write('e');
-								
-		if(!rich_tool.askYesNo("-------X?")) 
-			msg.error("The -------X (IS_SET Fifth gear error) test failed.");
+			out.write('e');
+			incomingData(in);
+		
+			if(!str.toString().equals("yes")) 
+				msg.error("The IS_SET fifth gear error test failed.");
+			}
 								
 		//tell the MCU to turn the LED low if the test has passed
 		out.write('0');
+		
+		//pop the context of the test
+		test_temp.pop();
+			
+		//report Test results
+		rich_tool.getMessages();
 	}	
 		
-	//pop the context of the test
-	test_temp.pop();
-		
-	//report Test results
-	rich_tool.getMessages();
+
+
+	private static void incomingData(InputStream in) throws IOException {
+		str.setLength(0);
+		int c;
+		while ((c = in.read()) != -1)
+			str.append(c);
 	}
 }
-
