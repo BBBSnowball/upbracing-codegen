@@ -11,10 +11,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import Statecharts.NamedItem;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.SuperState;
+import statemachine.NamedItem;
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.SuperState;
+
 
 public class StateVariables {
 	private Set<StateVariable> variables = new HashSet<StateVariable>();

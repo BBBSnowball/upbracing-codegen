@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine" basePeriod="1s">
+  <transitions source="//@states.0" destination="//@states.2" transitionInfo=""/>
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo=""/>
+  <transitions source="//@states.2" destination="//@states.3" transitionInfo="finish"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.0" parent="/"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.1" parent="/" name="initial"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0 //@transitions.1" outgoingTransitions="//@transitions.2" parent="/" name="state"/>
+  <states xsi:type="statemachine:FinalState" incomingTransitions="//@transitions.2" parent="/"/>
+</statemachine:StateMachine>

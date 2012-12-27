@@ -16,20 +16,21 @@ import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
 
+import statemachine.FinalState;
+import statemachine.GlobalCode;
+import statemachine.InitialState;
+import statemachine.NamedItem;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateMachine;
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.StateWithActions;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.common.Times;
 
-import Statecharts.FinalState;
-import Statecharts.GlobalCode;
-import Statecharts.InitialState;
-import Statecharts.NamedItem;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.StateWithActions;
-import Statecharts.SuperState;
-import Statecharts.Transition;
 
 public class StateMachineForGeneration {
 	private StateMachine inner;

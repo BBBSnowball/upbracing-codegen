@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import Statecharts.NormalState;
+import statemachine.NormalState;
+
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.generators.fsm.Validator;

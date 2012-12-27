@@ -12,13 +12,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+import statemachine.StateMachine;
+import statemachine.StatemachineFactory;
+import statemachine.StatemachinePackage;
+
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 
-import Statecharts.StateMachine;
-import Statecharts.StatechartsFactory;
-import Statecharts.StatechartsPackage;
 
 /**
  * list of statemachines to generate code for
@@ -31,7 +32,7 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 	
 	/** load a statemachine and add it to the list of statemachines to generate code for
 	 * 
-	 * @param filename relative path to statecharts file
+	 * @param filename relative path to statemachine file
 	 * @return the state machine
 	 */
 	public StateMachineForGeneration load(String name, String filename) {
@@ -43,22 +44,22 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 	
 	/** load a statemachine and add it to the list of statemachines to generate code for
 	 * 
-	 * @param filename relative path to statecharts file
+	 * @param filename relative path to statemachine file
 	 * @return the state machine
 	 */
-	public StateMachineForGeneration load(String name, URI statechart_file) {
+	public StateMachineForGeneration load(String name, URI statemachine_file) {
 	    // initialize the model
-	    StatechartsPackage.eINSTANCE.eClass();
-	    StatechartsFactory.eINSTANCE.eClass();
+	    StatemachinePackage.eINSTANCE.eClass();
+	    StatemachineFactory.eINSTANCE.eClass();
 	    
-	    // register XMI resource factory for .statecharts extension
+	    // register XMI resource factory for .statemachine extension
 	    Resource.Factory.Registry res_factory_registry = Resource.Factory.Registry.INSTANCE;
 	    Map<String, Object> m = res_factory_registry.getExtensionToFactoryMap();
-	    m.put("statecharts", new XMIResourceFactoryImpl());
+	    m.put("statemachine", new XMIResourceFactoryImpl());
 
 	    // load resource
 	    Resource resource = new ResourceSetImpl().getResource(
-	    		statechart_file, true);
+	    		statemachine_file, true);
 	    
 	    // get first element and hope it has the right type
 	    StateMachine sm = (StateMachine) resource.getContents().get(0);

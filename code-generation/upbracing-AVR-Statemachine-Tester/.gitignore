@@ -2,3 +2,6 @@ random_statechart*.dot
 random_statechart*.dot.*
 random_statechart*.statechart
 random_statechart*.statecharts
+random_statemachine*.dot
+random_statemachine*.dot.*
+random_statemachine*.statemachine

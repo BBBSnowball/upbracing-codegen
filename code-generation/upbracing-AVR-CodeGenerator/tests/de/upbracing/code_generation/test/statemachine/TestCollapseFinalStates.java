@@ -24,20 +24,21 @@ import java.util.List;
 
 import org.junit.Test;
 
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateMachine;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Updater;
 import de.upbracing.code_generation.test.TestHelpers;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.SuperState;
-import Statecharts.Transition;
 
 public class TestCollapseFinalStates {
 	

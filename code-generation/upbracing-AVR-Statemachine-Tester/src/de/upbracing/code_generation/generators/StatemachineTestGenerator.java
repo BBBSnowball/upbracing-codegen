@@ -6,6 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import statemachine.GlobalCode;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateMachine;
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.StateWithActions;
+import statemachine.SuperState;
+
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.StatemachinesCFileTemplate;
@@ -13,14 +22,6 @@ import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.GaussianProbability;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.StatemachineWithWay;
 
-import Statecharts.GlobalCode;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.StateWithActions;
-import Statecharts.SuperState;
 
 public class StatemachineTestGenerator extends AbstractGenerator {
 	public StatemachineTestGenerator() {

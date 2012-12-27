@@ -13,7 +13,7 @@ public class TestStatemachineGenerator {
 		MCUConfiguration config = new MCUConfiguration();
 		
 		config.getStatemachines().load("counter",
-				URI.createURI(TestHelpers.getResourceURL("files/counter.statecharts").toString()));
+				URI.createURI(TestHelpers.getResourceURL("files/counter.statemachine").toString()));
 
 		
 		GeneratorTester gen = new GeneratorTester(new StatemachineGenerator(), config);
@@ -27,7 +27,7 @@ public class TestStatemachineGenerator {
 		MCUConfiguration config = new MCUConfiguration();
 		
 		config.getStatemachines().load("simple_pc",
-				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statecharts").toString()));
+				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statemachine").toString()));
 
 		
 		GeneratorTester gen = new GeneratorTester(new StatemachineGenerator(), config);
@@ -40,10 +40,10 @@ public class TestStatemachineGenerator {
 		MCUConfiguration config = new MCUConfiguration();
 		
 		config.getStatemachines().load("counter",
-				URI.createURI(TestHelpers.getResourceURL("files/counter.statecharts").toString()));
+				URI.createURI(TestHelpers.getResourceURL("files/counter.statemachine").toString()));
 
 		config.getStatemachines().load("simple_pc",
-				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statecharts").toString()));
+				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statemachine").toString()));
 
 		
 		GeneratorTester gen = new GeneratorTester(new StatemachineGenerator(), config);

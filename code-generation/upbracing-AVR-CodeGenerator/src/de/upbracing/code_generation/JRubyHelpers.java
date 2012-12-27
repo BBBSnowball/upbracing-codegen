@@ -6,8 +6,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 
-import Statecharts.GlobalCode;
-import Statecharts.StatechartsFactory;
+import statemachine.GlobalCode;
+import statemachine.StatemachineFactory;
+
 
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 
@@ -32,14 +33,14 @@ public final class JRubyHelpers {
 	
 	public static GlobalCode addGlobalCode(StateMachineForGeneration smg,
 			boolean in_header, String code) {
-		GlobalCode cb = new Statecharts.impl.StatechartsFactoryImpl().createGlobalCode();
+		GlobalCode cb = getStatemachineFactory().createGlobalCode();
 		cb.setInHeaderFile(in_header);
 		cb.setCode(code);
 		smg.getGlobalCodeBoxes().add(cb);
 		return cb;
 	}
 	
-	public static StatechartsFactory getStatemachineFactory() {
-		return new Statecharts.impl.StatechartsFactoryImpl();
+	public static StatemachineFactory getStatemachineFactory() {
+		return new statemachine.impl.StatemachineFactoryImpl();
 	}
 }

@@ -1,7 +1,7 @@
 package de.upbracing.code_generation.fsm.model;
 
-import Statecharts.State;
-import Statecharts.Transition;
+import statemachine.State;
+import statemachine.Transition;
 
 public enum ActionType {
 	EXIT, EXIT_NOT_TO_SELF, DURING, ALWAYS, ENTER_NOT_FROM_SELF, ENTER;

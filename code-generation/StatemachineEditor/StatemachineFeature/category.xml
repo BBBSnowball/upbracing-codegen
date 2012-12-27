@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/UPBracingAVRTimerConfiguration_1.0.0.qualifier.jar" id="UPBracingAVRTimerConfiguration" version="1.0.0.qualifier">
+      <category name="upbracing"/>
+   </feature>
+   <feature url="features/UPBracingStatemachineEditor_1.0.0.qualifier.jar" id="UPBracingStatemachineEditor" version="1.0.0.qualifier">
+      <category name="upbracing"/>
+   </feature>
+   <category-def name="upbracing" label="UPBracing Software"/>
+</site>

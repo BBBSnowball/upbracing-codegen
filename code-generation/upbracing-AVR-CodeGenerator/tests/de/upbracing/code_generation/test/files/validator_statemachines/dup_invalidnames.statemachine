@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine" basePeriod="10ms">
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo=""/>
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo=""/>
+  <transitions source="//@states.2" destination="//@states.3" transitionInfo="stop"/>
+  <transitions source="//@states.2" destination="//@states.4" transitionInfo="wait(10ms)"/>
+  <transitions source="//@states.4" destination="//@states.5" transitionInfo="sup: before(10ms)"/>
+  <transitions source="//@states.6" destination="//@states.5" transitionInfo="begin"/>
+  <transitions source="//@states.5/@regions.0/@states.0" destination="//@states.5/@regions.0/@states.1" transitionInfo=""/>
+  <transitions source="//@states.5/@regions.0/@states.1" destination="//@states.5/@regions.0/@states.2" transitionInfo="wait(1ms)"/>
+  <transitions source="//@states.5/@regions.0/@states.2" destination="//@states.5/@regions.0/@states.3" transitionInfo="before [a==b]"/>
+  <transitions source="//@states.5/@regions.0/@states.3" destination="//@states.5/@regions.0/@states.4" transitionInfo=""/>
+  <transitions source="//@states.5/@regions.1/@states.0" destination="//@states.5/@regions.1/@states.1" transitionInfo=""/>
+  <transitions source="//@states.5/@regions.1/@states.1/@regions.0/@states.1" destination="//@states.5/@regions.1/@states.1/@regions.0/@states.2" transitionInfo="wait(5ms)"/>
+  <transitions source="//@states.5/@regions.1/@states.1/@regions.0/@states.0" destination="//@states.5/@regions.1/@states.1/@regions.0/@states.1"/>
+  <transitions source="//@states.5/@regions.1/@states.1/@regions.0/@states.2" destination="//@states.5/@regions.1/@states.1/@regions.0/@states.3" transitionInfo="check : before(10ms)"/>
+  <transitions source="//@states.5/@regions.1/@states.1/@regions.0/@states.3" destination="//@states.5/@regions.1/@states.1/@regions.0/@states.4" transitionInfo="add"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.0" parent="/" name="tart"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0" outgoingTransitions="//@transitions.1" parent="/" name="normal_1"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.1" outgoingTransitions="//@transitions.2 //@transitions.3" parent="/" name="normal_1"/>
+  <states xsi:type="statemachine:FinalState" incomingTransitions="//@transitions.2" parent="/"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.3" outgoingTransitions="//@transitions.4" name="2normal_1"/>
+  <states xsi:type="statemachine:SuperState" incomingTransitions="//@transitions.4 //@transitions.5" name="2super">
+    <regions name="region_1">
+      <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.6"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.6" outgoingTransitions="//@transitions.7" name="normal_3"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.7" outgoingTransitions="//@transitions.8" name="normal_3"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.8" outgoingTransitions="//@transitions.9" name="normal_4"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.9" name="#normal_4"/>
+    </regions>
+    <regions name="2region_2">
+      <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.10"/>
+      <states xsi:type="statemachine:SuperState" incomingTransitions="//@transitions.10" name="super_2">
+        <regions name="region_3">
+          <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.12"/>
+          <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.12" outgoingTransitions="//@transitions.11" name="normal_5"/>
+          <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.11" outgoingTransitions="//@transitions.13" name="normal_5"/>
+          <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.13" outgoingTransitions="//@transitions.14" name="norm?_5"/>
+          <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.14" name="normal_3"/>
+        </regions>
+      </states>
+    </regions>
+  </states>
+  <states xsi:type="statemachine:NormalState" outgoingTransitions="//@transitions.5" name="normal_2"/>
+</statemachine:StateMachine>

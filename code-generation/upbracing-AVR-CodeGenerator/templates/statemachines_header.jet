@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="StatemachinesHeaderTemplate"
 	skeleton="generator.skeleton"
-	imports="java.util.* de.upbracing.code_generation.config.* de.upbracing.code_generation.fsm.model.* Statecharts.*" %>
+	imports="java.util.* de.upbracing.code_generation.config.* de.upbracing.code_generation.fsm.model.* statemachine.*" %>
 /*
  * statemachines.h
  *
@@ -17,7 +17,7 @@
 <%
 if (config.getStatemachines().isEmpty()) {
 %>// no statemachines loaded
-// use $config.statemachines.load(statechart_file)
+// use $config.statemachines.load(statemachine_file)
 <%
 } else {
 
