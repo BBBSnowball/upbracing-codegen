@@ -1,3 +1,10 @@
 #!/bin/sh
 
-"$(dirname "$0")/jruby" -S irb -r "config-helpers.rb" "$@"
+DIR="$(dirname "$0")"
+
+[ -n "$CODE_GENERATOR_DIR" ] || CODE_GENERATOR_DIR="$DIR/."
+[ -n "$STATEMACHINE_DIR" ] || STATEMACHINE_DIR="$DIR/../StatemachineEditor/Statemachine"
+[ -n "$JAVA_PARSER_TOOLS_DIR" ] || JAVA_PARSER_TOOLS_DIR="$DIR/../java-parser-tools"
+[ -n "$TIMER_CONFIGURATION_MODEL_DIR" ] || TIMER_CONFIGURATION_MODEL_DIR="$DIR/../upbracing-AVR-TimerConfigurationModel"
+
+java -cp "$CODE_GENERATOR_DIR/bin:$CODE_GENERATOR_DIR/libs/jruby-complete-1.7.0.jar:$CODE_GENERATOR_DIR/libs/simple-xml-2.6.4.jar:$CODE_GENERATOR_DIR/libs/ruby-gems.jar:$CODE_GENERATOR_DIR/libs/commons-cli-1.2.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/guava-13.0.1.jar:$STATEMACHINE_DIR/bin:$JAVA_PARSER_TOOLS_DIR/bin:$TIMER_CONFIGURATION_MODEL_DIR/dist/de.upbracing.timer.configurationmodel.jar:$EXTRA_CLASSPATH" org.jruby.Main -S irb -r config-helpers.rb "$@"
