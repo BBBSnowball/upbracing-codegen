@@ -6,11 +6,12 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.RichToolkit;
 import de.upbracing.code_generation.tests.RichToolkit.SimpleTestContext;
 import de.upbracing.code_generation.tests.serial.SerialHelper;
+import de.upbracing.code_generation.tests.TestFailedException;
 
 public class ExecuteTests {
 	static StringBuffer str = new StringBuffer();
 
-	public static void executeTests(RichToolkit rich_tool) throws IOException {
+	public static void executeTests(RichToolkit rich_tool) throws IOException, TestFailedException {
 		// create instance of messages
 		Messages msg = rich_tool.getMessages();
 
@@ -31,9 +32,6 @@ public class ExecuteTests {
 
 		// begin the first test
 		out.write('L');
-
-		// read the response from the MCU
-		incomingData(in);
 
 		// check whether it is the expected response
 		serial_help.expectString("LED pattern tests started\r\n");
