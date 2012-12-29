@@ -4,348 +4,190 @@
 #include<Pins.h>
 
 int main() {
-
 	usart_init();
 
+	char ch = usart_recv();
+
 	//if the received data asks for starting the temperature test
-	if (usart_recv() == 'T') {
+	if (ch == 'L') {
 		//confirm the request
-		usart_send_str("Temperature test started\r\n");
+		usart_send_str("LED pattern tests started\r\n");
+		_delay_ms(100);
 
 		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high temperature
-			if (usart_recv() == 'a') {
+		char led_pattern = usart_recv();
+		while (led_pattern != '0') {
+			//led pattern -----XXX
+			if (led_pattern == 'a') {
 				HIGH(ERROR_TEMPERATURE);
-				OUTPUT(ERROR_TEMPERATURE);
-			}
-
-			//if received char is 'b' subtest for low temperature
-			if (usart_recv() == 'b') {
-				LOW(ERROR_TEMPERATURE);
-				OUTPUT(ERROR_TEMPERATURE);
-			}
-
-			//if received char is 'c' subtest for toggle temperature
-			if (usart_recv() == 'c') {
-				TOGGLE(ERROR_TEMPERATURE);
-				OUTPUT(ERROR_TEMPERATURE);
-			}
-
-			//if received char is 'd' subtest for set temperature
-			if (usart_recv() == 'd') {
-				SET(ERROR_TEMPERATURE, 1);
-				OUTPUT(ERROR_TEMPERATURE);
-			}
-
-			//if received char is 'e' subtest for is_set temperature
-			if (usart_recv() == 'e') {
-				if (IS_SET(ERROR_TEMPERATURE))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the led in case it is on
-		LOW(ERROR_TEMPERATURE);
-		OUTPUT(ERROR_TEMPERATURE);
-	}
-
-	//if the received data asks for starting the battery test
-	if (usart_recv() == 'B') {
-		//confirm the request
-		usart_send_str("Battery test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high battery
-			if (usart_recv() == 'a') {
 				HIGH(ERROR_BATTERY);
-				OUTPUT(ERROR_BATTERY);
-			}
-
-			//if received char is 'b' subtest for low battery
-			if (usart_recv() == 'b') {
-				LOW(ERROR_BATTERY);
-				OUTPUT(ERROR_BATTERY);
-			}
-
-			//if received char is 'c' subtest for toggle battery
-			if (usart_recv() == 'c') {
-				TOGGLE(ERROR_BATTERY);
-				OUTPUT(ERROR_BATTERY);
-			}
-
-			//if received char is 'd' subtest for set battery
-			if (usart_recv() == 'd') {
-				SET(ERROR_BATTERY, 1);
-				OUTPUT(ERROR_BATTERY);
-			}
-
-			//if received char is 'e' subtest for is_set battery
-			if (usart_recv() == 'e') {
-				if (IS_SET(ERROR_BATTERY))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the led in case it is on
-		LOW(ERROR_BATTERY);
-		OUTPUT(ERROR_BATTERY);
-	}
-
-	//if the received data asks for starting the oil pressure test
-	if (usart_recv() == 'O') {
-		//confirm the request
-		usart_send_str("Oil level test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high oil
-			if (usart_recv() == 'a') {
 				HIGH(ERROR_OIL_LEVEL);
-				OUTPUT(ERROR_OIL_LEVEL);
-			}
-
-			//if received char is 'b' subtest for low oil
-			if (usart_recv() == 'b') {
-				LOW(ERROR_OIL_LEVEL);
-				OUTPUT(ERROR_OIL_LEVEL);
-			}
-
-			//if received char is 'c' subtest for toggle oil
-			if (usart_recv() == 'c') {
-				TOGGLE(ERROR_OIL_LEVEL);
-				OUTPUT(ERROR_OIL_LEVEL);
-			}
-
-			//if received char is 'd' subtest for set oil
-			if (usart_recv() == 'd') {
-				SET(ERROR_OIL_LEVEL, 1);
-				OUTPUT(ERROR_OIL_LEVEL);
-			}
-
-			//if received char is 'e' subtest for is_set oil
-			if (usart_recv() == 'e') {
-				if (IS_SET(ERROR_OIL_LEVEL))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the led in case it is on
-		LOW(ERROR_OIL_LEVEL);
-		OUTPUT(ERROR_OIL_LEVEL);
-	}
-
-	//if the received data asks for the first gear test
-	if (usart_recv() == '1') {
-		//confirm the request
-		usart_send_str("First gear test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high first gear
-			if (usart_recv() == 'a') {
-				HIGH(FIRST_GEAR);
-				OUTPUT(FIRST_GEAR);
-			}
-
-			//if received char is 'b' subtest for low first gear
-			if (usart_recv() == 'b') {
 				LOW(FIRST_GEAR);
-				OUTPUT(FIRST_GEAR);
-			}
-
-			//if received char is 'c' subtest for toggle first gear
-			if (usart_recv() == 'c') {
-				TOGGLE(FIRST_GEAR);
-				OUTPUT(FIRST_GEAR);
-			}
-
-			//if received char is 'd' subtest for set first gear
-			if (usart_recv() == 'd') {
-				SET(FIRST_GEAR, 1);
-				OUTPUT(FIRST_GEAR);
-			}
-
-			//if received char is 'e' subtest for is_set first gear
-			if (usart_recv() == 'e') {
-				if (IS_SET(FIRST_GEAR))
-					usart_send_str("yes\r\n");
-			}
-		}
-		LOW(FIRST_GEAR);
-		OUTPUT(FIRST_GEAR);
-	}
-
-	//if the received data asks for the second gear test
-	if (usart_recv() == '2') {
-		//confirm the request
-		usart_send_str("Second gear test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high second gear
-			if (usart_recv() == 'a') {
-				HIGH(SECOND_GEAR);
-				OUTPUT(SECOND_GEAR);
-			}
-
-			//if received char is 'b' subtest for low second gear
-			if (usart_recv() == 'b') {
 				LOW(SECOND_GEAR);
-				OUTPUT(SECOND_GEAR);
-			}
-
-			//if received char is 'c' subtest for toggle second gear
-			if (usart_recv() == 'c') {
-				TOGGLE(SECOND_GEAR);
-				OUTPUT(SECOND_GEAR);
-			}
-
-			//if received char is 'd' subtest for set second gear
-			if (usart_recv() == 'd') {
-				SET(SECOND_GEAR, 1);
-				OUTPUT(SECOND_GEAR);
-			}
-
-			//if received char is 'e' subtest for is_set second gear
-			if (usart_recv() == 'e') {
-				if (IS_SET(SECOND_GEAR))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the LED in case it is on
-		LOW(SECOND_GEAR);
-		OUTPUT(SECOND_GEAR);
-	}
-
-	//if the received data asks for the third gear test
-	if (usart_recv() == '3') {
-		//confirm the request
-		usart_send_str("Third gear test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high third gear
-			if (usart_recv() == 'a') {
-				HIGH(THIRD_GEAR);
-				OUTPUT(THIRD_GEAR);
-			}
-
-			//if received char is 'b' subtest for low third gear
-			if (usart_recv() == 'b') {
 				LOW(THIRD_GEAR);
-				OUTPUT(THIRD_GEAR);
-			}
-
-			//if received char is 'c' subtest for toggle third gear
-			if (usart_recv() == 'c') {
-				TOGGLE(THIRD_GEAR);
-				OUTPUT(THIRD_GEAR);
-			}
-
-			//if received char is 'd' subtest for set third gear
-			if (usart_recv() == 'd') {
-				SET(THIRD_GEAR, 1);
-				OUTPUT(THIRD_GEAR);
-			}
-
-			//if received char is 'e' subtest for is_set third gear
-			if (usart_recv() == 'e') {
-				if (IS_SET(THIRD_GEAR))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the led in case it is on
-		LOW(THIRD_GEAR);
-		OUTPUT(THIRD_GEAR);
-	}
-
-	//if the received data asks for the fourth gear test
-	if (usart_recv() == '4') {
-		//confirm the request
-		usart_send_str("Fourth gear test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high fourth gear
-			if (usart_recv() == 'a') {
-				HIGH(FOURTH_GEAR);
-				OUTPUT(FOURTH_GEAR);
-			}
-
-			//if received char is 'b' subtest for low fourth gear
-			if (usart_recv() == 'b') {
 				LOW(FOURTH_GEAR);
-				OUTPUT(FOURTH_GEAR);
-			}
-
-			//if received char is 'c' subtest for toggle fourth gear
-			if (usart_recv() == 'c') {
-				TOGGLE(FOURTH_GEAR);
-				OUTPUT(FOURTH_GEAR);
-			}
-
-			//if received char is 'd' subtest for set fourth gear
-			if (usart_recv() == 'd') {
-				SET(FOURTH_GEAR, 1);
-				OUTPUT(FOURTH_GEAR);
-			}
-
-			//if received char is 'e' subtest for is_set fourth gear
-			if (usart_recv() == 'e') {
-				if (IS_SET(FOURTH_GEAR))
-					usart_send_str("yes\r\n");
-			}
-		}
-
-		//turn off the led in case it is on
-		LOW(FOURTH_GEAR);
-		OUTPUT(FOURTH_GEAR);
-	}
-
-	//if the received data asks for the fifth gear test
-	if (usart_recv() == '5') {
-		//confirm the request
-		usart_send_str("Fifth gear test started\r\n");
-
-		//begin the test
-		while (usart_recv() != '0') {
-			//if received char is 'a' subtest for high fifth gear
-			if (usart_recv() == 'a') {
-				HIGH(FIFTH_GEAR);
-				OUTPUT(FIFTH_GEAR);
-			}
-
-			//if received char is 'b' subtest for low fifth gear
-			if (usart_recv() == 'b') {
 				LOW(FIFTH_GEAR);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
 				OUTPUT(FIFTH_GEAR);
 			}
 
-			//if received char is 'c' subtest for toggle fifth gear
-			if (usart_recv() == 'c') {
+			//blink led pattern XXXXX---
+			if (led_pattern == 'b') {
+				LOW(ERROR_TEMPERATURE);
+				LOW(ERROR_BATTERY);
+				LOW(ERROR_OIL_LEVEL);
+				HIGH(FIRST_GEAR);
+				HIGH(SECOND_GEAR);
+				HIGH(THIRD_GEAR);
+				HIGH(FOURTH_GEAR);
+				HIGH(FIFTH_GEAR);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
+				OUTPUT(FIFTH_GEAR);
+			}
+
+			//blink led pattern XXXXXXXX
+			if (led_pattern == 'c') {
+				PORTA = 0x00;
+				TOGGLE(ERROR_TEMPERATURE);
+				TOGGLE(ERROR_BATTERY);
+				TOGGLE(ERROR_OIL_LEVEL);
+				TOGGLE(FIRST_GEAR);
+				TOGGLE(SECOND_GEAR);
+				TOGGLE(THIRD_GEAR);
+				TOGGLE(FOURTH_GEAR);
 				TOGGLE(FIFTH_GEAR);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
 				OUTPUT(FIFTH_GEAR);
+
 			}
 
-			//if received char is 'd' subtest for set fifth gear
-			if (usart_recv() == 'd') {
+			//blink led pattern X-------
+			if (led_pattern == 'd') {
+				PORTA = 0x00;
+				SET(ERROR_TEMPERATURE, 0);
+				SET(ERROR_BATTERY, 0);
+				SET(ERROR_OIL_LEVEL, 0);
+				SET(FIRST_GEAR, 0);
+				SET(SECOND_GEAR, 0);
+				SET(THIRD_GEAR, 0);
+				SET(FOURTH_GEAR, 0);
 				SET(FIFTH_GEAR, 1);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
 				OUTPUT(FIFTH_GEAR);
 			}
 
-			//if received char is 'e' subtest for is_set fifth gear
-			if (usart_recv() == 'e') {
-				if (IS_SET(FIFTH_GEAR))
-					usart_send_str("yes\r\n");
+			//blink led pattern -XXXXXXX
+			if (led_pattern == 'e') {
+				SET(ERROR_TEMPERATURE, 1);
+				SET(ERROR_BATTERY, 1);
+				SET(ERROR_OIL_LEVEL, 1);
+				SET(FIRST_GEAR, 1);
+				SET(SECOND_GEAR, 1);
+				SET(THIRD_GEAR, 1);
+				SET(FOURTH_GEAR, 1);
+				SET(FIFTH_GEAR, 0);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
+				OUTPUT(FIFTH_GEAR);
 			}
-		}
 
-		//turn off the led in case it is on
-		LOW(FIFTH_GEAR);
-		OUTPUT(FIFTH_GEAR);
-	}
+			//blink led pattern XXXX----
+			if (led_pattern == 'f') {
+				PORTA = 0x00;
+				NO_PULLUP(ERROR_TEMPERATURE);
+				NO_PULLUP(ERROR_BATTERY);
+				NO_PULLUP(ERROR_OIL_LEVEL);
+				NO_PULLUP(FIRST_GEAR);
+				PULLUP(SECOND_GEAR);
+				PULLUP(THIRD_GEAR);
+				PULLUP(FOURTH_GEAR);
+				PULLUP(FIFTH_GEAR);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
+				OUTPUT(FIFTH_GEAR);
+			}
+
+			//blink led pattern ----XXXX
+			if (led_pattern == 'g') {
+				PULLUP(ERROR_TEMPERATURE);
+				PULLUP(ERROR_BATTERY);
+				PULLUP(ERROR_OIL_LEVEL);
+				PULLUP(FIRST_GEAR);
+				NO_PULLUP(SECOND_GEAR);
+				NO_PULLUP(THIRD_GEAR);
+				NO_PULLUP(FOURTH_GEAR);
+				NO_PULLUP(FIFTH_GEAR);
+				OUTPUT(ERROR_TEMPERATURE);
+				OUTPUT(ERROR_BATTERY);
+				OUTPUT(ERROR_OIL_LEVEL);
+				OUTPUT(FIRST_GEAR);
+				OUTPUT(SECOND_GEAR);
+				OUTPUT(THIRD_GEAR);
+				OUTPUT(FOURTH_GEAR);
+				OUTPUT(FIFTH_GEAR);
+			}
+
+			//blink led pattern ------XX
+			if (led_pattern == 'h') {
+				if (IS_SET(ERROR_TEMPERATURE))
+					OUTPUT(ERROR_TEMPERATURE);
+				if (IS_SET(ERROR_BATTERY))
+					OUTPUT(ERROR_BATTERY);
+				if (IS_SET(ERROR_OIL_LEVEL)) {
+					LOW(ERROR_OIL_LEVEL);
+					OUTPUT(ERROR_OIL_LEVEL);
+				}
+				if (IS_SET(FIRST_GEAR)) {
+					LOW(FIRST_GEAR);
+					OUTPUT(FIRST_GEAR);
+				}
+				if (!IS_SET(SECOND_GEAR))
+					OUTPUT(SECOND_GEAR);
+				if (!IS_SET(THIRD_GEAR))
+					OUTPUT(THIRD_GEAR);
+				if (!IS_SET(FOURTH_GEAR))
+					OUTPUT(FOURTH_GEAR);
+				if (!IS_SET(FIFTH_GEAR))
+					OUTPUT(FIFTH_GEAR);
+
+			}
+			led_pattern = usart_recv();
+		}
+	} else
+		usart_send_str("Unexpected character\r\n");
 }
+
