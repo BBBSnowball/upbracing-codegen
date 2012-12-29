@@ -1,49 +1,10 @@
 #!/bin/sh
-if [ -z "$CODE_GENERATOR_DIR" ] ; then
-	CODE_GENERATOR_DIR="../upbracing-AVR-CodeGenerator"
-fi
-if [ -z "$JAVA_HELPERS"] ; then
-	JAVA_HELPERS="../tests-java-helpers/bin"
-	NRSERIAL_JAR="../tests-java-helpers/libs/nrjavaserial-3.8.4.jar"
-fi
-if [ -z "$JAVA_PARSER_TOOLS_BIN" ] ; then
-	JAVA_PARSER_TOOLS_BIN="../java-parser-tools/bin"
-fi
-if [ -z "$TIMER_CONFIG_JAR" ] ; then
-	TIMER_CONFIG_JAR="../upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar"
-fi
-if [ -z "$STATECHART_BIN" ] ; then
-	STATECHART_BIN="../StatechartEditor/bin"
-fi
 
-if [ -z "$NG" ] ; then NG="`which nailgun`" ; fi
-if [ -z "$NG" ] ; then NG="`which ng-nailgun`" ; fi
-if [ -z "$NG" ] ; then NG="`which ng`" ; fi
+DIR="$(dirname "$0")"
 
-# don't use nailgun because I couldn't make it any faster than without
-NG=""
+[ -n "$CODE_GENERATOR_DIR" ] || CODE_GENERATOR_DIR="$DIR/../upbracing-AVR-CodeGenerator"
+[ -n "$TIMER_CONFIGURATION_MODEL_DIR" ] || TIMER_CONFIGURATION_MODEL_DIR="$DIR/../upbracing-AVR-TimerConfigurationModel"
+[ -n "$JAVA_PARSER_TOOLS_DIR" ] || JAVA_PARSER_TOOLS_DIR="$DIR/../java-parser-tools"
+[ -n "$STATEMACHINE_DIR" ] || STATEMACHINE_DIR="$DIR/../StatemachineEditor/Statemachine"
 
-# build classpath
-CP="."
-for jar in jruby-complete-1.7.0.jar ruby-gems.jar \
-	org.eclipse.emf.common_2.7.0.v20120127-1122.jar org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar \
-	org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar \
-	simple-xml-2.6.4.jar guava-13.0.1.jar
-do
-	CP="$CP:$CODE_GENERATOR_DIR/libs/$jar"
-done
-CP="$CP:$JAVA_HELPERS:$JAVA_PARSER_TOOLS_BIN:$TIMER_CONFIG_JAR:$CODE_GENERATOR_DIR/bin:$NRSERIAL_JAR:$STATECHART_BIN"
-
-if [ -n "$NG" ] ; then
-	# start nailgun server, unless it is already running
-	#TODO only, if not running
-	java -server -cp "$CP:/usr/share/java/nailgun.jar" com.martiansoftware.nailgun.NGServer
-
-	$NG -cp "$CP" org.jruby.util.NailMain -S rake "$@"
-else
-	# use JamVM because it starts faster (4 seconds instead of 8 for server VM)
-	# http://blog.headius.com/2010/03/jruby-startup-time-tips.html
-	#VMOPTS=-jamvm 	# faster startup, but annoying debug output (JVM_ResumeThread...)
-	VMOPTS=-client
-	java $VMOPTS -cp "$CP" org.jruby.Main -S rake "$@"
-fi
+java -cp "$DIR/../tests-java-helpers/bin:$CODE_GENERATOR_DIR/libs/jruby-complete-1.7.0.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar:$CODE_GENERATOR_DIR/libs/ruby-gems.jar:$CODE_GENERATOR_DIR/libs/simple-xml-2.6.4.jar:$TIMER_CONFIGURATION_MODEL_DIR/dist/de.upbracing.timer.configurationmodel.jar:$DIR/../tests-java-helpers/libs/nrjavaserial-3.8.4.jar:$JAVA_PARSER_TOOLS_DIR/bin:$CODE_GENERATOR_DIR/bin:$CODE_GENERATOR_DIR/libs/commons-cli-1.2.jar:$CODE_GENERATOR_DIR/libs/guava-13.0.1.jar:$STATEMACHINE_DIR/bin:$EXTRA_CLASSPATH" -client org.jruby.Main -S rake "$@"

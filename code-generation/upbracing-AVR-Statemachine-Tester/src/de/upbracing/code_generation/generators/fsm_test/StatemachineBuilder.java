@@ -23,20 +23,21 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NamedItem;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateMachine;
-import Statecharts.StateParent;
-import Statecharts.StateScope;
-import Statecharts.StateWithActions;
-import Statecharts.StatechartsFactory;
-import Statecharts.StatechartsPackage;
-import Statecharts.SuperState;
-import Statecharts.Transition;
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NamedItem;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateMachine;
+import statemachine.StateParent;
+import statemachine.StateScope;
+import statemachine.StateWithActions;
+import statemachine.StatemachineFactory;
+import statemachine.StatemachinePackage;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.StateVariable;
 
@@ -105,7 +106,7 @@ public class StatemachineBuilder {
 	
 	// Those values are public, so they can be tweaked before calling build().
 	
-	public StatechartsFactory factory;
+	public StatemachineFactory factory;
 	
 	public Random random;
 	
@@ -132,8 +133,8 @@ public class StatemachineBuilder {
 		factory = getDefaultStatemachineFactory();
 	}
 	
-	public static StatechartsFactory getDefaultStatemachineFactory() {
-		return new Statecharts.impl.StatechartsFactoryImpl();
+	public static StatemachineFactory getDefaultStatemachineFactory() {
+		return new statemachine.impl.StatemachineFactoryImpl();
 	}
 	
 	@Deprecated
@@ -927,22 +928,22 @@ public class StatemachineBuilder {
 		}*/
 	}
 
-	public static void save(StateMachine sm, String statecharts_file) throws IOException {
-		save(sm, URI.createURI(statecharts_file));
+	public static void save(StateMachine sm, String statemachine_file) throws IOException {
+		save(sm, URI.createURI(statemachine_file));
 	}
 	
-	public static void save(StateMachine sm, URI statechart_file) throws IOException {
+	public static void save(StateMachine sm, URI statemachine_file) throws IOException {
 	    // initialize the model
-	    StatechartsPackage.eINSTANCE.eClass();
-	    StatechartsFactory.eINSTANCE.eClass();
+		StatemachinePackage.eINSTANCE.eClass();
+	    StatemachineFactory.eINSTANCE.eClass();
 	    
-	    // register XMI resource factory for .statecharts extension
+	    // register XMI resource factory for .statemachine extension
 	    Resource.Factory.Registry res_factory_registry = Resource.Factory.Registry.INSTANCE;
 	    Map<String, Object> m = res_factory_registry.getExtensionToFactoryMap();
-	    m.put("statecharts", new XMIResourceFactoryImpl());
+	    m.put("statemachine", new XMIResourceFactoryImpl());
 
 	    // create resource
-	    Resource resource = new ResourceSetImpl().createResource(statechart_file);
+	    Resource resource = new ResourceSetImpl().createResource(statemachine_file);
 	    
 	    // save it
 	    resource.getContents().add(sm);
@@ -1155,11 +1156,11 @@ public class StatemachineBuilder {
 		builder.regions_per_superstate = new GaussianProbability(1, 1);
 		
 		//StateMachine sm = builder.build();
-		//save(sm, "random_statechart_" + seed + ".statecharts");
+		//save(sm, "random_statemachine_" + seed + ".statemachine");
 		
 		StatemachineWithWay smw = builder.buildStatemachineWithWay();
 		StateMachine sm = smw.statemachine;
-		//save(sm, "random_statechart_with_way_" + seed + ".statecharts");
+		//save(sm, "random_statemachine_with_way_" + seed + ".statemachine");
 		
 		for (Waypoint waypoint : smw.waypoints)
 			System.out.println(waypoint);
@@ -1175,7 +1176,7 @@ public class StatemachineBuilder {
 				highlight("color=\"" + color + "\"", smw.transitions.get(i), transition_attrs);
 			}
 	
-			String dot_file = "random_statechart_with_way_" + seed + ".dot";
+			String dot_file = "random_statemachine_with_way_" + seed + ".dot";
 			exportDot(sm, dot_file, transition_attrs, state_attrs);
 			Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
 		} else {
@@ -1186,7 +1187,7 @@ public class StatemachineBuilder {
 				highlight("color=purple,style=bold", getCommonStates(smw.waypoints.get(i), smw.waypoints.get(i+1)), state_attrs);
 				Map<Transition, String> transition_attrs = highlight("color=red,style=bold", smw.transitions.get(i));
 		
-				String dot_file = "random_statechart_with_way_" + seed + "_step" + i + ".dot";
+				String dot_file = "random_statemachine_with_way_" + seed + "_step" + i + ".dot";
 				exportDot(sm, dot_file, transition_attrs, state_attrs);
 				Runtime.getRuntime().exec("dot -O -Tpdf " + dot_file);
 			}

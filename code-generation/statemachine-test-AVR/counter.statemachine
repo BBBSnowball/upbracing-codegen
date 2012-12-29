@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine" basePeriod="1ms">
+  <transitions source="//@states.2" destination="//@states.2" transitionInfo="wait(100ms) / PORTA++"/>
+  <transitions source="//@states.2" destination="//@states.1" transitionInfo="startstop_pressed"/>
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo="startstop_pressed"/>
+  <transitions source="//@states.1" destination="//@states.1" transitionInfo="reset / PORTA = 0"/>
+  <transitions source="//@states.2" destination="//@states.1" transitionInfo="[PORTA >= 128]"/>
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo="/ PORTA = 0" priority="1"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.5"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.1 //@transitions.3 //@transitions.4 //@transitions.5" outgoingTransitions="//@transitions.2 //@transitions.3" actions="ALWAYS/wdt_reset()&#xA;ENTER/usart_send_str(&quot;in state stopped\n&quot;);" name="stopped"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0 //@transitions.2" outgoingTransitions="//@transitions.0 //@transitions.1 //@transitions.4" actions="ALWAYS/wdt_reset()&#xA;ENTER_NOT_FROM_SELF/DDRA = 0xff&#xA;EXIT_NOT_TO_SELF/DDRA = 0x00&#xA;ENTER/usart_send_str(&quot;in state running\n&quot;);" name="running"/>
+  <globalCodeBoxes name="includes" code="#include &lt;avr/io.h>&#xA;#include &lt;avr/wdt.h>"/>
+</statemachine:StateMachine>

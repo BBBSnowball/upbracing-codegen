@@ -6,14 +6,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NamedItem;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.SuperState;
-import Statecharts.Transition;
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NamedItem;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;

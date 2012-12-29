@@ -5,15 +5,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.State;
-import Statecharts.StateParent;
-import Statecharts.StateWithActions;
-import Statecharts.SuperState;
-import Statecharts.Transition;
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.State;
+import statemachine.StateParent;
+import statemachine.StateWithActions;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.common.Times;

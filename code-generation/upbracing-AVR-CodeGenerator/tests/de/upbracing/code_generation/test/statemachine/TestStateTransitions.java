@@ -27,13 +27,14 @@ package de.upbracing.code_generation.test.statemachine;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
-import Statecharts.FinalState;
-import Statecharts.InitialState;
-import Statecharts.NormalState;
-import Statecharts.Region;
-import Statecharts.StateMachine;
-import Statecharts.SuperState;
-import Statecharts.Transition;
+import statemachine.FinalState;
+import statemachine.InitialState;
+import statemachine.NormalState;
+import statemachine.Region;
+import statemachine.StateMachine;
+import statemachine.SuperState;
+import statemachine.Transition;
+
 import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;

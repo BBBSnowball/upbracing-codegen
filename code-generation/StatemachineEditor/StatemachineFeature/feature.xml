@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="UPBracingStatemachineEditor"
+      label="UPBracingStatemachineEditor"
+      version="1.0.0.qualifier">
+
+   <description url="http://www.example.com/description">
+      Statemachine editor
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      2012, UPBracing Team
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      All rights belong to the UPBracing Team. You mustn&apos;t use
+      this software without permission. It might be released
+      as open source at a later time.
+   </license>
+
+   <plugin
+         id="Statemachine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Statemachine.diagram"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Statemachine.edit"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Statemachine.editor"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

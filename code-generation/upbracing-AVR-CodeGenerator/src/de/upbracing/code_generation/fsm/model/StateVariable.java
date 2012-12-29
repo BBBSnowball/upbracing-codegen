@@ -13,8 +13,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import Statecharts.StateParent;
-import Statecharts.StateScope;
+import statemachine.StateParent;
+import statemachine.StateScope;
+
 
 public class StateVariable implements Comparable<StateVariable>, IHasNameAndId {
 	public static final String TYPE_AUTONAME = "--- new type with automatic name ---";

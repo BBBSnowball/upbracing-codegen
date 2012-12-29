@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import Statecharts.State;
-import Statecharts.StateWithActions;
+import statemachine.State;
+import statemachine.StateWithActions;
+
 
 import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.config.MCUConfiguration;

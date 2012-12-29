@@ -1,7 +1,0 @@
-# Tracing options for the StatechartEditor.diagram plug-in
-
-# Common issues
-StatechartEditor.diagram/debug=false
-
-# Visual IDs
-StatechartEditor.diagram/debug/visualID=false

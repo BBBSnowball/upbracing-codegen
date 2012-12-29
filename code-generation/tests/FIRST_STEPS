@@ -5,9 +5,9 @@ How to setup our projects on Windows
 3. add AVR-Eclipse plugin (eclipse-plugins-3rdPart.zip)
 4. import most projects in the code-generation folder
    java-parser-tools
-   StatechartEditor
-   StatechartEditorFeature
-   StatechartEditor.diagram
+   Statemachine (in StatemachineEditor)
+   StatemachineFeature (in StatemachineEditor)
+   Statemachine.diagram (in StatemachineEditor)
    tests
    tests-java-helpers
    upbracing-AVR-CodeGenerator
@@ -30,11 +30,11 @@ How to setup our projects on Windows
    If this file doesn't exist, you need to fix the project setup and repeat
    step 7. The project is using an external ANT builder. You can also run
    ANT manually to build the file.
-9. open StatechartEditor/metamodel and run "Eugenia -> Generate GMF editor"
-   in the context menu (right click) of statecharts.emf
-10. You may have to run "Build project" on StatechartEditor to get rid
+9. open Statemachine/model and run "Eugenia -> Generate GMF editor"
+   in the context menu (right click) of statemachine.emf
+10. You may have to run "Build project" on Statemachine to get rid
     of the error messages.
-11. If you want multi-line text fields in the statecharts editor, you
+11. If you want multi-line text fields in the statemachine editor, you
     must make sure that it uses a few modified files. You can find them in
     the GIT, but we don't care for now.
 9. The other projects should be fine now. All projects should build
