@@ -20,8 +20,16 @@ if is_windows
 			# expand_path rewrites the path to use
 			# forward-slashes -> undo that
 			alias expand_path_unix expand_path
-			def expand_path(*args)
-				expand_path_unix(*args).gsub("/", "\\")
+			def expand_path(path)
+				if path =~ /^[\/\\]|[a-zA-Z]:[\/\\]/
+					# already an absolute path -> don't change
+				else
+					# expand it
+					path = expand_path_unix(path.gsub("\\", "/"))
+				end
+
+				# change all forward slashes to backslashes
+				return path.gsub("/", "\\")
 			end
 		end
 	end
@@ -470,26 +478,71 @@ class Project
 		str.gsub(/\\([:#\\?*%~\[\]$])/, "\\1")
 	end
 
-	#TODO rewrite it to work on Windows (C:\\ and \\ for absolute paths)
-	def relative_path(path, parent_dir)
-		path2 = File.expand_path path
-		parent2 = File.expand_path parent_dir
-		if path2.start_with? parent2
-			path2 = path2[parent2.length..-1]
-			path2 = path2[1..-1] if path2.start_with? "/" or path2.start_with? "\\"
-			return path2
-		else
-			return path
+	def get_parents_including_self(file)
+		parents = []
+		next_dir = file
+		current = nil
+		while next_dir and not next_dir == current
+			current = next_dir
+			parents << File.basename(current)
+
+			next_dir = File.dirname(current)
 		end
+
+		return parents
+	end
+
+	def make_relative(path, cwd)
+		# make it absolute and removes all "." and ".."
+		path = File.expand_path path
+		cwd  = File.expand_path cwd
+
+		path = path.gsub("\\", "/") if is_windows
+		cwd  = cwd.gsub("\\", "/")  if is_windows
+
+		path_parents = get_parents_including_self path
+		cwd_parents  = get_parents_including_self cwd
+
+		# absolute path, if the roots are different
+		# (e.g. different drive on Windows)
+		if path_parents.last != cwd_parents.last
+			unless is_windows
+				return path
+			else
+				return path.gsub("/", "\\")
+			end
+		end
+
+		# remove common leading path elements
+		while not path_parents.empty? and not cwd_parents.empty? and path_parents.last == cwd_parents.last
+			path_parents.delete_at(path_parents.length - 1)
+			cwd_parents.delete_at(cwd_parents.length - 1)
+		end
+
+		# construct relative path: enough ".." to get out of cwd_parents and
+		# then the remaining elements of cwd_parents
+		result = [".."] * cwd_parents.length + path_parents.reverse
+		result = ["."] if result.empty?
+
+		if is_windows
+			return result.join("\\")
+		else
+			return result.join("/")
+		end
+	end
+
+	def relative_path(path, parent_dir)
+		make_relative path, parent_dir
 	end
 
 	def do_generate(dir, target_dir, config_file)
 		target_dir = relative_path target_dir, dir
 		config_file = relative_path config_file, dir
+		codegen_bin = relative_path CODE_GENERATOR_BIN, dir
 
 		esc = shell_quote
 
-		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{File.expand_path CODE_GENERATOR_BIN}#{esc} -C #{esc}#{target_dir}#{esc} -T bin #{esc}#{config_file}#{esc}"
+		sh "cd #{esc}#{dir}#{esc} #{cmd_sep} #{esc}#{codegen_bin}#{esc} -C #{esc}#{target_dir}#{esc} -T bin #{esc}#{config_file}#{esc}"
 	end
 
 	def create_generator_task(name, config_file)
@@ -590,7 +643,12 @@ class Project
 	end
 
 	def compile(source_dir, source_file, target_dir, configuration, optional)
-		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "").sub(/(..\/)*/,"")
+		raise "debug" if source_file =~ /#/
+		# target file:
+		# - same name as source file, but with .o extension
+		# - without absolute path prefix: d:\ (windows), / (linux) or #/ (relative to test folder)
+		# - without "../" and "./" (also replaced inside the path, but that doesn't matter)
+		target_file = source_file.sub(/(\.[^.]+)?$/, ".o").sub(/^([A-Za-z]:\\|#)?[.\/\\]/, "").gsub(/(\.\.?[\/\\])*/,"")
 
 		target = File.join2(target_dir, target_file)
 		if source_file.start_with? "#/"
@@ -764,6 +822,13 @@ class Project
 		[]
 	end
 
+	def strip_directory_prefix(source, source_dir)
+		# special rule for sources relative to test folder (starting with '#/')
+		source = "./" + source.sub(/^#\/*/, "") if source =~ /^#/
+
+		make_relative source, source_dir
+	end
+
 	def build(source_dir, configuration)
 		# output name is the name of the directory
 		name = name_from_source_dir(source_dir)
@@ -804,8 +869,8 @@ class Project
 		optional_sources = generated_sources
 
 		# strip prefix from sources
-		sources = sources.map { |source| relative_path source, source_dir }
-		optional_sources = optional_sources.map { |source| relative_path source, source_dir }
+		sources = sources.map { |source| strip_directory_prefix source, source_dir }
+		optional_sources = optional_sources.map { |source| strip_directory_prefix source, source_dir }
 
 		# remove duplicates (generated sources will be found, if they already exist)
 		sources.uniq!
