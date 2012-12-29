@@ -3,7 +3,7 @@ $helper.erase_processor
 
 #show instructions to the user 
 $toolkit.showInstruction("This test blinks some LEDs and you would be asked to answer whether you see the 
-same LED pattern on the board as is shown in the console.);
+same LED pattern on the board as is shown in the console.");
 
 $toolkit.showInstruction("X means that the LED is on and - means that the LED is off. \r\n
 The LED layout is like this : \r\n
