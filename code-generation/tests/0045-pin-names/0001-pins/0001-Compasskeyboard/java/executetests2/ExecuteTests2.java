@@ -1,173 +1,99 @@
-package execute2.tests;
+package executetests2;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.tests.RichToolkit;
+import de.upbracing.code_generation.tests.RichToolkit.SimpleTestContext;
+import de.upbracing.code_generation.tests.TestFailedException;
+import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 public class ExecuteTests2 {
-	StringBuffer str = new StringBuffer();
-
-	public static executeTests2(RichToolkit rich_tool) {
-		//create instance of messages
+	public static void executeTests2(RichToolkit rich_tool) throws IOException,
+			TestFailedException {
+		// create instance of messages
 		Messages msg = rich_tool.getMessages();
-		
-		//obtain instance of the serial helper
+
+		// obtain instance of the serial helper
 		SerialHelper serial_help = rich_tool.getSerial();
-		
-		//ensure a baudrate for the serial communication
+
+		// ensure a baudrate for the serial communication
 		serial_help.ensureBaudrate(9600);
-		
-		//get input and output streams for communication
-		InputStream in = serial_help.getInputStream();
+
+		// get output streams for communication
 		OutputStream out = serial_help.getOutputStream();
-		
-		//setup to begin testing phase
+
+		// setup to begin testing phase
 		rich_tool.start();
-		
-		SimpleTestContext test_temp = rich_tool.startTest("Compass card keyboard test");
-		
-		//begin the first test
+
+		SimpleTestContext test_temp = rich_tool
+				.startTest("Compass keyboard test\r\n");
+
+		// begin the first test
 		out.write('L');
-		
-		//read the response from the MCU
-		incomingData(in);
-		
-		//check whether it is the expected response
-		if (str.toString().equals("Low Fuel test started\r\n")) {
-			//begin PULLUP resistor test
-			out.write('1');
-			
-			rich_tool.showInstrution("Press the C but don't release it.");
-			out.write('p');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The PULLUP resistor test for PORTE.2 (Low fuel test) failed when C was pressed.");
-			
-			rich_tool.showInstruction("Release the button C now.");
-			out.write('r');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The PULLUP resistor test for PORTE.2 (Low fuel test) failed when C was released.");
-			
-			//end the subtest
-			out.write('d');
-				
-			//begin HIGH test
-			out.write('2');
-			
-			rich_tool.showInstruction("Press C but don't release it.");
-			out.write('p');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The HIGH test for PORTE.2 (Low fuel test) failed when C was pressed.");
-			
-			rich_tool.showInstruction("Release the button C now.");
-			out.write('r');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The HIGH test for PORTE.2 (Low fuel test) failed when C was released.");
-			
-			//begin LOW test
-			out.write('3');
-			
-			rich_tool.showInstruction("Press C but don't release it.");
-			out.write('p');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The LOW test for PORTE.2 (Low fuel test) failed when C was pressed.");
-			
-			rich_tool.showInstruction("Release the button C now.");
-			out.write('r');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The LOW test for PORTE.2 (Low fuel test) failed when C was released.");
-			
-			//begin TOGGLE test
-			out.write('4')
-			
-			rich_tool.showInstruction("Press C but don't release it.");
-			out.write('p');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The TOGGLE test for PORTE.2 (Low fuel test) failed when C was pressed.");
-			
-			rich_tool.showInstruction("Release the button C now.");
-			out.write('r');
-			
-			incomingData(in);
-			
-			if (str.toString().equals("false"))
-				msg.error("The TOGGLE test for PORTE.2 (Low fuel test) failed when C was released.");
-			
-			//end LOW FUEL test
-			out.write('0');
-			
-		}
-		
-		//begin the second test
-		out.write("Battery");
-		str.setLength(0);
-		
-		//read the response from the MCU
-		while (int c = in.read()!= -1)
-				str.append(c);
-		
-		//check whether it is the expected response
-		if (str.toString().equals("Battery test started")) {
-			if (!rich_tool.askYesNo("Did you see an LED blink?")) 
-				msg.error("The LED for battery error didn't blink");
-			
-			rich_tool.showInstruction("Press the North button");
-			
-			if (!rich_tool.askYesNo("Did the LED go off?"))
-				msg.error("The LED for battery error didn't turn off.");
-				
-			//tell the MCU to turn the LED low if the test has passed
-			out.write("turn_off");
-		}
-		
-		//begin the third test
-		out.write("Oil pressure");
-		str.setLength(0);
-		
-		//read the response from the MCU
-		incomingData(in);
-		
-		//check whether it is the expected response
-		if (str.toString().equals("Oil pressure test started")) {
-			if (!rich_tool.askYesNo("Did you see an LED blink?")) 
-				msg.error("The LED for oil pressure error didn't blink");
-			
-			rich_tool.showInstruction("Press the East button");
-			
-			if (!rich_tool.askYesNo("Did you see the LED go off?"))
-				msg.error("The LED for oil pressure didn't turn off.");
-			
-			//tell the MCU to turn the LED low if the test has passed
-			out.write("turn_off");
-		}
-		
-		//pop the context of the test
+
+		// read the response from the MCU
+		serial_help.expectString("Compass keyboard test started\r\n");
+
+		// begin HIGH test
+		out.write('a');
+
+		if (!rich_tool.askYesNo("-------X?"))
+			msg.error("The -------X  test failed.");
+
+		out.write('b');
+
+		if (!rich_tool.askYesNo("------XX?"))
+			msg.error("The ------XX test failed.");
+
+		out.write('c');
+
+		if (!rich_tool.askYesNo("-----XXX?"))
+			msg.error("The -----XXX test failed.");
+
+		out.write('d');
+
+		if (!rich_tool.askYesNo("----XXXX?"))
+			msg.error("The ----XXXX test failed.");
+
+		out.write('e');
+
+		if (!rich_tool.askYesNo(" ---XXXXX?"))
+			msg.error("The ---XXXXX test failed.");
+
+		out.write('f');
+
+		if (!rich_tool.askYesNo("--XXXXXX?"))
+			msg.error("The --XXXXXX test failed.");
+
+		out.write('g');
+
+		if (!rich_tool.askYesNo("-XXXXXXX?"))
+			msg.error("The -XXXXXXX test failed.");
+
+		out.write('h');
+
+		if (!rich_tool.askYesNo("XXXXXXXX?"))
+			msg.error("The XXXXXXXX test failed.");
+
+		out.write('i');
+
+		if (!rich_tool.askYesNo("------X-?"))
+			msg.error("The ------X- test failed.");
+
+		out.write('j');
+
+		if (!rich_tool.askYesNo("-X-XXXXX?"))
+			msg.error("The -X-XXXXX test failed");
+
+		// end compass keyboard tests
+		out.write('0');
+
+		// pop the context of the test
 		test_temp.pop();
-		
-		//report Test results
+
+		// report Test results
 		rich_tool.getMessages();
 	}
-	
-private void incomingData(InpuStream in) {
-	str.setLength(0);
-	while (int c = in.read() != -1)
-		str.append(c);
-}
-	
 }
