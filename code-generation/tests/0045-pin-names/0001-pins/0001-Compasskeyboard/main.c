@@ -60,20 +60,6 @@ int main() {
 
 			if (compass == 'd') {
 				PORTA = 0x00;
-				OUTPUT(LOW_FUEL);
-				OUTPUT(ENGINE_FAILURE);
-				OUTPUT(HEADLIGHT_NOT_WORKING);
-				OUTPUT(FAULTY_EXHAUST);
-				OUTPUT(HIGH_TEMP);
-				OUTPUT(CHANGE_GEAR);
-
-				//display ----XXXX pattern if test passes
-				if (DDRE == 0xf4 && DDRD == 0x01)
-					PORTA = 0x0f;
-			}
-
-			if (compass == 'e') {
-				PORTA = 0x00;
 				INPUT(LOW_FUEL);
 				INPUT(ENGINE_FAILURE);
 				INPUT(HEADLIGHT_NOT_WORKING);
@@ -86,7 +72,7 @@ int main() {
 					PORTA = 0x1f;
 			}
 
-			if (compass == 'f') {
+			if (compass == 'e') {
 				PORTA = 0x00;
 				PULLUP(LOW_FUEL);
 				PULLUP(ENGINE_FAILURE);
@@ -100,7 +86,7 @@ int main() {
 					PORTA = 0x3f;
 			}
 
-			if (compass == 'g') {
+			if (compass == 'f') {
 				PORTA = 0x00;
 				NO_PULLUP(LOW_FUEL);
 				NO_PULLUP(ENGINE_FAILURE);
@@ -114,7 +100,7 @@ int main() {
 					PORTA = 0x7f;
 			}
 
-			if (compass == 'h') {
+			if (compass == 'g') {
 				PORTA = 0x00;
 				SET(LOW_FUEL, 1);
 				SET(ENGINE_FAILURE, 1);
@@ -128,7 +114,7 @@ int main() {
 					PORTA = 0xff;
 			}
 
-			if (compass == 'i') {
+			if (compass == 'h') {
 				PORTA = 0x00;
 				SET(LOW_FUEL, 0);
 				SET(ENGINE_FAILURE, 0);
@@ -143,7 +129,7 @@ int main() {
 			}
 
 			//display -X-XXXXX pattern if the test passes
-			if (compass == 'j') {
+			if (compass == 'i') {
 				PORTA = 0x00;
 				if (!IS_SET(LOW_FUEL))
 					HIGH(LED_1);

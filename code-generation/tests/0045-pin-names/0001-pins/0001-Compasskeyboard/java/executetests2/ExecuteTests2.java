@@ -54,35 +54,30 @@ public class ExecuteTests2 {
 
 		out.write('d');
 
-		if (!rich_tool.askYesNo("----XXXX?"))
-			msg.error("The ----XXXX test failed.");
-
-		out.write('e');
-
 		if (!rich_tool.askYesNo(" ---XXXXX?"))
 			msg.error("The ---XXXXX test failed.");
 
-		out.write('f');
+		out.write('e');
 
 		if (!rich_tool.askYesNo("--XXXXXX?"))
 			msg.error("The --XXXXXX test failed.");
 
-		out.write('g');
+		out.write('f');
 
 		if (!rich_tool.askYesNo("-XXXXXXX?"))
 			msg.error("The -XXXXXXX test failed.");
 
-		out.write('h');
+		out.write('g');
 
 		if (!rich_tool.askYesNo("XXXXXXXX?"))
 			msg.error("The XXXXXXXX test failed.");
 
-		out.write('i');
+		out.write('h');
 
 		if (!rich_tool.askYesNo("------X-?"))
 			msg.error("The ------X- test failed.");
 
-		out.write('j');
+		out.write('i');
 
 		if (!rich_tool.askYesNo("-X-XXXXX?"))
 			msg.error("The -X-XXXXX test failed");
@@ -96,4 +91,5 @@ public class ExecuteTests2 {
 		// report Test results
 		rich_tool.getMessages();
 	}
+
 }
