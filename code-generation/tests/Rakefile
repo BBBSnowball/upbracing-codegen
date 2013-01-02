@@ -608,8 +608,7 @@ class Project
 	end
 
 	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
-		#TODO rewrite for Windows
-		["#/../../avr-programs/upbracing-common"]
+		["#/../../avr-programs/upbracing-common", "."]
 	end
 
 	def cflags(source_dir, source_file, target_dir, configuration)
