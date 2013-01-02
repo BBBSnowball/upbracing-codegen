@@ -135,21 +135,24 @@ int main() {
 				char is_set = usart_recv();
 
 				while (is_set != '0') {
-					if (is_set == 'a')
-						if (IS_SET(LOW_FUEL))
-							usart_send_str("\r\n");
-
-					if (is_set == 'b')
+					if (is_set == 'a') {
 						if (!IS_SET(LOW_FUEL))
 							usart_send_str("\r\n");
+					}
 
-					if (is_set == 'c')
-						if (IS_SET(ENGINE_FAILURE)
-								|| IS_SET(HEADLIGHT_NOT_WORKING)
-								|| IS_SET(FAULTY_EXHAUST) || IS_SET(HIGH_TEMP)
-								|| IS_SET(CHANGE_GEAR))
+					if (is_set == 'b') {
+						if (IS_SET(LOW_FUEL))
+							usart_send_str("\r\n");
+					}
+
+					if (is_set == 'c') {
+						if ((!IS_SET(ENGINE_FAILURE))
+								&& (!IS_SET(HEADLIGHT_NOT_WORKING))
+								&& (!IS_SET(FAULTY_EXHAUST)) && (!IS_SET(HIGH_TEMP))
+								&& (!IS_SET(CHANGE_GEAR)))
 
 							usart_send_str("\r\n");
+					}
 
 					is_set = usart_recv();
 				}
