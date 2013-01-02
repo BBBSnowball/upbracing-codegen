@@ -1,4 +1,4 @@
-ERROR: Statemachine needs a base rate
+ERROR: Statemachine needs a base rate because it has timed transitions, e.g. transition: StateMachine Testtransitions -> normal state normal_1 --> StateMachine Testtransitions -> super state super_1 (add : wait(10ms) [a=b])
 	in StateMachineForGeneration Testtransitions
 	in statemachine validator
 ERROR: More than 1 start states
