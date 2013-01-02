@@ -79,6 +79,9 @@ for (StateMachineForGeneration sm : statemachines) {
 
 <%
 	for (String event_name : sm.getEvents().keySet()) {
+		if (event_name == null || event_name.equals(""))
+			// ignore tick function
+			continue;
 %>
 void <%=sm_name%>_event_<%=event_name%>(void);
 <%
@@ -95,6 +98,10 @@ Map<String, Set<StateMachineForGeneration>> events = new TreeMap<String, Set<Sta
 
 for (StateMachineForGeneration smg : statemachines) {
 	for (String event_name : smg.getEvents().keySet()) {
+		if (event_name == null || event_name.equals(""))
+			// ignore tick function
+			continue;
+		
 		Set<StateMachineForGeneration> smgs = events.get(event_name);
 		if (smgs == null) {
 			smgs = new HashSet<StateMachineForGeneration>();
