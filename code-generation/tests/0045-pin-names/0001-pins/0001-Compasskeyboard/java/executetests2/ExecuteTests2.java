@@ -1,10 +1,8 @@
 package executetests2;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.tests.RichToolkit;
 import de.upbracing.code_generation.tests.RichToolkit.SimpleTestContext;
 import de.upbracing.code_generation.tests.TestFailedException;
@@ -15,9 +13,7 @@ public class ExecuteTests2 {
 
 	public static void executeTests2(RichToolkit rich_tool) throws IOException,
 			TestFailedException {
-		// create instance of messages
-		Messages msg = rich_tool.getMessages();
-
+		
 		// obtain instance of the serial helper
 		SerialHelper serial_help = rich_tool.getSerial();
 
@@ -26,7 +22,6 @@ public class ExecuteTests2 {
 
 		// get output streams for communication
 		OutputStream out = serial_help.getOutputStream();
-//		InputStream in = serial_help.getInputStream();
 
 		// setup to begin testing phase
 		rich_tool.start();
@@ -47,25 +42,12 @@ public class ExecuteTests2 {
 		serial_help.expectString("PORTE :" +0x34 +"\r\n");
 		serial_help.expectString("PORTD :0x01\r\n");
 		
-		
-//		if (!getIncomingData(in).equals("PORTE :" +0x34 +"\r\n"))
-//			msg.error("Compass = 'a' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x01\r\n"))
-//			msg.error("Compass = 'a' test for PORTD failed.");
-		
 		//start sub-test 2
 		out.write('b');
 		
 		//check whether the registers are set as expected
 		serial_help.expectString("PORTE :0xc0\r\n");
 		serial_help.expectString("PORTD :0x00\r\n");
-		
-//		if (!getIncomingData(in).equals("PORTE :0xc0\r\n"))
-//			msg.error("Compass = 'b' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x00\r\n"))
-//			msg.error("Compass = 'b' test for PORTD failed.");
 		
 		//start sub-test 3
 		out.write('c');
@@ -74,12 +56,6 @@ public class ExecuteTests2 {
 		serial_help.expectString("PORTE :0x34\r\n");
 		serial_help.expectString("PORTD :0x01\r\n");
 		
-//		if (!getIncomingData(in).equals("PORTE :0x34\r\n"))
-//			msg.error("Compass = 'c' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x01\r\n"))
-//			msg.error("Compass = 'c' test for PORTD failed.");
-		
 		//start sub-test 4
 		out.write('d');
 
@@ -87,12 +63,6 @@ public class ExecuteTests2 {
 		serial_help.expectString("DDRE :0x00\r\n");
 		serial_help.expectString("DDRD :0x00\r\n");
 			
-//		if (!getIncomingData(in).equals("DDRE :0x00\r\n"))
-//			msg.error("Compass = 'd' test for DDRE failed.");
-//
-//		if (!getIncomingData(in).equals("DDRD :0x00\r\n"))
-//			msg.error("Compass = 'd' test for DDRD failed.");
-		
 		//start sub-test 5
 		out.write('e');
 		
@@ -100,48 +70,24 @@ public class ExecuteTests2 {
 		serial_help.expectString("PORTE :0xf4\r\n");
 		serial_help.expectString("PORTD :0x01\r\n");
 		
-//		if (!getIncomingData(in).equals("PORTE :0xf4\r\n"))
-//			msg.error("Compass = 'e' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x01\r\n"))
-//			msg.error("Compass = 'e' test for PORTD failed.");
-		
 		//start sub-test 6
 		out.write('f');
 		
 		serial_help.expectString("PORTE :0x00\r\n");
 		serial_help.expectString("PORTD :0x00\r\n");
 
-//		if (!getIncomingData(in).equals("PORTE :0x00\r\n"))
-//			msg.error("Compass = 'f' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x00\r\n"))
-//			msg.error("Compass = 'f' test for PORTD failed.");
-		
 		//start sub-test 7
 		out.write('g');
 		
 		serial_help.expectString("PORTE :0xf4\r\n");
 		serial_help.expectString("PORTD :0x01\r\n");
 
-//		if (!getIncomingData(in).equals("PORTE :0xf4\r\n"))
-//			msg.error("Compass = 'g' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x01\r\n"))
-//			msg.error("Compass = 'g' test for PORTD failed.");
-		
 		//start sub-test 8
 		out.write('h');
 		
 		serial_help.expectString("PORTE :0x00\r\n");
 		serial_help.expectString("PORTD :0x00\r\n");
 
-//		if (!getIncomingData(in).equals("PORTE :0x00"))
-//			msg.error("Compass = 'h' test for PORTE failed.");
-//
-//		if (!getIncomingData(in).equals("PORTD :0x00"))
-//			msg.error("Compass = 'h' test for PORTD failed.");
-		
 		//start sub-test 9 (with user help)
 		out.write('i');
 		
@@ -152,16 +98,10 @@ public class ExecuteTests2 {
 		
 		serial_help.expectString("\r\n");
 
-//		if (getIncomingData(in).equals("\r\n"))
-//			msg.error("is_set = 'a' test failed for C button.");
-		
 		rich_tool.showInstructions("Release C now.\r\n");
 		out.write('b');
 		
 		serial_help.expectString("\r\n");
-		
-//		if (getIncomingData(in).equals("\r\n"))	
-//			msg.error("is_set = 'b' test failed for C button.");
 		
 		//Test for other ports
 		rich_tool.showInstructions("Configure the center switch for PORTD.1 mode now.\r\n");
@@ -169,9 +109,6 @@ public class ExecuteTests2 {
 		out.write('c');
 		
 		serial_help.expectString("\r\n");
-		
-//		if (getIncomingData(in).equals("\r\n"))
-//			msg.error("is_set = 'c' test failed for N, S , W, C, or E button.");
 		
 		out.write('0');
 		
@@ -184,12 +121,4 @@ public class ExecuteTests2 {
 		// report Test results
 		rich_tool.getMessages();
 	}
-
-//	private static String getIncomingData(InputStream in) throws IOException {
-//		int c;
-//		while ((c = in.read()) != '\n')
-//			str.append(c);
-//
-//		return str.toString();
-//	}
 }

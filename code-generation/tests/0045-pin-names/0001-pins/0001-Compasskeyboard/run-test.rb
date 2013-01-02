@@ -2,11 +2,13 @@
 $helper.erase_processor
 
 #show instructions to the user 
-$toolkit.showInstructions("This test blinks some LEDs, and you must answer whether you saw the LED blink or not.\r\n
-The led pattern is like this : \r\n
-7 6 5 4 3 2 1 0 \r\n
-A X means that the LED is on and a - means that the LED is off \r\n
-For example : In ------XX the last two leds are on, and the rest are off\r\n ");
+$toolkit.showInstructions("This is a semi-automated test. Most of the tests will be performed without your 
+help, except for a few where you would be asked to press a button on the compass card keyboard. The layout
+of the keyboard is like this : \r\n
+          NORTH \r\n
+ WEST     CENTER        EAST \r\n
+ 		  SOUTH\r\n \r\n
+The abbreviations are N (NORTH), S (SOUTH), W (WEST), E (EAST), C (CENTER).\r\n ");
 
 
 #flash the program onto the microcontroller
