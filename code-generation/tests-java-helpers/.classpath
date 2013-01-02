@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="libs/nrjavaserial-3.8.4.jar" sourcepath="libs/nrjavaserial-read-only/nrjavaserial/src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java-parser-tools"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/upbracing-AVR-CodeGenerator"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.tests.RichToolkit;
 import de.upbracing.code_generation.tests.TestFailedException;
 import de.upbracing.code_generation.tests.Toolkit;
+import de.upbracing.code_generation.tests.context.RegexMatcher;
 import de.upbracing.code_generation.tests.context.StringMatcher;
 import de.upbracing.code_generation.tests.streams.MonitoredInputStream;
 import de.upbracing.code_generation.tests.streams.MonitoredOutputStream;
@@ -316,5 +318,28 @@ public class SerialHelper {
 	
 	public void write(String str) throws IOException {
 		getOutputStream().write(str.getBytes());
+	}
+	
+	public Matcher expectRegex(String expected, int timeout_millis) throws TestFailedException {
+		// create a matcher
+		RegexMatcher m = new RegexMatcher(this, expected);
+		
+		// put the matcher into the context, if possible
+		ContextItem context = null;
+		if (toolkit != null)
+			context = toolkit.getMessages().pushContext(m);
+		
+		try {
+			// run matcher
+			return m.run(timeout_millis);
+		} finally {
+			// remove it from context (if we pushed it)
+			if (context != null)
+				context.pop();
+		}
+	}
+
+	public Matcher expectRegex(String regex) throws TestFailedException {
+		return expectRegex(regex, 30*1000);
 	}
 }
