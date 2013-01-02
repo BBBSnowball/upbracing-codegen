@@ -1564,7 +1564,7 @@ EOF
 					# cut trace after run_test method
 					bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
 
-					message += "\r\n\t\t" + bt
+					message += "\r\n\t\t" + bt if Rake::application.options.trace
 
 					message += "\r\n\tin test:"
 				end
@@ -1575,7 +1575,7 @@ EOF
 				# cut trace after run_test method
 				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
 
-				message += "\r\n\t\t" + bt
+				message += "\r\n\t\t" + bt if Rake::application.options.trace
 
 
 				log = toolkit.inner.messages || $log || $logger
@@ -1593,8 +1593,8 @@ EOF
 
 				message = "Exception in test script #{test_script}:\r\n" +
 					"\t" + ex.class.to_s + "\r\n" +
-					"\t" + ex.message.to_s + "\r\n" +
-					"\t" + bt
+					"\t" + ex.message.to_s + "\r\n"
+				message += "\t" + bt if Rake::application.options.trace
 
 				log = toolkit.inner.messages || $log || $logger
 				if log
@@ -1610,6 +1610,7 @@ EOF
 						if instream.available > 0
 							# read a lot of data: 1kB -> more than 10 lines (without '\n')
 							instream.skip 1024
+							instream.skip 1024
 
 							# wait a bit to see whether the MCU is sending more data
 							sleep 2
@@ -1621,12 +1622,14 @@ EOF
 
 								# read more data
 								instream.skip 1024
+								instream.skip 1024
 
 								# If this wasn't enough, we read and erase (in case that failed
 								# the first time). This should stop the problem eventually.
 								while instream.available > 0
 									test_helper.erase_processor
 									sleep 2
+									instream.skip 1024
 									instream.skip 1024
 								end
 							end
