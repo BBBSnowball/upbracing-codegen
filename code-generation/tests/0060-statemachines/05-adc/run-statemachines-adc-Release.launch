@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/upbracing-AVR-CodeGenerator/libs/jruby-complete-1.7.0.jar"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<listAttribute key="org.eclipse.jdt.launching.CLASSPATH">
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry containerPath=&quot;org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6&quot; javaProject=&quot;tests-java-helpers&quot; path=&quot;1&quot; type=&quot;4&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry id=&quot;org.eclipse.jdt.launching.classpathentry.defaultClasspath&quot;&gt;&#10;&lt;memento exportedEntriesOnly=&quot;false&quot; project=&quot;tests-java-helpers&quot;/&gt;&#10;&lt;/runtimeClasspathEntry&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry path=&quot;3&quot; projectName=&quot;java-parser-tools&quot; type=&quot;1&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry path=&quot;3&quot; projectName=&quot;tests-java-helpers&quot; type=&quot;1&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry path=&quot;3&quot; projectName=&quot;upbracing-AVR-CodeGenerator&quot; type=&quot;1&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry path=&quot;3&quot; projectName=&quot;Statemachine&quot; type=&quot;1&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-TimerConfigurationModel/dist/de.upbracing.timer.configurationmodel.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/guava-13.0.1.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/jruby-complete-1.7.0.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/ruby-gems.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/upbracing-AVR-CodeGenerator/libs/simple-xml-2.6.4.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+<listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/tests&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.jruby.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-S rake statemachines-adc-Release"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="tests-java-helpers"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:tests}"/>
+</launchConfiguration>
