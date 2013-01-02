@@ -22,13 +22,6 @@ void usart_init(void) {
 	UCSRxC = (1<<UCSZx0) | (1<<UCSZx1);
 	// enable RX and TX
 	UCSRxB = (1<<RXENx) | (1<<TXENx);
-
-	// The level at reset is sort of undefined and
-	// after the reset it will be set to zero. We
-	// need it at a high level for some time, so the
-	// PC will get the first bit right.
-	// Well, that doesn't solve the problem :-(
-	_delay_us(1000);
 }
 
 void usart_send_str(const char* s) {
