@@ -2,11 +2,7 @@ package de.upbracing.code_generation.tests.context;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,12 +95,12 @@ public class RegexMatcher extends TestContext implements Runnable {
 			initRun();
 			
 			// get input stream and reserve up to 256 bytes of buffer memory
+			//TODO We should really use a CharsetDecoder because this should be
+			//     faster. Unfortunately, that class seems to be completely
+			//     unusable in my implementation of Java. The implementation
+			//     with CharsetDecoder is in commit 179782a6b32b5d.
 			InputStream in = serial.getInputStream();
 			byte[] buf = new byte[max_len];
-			CharsetDecoder decoder = charset.newDecoder();
-			ByteBuffer buf2 = ByteBuffer.wrap(buf);
-			buf2.limit(0);
-			CharBuffer received_chars_buf = CharBuffer.allocate(max_len);
 			
 			while (!Thread.interrupted()) {
 				// break, if space in buffer is not enough
@@ -132,22 +128,13 @@ public class RegexMatcher extends TestContext implements Runnable {
 				// add character to buffer and increase limit accordingly
 				buf[matched_chars] = (byte)x;
 				++matched_chars;
-				buf2.limit(matched_chars);
 				
 				// decode it
-				CoderResult result = decoder.decode(buf2, received_chars_buf, false);
-				if (result.isError()) {
-					setResult(new Result.Error("decoder error: " + result));
-					break;
-				}
+				//TODO Could that fail, if the buffer ends with a partial character?
+				String received_chars = new String(buf, 0, matched_chars, charset);
 				
 				// try to match it
-				CharSequence received_chars = received_chars_buf.subSequence(0, received_chars_buf.position());
-				System.out.println("received chars: " + received_chars);
-				if (received_chars.length() > 0)
-					System.out.println("last char: " + (int)received_chars.charAt(received_chars.length()-1));
 				Matcher m = expected.matcher(received_chars);
-				System.out.println("matcher: " + m);
 				if (m.lookingAt()) {
 					// we found a match -> return
 					this.matcher = m;

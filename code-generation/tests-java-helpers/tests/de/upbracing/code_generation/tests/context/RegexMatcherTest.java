@@ -52,26 +52,42 @@ public class RegexMatcherTest {
 		SerialHelper sh = wrapStream(stream);
 		
 		// run RegexMatcher
-		RegexMatcher m = new RegexMatcher(sh, regex);
-		Matcher matcher = m.run(4 * 1000);
-		
-		// make sure we have matched what we expect to
-		assertEquals(true, matcher.matches());
-		assertEquals(0, matcher.start());
-		assertEquals(match.length(), matcher.end());
-		assertEquals(match, matcher.group());
-
-		// get remaining bytes
-		int remaining_len = stream.available();
-		byte buf[] = new byte[remaining_len];
-		int len = stream.read(buf);
-		assertEquals(remaining_len, len);
-		
-		// check remaining bytes
-		assertEquals(remaining, new String(buf, charset()));
+		Matcher matcher;
+		try {
+			RegexMatcher m = new RegexMatcher(sh, regex);
+			matcher = m.run(4 * 1000);
+			
+			// make sure we have matched what we expect to
+			assertEquals(true, matcher.matches());
+			assertEquals(0, matcher.start());
+			assertEquals(match.length(), matcher.end());
+			assertEquals(match, matcher.group());
+		} finally {
+			// get remaining bytes
+			// (We also do that, if an error occurs.)
+			int remaining_len = stream.available();
+			byte buf[] = new byte[remaining_len];
+			int len = stream.read(buf);
+			//assertEquals(remaining_len, len);
+			
+			// check remaining bytes
+			assertEquals(remaining, new String(buf, charset()));
+		}
 		
 		// return the matcher, so it can be inspected further
 		return matcher;
+	}
+	
+	private void testRegexError(String regex, String match, String remaining, String message)
+			throws IOException {
+		try {
+			testRegex(regex, match, remaining);
+			fail("expected TestFailedException");
+		} catch (TestFailedException e) {
+			assertEquals(false, e.getResult().isSuccessful());
+			assertEquals(true, e.getResult() instanceof Result.Error);
+			assertEquals(message, e.getResult().getMessage());
+		}
 	}
 
 	//@Test
@@ -108,5 +124,7 @@ public class RegexMatcherTest {
 	public void test() throws TestFailedException, IOException {
 		testRegex("blub", "blub", "abc");
 		testRegex("^blub", "blub", "abc");
+		testRegexError("^blub", "blu", "", "end of stream");
+		testRegexError("^blub", "blua", "bc", "regex doesn't match");
 	}
 }
