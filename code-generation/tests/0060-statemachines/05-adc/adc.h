@@ -8,9 +8,31 @@
 #ifndef ADC_H_
 #define ADC_H_
 
+// we need the bool type
+#include <common.h>
+
 #include "gen/statemachines.h"
 
+#ifndef IS_ADC_RUNNING_DECLARED
+#define IS_ADC_RUNNING_DECLARED
+	inline static bool is_adc_running(void) {
+		return (ADCSRA & (1 << ADSC));
+	}
+#endif
+
+#ifndef IS_ADC_ENABLED_DECLARED
+#define IS_ADC_ENABLED_DECLARED
+inline static bool is_adc_enabled(void) {
+	return (ADCSRA & (1 << ADEN));
+}
+#endif
+
 inline static void adc_start(uint8_t channel) {
+	// wait for ADC to finish
+	if (is_adc_enabled())
+		while (is_adc_running())
+			;
+
 	// select channel and internal reference (2.56V)
 	ADMUX = (channel & 0x1f)  |  (1 << REFS1) | (1 << REFS0);
 

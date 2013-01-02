@@ -4,9 +4,12 @@
 // we need the bool type
 #include <common.h>
 
+#ifndef IS_ADC_ENABLED_DECLARED
+#define IS_ADC_ENABLED_DECLARED
 inline static bool is_adc_enabled(void) {
 	return (ADCSRA & (1 << ADEN));
 }
+#endif
 
 inline static void adc_disable(void) {
 	ADCSRA &= ~(1 << ADEN);
@@ -16,9 +19,12 @@ inline static void start_adc(void) {
 	ADCSRA |= (1 << ADSC);
 }
 
-inline static bool is_adc_running(void) {
-	return (ADCSRA & (1 << ADSC));
-}
+#ifndef IS_ADC_RUNNING_DECLARED
+#define IS_ADC_RUNNING_DECLARED
+	inline static bool is_adc_running(void) {
+		return (ADCSRA & (1 << ADSC));
+	}
+#endif
 
 inline static uint16_t adc_read_and_reset_result(void) {
 	return ADCW;
