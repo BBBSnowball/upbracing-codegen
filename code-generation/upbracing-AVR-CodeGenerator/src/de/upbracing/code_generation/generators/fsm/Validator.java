@@ -72,7 +72,31 @@ public class Validator {
 			ContextItem smg_context = messages.pushContext(smg);
 
 			if (smg.getBasePeriodAsString() == null) {
-				messages.error("Statemachine needs a base rate");
+				// Normally, we need a base rate. However, we can do without
+				// one, if the tick function isn't used at all (no conditions and
+				// no waits). We can generate working code, if the statemachine
+				// doesn't have any waits.
+				Transition wait_trans = null;
+				Transition tick_trans = null;
+				for (Transition t : smg.getTransitions()) {
+					TransitionInfo ti = smg.getTransitionInfo(t);
+					if (ti.isWaitTransition()) {
+						wait_trans = t;
+						break;
+					} else if (tick_trans == null && ti.getEventName() == null
+							&& !(t.getSource() instanceof InitialState)) {
+						tick_trans = t;
+					}
+				}
+				if (wait_trans != null) {
+					messages.error("Statemachine needs a base rate because it has timed transitions, e.g. %s (%s)",
+							wait_trans, wait_trans.getTransitionInfo());
+				} else if (tick_trans != null) {
+					messages.warn("Statemachine should have a base rate because it has transitions which are not triggered by an event, e.g. %s (%s)",
+							tick_trans, tick_trans.getTransitionInfo());
+				} else {
+					// We don't need a base rate.
+				}
 
 				// set some rate because the program will crash, if it finds a
 				// null in there

@@ -5,6 +5,7 @@
 
 #include "rs232.h"
 #include "rs232-helpers.h"
+#include "adc.h"
 
 
 uint16_t getADC(uint8_t channel) {
@@ -49,42 +50,76 @@ uint16_t getADC(uint8_t channel) {
 	return result;
 }
 
+typedef enum {
+	NO_ADC,
+	BLOCKING_ADC,
+	BLOCKING_ADC_ONCE,
+	STATEMACHINE_ONCE,
+	STATEMACHINE_CONTINUOUS,
+} mode_t;
+
+volatile mode_t send_adc = NO_ADC;
+
 int main(void) {
 	usart_init();
 
 	usart_send_str_P(PSTR("\r\n\r\nADC test\r\n"));
 
-	uint8_t send_adc = 0;
+	sei();
+
 	uint8_t channel = 2;
 	while (1) {
 		if (usart_recv_char_available()) {
 			uint8_t c = usart_recv();
 			switch (c) {
-				case 'e':
-					send_adc = 1;
+				case 'e':	// enable continuous conversions in main loop
+					// disable interrupts
+					ADCSRA &= ~(1 << ADIE);
+
+					send_adc = BLOCKING_ADC;
 					break;
-				case 'd':
-					send_adc = 0;
+				case 'd':	// disable conversions
+					send_adc = NO_ADC;
 					break;
-				case 'v':
+				case 'v':	// select channel 2 (VCC)
 					channel = 2;
 					break;
-				case 'r':	// 1.1V reference voltage
+				case 'r':	// select 1.1V reference voltage
 					channel = 0b11110;
 					break;
-				case 'g':	// 0V reference voltage
+				case 'g':	// select 0V reference voltage
 					channel = 0b11111;
+					break;
+				case 'o':	// do one conversion in main loop
+					send_adc = BLOCKING_ADC_ONCE;
+					break;
+				case 's':	// do one conversion with the statemachine
+					send_adc = STATEMACHINE_ONCE;
+					adc_start(channel);
+					break;
+				case 'S':	// do many conversion with the statemachine
+					send_adc = STATEMACHINE_CONTINUOUS;
+					adc_start(channel);
+					break;
+				case 'p':	// ping
+					usart_send_str_P(PSTR("pong\r\n"));
+					break;
+				case ' ':	// ignore (used for timing)
 					break;
 				default:
 					if ('0' <= c && c <= '7')
+						// select channel according to send char
+						// ('2' -> select channel 2)
 						channel = c - '0';
 					else
+						// I don't understand the input :-(
 						usart_send_str_P(PSTR("???\r\n"));
 					break;
 			}
 		}
 
-		if (send_adc) {
+		// do a blocking conversion, if that is requested
+		if (send_adc == BLOCKING_ADC || send_adc == BLOCKING_ADC_ONCE) {
 			uint16_t x = getADC(channel);
 
 			usart_send_number(x, 16, 4); usart_send_str("\r\n");
@@ -102,7 +137,23 @@ int main(void) {
 				usart_send_number(x, 10, 4); usart_send_str("\r\n");
 			}
 
-			_delay_ms(200);
+			if (send_adc == BLOCKING_ADC_ONCE)
+				// we only want one -> disable now
+				send_adc = NO_ADC;
+			else
+				// don't send too many values
+				_delay_ms(200);
 		}
 	}
+}
+
+void on_adc_finished(uint8_t channel, uint16_t value) {
+	usart_send_str("S ");
+	usart_send_number(value, 16, 4);
+	usart_send_str(" (");
+	usart_send_number(channel, 16, 2);
+	usart_send_str(")\r\n");
+
+	if (send_adc == STATEMACHINE_CONTINUOUS)
+		adc_restart();
 }

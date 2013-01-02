@@ -145,7 +145,7 @@ TARGET_DIR="gen"
 
 # let the user change a few things, e.g. the programmer
 # This file must set these constants:
-# AVRDUDE = "avrdude -cjtag2 -pc128 -Pusb"
+# AVRDUDE = ["avrdude", "-cjtag2", "-pc128", "-Pusb"]
 # SERIALPORT = "/dev/ttyUSB0"	# can be a Proc object
 begin
 	require 'userconfig.rb'
@@ -170,13 +170,25 @@ user_config_error = false
 		user_config_error = true
 	else
 		value = Module.const_get name
-		unless value.is_a? String and !value.empty? or value.is_a? Proc
-			puts "Invalid value for constant #{name}. Expecting a String or a Proc."
+		unless value.is_a? String and !value.empty? or value.is_a? Proc or (value.is_a?(Array) && name == :AVRDUDE)
+			puts "Invalid value for constant #{name}. Expecting a String, Array (only for AVRDUDE) or a Proc."
 			user_config_error = true
 		end
 	end
 end
 exit 1 if user_config_error
+
+# make sure that AVRDUDE is an array
+if AVRDUDE.is_a? String
+	puts "WARN: AVRDUDE should be a String. Splitting at whitespace..."
+
+	avrdude = AVRDUDE
+	
+	# remove it first to avoid warning
+	Object.send(:remove_const, :AVRDUDE)
+
+	AVRDUDE = avrdude.split(/\s+/)
+end
 
 
 # dummy methods in case select-projects.rb doesn't
@@ -608,8 +620,7 @@ class Project
 	end
 
 	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
-		#TODO rewrite for Windows
-		["#/../../avr-programs/upbracing-common"]
+		["#/../../avr-programs/upbracing-common", "."]
 	end
 
 	def cflags(source_dir, source_file, target_dir, configuration)
@@ -1258,7 +1269,7 @@ class TestHelper
 	end
 
 	def erase_processor
-		system "#{@avrdude} -e"
+		toolkit.run "erase processor", (@avrdude + ["-e"]).to_java(Java::java::lang::String)
 	end
 
 	def flash_processor_action(parts = [:flash])
@@ -1266,7 +1277,7 @@ class TestHelper
 		return { "dependencies" => [], "cmdline" => "" } if parts.empty?
 
 		dependencies = []
-		commands = ""
+		commands = []
 		parts.each do |part|
 			part = part.intern if part.is_a? String
 			type = part.to_s
@@ -1283,7 +1294,7 @@ class TestHelper
 
 			file = File.join2(@build_dir, "#{@name}.#{ext}")
 			dependencies << file
-			commands += " #{shell_quote}-U#{type}:w:#{File.expand_path(file)}:a#{shell_quote}"
+			commands << "-U#{type}:w:#{File.expand_path(file)}:a"
 		end
 
 		cmdline = @avrdude + commands
@@ -1292,8 +1303,7 @@ class TestHelper
 	end
 
 	def flash_processor(parts = [:flash])
-		#TODO use Toolkit
-		system flash_processor_action(parts)["cmdline"]
+		toolkit.run "flash processor", flash_processor_action(parts)["cmdline"].to_java(Java::java::lang::String)
 	end
 end
 
@@ -1423,7 +1433,52 @@ class Project
 		engine.executeScript(init_code, "init code") if init_code
 
 		# execute test script
-		engine.executeScript(File.read(script_filename), script_filename)
+		if true
+			engine.executeScript(File.read(script_filename), script_filename)
+		else
+			# In theory this should yield better traces, but in practice
+			# they are cut short and we don't see ANYTHING which happens
+			# inside the call to require.
+			engine.defineReadonlyVariable("$test_script_filename", script_filename)
+			engine.executeScript(<<EOF, "error catcher")
+				begin
+					require \$test_script_filename
+				rescue Exception => ex
+					message = "Test failed: " + ex.message
+
+					# for Java Exceptions we print the inner Exception
+					# also a TestFailedException can have another Exception wrapped in the result
+					throwable = ex.is_a?(Java::java::lang::Exception) && ex.cause || ex.is_a?(Java::de::upbracing::code_generation::tests::TestFailedException) && ex.result && ex.result.status == "error" && ex.result.exception
+					if throwable
+						# get full backtrace
+						bt = throwable.backtrace.join("\r\n\t\t")
+
+						# cut trace after run_test method
+						bt = bt.sub(/\s+error catcher:\d+:.*$/m, "")
+
+						message += "\r\n\t\t" + bt
+
+						message += "\r\n\tin test:"
+					end
+
+					# get full backtrace
+					bt = ex.backtrace.join("\r\n\t\t")
+
+					# cut trace after run_test method
+					bt = bt.sub(/\s+error catcher:\d+:.*$/m, "")
+
+					message += "\r\n\t\t" + bt
+
+
+					log = \$toolkit.inner.messages || \$log || \$logger
+					if log
+						log.error message.gsub("\r\n", "\n")
+					else
+						puts message
+					end
+				end
+EOF
+		end
 	end
 
 	def get_test_script(dir, configuration)
@@ -1509,7 +1564,7 @@ class Project
 					# cut trace after run_test method
 					bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
 
-					message += "\r\n\t\t" + bt
+					message += "\r\n\t\t" + bt if Rake::application.options.trace
 
 					message += "\r\n\tin test:"
 				end
@@ -1520,7 +1575,7 @@ class Project
 				# cut trace after run_test method
 				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
 
-				message += "\r\n\t\t" + bt
+				message += "\r\n\t\t" + bt if Rake::application.options.trace
 
 
 				log = toolkit.inner.messages || $log || $logger
@@ -1530,8 +1585,6 @@ class Project
 					puts message
 				end
 			rescue Exception => ex
-				#TODO use toolkit.messages
-
 				# get full backtrace
 				bt = ex.backtrace.join("\r\n\t")
 				
@@ -1540,14 +1593,48 @@ class Project
 
 				message = "Exception in test script #{test_script}:\r\n" +
 					"\t" + ex.class.to_s + "\r\n" +
-					"\t" + ex.message.to_s + "\r\n" +
-					"\t" + bt
+					"\t" + ex.message.to_s + "\r\n"
+				message += "\t" + bt if Rake::application.options.trace
 
 				log = toolkit.inner.messages || $log || $logger
 				if log
 					log.error message.gsub("\r\n", "\n")
 				else
 					puts message
+				end
+			ensure
+				# read remaining chars on serial line
+				[toolkit.first_serial,toolkit.second_serial].each do |serial|
+					if serial and serial.isOpen
+						instream = serial.input_stream
+						if instream.available > 0
+							# read a lot of data: 1kB -> more than 10 lines (without '\n')
+							instream.skip 1024
+							instream.skip 1024
+
+							# wait a bit to see whether the MCU is sending more data
+							sleep 2
+							if instream.available > 0
+								# we have to clean up
+								# If the test has left the processor in a bad state (sending lots of data)
+								toolkit.inner.messages.warn("Test didn't clean up - there is a lot of data coming in -> I will erase the processor to stop it")
+								test_helper.erase_processor
+
+								# read more data
+								instream.skip 1024
+								instream.skip 1024
+
+								# If this wasn't enough, we read and erase (in case that failed
+								# the first time). This should stop the problem eventually.
+								while instream.available > 0
+									test_helper.erase_processor
+									sleep 2
+									instream.skip 1024
+									instream.skip 1024
+								end
+							end
+						end
+					end
 				end
 			end
 		end

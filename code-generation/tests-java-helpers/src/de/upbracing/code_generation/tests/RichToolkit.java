@@ -58,15 +58,25 @@ public class RichToolkit implements Toolkit {
 	 * @param commandline
 	 * @param environment
 	 * @param dir
-	 * @return exit code of the process
 	 * @throws InterruptedException if the Thread is interrupted,
 	 * 		while the process is running
+	 * @throws ExternalProgramFailedException if the program fails (non-zero exit code)
 	 */
-	public int run(String name, String[] commandline, String[] environment,
-			File dir) throws InterruptedException {
+	public void run(String name, String[] commandline, String[] environment,
+			File dir) throws InterruptedException, ExternalProgramFailedException {
+		StringBuffer sb = new StringBuffer();
+		for (String arg : commandline) {
+			sb.append(" ");
+			sb.append(arg);
+		}
+		getMessages().info("running program '%s':%s", name, sb.toString());
+		
 		ExternalProgramContext pc = inner.execProgram(name, commandline, environment, dir);
 		
-		return processIO(pc);
+		int exit_code = processIO(pc);
+		
+		if (exit_code != 0)
+			throw new ExternalProgramFailedException(name, exit_code, commandline, environment, dir);
 	}
 	
 	public int processIO(final ExternalProgramContext pc) throws InterruptedException {
@@ -144,12 +154,12 @@ public class RichToolkit implements Toolkit {
 		return exit_code;
 	}
 
-	public int run(String name, String[] commandline) throws InterruptedException {
-		return run(name, commandline, null, null);
+	public void run(String name, String[] commandline) throws InterruptedException, ExternalProgramFailedException {
+		run(name, commandline, null, null);
 	}
 	
-	public int run(String[] commandline) throws InterruptedException {
-		return run(commandline[0], commandline, null, null);
+	public void run(String[] commandline) throws InterruptedException, ExternalProgramFailedException {
+		run(commandline[0], commandline, null, null);
 	}
 
 	/*public int run(String name, String commandline) throws InterruptedException {

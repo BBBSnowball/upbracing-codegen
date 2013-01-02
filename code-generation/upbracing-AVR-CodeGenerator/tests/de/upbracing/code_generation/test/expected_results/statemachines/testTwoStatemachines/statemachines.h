@@ -33,13 +33,11 @@ void simple_pc_tick();
 
 // statemachine counter
 
-void counter_event_(void);
 void counter_event_reset(void);
 void counter_event_startstop_pressed(void);
 
 // statemachine simple_pc
 
-void simple_pc_event_(void);
 void simple_pc_event_cosmic_ray(void);
 void simple_pc_event_home(void);
 void simple_pc_event_open_search(void);
@@ -51,11 +49,6 @@ void simple_pc_event_turn_off(void);
 void simple_pc_event_turn_on(void);
 
 // accumulated event functions
-
-inline static void event_() {
-	counter_event_();
-	simple_pc_event_();
-}
 
 inline static void event_cosmic_ray() {
 	simple_pc_event_cosmic_ray();
