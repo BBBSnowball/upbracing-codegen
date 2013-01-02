@@ -313,4 +313,8 @@ public class SerialHelper {
 	public boolean isOpen() {
 		return mIns != null && mOut != null;
 	}
+	
+	public void write(String str) throws IOException {
+		getOutputStream().write(str.getBytes());
+	}
 }
