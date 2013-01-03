@@ -150,10 +150,10 @@ int main() {
 						REGISTER_DATA("PORTE.7", IS_SET(HIGH_TEMP), 16, 2);
 						break;
 					default:
-						is_set = usart_recv();
 						//usart_send_str("???\r\n");
 						break;
 					}
+					is_set = usart_recv();
 				}
 			}
 			compass = usart_recv();
