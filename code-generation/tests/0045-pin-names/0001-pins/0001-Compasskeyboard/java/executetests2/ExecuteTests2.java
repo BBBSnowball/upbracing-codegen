@@ -54,7 +54,7 @@ public class ExecuteTests2 {
 		
 		//check whether the registers are set as expected
 		serial_help.expectString("PORTE :0x34\r\n");
-		serial_help.expectString("PORTD :0x02\r\n");
+		serial_help.expectString("PORTD :0x00\r\n");
 		
 		//start sub-test 4
 		out.write('d');

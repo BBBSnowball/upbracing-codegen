@@ -30,7 +30,7 @@ int main() {
 				LOW(HIGH_TEMP);
 				LOW(CHANGE_GEAR);
 
-				//if (PORTE == 0x34 && PORTD == 0x01) test passes
+				//if (PORTE == 0x34 && PORTD == 0x00) test passes
 				REGISTER_DATA("PORTE", PORTE, 16, 2);
 				REGISTER_DATA("PORTD", PORTD, 16, 2);
 			}
@@ -43,7 +43,7 @@ int main() {
 				HIGH(HIGH_TEMP);
 				HIGH(CHANGE_GEAR);
 
-				//if (PORTE == 0xc0 && PORTD == 0x00) test passes
+				//if (PORTE == 0xc0 && PORTD == 0x02) test passes
 				REGISTER_DATA("PORTE", PORTE, 16, 2);
 				REGISTER_DATA("PORTD", PORTD, 16, 2);
 			}
@@ -56,7 +56,7 @@ int main() {
 				TOGGLE(HIGH_TEMP);
 				TOGGLE(CHANGE_GEAR);
 
-				//if (PORTE == 0x34 && PORTD == 0x01) test passes
+				//if (PORTE == 0x34 && PORTD == 0x00) test passes
 				REGISTER_DATA("PORTE", PORTE, 16, 2);
 				REGISTER_DATA("PORTD", PORTD, 16, 2);
 			}
@@ -82,7 +82,7 @@ int main() {
 				PULLUP(HIGH_TEMP);
 				PULLUP(CHANGE_GEAR);
 
-				//if (PORTE == 0xf4 && PORTD == 0x01) test passes
+				//if (PORTE == 0xf4 && PORTD == 0x02) test passes
 				REGISTER_DATA("PORTE", PORTE, 16, 2);
 				REGISTER_DATA("PORTD", PORTD, 16, 2);
 			}
@@ -108,7 +108,7 @@ int main() {
 				SET(HIGH_TEMP, 1);
 				SET(CHANGE_GEAR, 1);
 
-				//if (PORTE == 0xf4 && PORTD == 0x01) test passes
+				//if (PORTE == 0xf4 && PORTD == 0x02) test passes
 				REGISTER_DATA("PORTE", PORTE, 16, 2);
 				REGISTER_DATA("PORTD", PORTD, 16, 2);
 			}
@@ -150,11 +150,10 @@ int main() {
 						REGISTER_DATA("PORTE.7", IS_SET(HIGH_TEMP), 16, 2);
 						break;
 					default:
-						usart_send_str("???\r\n");
+						is_set = usart_recv();
+						//usart_send_str("???\r\n");
 						break;
 					}
-
-					is_set = usart_recv();
 				}
 			}
 			compass = usart_recv();
