@@ -106,12 +106,13 @@ public class ExecuteTests2 {
 		//Test for other ports
 		rich_tool.showInstructions("Press buttons N and S.\r\n");
 		out.write('c');
-		
-		serial_help.expectString("PORTE.2 :0x00\r\n");
+
 		serial_help.expectString("PORTE.4 :0x00\r\n");
-		
-		rich_tool.showInstructions("Press buttons E and W.\r\n")
 		serial_help.expectString("PORTE.5 :0x00\r\n");
+		
+		rich_tool.showInstructions("Press buttons E and W.\r\n");
+		out.write('d');
+		
 		serial_help.expectString("PORTE.6 :0x00\r\n");
 		serial_help.expectString("PORTE.7 :0x00\r\n");
 		
