@@ -110,11 +110,16 @@ public class ExecuteTests2 {
 		serial_help.expectString("PORTE.4 :0x00\r\n");
 		serial_help.expectString("PORTE.7 :0x00\r\n");
 		
-		rich_tool.showInstructions("Press buttons E and W.\r\n");
+		rich_tool.showInstructions("Press buttons E and W (You can release N and S).\r\n");
 		out.write('d');
 		
 		serial_help.expectString("PORTE.5 :0x00\r\n");
 		serial_help.expectString("PORTE.6 :0x00\r\n");
+
+		rich_tool.showInstructions("Please release all buttons, now.\r\n");
+		out.write('e');
+		
+		serial_help.expectString("PORTE: 0b1111x1xx\r\n");
 		
 		out.write('0');
 		
@@ -122,9 +127,7 @@ public class ExecuteTests2 {
 		out.write('0');
 
 		// pop the context of the test
+		test_temp.succeed();
 		test_temp.pop();
-
-		// report Test results
-		rich_tool.getMessages();
 	}
 }

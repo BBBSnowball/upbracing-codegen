@@ -147,8 +147,20 @@ int main() {
 						REGISTER_DATA("PORTE.7", IS_SET(HIGH_TEMP), 16, 2);
 						break;
 					case 'd':
-						REGISTER_DATA("PORTE.6", IS_SET(FAULTY_EXHAUST), 16, 2);
 						REGISTER_DATA("PORTE.5", IS_SET(HEADLIGHT_NOT_WORKING), 16, 2);
+						REGISTER_DATA("PORTE.6", IS_SET(FAULTY_EXHAUST), 16, 2);
+						break;
+					case 'e':
+						usart_send_str_P(PSTR("PORTE: 0b"));
+						usart_send( IS_SET(HIGH_TEMP)             ? '1' : '0' );	// PE7
+						usart_send( IS_SET(FAULTY_EXHAUST)        ? '1' : '0' );	// PE6
+						usart_send( IS_SET(HEADLIGHT_NOT_WORKING) ? '1' : '0' );	// PE5
+						usart_send( IS_SET(ENGINE_FAILURE)        ? '1' : '0' );	// PE4
+						usart_send('x');	// not interested in PE3
+						usart_send( IS_SET(LOW_FUEL)              ? '1' : '0' );	// PE2
+						usart_send('x');	// not interested in PE1
+						usart_send('x');	// not interested in PE0
+						usart_send_str_P(PSTR("\r\n"));
 						break;
 					default:
 						//usart_send_str("???\r\n");
