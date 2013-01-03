@@ -104,13 +104,13 @@ public class ExecuteTests2 {
 		serial_help.expectString("PORTE.2 :0x04\r\n");
 		
 		//Test for other ports
-		rich_tool.showInstructions("Configure the center switch for PORTD.1 mode now.\r\n");
-		rich_tool.showInstructions("Press buttons N, S, W, C, and E now.");
+		rich_tool.showInstructions("Press buttons N and S.\r\n");
 		out.write('c');
 		
-		serial_help.expectString("PORTD.1 :0x00\r\n");
 		serial_help.expectString("PORTE.2 :0x00\r\n");
 		serial_help.expectString("PORTE.4 :0x00\r\n");
+		
+		rich_tool.showInstructions("Press buttons E and W.\r\n")
 		serial_help.expectString("PORTE.5 :0x00\r\n");
 		serial_help.expectString("PORTE.6 :0x00\r\n");
 		serial_help.expectString("PORTE.7 :0x00\r\n");

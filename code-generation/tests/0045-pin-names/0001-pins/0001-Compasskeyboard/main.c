@@ -143,9 +143,10 @@ int main() {
 						REGISTER_DATA("PORTE.2", IS_SET(LOW_FUEL), 16, 2);
 						break;
 					case 'c':
-						REGISTER_DATA("PORTD.1", IS_SET(CHANGE_GEAR), 16, 2);
 						REGISTER_DATA("PORTE.4", IS_SET(ENGINE_FAILURE), 16, 2);
 						REGISTER_DATA("PORTE.5", IS_SET(HEADLIGHT_NOT_WORKING), 16, 2);
+						break;
+					case 'd':
 						REGISTER_DATA("PORTE.6", IS_SET(FAULTY_EXHAUST), 16, 2);
 						REGISTER_DATA("PORTE.7", IS_SET(HIGH_TEMP), 16, 2);
 						break;
