@@ -39,22 +39,22 @@ public class ExecuteTests2 {
 		out.write('a');
 		
 		//check whether the registers are set as expected
-		serial_help.expectString("PORTE :" +0x34 +"\r\n");
-		serial_help.expectString("PORTD :0x01\r\n");
+		serial_help.expectString("PORTE :0x34\r\n");
+		serial_help.expectString("PORTD :0x00\r\n");
 		
 		//start sub-test 2
 		out.write('b');
 		
 		//check whether the registers are set as expected
 		serial_help.expectString("PORTE :0xc0\r\n");
-		serial_help.expectString("PORTD :0x00\r\n");
+		serial_help.expectString("PORTD :0x02\r\n");
 		
 		//start sub-test 3
 		out.write('c');
 		
 		//check whether the registers are set as expected
 		serial_help.expectString("PORTE :0x34\r\n");
-		serial_help.expectString("PORTD :0x01\r\n");
+		serial_help.expectString("PORTD :0x02\r\n");
 		
 		//start sub-test 4
 		out.write('d');
@@ -68,7 +68,7 @@ public class ExecuteTests2 {
 		
 		//check whether the registers are set as expected
 		serial_help.expectString("PORTE :0xf4\r\n");
-		serial_help.expectString("PORTD :0x01\r\n");
+		serial_help.expectString("PORTD :0x02\r\n");
 		
 		//start sub-test 6
 		out.write('f');
@@ -80,7 +80,7 @@ public class ExecuteTests2 {
 		out.write('g');
 		
 		serial_help.expectString("PORTE :0xf4\r\n");
-		serial_help.expectString("PORTD :0x01\r\n");
+		serial_help.expectString("PORTD :0x02\r\n");
 
 		//start sub-test 8
 		out.write('h');
@@ -96,19 +96,24 @@ public class ExecuteTests2 {
 		rich_tool.showInstructions("Press the button C now but don't release it.\r\n");
 		out.write('a');
 		
-		serial_help.expectString("\r\n");
-
+		serial_help.expectString("PORTE.2 :0x00");		
+		
 		rich_tool.showInstructions("Release C now.\r\n");
 		out.write('b');
 		
-		serial_help.expectString("\r\n");
+		serial_help.expectString("PORTE.2 :0x01");
 		
 		//Test for other ports
 		rich_tool.showInstructions("Configure the center switch for PORTD.1 mode now.\r\n");
 		rich_tool.showInstructions("Press buttons N, S, W, C, and E now.");
 		out.write('c');
 		
-		serial_help.expectString("\r\n");
+		serial_help.expectString("PORTD.1 :0x00");
+		serial_help.expectString("PORTE.2 :0x00");
+		serial_help.expectString("PORTE.4 :0x00");
+		serial_help.expectString("PORTE.5 :0x00");
+		serial_help.expectString("PORTE.6 :0x00");
+		serial_help.expectString("PORTE.7 :0x00");
 		
 		out.write('0');
 		
