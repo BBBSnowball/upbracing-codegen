@@ -101,7 +101,7 @@ public class ExecuteTests2 {
 		rich_tool.showInstructions("Release C now.\r\n");
 		out.write('b');
 		
-		serial_help.expectString("PORTE.2 :0x01\r\n");
+		serial_help.expectString("PORTE.2 :0x04\r\n");
 		
 		//Test for other ports
 		rich_tool.showInstructions("Configure the center switch for PORTD.1 mode now.\r\n");
