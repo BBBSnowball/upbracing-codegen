@@ -1,0 +1,31 @@
+What this test folder contains?
+There are two tests subfolders : The Compasskeyboard test folder and PORTA test folder. Each of these test folders conatins tests
+to be run independently over the microcontroller with serial line communication with the PC.
+
+What the test subfolders PORTA and Compasskeyboard contain?
+- main.c to be loaded onto the board. 
+- the java file that runs on the PC.
+- the .sch file that contains the necessary schematics for the specific test. 
+
+What we test?
+We will be testing the macros in the Pins.h header file over the alias names defined for the pins in the config.rb file
+in each of these tests. 
+
+In PORTA test we are just interested in the wires connected to the PORTA pins and testing whether the
+alias names given to these wires work well for all the macros. But since the PORTA is connected to the LEDs, we cannot test
+the INPUT macro for PORTA. 
+
+In the Compasskeyboad test we are interested in the wires connected to ports PORTE.2, PORTE.4 to PORTE.7 and PORTD.1. These ports
+are connected to the compass card keyboard on the DVK90CAN1 board. We cannot test OUTPUT macro for this test.
+
+What is needed for testing?
+Both of these tests are meant to be run on DVK90CAN1 board and a windows, Linux, or Mac OS PC.
+
+How to run the tests?
+Run the appropriate rake script for the platform by specifying the name of the project and the Debug/Release or no extension.
+For example run the command rake-Windows.bat build-pin-names-pins-PORTA-Debug(Release) for PORTA for running the tests over 
+windows.
+
+Once the MCU is loaded with the tests you might be asked to perform some tasks. The instructions would be shown over the console, 
+and you must answer some questions related to the tests. In some tests, the ones that are automated, you wouldn't be required to do
+so.
