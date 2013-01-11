@@ -320,9 +320,10 @@ public class SerialHelper {
 		getOutputStream().write(str.getBytes());
 	}
 	
+	/** @see RegexMatcher */
 	public Matcher expectRegex(String expected, int timeout_millis) throws TestFailedException {
 		// create a matcher
-		RegexMatcher m = new RegexMatcher(this, expected);
+		RegexMatcher m = new RegexMatcher(this.getInputStream(), expected);
 		
 		// put the matcher into the context, if possible
 		ContextItem context = null;
@@ -339,7 +340,34 @@ public class SerialHelper {
 		}
 	}
 
+	/** @see RegexMatcher */
 	public Matcher expectRegex(String regex) throws TestFailedException {
 		return expectRegex(regex, 30*1000);
+	}
+	
+	/** receive a String and decode it as an integer (base 10)
+	 * 
+	 * The character after the number will be consumed and won't be
+	 * available anymore.
+	 * 
+	 * @param separator character after the number (regex pattern)
+	 * @return the parsed number
+	 * @throws TestFailedException if the received chars aren't a number
+	 */
+	public int expectInt(String separator) throws TestFailedException {
+		Matcher m = expectRegex("^([+-]?[0-9]+)(" + separator + ")");
+		return Integer.parseInt(m.group(1));
+	}
+	
+	/** receive a String and decode it as an integer (base 10)
+	 * 
+	 * The character after the number will be consumed and won't be
+	 * available anymore.
+	 * 
+	 * @return the parsed number
+	 * @throws TestFailedException if the received chars aren't a number
+	 */
+	public int expectInt() throws TestFailedException {
+		return expectInt("[^0-9]");
 	}
 }

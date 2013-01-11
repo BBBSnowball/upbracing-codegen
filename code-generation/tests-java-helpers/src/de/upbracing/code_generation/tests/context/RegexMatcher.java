@@ -7,13 +7,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.upbracing.code_generation.tests.TestFailedException;
-import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 //TODO This class has a lot of code in common with StringMatcher. We should
 //      refactor the timeout stuff into a common base class.
 public class RegexMatcher extends TestContext implements Runnable {
 
-	private SerialHelper serial;
+	private InputStream stream;
 	private Pattern expected;
 	private int max_len;
 	private Charset charset;
@@ -21,19 +20,54 @@ public class RegexMatcher extends TestContext implements Runnable {
 	private int matched_chars;
 	private Matcher matcher;
 
-	public RegexMatcher(SerialHelper serial, String expected) {
-		this(serial, Pattern.compile(expected), 4096, Charset.forName("iso-8859-1"));
+	/** constructor
+	 * 
+	 * The regular expression must...
+	 * - only match the beginning of the string (pattern starts with a '^')
+	 * - not end with an optional or 'many' part (would match minimum length, anyway).
+	 * 
+	 * It will always match the shortest string, so "a*" matches the empty string.
+	 * 
+	 * @param stream stream for serial line
+	 * @param expected regex pattern for expected string
+	 */
+	public RegexMatcher(InputStream stream, String expected) {
+		this(stream, Pattern.compile(expected), 4096, Charset.forName("iso-8859-1"));
 	}
 
-	public RegexMatcher(SerialHelper serial, Pattern expected, int max_len, Charset charset) {
+	/** constructor
+	 * 
+	 * The regular expression must...
+	 * - only match the beginning of the string (pattern starts with a '^')
+	 * - not end with an optional or 'many' part (would match minimum length, anyway).
+	 * 
+	 * It will always match the shortest string, so "a*" matches the empty string.
+	 * 
+	 * @param stream stream for serial line
+	 * @param expected regex pattern for expected string
+	 * @param max_len maximum length of matched string
+	 * @param charset charset for decoding received characters
+	 */
+	public RegexMatcher(InputStream stream, Pattern expected, int max_len, Charset charset) {
 		super("match regex: " + expected.pattern());
 		
-		this.serial = serial;
+		this.stream = stream;
 		this.expected = expected;
 		this.max_len = max_len;
 		this.charset = charset;
 	}
 
+	/** match pattern against received characters
+	 * 
+	 * Matched characters are read (and by that removed) from the stream. If
+	 * the regex doesn't match the received characters, the amount of read
+	 * characters is undefined. Most likely it will be the characters that
+	 * seem to match plus one.
+	 * 
+	 * @param timeout_millis time to wait (at most, in milliseconds)
+	 * @return data about the match
+	 * @throws TestFailedException if the regex doesn't match or an error occurs
+	 */
 	public Matcher run(long timeout_millis) throws TestFailedException {
 		// initialize variables in case we kill
 		// the thread before it can do that
@@ -84,6 +118,7 @@ public class RegexMatcher extends TestContext implements Runnable {
 	}
 	
 	@Override
+	/** Don't use this method - same as run(timeout), but without timeout */
 	public void run() {
 		try {
 			// report status: in progress
@@ -99,7 +134,7 @@ public class RegexMatcher extends TestContext implements Runnable {
 			//     faster. Unfortunately, that class seems to be completely
 			//     unusable in my implementation of Java. The implementation
 			//     with CharsetDecoder is in commit 179782a6b32b5d.
-			InputStream in = serial.getInputStream();
+			InputStream in = stream;
 			byte[] buf = new byte[max_len];
 			
 			while (!Thread.interrupted()) {
