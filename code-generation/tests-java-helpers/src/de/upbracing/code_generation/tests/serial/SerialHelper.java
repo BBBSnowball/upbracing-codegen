@@ -347,6 +347,7 @@ public class SerialHelper {
 	
 	/** receive a String and decode it as an integer (base 10)
 	 * 
+	 * Leading space and tab characters are ignored.
 	 * The character after the number will be consumed and won't be
 	 * available anymore.
 	 * 
@@ -355,12 +356,13 @@ public class SerialHelper {
 	 * @throws TestFailedException if the received chars aren't a number
 	 */
 	public int expectInt(String separator) throws TestFailedException {
-		Matcher m = expectRegex("^([+-]?[0-9]+)(" + separator + ")");
+		Matcher m = expectRegex("^[ \t]*([+-]?[0-9]+)(" + separator + ")");
 		return Integer.parseInt(m.group(1));
 	}
 	
 	/** receive a String and decode it as an integer (base 10)
 	 * 
+	 * Leading space and tab characters are ignored.
 	 * The character after the number will be consumed and won't be
 	 * available anymore.
 	 * 
