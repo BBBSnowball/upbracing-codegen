@@ -19,8 +19,6 @@ uint16_t counter1=0;
 uint16_t counter2A=0;
 uint16_t counter2B=0;
 
-uint8_t firstRun = 1;
-
 volatile uint8_t runTest = 1;
 volatile uint8_t tmp1=3;
 volatile uint8_t tmp2=3;
@@ -87,49 +85,45 @@ ISR(SIG_OUTPUT_COMPARE3A) {
 }
 
 TASK(Monitor) {
-	if (firstRun) { // Workaround for the initial suspend mode bug
-		firstRun = 0;
-	} else {
-		OS_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 
-		PORTA = 0x20;
+	PORTA = 0x20;
 
-		uint16_t sum = 0;
+	uint16_t sum = 0;
 
-		usart_send_str("Value Task 1: ");
-		usart_send_number(counter2A, 10, 1);
-		usart_send_str("\nValue Task 2: ");
-		usart_send_number(counter2B, 10, 1);
-		usart_send_str("\n");
+	usart_send_str("Value Task 1: ");
+	usart_send_number(counter2A, 10, 1);
+	usart_send_str("\nValue Task 2: ");
+	usart_send_number(counter2B, 10, 1);
+	usart_send_str("\n");
 
-		sum = counter2A + counter2B;
+	sum = counter2A + counter2B;
 
-		usart_send_str("Value OS: ");
-		usart_send_number(sum, 10, 1);
-		usart_send_str("\n");
+	usart_send_str("Value OS: ");
+	usart_send_number(sum, 10, 1);
+	usart_send_str("\n");
 
-		// Calculate overhead:
-		uint16_t percent = ((float)(counter1-sum) * 1000.0) / (float)counter1;
+	// Calculate overhead:
+	uint16_t percent = ((float)(counter1-sum) * 1000.0) / (float)counter1;
 
-		// Consider <10% successful
-		if (percent < 100)
-			usart_send_str("Test successful. ");
-		else
-			usart_send_str("Test failed. ");
+	// Consider <10% successful
+	if (percent < 100)
+		usart_send_str("Test successful. ");
+	else
+		usart_send_str("Test failed. ");
 
 
-		usart_send_str("OS Overhead: ");
-		usart_send_number(percent / 10, 10, 1);
-		usart_send_str(".");
-		usart_send_number(percent % 10, 10, 1);
-		usart_send_str("%\n");
+	usart_send_str("OS Overhead: ");
+	usart_send_number(percent / 10, 10, 1);
+	usart_send_str(".");
+	usart_send_number(percent % 10, 10, 1);
+	usart_send_str("%\n");
 
-		// Stop the OS...
-		while(1);
+	// Stop the OS...
+	while(1);
 
-		OS_EXIT_CRITICAL();
+	OS_EXIT_CRITICAL();
 
-	}
 	TerminateTask();
 }
 

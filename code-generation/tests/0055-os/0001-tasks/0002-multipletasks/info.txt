@@ -1,4 +1,6 @@
 This test sets up six tasks which simply count and one monitoring task,
 that prints and resets the counters each second.
+The board outputs the counters five times.
+It is normal that the first instance only shows zero or one for each counter.
 
 The counter values should be equal (+-1) for each variable.

@@ -3,4 +3,4 @@ There is also a monitoring task, that prints and resets the counters each second
 The CPU is never voluntarily returned by the tasks, so the OS has to suspend the tasks and schedule each task.
 As we have no priority levels, the OS should distribute the CPU time evenly, so no tasks are starving.
 
-The counter values should be about equal (+-10) for each counter variable.
+The counter values should not deviate more than five percent from each other.

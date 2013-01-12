@@ -1,0 +1,8 @@
+This test tries to break a simple critical section.
+
+One task fetches a global variable from memory, waits some time and then
+saves it back, all in a critical section.
+
+Meanwhile another interfering task tries to modify the value.
+
+The test is successful if the interfering task can not change the value.
