@@ -1,0 +1,11 @@
+This test tries to break nested critical sections.
+
+One task enters an outer critical section and then an inner critical section, 
+fetches a global variable from memory, waits some time and then saves it back.
+It then leaves the inner critical section and fetches, waits and saves back another variable.
+It then leaves the outer critical section and fetches, waits and saves back a third variable.
+
+Meanwhile another interfering task tries to modify the values of all three variables.
+
+The test is successful if the interfering task can not change the value of the first two variables,
+but does change the value of the third variable.

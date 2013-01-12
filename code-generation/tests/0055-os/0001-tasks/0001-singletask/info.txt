@@ -1,2 +1,2 @@
 This is a very simple tests which sets up one task in the OS which is called
-every second and prints "One second" to the serial line.
+every second for ten times and prints "One second" to the serial line.

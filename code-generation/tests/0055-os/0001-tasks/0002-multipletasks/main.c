@@ -15,6 +15,7 @@
 #define NUMTASKS 6
 
 int c[NUMTASKS];
+int outputs = 0;
 
 int main(void) {
 	//Init variables
@@ -51,6 +52,11 @@ TASK(Monitor) {
 		usart_send_str("\n");
 		c[i] = 0;
 	}
+
+	// Only output 5 times
+	outputs++;
+	if (outputs == 5) while(1);
+
 	OS_EXIT_CRITICAL();
 
 	TerminateTask();

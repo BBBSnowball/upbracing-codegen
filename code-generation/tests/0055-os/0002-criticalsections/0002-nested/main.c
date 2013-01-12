@@ -26,9 +26,6 @@ uint32_t comparison;
 uint32_t comparison2;
 uint32_t comparison3;
 
-
-uint8_t firstTime;
-
 int main(void) {
 	//Init variables
 	sharedValue = INITVALUE1;
@@ -37,8 +34,6 @@ int main(void) {
 	comparison2 = sharedValue2;
 	sharedValue3 = INITVALUE3;
 	comparison3 = sharedValue3;
-
-	firstTime = 1;
 
 	DDRA = 0xff; // Set LED Pins as output
 	PORTA = 0x01;
@@ -55,36 +50,30 @@ int main(void) {
 
 TASK(Monitor) {
 
-	// Work around for a bug in which SUSPEND mode doesn't work,
-	// and this task is run to early to compare the values and
-	// could possibly falsely claim the test was successful
-	if (firstTime) {
-		firstTime = 0;
-	} else {
-		OS_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 
-		if (comparison == sharedValue &&
-			comparison2 == sharedValue2 &&
-			comparison3 != sharedValue3)
-			usart_send_str("Test successful ");
-		else
-			usart_send_str("Test failed ");
+	if (comparison == sharedValue &&
+		comparison2 == sharedValue2 &&
+		comparison3 != sharedValue3)
+		usart_send_str("Test successful ");
+	else
+		usart_send_str("Test failed ");
 
-		usart_send_str("value1 = ");
-		usart_send_number(sharedValue, 10, 1);
-		usart_send_str(", expected1 = ");
-		usart_send_number(comparison, 10, 1);
-		usart_send_str(", value2 = ");
-		usart_send_number(sharedValue2, 10, 1);
-		usart_send_str(", expected2 = ");
-		usart_send_number(comparison2, 10, 1);
-		usart_send_str(", value3 = ");
-		usart_send_number(sharedValue3, 10, 1);
-		usart_send_str(", notexpected3 = ");
-		usart_send_number(comparison3, 10, 1);
-		usart_send_str("\n");
-		OS_EXIT_CRITICAL();
-	}
+	usart_send_str("value1 = ");
+	usart_send_number(sharedValue, 10, 1);
+	usart_send_str(", expected1 = ");
+	usart_send_number(comparison, 10, 1);
+	usart_send_str(", value2 = ");
+	usart_send_number(sharedValue2, 10, 1);
+	usart_send_str(", expected2 = ");
+	usart_send_number(comparison2, 10, 1);
+	usart_send_str(", value3 = ");
+	usart_send_number(sharedValue3, 10, 1);
+	usart_send_str(", notexpected3 = ");
+	usart_send_number(comparison3, 10, 1);
+	usart_send_str("\n");
+	OS_EXIT_CRITICAL();
+
 	TerminateTask();
 }
 

@@ -55,6 +55,9 @@ TASK(Monitor) {
 		c[i] = 0;
 	}
 	sum=0;
+
+	// We only need one output
+	while(1);
 	OS_EXIT_CRITICAL();
 
 	TerminateTask();

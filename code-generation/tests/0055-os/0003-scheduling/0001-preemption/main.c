@@ -39,6 +39,7 @@ TASK(Task1) {
 
 	OS_ENTER_CRITICAL();
 	usart_send_str("Finish Task1\n");
+	while(1); //Stop the program
 	OS_EXIT_CRITICAL();
 
 	TerminateTask();
@@ -47,14 +48,6 @@ TASK(Task1) {
 TASK(Task2) {
 	OS_ENTER_CRITICAL();
 	usart_send_str("Task2\n");
-	OS_EXIT_CRITICAL();
-
-	TerminateTask();
-}
-
-TASK(Task3) {
-	OS_ENTER_CRITICAL();
-	usart_send_str("Task3\n");
 	OS_EXIT_CRITICAL();
 
 	TerminateTask();
