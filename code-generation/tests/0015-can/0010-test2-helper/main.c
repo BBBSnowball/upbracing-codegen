@@ -10,26 +10,9 @@
 #include <rs232.h>
 #include <rs232-helpers.h>
 
+#include <can-helper.h>
+
 #include "main.h"
-
-
-typedef struct {
-	uint8_t instruction;
-	union {
-		struct {
-			union {
-				uint8_t  id_bytes[4];
-				uint32_t id;
-			};
-			uint8_t dlc;
-			uint8_t data[2];
-		} instruction0;
-		struct {
-			uint8_t data[6];
-			uint8_t dummy;
-		} instruction1;
-	};
-} instruction_t;
 
 instruction_t saved_instruction;
 
@@ -79,7 +62,7 @@ int main(void) {
 		usart_send_str("  sizeof(instruction_t) = "); usart_send_number(sizeof(instruction_t), 10, 0); usart_send_str("\r\n");
 		instruction_t* x = (instruction_t*)0;
 #define SEND_ADDR_OF(member) usart_send_str("  " #member ": "); \
-			usart_send_number((uint32_t)&(x->member), 10, 0); \
+			usart_send_number((size_t)&(x->member), 10, 0); \
 			usart_send_str("\r\n");
 		SEND_ADDR_OF(instruction);
 		SEND_ADDR_OF(instruction0);

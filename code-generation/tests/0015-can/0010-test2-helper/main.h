@@ -12,12 +12,6 @@ typedef enum {
 
 #include <can_at90.h>
 
-
-
-// CAN ID to receive instructions
-#define CAN_INSTRUCTION_ID (CAN_ID_FLAG_EXTENDED | 0x1371)
-
-// CAN ID to relay messages to
-#define CAN_RELAY_ID (CAN_ID_FLAG_EXTENDED | 0x1372)
+#include "can-helper-config.h"
 
 #endif /* MAIN_H_ */
