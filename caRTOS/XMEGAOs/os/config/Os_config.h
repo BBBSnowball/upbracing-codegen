@@ -18,7 +18,7 @@
 #include "datatypes/Os_AlarmTypes.h"
 #include "datatypes/Os_TaskTypes.h"
 
-#include "config/Os_cfg_features.h"
+#include "Os_cfg_features.h"
 
 extern volatile Os_Alarm os_alarms[];
 extern volatile Os_Tcb os_tcbs[];

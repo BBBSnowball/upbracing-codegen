@@ -436,6 +436,11 @@ class Project
 					esc = shell_quote
 					sh "cd #{esc}#{cartos_build_dir}#{esc} #{cmd_sep} make #{esc}libcaRtos-#{md5}.a#{esc}"
 
+					# remove feature header, so it won't be used by another project
+					# (Files in the project include OS headers which may include the config. They
+					#  must use the config in the project folder instead of this one.)
+					rm features_header_for_build
+
 					puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
 				end
 			else
@@ -632,7 +637,7 @@ class Project
 	end
 
 	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
-		["#/../../avr-programs/upbracing-common", "."]
+		["#/../../avr-programs/upbracing-common", ".", "gen"]
 	end
 
 	def cflags(source_dir, source_file, target_dir, configuration)
