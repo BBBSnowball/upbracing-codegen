@@ -714,12 +714,24 @@ class Project
 				x = x.strip.sub(/^[^:]*:\s*/, "")
 				# split on spaces
 				x = x.split(/\s+/)
-				# add dependencies to compile task
-				#puts "dependencies for #{target}: #{x.inspect}"
-				t.enhance x
 
-				# remember that we are sucessfully using the dependency file
-				can_read_dependencies = true
+				# We shouldn't add dependencies that don't exist
+				# because rake would try to build them and abort
+				# if it cannot. For example, this will happen, if
+				# a header file is renamed.
+				dependencies_exist = x.all? { |file| File.exists? file }
+
+				if dependencies_exist
+					# add dependencies to compile task
+					#puts "dependencies for #{target}: #{x.inspect}"
+					t.enhance x
+
+					# remember that we are sucessfully using the dependency file
+					can_read_dependencies = true
+				else
+					# we force rebuilding this file
+					can_read_dependencies = false
+				end
 			else
 				puts "WARN: Ignoring empty dependencies file '#{dependency_file}'"
 			end
