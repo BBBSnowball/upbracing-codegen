@@ -296,6 +296,20 @@ public class TestCanGenerator {
 		dbc.getMessages().put("CockpitBrightness", message);
 		dbc.getMessages().put("2147500610", message);
 
+		message = new DBCMessage(123, "123", false, "EmptyMessage", 0, Arrays.asList(ecu));
+		message.setSignals(new HashMap<String, DBCSignal>());
+		message.setSignalOrder(new ArrayList<DBCSignal>());
+		ecu.getTxMsgs().add(message);
+		dbc.getMessages().put("EmptyMessage", message);
+		dbc.getMessages().put("123", message);
+
+		message = new DBCMessage(124, "124", false, "EmptyMessage2", 2, Arrays.asList(ecu));
+		message.setSignals(new HashMap<String, DBCSignal>());
+		message.setSignalOrder(new ArrayList<DBCSignal>());
+		ecu.getTxMsgs().add(message);
+		dbc.getMessages().put("EmptyMessage2", message);
+		dbc.getMessages().put("124", message);
+
 		config.setCan(dbc);
 		config.selectEcu("Lenkrad-Display");
 		

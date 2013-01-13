@@ -351,7 +351,7 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 	//              while we init the MOB, but we cannot do anything about that.
 	}
 %>
-inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
+inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ? "" : ", " %><%= params %>) {
 <%
 	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t\t");
 	for (DBCSignal signal : msgconfig.getSignalOrder()) {
@@ -524,11 +524,11 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 
 %>
 }
-inline static void send_<%=msgconfig.getName()%>_wait(<%= params %>) {
-	send_<%=msgconfig.getName()%>(true, <%= param_values %>);
+inline static void send_<%=msgconfig.getName()%>_wait(<%= params.isEmpty() ? "void" : params %>) {
+	send_<%=msgconfig.getName()%>(true<%= param_values.isEmpty() ? "" : ", " %><%= param_values %>);
 }
-inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
-	send_<%=msgconfig.getName()%>(false, <%= param_values %>);
+inline static void send_<%=msgconfig.getName()%>_nowait(<%= params.isEmpty() ? "void" : params %>) {
+	send_<%=msgconfig.getName()%>(false<%= param_values.isEmpty() ? "" : ", " %><%= param_values %>);
 }
 <%
 

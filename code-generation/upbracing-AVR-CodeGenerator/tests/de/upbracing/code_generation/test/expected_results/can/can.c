@@ -310,6 +310,8 @@ void can_init_mobs(void) {
 	can_init_MOB_Lenkrad_main2display();
 	can_init_MOB_Launch();
 	can_init_MOB_Radio();
+	can_init_MOB_EmptyMessage();
+	can_init_MOB_EmptyMessage2();
 }
 
 #include "Os.h"

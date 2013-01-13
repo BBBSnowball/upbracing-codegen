@@ -166,6 +166,9 @@ BO_ 2147484241 Kupplung_UpdateBoundsResult: 4 LenkradMain
  SG_ Kupplung_LowerBound : 7|16@0+ (1,0) [0|0] "" Vector__XXX
  SG_ Kupplung_UpperBound : 23|16@0+ (1,0) [0|0] "" Vector__XXX
 
+BO_ 123 EmptyMessage: 0 LenkradDisplay
+
+BO_ 124 EmptyMessage2: 2 LenkradDisplay
 
 
 CM_ BU_ Computer_Programmer "CAN-Debugger mit Programm, dass ueber den Bootloader einen Prozessor programmiert";

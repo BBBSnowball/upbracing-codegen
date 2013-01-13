@@ -28,6 +28,8 @@ typedef enum uint32_t {
 	CAN_Launch                       = 0x60,   // send
 	CAN_Radio                        = 0x90,   // send
 	CAN_CockpitBrightness            = 0x4242, // send
+	CAN_EmptyMessage                 = 0x7b,   // send
+	CAN_EmptyMessage2                = 0x7c,   // send
 } CAN_msgID;
 
 // do the messages use extended CAN ids or not (0 = standard, 1 = extended)
@@ -49,10 +51,12 @@ typedef enum {
 	CAN_Launch_IsExtended                       = 1,
 	CAN_Radio_IsExtended                        = 1,
 	CAN_CockpitBrightness_IsExtended            = 1,
+	CAN_EmptyMessage_IsExtended                 = 0,
+	CAN_EmptyMessage2_IsExtended                = 0,
 } CAN_isExtended;
 
 /*
-tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness
+tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness EmptyMessage EmptyMessage2
 rx_msgs: Bootloader_SelectNode Bootloader_1 ClutchGetPos Kupplung_Soll Gear Sensoren Sensoren_2 OpenSquirt_Engine Kupplung_Calibration OpenSquirt_Sensoren1 Geschwindigkeit Lenkrad_main2display
 rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel Druck_Oel Druck_Kraftstoff Drehzahl Druck_Ansaug Lambda ThrottlePosition Kupplung_RAW Temp_Wasser Temp_Ansaug Boardspannung Geschwindigkeit Lenkrad_main2display
 */
@@ -74,8 +78,10 @@ typedef enum {
 	MOB_Lenkrad_main2display  = 10,  // CAN ID: 0x4201x, receive
 	MOB_Launch                = 11,  // CAN ID: 0x60x, send
 	MOB_Radio                 = 12,  // CAN ID: 0x90x, send
+	MOB_EmptyMessage          = 13,  // CAN ID: 0x7b, send
+	MOB_EmptyMessage2         = 14,  // CAN ID: 0x7c, send
 
-	MOB_GENERAL_MESSAGE_TRANSMITTER = 13
+	MOB_GENERAL_MESSAGE_TRANSMITTER = 15
 } MessageObjectID;
 
 #include "can_at90.h"
@@ -113,6 +119,8 @@ inline static void can_init_MOB_Geschwindigkeit(void) { can_mob_init_receive2(MO
 inline static void can_init_MOB_Lenkrad_main2display(void) { can_mob_init_receive2(MOB_Lenkrad_main2display, CAN_Lenkrad_main2display, true); }
 inline static void can_init_MOB_Launch(void) { can_mob_init_transmit2(MOB_Launch, CAN_Launch, true); }
 inline static void can_init_MOB_Radio(void) { can_mob_init_transmit2(MOB_Radio, CAN_Radio, true); }
+inline static void can_init_MOB_EmptyMessage(void) { can_mob_init_transmit2(MOB_EmptyMessage, CAN_EmptyMessage, false); }
+inline static void can_init_MOB_EmptyMessage2(void) { can_mob_init_transmit2(MOB_EmptyMessage2, CAN_EmptyMessage2, false); }
 
 void can_init_mobs(void);
 
@@ -271,6 +279,58 @@ inline static void send_CockpitBrightness_wait(uint8_t CockpitRPMBrightness, uin
 }
 inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness, uint8_t CockpitShiftLightPeriod, uint8_t CockpitShiftLightAlwaysFlash) {
 	send_CockpitBrightness(false, CockpitRPMBrightness, CockpitGangBrightness, CockpitShiftLightPeriod, CockpitShiftLightAlwaysFlash);
+}
+// 0x7b
+inline static void send_EmptyMessage(bool wait) {
+	// select MOB
+	CANPAGE = (MOB_EmptyMessage<<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+	can_mob_init_transmit2(MOB_EmptyMessage, CAN_EmptyMessage, CAN_EmptyMessage_IsExtended);
+
+	// disable mob, as it would be retransmitted otherwise
+	CANCDMOB = (CANCDMOB&0x30) | ((0&0xf)<<DLC0);
+	if (wait)
+		can_mob_transmit_wait(MOB_EmptyMessage);
+	else
+		can_mob_transmit_nowait(MOB_EmptyMessage);
+}
+inline static void send_EmptyMessage_wait(void) {
+	send_EmptyMessage(true);
+}
+inline static void send_EmptyMessage_nowait(void) {
+	send_EmptyMessage(false);
+}
+// 0x7c
+inline static void send_EmptyMessage2(bool wait) {
+	// select MOB
+	CANPAGE = (MOB_EmptyMessage2<<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+	can_mob_init_transmit2(MOB_EmptyMessage2, CAN_EmptyMessage2, CAN_EmptyMessage2_IsExtended);
+
+	// disable mob, as it would be retransmitted otherwise
+	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
+	if (wait)
+		can_mob_transmit_wait(MOB_EmptyMessage2);
+	else
+		can_mob_transmit_nowait(MOB_EmptyMessage2);
+}
+inline static void send_EmptyMessage2_wait(void) {
+	send_EmptyMessage2(true);
+}
+inline static void send_EmptyMessage2_nowait(void) {
+	send_EmptyMessage2(false);
 }
 
 #endif	// defined CAN_LENKRADDISPLAY_DEFS_H_
