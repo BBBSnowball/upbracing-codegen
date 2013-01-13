@@ -31,6 +31,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.utils.Util;
 
 public final class CodeGenerationMain {
 	private CodeGenerationMain() { }
@@ -512,10 +513,12 @@ public final class CodeGenerationMain {
 	 */
 	public static MCUConfiguration loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
 		String file = config.getConfigFile();
+		String script_cwd = new File(file).getAbsoluteFile().getParent();
 		return loadConfig(
 				new FileInputStream(file),
 				file,
-				new File(file).getAbsoluteFile().getParent(),
-				Collections.<String,Object>singletonMap("tempdir", config.getTempDirectory()));
+				script_cwd,
+				Collections.<String,Object>singletonMap("tempdir",
+						Util.adjustToBeRelativeTo(config.getTempDirectory(), script_cwd)));
 	}
 }

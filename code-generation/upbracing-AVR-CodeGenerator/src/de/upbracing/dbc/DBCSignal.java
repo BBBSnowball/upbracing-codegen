@@ -62,6 +62,16 @@ public class DBCSignal {
 	public String getSign() {
 		return sign;
 	}
+	
+	/** true for signed values, false for unsigned */
+	public boolean isSignedValue() {
+		if (sign.equals("+"))
+			return false;
+		else if (sign.equals("-"))
+			return true;
+		else
+			throw new IllegalStateException("invalid DBC file: sign is neither '+' nor '-'");
+	}
 
 	/** get endianness from DBC file ("0" or "1") */
 	public String getEndianness() {
