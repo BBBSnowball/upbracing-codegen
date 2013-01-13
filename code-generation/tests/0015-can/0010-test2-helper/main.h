@@ -2,10 +2,12 @@
 #define MAIN_H_
 
 typedef enum {
-	MOB_RECEIVE,
 	MOB_RELAY,
-	MOB_SEND
+	MOB_SEND,
+	MOB_RECEIVE,
 } MessageObjectID;
+
+#define MOB_RECEIVE_COUNT 10
 
 // We don't have a general transmitter MOB
 #define CAN_WITHOUT_GENERAL_TRANSMITTER_MOB

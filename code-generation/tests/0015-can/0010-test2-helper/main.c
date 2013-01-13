@@ -19,19 +19,21 @@ instruction_t saved_instruction;
 static void can_init_mobs(void) {
 	// MOB_RECEIVE
 
-	// select MOb page
-	CANPAGE = (MOB_RECEIVE<<4);
+	for (uint8_t i=0;i<MOB_RECEIVE_COUNT;i++) {
+		// select MOb page
+		CANPAGE = ((MOB_RECEIVE+i)<<4);
 
-	// receive all IDs
-	// -> mask of all 0 (ignore bit)
-	CANIDM4 = CANIDM3 = CANIDM2 = CANIDM1 = 0;
+		// receive all IDs
+		// -> mask of all 0 (ignore bit)
+		CANIDM4 = CANIDM3 = CANIDM2 = CANIDM1 = 0;
 
-	//configure message as receive-msg (see CANCDMOB register, page257)
-	CANCDMOB = (1<<CONMOB1);
+		//configure message as receive-msg (see CANCDMOB register, page257)
+		CANCDMOB = (1<<CONMOB1);
 
-	// enable interrupts for this MOb
-	can_mob_enable(MOB_RECEIVE);
-	can_mob_enable_interrupt(MOB_RECEIVE);
+		// enable interrupts for this MOb
+		can_mob_enable(MOB_RECEIVE+i);
+		can_mob_enable_interrupt(MOB_RECEIVE+i);
+	}
 
 
 	// MOB_RELAY
@@ -136,6 +138,7 @@ static void handle_instruction(uint8_t dlc, instruction_t* instruction) {
 }
 
 static void handle_incoming_message(uint32_t id, uint8_t dlc, uint8_t* data) {
+	cli();
 	PORTA |= 0x20;
 
 	//NOTE We use an instruction_t because relayed messages have the same
@@ -158,7 +161,7 @@ static void handle_incoming_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 	memcpy(buffer.instruction1.data, data+2, 6);
 
 	can_mob_set_data(MOB_RELAY, 8, (uint8_t*)&buffer);
-	can_mob_transmit_nowait(MOB_RELAY);
+	can_mob_transmit_wait(MOB_RELAY);
 
 	PORTA &= ~0x20;
 }
@@ -173,37 +176,66 @@ ISR(SIG_CAN_INTERRUPT1) {
 
 	uint8_t saved_canpage = CANPAGE;
 
-	if (can_caused_interrupt(MOB_RECEIVE)) {
-		CANPAGE = (MOB_RECEIVE<<4);
+	usart_send('I');
 
-		// get message data
-		uint8_t* tmp = buffer;
-		for (uint8_t i=0;i<8;i++)
-			*(tmp++) = CANMSG;
+	// The AT90CAN will always use the highest priority
+	// MOb (which is the lowest one). If we re-enable the
+	// MOb immediately, it would be really hard to figure
+	// out the right order, so we wait until all of them
+	// have been used. The exact algorithm is this:
+	// - Process received messages, but don't re-arm the MObs.
+	// - If the last MOb is full, re-arm all the other MObs.
+	// - After handling the message in the last MOb, re-arm it.
 
-		uint32_t id = can_mob_get_id(MOB_RECEIVE);
-		uint8_t dlc = can_mob_get_data_length(MOB_RECEIVE);
+	for (uint8_t i=0;i<MOB_RECEIVE_COUNT;i++) {
+		if (can_caused_interrupt(MOB_RECEIVE+i)) {
+			if (i == MOB_RECEIVE_COUNT-1) {
+				// This is the last MOb -> enable all the others
+				usart_send('E');
 
-		// at this point we are ready to receive a new message
+				for (uint8_t j=0;j<MOB_RECEIVE_COUNT-1;j++) {
+					// select
+					CANPAGE = ((MOB_RECEIVE+j)<<4);
 
-	    // reset INT reason
-	    CANSTMOB &= ~(1<<RXOK);
-	    // re-enable RX, reconfigure MOb IDE=1
-	    //CANCDMOB = (1<<CONMOB1) | (1<<IDE);
-	    CANCDMOB |= (1<<CONMOB1);
+					// re-enable RX
+					CANCDMOB |= (1<<CONMOB1);
+				}
+			}
 
-	    // handle the message
-		if (id == CAN_INSTRUCTION_ID)
-			handle_instruction(dlc, (instruction_t*)buffer);
-		else
-			handle_incoming_message(id, dlc, buffer);
+			usart_send('0' + i);
+
+			// select current MOb
+			CANPAGE = ((MOB_RECEIVE+i)<<4);
+
+			// get message data
+			uint8_t* tmp = buffer;
+			for (uint8_t i=0;i<8;i++)
+				*(tmp++) = CANMSG;
+
+			uint32_t id = can_mob_get_id(MOB_RECEIVE+i);
+			uint8_t dlc = can_mob_get_data_length(MOB_RECEIVE+i);
+
+			// at this point we are ready to receive a new message
+
+			// reset INT reason
+			CANSTMOB &= ~(1<<RXOK);
+
+			if (i == MOB_RECEIVE_COUNT-1) {
+				// re-enable RX
+				CANCDMOB |= (1<<CONMOB1);
+
+				usart_send('e');
+			}
+
+			// handle the message
+			if (id == CAN_INSTRUCTION_ID)
+				handle_instruction(dlc, (instruction_t*)buffer);
+			else
+				handle_incoming_message(id, dlc, buffer);
+
+			usart_send('0' + i);
+		}
 	}
-
-    // reset INT reason
-    CANSTMOB &= ~(1<<RXOK);
-    // re-enable RX, reconfigure MOb IDE=1
-    //CANCDMOB = (1<<CONMOB1) | (1<<IDE);
-    CANCDMOB |= (1<<CONMOB1);
 
     // restore CANPAGE
     CANPAGE = saved_canpage;
