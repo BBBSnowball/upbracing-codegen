@@ -123,8 +123,10 @@ static void handle_instruction(uint8_t dlc, instruction_t* instruction) {
 			bool extended = !!(id & CAN_ID_FLAG_EXTENDED);
 			bool rtr      = !!(id & CAN_ID_FLAG_RTR);
 
-			//TODO implement RTR
-			can_mob_init_transmit2(MOB_SEND, id & CAN_ID_MASK, extended);
+			if (!rtr)
+				can_mob_init_transmit2(MOB_SEND, id & CAN_ID_MASK, extended);
+			else
+				can_mob_init_transmit_rtr(MOB_SEND, id & CAN_ID_MASK, extended);
 
 			uint8_t data[8];
 			memcpy(data, saved_instruction.instruction0.data, 2);
