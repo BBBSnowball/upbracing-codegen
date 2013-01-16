@@ -22,6 +22,10 @@ public final class JRubyHelpers {
 			return null;
 		Reader reader = new InputStreamReader(stream, Charset.forName("utf-8"));
 		
+		return readContent(reader);
+	}
+
+	public static String readContent(Reader reader) throws IOException {
 		StringBuffer sb = new StringBuffer();
 		char buf[] = new char[256];
 		int len;

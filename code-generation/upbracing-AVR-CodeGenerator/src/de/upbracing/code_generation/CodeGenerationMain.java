@@ -409,16 +409,34 @@ public final class CodeGenerationMain {
 				// write the result into a file
 				if (contents != null) {
 					file.getParentFile().mkdirs();
+
+					Charset charset = Charset.forName("utf-8");
 					
-					try {
-						Writer w = new OutputStreamWriter(
-								new FileOutputStream(file),
-								Charset.forName("utf-8"));
-						w.write(contents);
-						w.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
+					// does it already contain the right text?
+					boolean right_content = false;
+					if (file.exists()) {
+						try {
+							Reader r = new InputStreamReader(new FileInputStream(file), charset);
+							String existing_content = JRubyHelpers.readContent(r);
+							right_content = existing_content.equals(contents);
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
 					}
+					
+					if (!right_content) {
+						try {
+							Writer w = new OutputStreamWriter(
+									new FileOutputStream(file),
+									charset);
+							w.write(contents);
+							w.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+							failed_generators.add(gen);
+						}
+					} else
+						System.out.println(" -> not changed");
 				}
 			}
 		}
