@@ -24,6 +24,28 @@ public class CanGeneratorHelper {
 	public static String messageId(DBCMessage message, boolean suffix) {
 		return "0x" + Integer.toHexString(message.getId()) + ((suffix && message.isExtended()) ? "x" : "");
 	}
+	
+	/**
+	 * Returns the ids of some messages with an optional suffix
+	 * 
+	 * @param messages The message objects
+	 * @param suffix If true, an "x" is added to the id of an extended message
+	 * @return The message ids as a hex string with "0x" prefix, separated by commas
+	 */
+	public static String messageIds(Iterable<? extends DBCMessage> messages, boolean suffix) {
+		StringBuffer sb = new StringBuffer();
+		for (DBCMessage msg : messages) {
+			if (sb.length() != 0)
+				sb.append(", ");
+			
+			sb.append(messageId(msg, suffix));
+		}
+		
+		if (sb.length() == 0)
+			return "---";
+		else
+			return sb.toString();
+	}
 
 	/**
 	 * Prints a string to a StringBuffer and prefixes each line with an indent string

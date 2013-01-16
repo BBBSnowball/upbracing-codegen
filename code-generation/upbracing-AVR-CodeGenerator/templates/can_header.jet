@@ -186,21 +186,21 @@ for (Mob mob : dbcEcu.getMobs()) {
 	if (mob.getRxMessages().size() > 0) { //RX Mob
 		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
 %>
-	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageIds(mob.getRxMessages(), true)%>, receive
 <%
 		for(String alias : mob.getAliases()) {
 %>
-	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive, alias for <%= msgconfig.getName() %>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// receive, alias for <%= msgconfig.getName() %>
 <%
 		}
 	} else if (mob.getTxMessages().size() > 0) { //TX Mob
 		DBCMessageConfig msgconfig = mob.getTxMessages().get(0);
 %>
-	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageIds(mob.getTxMessages(), true)%>, send
 <%
 		for(String alias : mob.getAliases()) {
 %>
-	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send, alias for <%= msgconfig.getName() %>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// send, alias for <%= msgconfig.getName() %>
 <%
 		}
 	} else {	// user MOb

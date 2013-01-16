@@ -66,9 +66,9 @@ rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel
 typedef enum {
 	MOB_Bootloader_SelectNode = 0,   // CAN ID: 0x0, receive
 	MOB_Bootloader_1          = 1,   // CAN ID: 0x1, receive
-	MOB_RS232_FORWARD_DATA    = 1,   // CAN ID: 0x1, receive, alias for Bootloader_1
+	MOB_RS232_FORWARD_DATA    = 1,   // receive, alias for Bootloader_1
 	MOB_ClutchGetPos          = 2,   // CAN ID: 0x5ff, receive
-	MOB_Kupplung              = 3,   // CAN ID: 0x10x, receive
+	MOB_Kupplung              = 3,   // CAN ID: 0x10x, 0x101x, receive
 	MOB_Gear                  = 4,   // CAN ID: 0x71x, receive
 	MOB_Sensoren              = 5,   // CAN ID: 0x80x, receive
 	MOB_Sensoren_2            = 6,   // CAN ID: 0x81x, receive

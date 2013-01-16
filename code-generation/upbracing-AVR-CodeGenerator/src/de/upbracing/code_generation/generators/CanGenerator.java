@@ -230,6 +230,7 @@ public class CanGenerator extends AbstractGenerator {
 		ArrayList<DBCSignalConfig> done = new ArrayList<DBCSignalConfig>(dbcEcu.getRxSignals().size() + dbcEcu.getTxMsgs().size());
 		
 		//Create a global variable for all RX signals
+		//TODO I think we should rather prepend the name of the message in case of a name clash (to both of them!) or at least print a warning.
 		for (DBCSignal sig : dbcEcu.getRxSignals()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;
 			if (signal.isNoGlobalVar()) continue;
