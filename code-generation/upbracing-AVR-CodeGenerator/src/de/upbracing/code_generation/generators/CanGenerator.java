@@ -220,6 +220,12 @@ public class CanGenerator extends AbstractGenerator {
 			++user_mob_id;
 		}
 		
+		// make sure that we don't use any MOB for rx AND tx
+		for (Mob mob : mobs.values()) {
+			if (!mob.getRxMessages().isEmpty() && !mob.getTxMessages().isEmpty())
+				config.getMessages().error("MOb '%s' is used for receiving and transmitting, which is not allowed", mob.getName());
+		}
+		
 		//Store all done signals to prevent multiple global variables for the same signal
 		ArrayList<DBCSignalConfig> done = new ArrayList<DBCSignalConfig>(dbcEcu.getRxSignals().size() + dbcEcu.getTxMsgs().size());
 		
