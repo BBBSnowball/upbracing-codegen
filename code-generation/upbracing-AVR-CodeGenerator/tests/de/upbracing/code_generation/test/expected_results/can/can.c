@@ -34,7 +34,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 	} else if (can_caused_interrupt(MOB_Kupplung)) {		// shared mob
 		CANPAGE = (MOB_Kupplung<<4);
 		if (0) {	// dummy clause to make code generation easier
-		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// Kupplung_Soll, CAN ID: 0x10x
+		} else if (1 && CANIDT3 == 0x00 && (CANIDT4 & 0xfc) == 0x80) {		// Kupplung_Soll, CAN ID: 0x10x
 
 			// reading signal Kupplung_Soll
 			{
@@ -45,7 +45,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 				}
 			}
 			clutch_calibration_mode = false;
-		} else if (1 && CANIDT3 == 8 && CANIDT4 == 8) {		// Kupplung_Calibration, CAN ID: 0x101x
+		} else if (1 && CANIDT3 == 0x08 && (CANIDT4 & 0xfc) == 0x08) {		// Kupplung_Calibration, CAN ID: 0x101x
 
 			// reading signal Kupplung_RAW
 			{
