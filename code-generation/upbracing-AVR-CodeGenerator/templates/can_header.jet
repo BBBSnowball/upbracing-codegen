@@ -203,6 +203,10 @@ for (Mob mob : dbcEcu.getMobs()) {
 	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send, alias for <%= msgconfig.getName() %>
 <%
 		}
+	} else {	// user MOb
+%>
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// not used by generated code
+<%
 	}
 }
 
@@ -217,7 +221,12 @@ t.finish(" ");
 
 <%
 for(Mob mob: dbcEcu.getMobs()) {
-	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
+	if (mob.getRxMessages().isEmpty() && mob.getTxMessages().isEmpty()) {
+		// not initializing user MOb
+		continue;
+	}
+	
+	if (mob.getRxMessages().isEmpty() && mob.getTxMessages().size() > 1) {
 %>
 // not initialising shared MOB <%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
 <%

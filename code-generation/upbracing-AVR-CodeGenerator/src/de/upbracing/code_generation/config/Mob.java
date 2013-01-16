@@ -17,11 +17,15 @@ public class Mob {
 	private boolean extended = false;
 	private boolean disabled = false;
 	
+	private String on_rx;
+	
 	public Mob(DBCMessageConfig firstMessage, int mobId, String name, boolean tx) {
-		if (tx)
-			txMessages.add(firstMessage);
-		else
-			rxMessages.add(firstMessage);
+		if (firstMessage != null) {
+			if (tx)
+				txMessages.add(firstMessage);
+			else
+				rxMessages.add(firstMessage);
+		}
 
 		this.mobId = mobId;
 		this.name = name;
@@ -182,5 +186,13 @@ public class Mob {
 			return result;
 		}
 		return null;
+	}
+
+	public String getOnRx() {
+		return on_rx;
+	}
+
+	public void setOnRx(String on_rx) {
+		this.on_rx = on_rx;
 	}
 }

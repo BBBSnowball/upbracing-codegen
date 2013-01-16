@@ -196,6 +196,30 @@ public class CanGenerator extends AbstractGenerator {
 			}
 		}
 		
+		// AT90CAN supports 15 MOBs, but we need one as MOB_GENERAL_MESSAGE_TRANSMITTER
+		if (mobNumber > 15-1) {
+			config.getMessages().error("Too many message objects: We need %d, but we only have 14 (without MOB_GENERAL_MESSAGE_TRANSMITTER). Please consider sharing a MOb for some messages.", mobNumber);
+		}
+		
+		// add user MObs
+		int user_mob_id = 0;
+		for (;mobNumber < 14;mobNumber++) {
+			String mobName = "USER" + user_mob_id;
+			if (mobs.containsKey(mobName))
+				config.getMessages().error("MOb name clashes with user MOb: %s", mobName);
+			else {
+				Mob mob = new Mob(null, mobNumber, mobName, true);
+				mobs.put(mobName, mob);
+				dbcEcu.addMob(mob);
+				
+				String rx_handler = config.getCan().getUserMobRxHandlers().get(user_mob_id);
+				if (rx_handler != null)
+					mob.setOnRx(rx_handler);
+			}
+			
+			++user_mob_id;
+		}
+		
 		//Store all done signals to prevent multiple global variables for the same signal
 		ArrayList<DBCSignalConfig> done = new ArrayList<DBCSignalConfig>(dbcEcu.getRxSignals().size() + dbcEcu.getTxMsgs().size());
 		

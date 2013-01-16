@@ -14,7 +14,7 @@
 //       library will wait for an ongoing transmission on
 //       this MOb to finish before using it and it expects
 //       you do the same. It is ok to use
-//       MOB_GENERAL_TRANSMITTER.
+//       MOB_GENERAL_MESSAGE_TRANSMITTER.
 //     - <can_at90.h> has been included.
 
 #include <common.h>
