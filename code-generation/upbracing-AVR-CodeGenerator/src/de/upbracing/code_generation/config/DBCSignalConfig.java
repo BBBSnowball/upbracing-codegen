@@ -214,6 +214,11 @@ public class DBCSignalConfig extends DBCSignal {
 	public void setNoGlobalVar(boolean noGlobalVar) {
 		this.noGlobalVar = noGlobalVar;
 	}
+	
+	/** Returns whether the global variable name has been set. */
+	public boolean hasGlobalVarName() {
+		return globalVarName != null;
+	}
 
 	/**
 	 * Returns the name of the global variable associated to this signal.

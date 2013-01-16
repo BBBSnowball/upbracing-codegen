@@ -226,44 +226,58 @@ public class CanGenerator extends AbstractGenerator {
 				config.getMessages().error("MOb '%s' is used for receiving and transmitting, which is not allowed", mob.getName());
 		}
 		
-		//Store all done signals to prevent multiple global variables for the same signal
-		ArrayList<DBCSignalConfig> done = new ArrayList<DBCSignalConfig>(dbcEcu.getRxSignals().size() + dbcEcu.getTxMsgs().size());
-		
-		//Create a global variable for all RX signals
-		//TODO I think we should rather prepend the name of the message in case of a name clash (to both of them!) or at least print a warning.
+		// Build lists of global variables to resolve name clashes
+		HashMap<String, LinkedList<DBCSignalConfig>> rx_signals_with_gvars = new HashMap<String, LinkedList<DBCSignalConfig>>();
 		for (DBCSignal sig : dbcEcu.getRxSignals()) {
 			DBCSignalConfig signal = (DBCSignalConfig)sig;
-			if (signal.isNoGlobalVar()) continue;
+			if (signal.isNoGlobalVar())
+				continue;
 			
-			//Only add a global variable, if there is none yet for this signal
-			if (!done.contains(signal)) {
-				addGlobalVariable(config, signal);
-				done.add(signal);
+			String name = signal.getGlobalVarName();
+			
+			if (!rx_signals_with_gvars.containsKey(name))
+				rx_signals_with_gvars.put(name, new LinkedList<DBCSignalConfig>());
+			
+			rx_signals_with_gvars.get(name).add(signal);
+		}
+		
+		// Same thing for transmitted signals
+		HashMap<String, LinkedList<DBCSignalConfig>> tx_signals_with_gvars = new HashMap<String, LinkedList<DBCSignalConfig>>();
+		for (DBCMessage msg : dbcEcu.getTxMsgs()) {
+			DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
+			
+			// We only need global variables to read data from, if we
+			// sent it out automatically.
+			if (msgconfig.isNoSendMessage() || !msgconfig.isPeriodic())
+				continue;
+
+			for(DBCSignal sig : msg.getSignals().values()) { 
+				DBCSignalConfig signal = (DBCSignalConfig) sig;
+				
+				if (signal.isNoGlobalVar())
+					continue;
+				
+				String name = signal.getGlobalVarName();
+				
+				if (!tx_signals_with_gvars.containsKey(name))
+					tx_signals_with_gvars.put(name, new LinkedList<DBCSignalConfig>());
+				
+				tx_signals_with_gvars.get(name).add(signal);
 			}
 		}
 		
-		//Create a global variable for all signals in all TX messages
-		//Also create OS tasks for messages with periodic sending
+		// Create the global variables
+		addGlobalVariables(config, rx_signals_with_gvars, tx_signals_with_gvars, "rx");
+		addGlobalVariables(config, tx_signals_with_gvars, rx_signals_with_gvars, "tx");
+				
+		//Create OS tasks for messages with periodic sending
 		for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 			DBCMessageConfig msgconfig = (DBCMessageConfig) msg;
 			
 			if (msgconfig.isNoSendMessage()) continue;
 
-			//Create global variables
-			for(Map.Entry<String, DBCSignal> entry : msg.getSignals().entrySet()) { 
-				DBCSignalConfig signal = (DBCSignalConfig) entry.getValue();
-				
-				if (signal.isNoGlobalVar()) continue;
-
-				//Only add a global variable, if there is none yet for this signal
-				if (!done.contains(signal)) {
-					addGlobalVariable(config, signal);
-					done.add(signal);
-				}
-			}
-			
 			//Create OS task for periodic sending
-			if (msgconfig.isPeriodic()) {		
+			if (msgconfig.isPeriodic()) {
 				//Check if another message already had the same period
 				boolean foundMessage = false;
 				for(List<DBCMessageConfig> list : dbcEcu.getSendingTasks()) {
@@ -284,10 +298,7 @@ public class CanGenerator extends AbstractGenerator {
 					list.add(msgconfig);
 					dbcEcu.getSendingTasks().add(list);
 				}
-				
 			}
-			
-			
 		}
 		
 		//Add declaration for value tables to global variables
@@ -296,22 +307,69 @@ public class CanGenerator extends AbstractGenerator {
 		
 		return null;
 	}
-	
-	private void addGlobalVariable(MCUConfiguration config, DBCSignalConfig signal) {
-		
-		//Check if global variable with this name already exists
-		if (config.getGlobalVariables().containsKey(signal.getGlobalVarName())) {
+
+	private void addGlobalVariables(MCUConfiguration config,
+			HashMap<String, LinkedList<DBCSignalConfig>> variables_to_add,
+			HashMap<String, LinkedList<DBCSignalConfig>> conflicting_variables,
+			String direction_prefix) {
+		for (LinkedList<DBCSignalConfig> signals : variables_to_add.values()) {
+			boolean use_msg_prefix = signals.size() > 1;
 			
-			//Append a suffix to change the name
-			int suffix = 1;
-			while(config.getGlobalVariables().containsKey(signal.getGlobalVarName() + "_" + suffix)) {
-				suffix++;
+			for (DBCSignalConfig signal : signals) {
+				String name = signal.getGlobalVarName();
+				
+				// We only change the name, if the user hasn't set it specifically.
+				boolean fixed_name = signal.hasGlobalVarName();
+				if (!fixed_name) {
+					boolean use_direction_prefix = conflicting_variables.containsKey(name) && conflicting_variables.get(name).contains(signal);
+					boolean use_msg_prefix2 = use_msg_prefix || conflicting_variables.containsKey(name) && !conflicting_variables.get(name).isEmpty();
+					
+					if (use_direction_prefix) {
+						// We cannot use two names - both directions have to use the same variable.
+						//name = direction_prefix + "_" + name;
+						config.getMessages().warn("Signal '%s' in message '%s' will use the same variable for transmitting and receiving. You can "
+								+ "set the name explicitely to get rid of this warning.",
+								signal.getName(), signal.getMessage().getName());
+						
+						// Avoid a warning for the opposite direction
+						conflicting_variables.get(name).remove(signal);
+					}
+					
+					if (use_msg_prefix2)
+						name = signal.getMessage().getName() + "_"  + name;
+					
+					signal.setGlobalVarName(name);
+				} else {
+					// The user must avoid name clashes herself. We don't even issue
+					// a warning because they may be intentional.
+				}
+				
+				if (!config.getGlobalVariables().containsKey(name))
+					config.getGlobalVariables().add(name, signal.getCType());
+				else {
+					if (!fixed_name) {
+						// Append a suffix to change the name and make it unique
+						int suffix = 1;
+						while(config.getGlobalVariables().containsKey(name + "_" + suffix)) {
+							suffix++;
+						}
+						
+						// set the changed name as a new custom global variable name
+						signal.setGlobalVarName(name + "_" + suffix);
+						
+						// Report the problem
+						config.getMessages().warn("The global variable '%s' (for signal '%s' in message '%s') cannot be created because a variable with "
+								+ "the same name exists. It will be renamed to '%s', but don't expect that name to be stable - it can change every time the "
+								+ "code generator runs. Please set the variable name in your configuration or remove the offending variable.",
+								name, signal.getName(), signal.getMessage().getName(), signal.getGlobalVarName());
+						
+						config.getGlobalVariables().add(signal.getGlobalVarName(), signal.getCType());
+					} else {
+						config.getMessages().info("Not creating global variable '%s' (for signal '%s' in message '%s') because it exists and the name has been set by the user",
+								name, signal.getName(), signal.getMessage().getName());
+					}
+				}
 			}
-			
-			//set the changed name as a new custom global variable name
-			signal.setGlobalVarName(signal.getGlobalVarName() + "_" + suffix);
 		}
-		
-		config.getGlobalVariables().add(signal.getGlobalVarName(), signal.getCType());
 	}
 }
