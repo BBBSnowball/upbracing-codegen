@@ -155,6 +155,9 @@ static void handle_incoming_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 	can_mob_set_data(MOB_RELAY, 8, (uint8_t*)&buffer);
 	can_mob_transmit_wait(MOB_RELAY);
 
+	// wait some time because the master doesn't have a buffer
+	_delay_ms(10);
+
 	// send second message
 
 	buffer.instruction = 0x01;
@@ -162,6 +165,9 @@ static void handle_incoming_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 
 	can_mob_set_data(MOB_RELAY, 8, (uint8_t*)&buffer);
 	can_mob_transmit_wait(MOB_RELAY);
+
+	// wait some time because the master doesn't have a buffer
+	_delay_ms(20);
 
 	PORTA &= ~0x20;
 }

@@ -7,7 +7,7 @@ typedef enum {
 	MOB_RECEIVE,
 } MessageObjectID;
 
-#define MOB_RECEIVE_COUNT 10
+#define MOB_RECEIVE_COUNT (15-2)
 
 // We don't have a general transmitter MOB
 #define CAN_WITHOUT_GENERAL_TRANSMITTER_MOB
