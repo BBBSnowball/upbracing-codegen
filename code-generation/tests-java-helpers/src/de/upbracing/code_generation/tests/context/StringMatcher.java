@@ -116,8 +116,9 @@ public class StringMatcher extends TestContext implements Runnable {
 				for (int i=0;i<real_len;i++) {
 					if (expected[matched_chars] != buf[i]) {
 						setResult(new Result.Error(String.format(
-								"mismatch at %d: 0x%02x '%c' != 0x%02x '%c'",
-								i, buf[i], buf[i], expected[matched_chars], expected[matched_chars])));
+								"mismatch at %d: 0x%02x %s (actual)  !=  0x%02x %s (expected)",
+								i, buf[i], formatChar(buf[i]),
+								expected[matched_chars], formatChar(expected[matched_chars]))));
 						return;
 					}
 					
@@ -126,6 +127,22 @@ public class StringMatcher extends TestContext implements Runnable {
 			}
 		} catch (Throwable t) {
 			setResult(new Result.Error(t));
+		}
+	}
+
+	private String formatChar(byte b) {
+		switch ((char)b) {
+		case '\r':
+			return "'\\r'";
+		case '\n':
+			return "'\\n'";
+		case '\0':
+			return "'\\0'";
+		default:
+			if (b >= 32 && b < 128)
+				return "'" + ((char)b) + "'";
+			else
+				return "?";
 		}
 	}
 }
