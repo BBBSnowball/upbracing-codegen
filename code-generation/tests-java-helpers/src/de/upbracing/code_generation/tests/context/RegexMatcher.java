@@ -145,19 +145,26 @@ public class RegexMatcher extends TestContext implements Runnable {
 				}
 				
 				// read one character
-				int x;
-				try {
-					x = in.read();
-				} catch (IOException e) {
-					setResult(new Result.Error(e));
-					break;
-				}
+				int x = in.read();
 				
 				// check for error
 				if (x < 0) {
-					// end of stream
-					setResult(new Result.Error("end of stream"));
-					break;
+					// Our stream shouldn't have any end at all, but
+					// "end of stream" seems to be reported, if there
+					// isn't any data at the moment.
+					// (at least sometimes)
+					
+					// give it some time
+					Thread.sleep(500);
+					
+					// try again
+					x = in.read();
+					
+					if (x < 0) {
+						// no luck -> report it
+						setResult(new Result.Error("end of stream"));
+						break;
+					}
 				}
 				
 				// add character to buffer and increase limit accordingly
@@ -184,6 +191,9 @@ public class RegexMatcher extends TestContext implements Runnable {
 					break;
 				}
 			}
+		} catch (InterruptedException e) {
+			// most likely a timeout - will be reported by the caller
+			System.out.println("RegexMatcher has been interrupted");
 		} catch (Throwable t) {
 			setResult(new Result.Error(t));
 		}
