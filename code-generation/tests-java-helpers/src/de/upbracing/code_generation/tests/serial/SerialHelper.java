@@ -115,6 +115,9 @@ public class SerialHelper {
 				port = new NRSerialPort(portname, baud);
 				if (!port.connect()) {
 					toolkit.getMessages().error("Couldn't open serial port '%s'");
+				} else {
+					connected = true;
+					default_ports[port_no] = portname;
 				}
 			} while (port == null || !port.isConnected());
 		}
