@@ -6,6 +6,14 @@ The master board (the board we run our test software on) is connected to
 the PC via the serial line. It forwards instructions to the slave board
 and at the same time, it runs the test software.
 
-This helper can be instructed to send messages and it relays received
-messages. It must be programmed on a board that is connected to the
-DUT via CAN before running test2-dut.
+The DBC file contains some messages that test certain aspects, e.g.
+empty messages, order of signals, undefined parts. The messages can
+be sent and received by the MCU (despite their names *g*). Sending
+is done with the general transmitter for most messages, but we also
+use dedicated and shared MObs for some. Most MObs are used for
+reception. Again, we have dedicated and shared MObs.
+
+Test A: Send a few instances of each message
+Test B: Receive messages and report the value of the corresponding variables
+
+TODO: Test extended messages and mixed standard/extended MObs.

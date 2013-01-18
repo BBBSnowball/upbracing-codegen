@@ -1,15 +1,10 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-typedef enum {
-	MOB_RECEIVE_RELAY,
-	MOB_SEND_INSTRUCTION
-} MessageObjectID;
+#include "gen/can.h"
 
-// We don't have a general transmitter MOB
-#define CAN_WITHOUT_GENERAL_TRANSMITTER_MOB
-
-#include <can_at90.h>
+#define MOB_RECEIVE_RELAY MOB_USER0
+#define MOB_SEND_INSTRUCTION MOB_GENERAL_MESSAGE_TRANSMITTER
 
 #include <can-helper.h>
 
