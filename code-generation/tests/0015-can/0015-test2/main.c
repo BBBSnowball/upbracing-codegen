@@ -16,28 +16,28 @@
 #include "gen/global_variables.h"
 
 void testA(void) {
-	send_TestTransmit1_nowait();
-	send_TestTransmit1_nowait();
-	send_TestTransmit1_wait();
+	send_TestMsg1_nowait();
+	send_TestMsg1_nowait();
+	send_TestMsg1_wait();
 
-	send_TestTransmit2_wait(42);
-	send_TestTransmit2_wait(0x55);
-	send_TestTransmit2_wait(0x42);
+	send_TestMsg2_wait(42);
+	send_TestMsg2_wait(0x55);
+	send_TestMsg2_wait(0x42);
 
-	send_TestTransmit3_wait(42, 7);
+	send_TestMsg3_wait(42, 7);
 
-	send_TestTransmit4_wait(0x1234);
+	send_TestMsg4_wait(0x1234);
 
-	send_TestTransmit5_nowait();
+	send_TestMsg5_nowait();
 
-	send_TestTransmit6_nowait(0x1234);
-	send_TestTransmit6_nowait(0x5678);
+	send_TestMsg6_nowait(0x1234);
+	send_TestMsg6_nowait(0x5678);
 
-	send_TestTransmit7_nowait(0x1730, 0xfa);
-	send_TestTransmit7_nowait(0x2231, 0xae);
+	send_TestMsg7_nowait(0x1730, 0xfa);
+	send_TestMsg7_nowait(0x2231, 0xae);
 
-	send_TestTransmit8_nowait(0x1730, 0xfa);
-	send_TestTransmit8_nowait(0x2231, 0xae);
+	send_TestMsg8_nowait(0x1730, 0xfa);
+	send_TestMsg8_nowait(0x2231, 0xae);
 }
 
 void testB(void) {
@@ -50,15 +50,15 @@ void testB(void) {
 			usart_send_str("- " #msg ":" #signal " = "); \
 			usart_send_number(get##msg##_##signal(), 16, 0); \
 			usart_send_str("\r\n");
-	PRINT_VAR(TestTransmit2, Test1);
-	PRINT_VAR(TestTransmit3, Test1);
-	PRINT_VAR(TestTransmit3, Test2);
-	PRINT_VAR(TestTransmit4, Test1);
-	PRINT_VAR(TestTransmit6, Test1);
-	PRINT_VAR(TestTransmit7, Test1);
-	PRINT_VAR(TestTransmit7, Test2);
-	PRINT_VAR(TestTransmit8, Test1);
-	PRINT_VAR(TestTransmit8, Test2);
+	PRINT_VAR(TestMsg2, Test1);
+	PRINT_VAR(TestMsg3, Test1);
+	PRINT_VAR(TestMsg3, Test2);
+	PRINT_VAR(TestMsg4, Test1);
+	PRINT_VAR(TestMsg6, Test1);
+	PRINT_VAR(TestMsg7, Test1);
+	PRINT_VAR(TestMsg7, Test2);
+	PRINT_VAR(TestMsg8, Test1);
+	PRINT_VAR(TestMsg8, Test2);
 #	undef PRINT_VAR
 
 	usart_send_str("\r\n");

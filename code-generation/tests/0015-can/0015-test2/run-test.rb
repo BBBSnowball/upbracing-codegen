@@ -40,19 +40,19 @@ EOF
 # We send some messages and look at the corresponding variables.
 
 # request variable values and check some of them
-# vals: map from name to value, e.g. "TestTransmit2:Test1" => 0x2a
+# vals: map from name to value, e.g. "TestMsg2:Test1" => 0x2a
 # All values that aren't present in the map can be arbitrary hex numbers.
 def testB(vals)
   vars = [
-    "TestTransmit2:Test1",
-    "TestTransmit3:Test1",
-    "TestTransmit3:Test2",
-    "TestTransmit4:Test1",
-    "TestTransmit6:Test1",
-    "TestTransmit7:Test1",
-    "TestTransmit7:Test2",
-    "TestTransmit8:Test1",
-    "TestTransmit8:Test2" ]
+    "TestMsg2:Test1",
+    "TestMsg3:Test1",
+    "TestMsg3:Test2",
+    "TestMsg4:Test1",
+    "TestMsg6:Test1",
+    "TestMsg7:Test1",
+    "TestMsg7:Test2",
+    "TestMsg8:Test1",
+    "TestMsg8:Test2" ]
   
   regex = "Running test B\r\n"
   vars.each do |var|
@@ -67,20 +67,20 @@ end
 vals = {}
 
 $helper.first_serial.write "\n~t01212a\n"
-testB "TestTransmit2:Test1" => 0x2a
+testB "TestMsg2:Test1" => 0x2a
 
 $helper.first_serial.write "\n~t012142\n"
-vals["TestTransmit2:Test1"] = 0x42
+vals["TestMsg2:Test1"] = 0x42
 testB vals
 
 $helper.first_serial.write "\n~t01322a07\n"
-vals["TestTransmit3:Test1"] = 42
-vals["TestTransmit3:Test2"] =  7
+vals["TestMsg3:Test1"] = 42
+vals["TestMsg3:Test2"] =  7
 testB vals
 
 $helper.first_serial.write "\n~t01322355\n"
-vals["TestTransmit3:Test1"] = 0x23
-vals["TestTransmit3:Test2"] = 0x55
+vals["TestMsg3:Test1"] = 0x23
+vals["TestMsg3:Test2"] = 0x55
 testB vals
 
 # test some of them in a row
@@ -92,12 +92,12 @@ $helper.first_serial.write <<EOF
 ~t01880000002016fb7272
 
 EOF
-vals["TestTransmit4:Test1"] = 0x1234
-vals["TestTransmit6:Test1"] = 0x1235
-vals["TestTransmit7:Test1"] = 0x1730
-vals["TestTransmit7:Test2"] = 0xfa
-vals["TestTransmit8:Test1"] = 0x1620
-vals["TestTransmit8:Test2"] = 0xfb
+vals["TestMsg4:Test1"] = 0x1234
+vals["TestMsg6:Test1"] = 0x1235
+vals["TestMsg7:Test1"] = 0x1730
+vals["TestMsg7:Test2"] = 0xfa
+vals["TestMsg8:Test1"] = 0x1620
+vals["TestMsg8:Test2"] = 0xfb
 testB vals
 
 $helper.first_serial.write <<EOF
@@ -108,10 +108,10 @@ $helper.first_serial.write <<EOF
 ~t0188ffffff3123af7272
 
 EOF
-vals["TestTransmit4:Test1"] = 0x5678
-vals["TestTransmit6:Test1"] = 0x5679
-vals["TestTransmit7:Test1"] = 0x2231
-vals["TestTransmit7:Test2"] = 0xae
-vals["TestTransmit8:Test1"] = 0x2331
-vals["TestTransmit8:Test2"] = 0xaf
+vals["TestMsg4:Test1"] = 0x5678
+vals["TestMsg6:Test1"] = 0x5679
+vals["TestMsg7:Test1"] = 0x2231
+vals["TestMsg7:Test2"] = 0xae
+vals["TestMsg8:Test1"] = 0x2331
+vals["TestMsg8:Test2"] = 0xaf
 testB vals

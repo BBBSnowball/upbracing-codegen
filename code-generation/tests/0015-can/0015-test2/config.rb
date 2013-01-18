@@ -21,17 +21,17 @@ $config.can.addRxHandler(0, "can_helper_master_receive_relay();");
 # message 1 is sent and received in its own MOb
 
 # messages 2 uses the general transmitter MOb for tx
-$config.can.getMessage("TestTransmit2").usingGeneralTransmitter = true
+$config.can.getMessage("TestMsg2").usingGeneralTransmitter = true
 
 # messages 3 and 4 share a MOb (for rx and tx respectively)
-$config.can.getMessage("TestTransmit3").rxMob = "TestTransmit3and4Rx"
-$config.can.getMessage("TestTransmit4").rxMob = "TestTransmit3and4Rx"
-$config.can.getMessage("TestTransmit3").txMob = "TestTransmit3and4Tx"
-$config.can.getMessage("TestTransmit4").txMob = "TestTransmit3and4Tx"
+$config.can.getMessage("TestMsg3").rxMob = "TestMsg3and4Rx"
+$config.can.getMessage("TestMsg4").rxMob = "TestMsg3and4Rx"
+$config.can.getMessage("TestMsg3").txMob = "TestMsg3and4Tx"
+$config.can.getMessage("TestMsg4").txMob = "TestMsg3and4Tx"
 
 # the other ones use the general transmitter for tx (we're out of MObs *g*)
 (5..8).each do |i|
-  $config.can.getMessage("TestTransmit#{i}").usingGeneralTransmitter = true
+  $config.can.getMessage("TestMsg#{i}").usingGeneralTransmitter = true
 end
 
 if false
