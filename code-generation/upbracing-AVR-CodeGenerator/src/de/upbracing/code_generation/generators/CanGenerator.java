@@ -3,13 +3,16 @@ package de.upbracing.code_generation.generators;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.List;
+import java.util.Set;
 
 import de.upbracing.code_generation.CanHeaderTemplate;
 import de.upbracing.code_generation.CanCFileTemplate;
 import de.upbracing.code_generation.CanValueTablesTemplate;
+import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
@@ -115,6 +118,7 @@ public class CanGenerator extends AbstractGenerator {
 		
 		//Create MOBs		
 		Map<String, Mob> mobs = new HashMap<String, Mob>();
+		ArrayList<Mob> mob_natural_order = new ArrayList<Mob>(15);
 		
 		int mobNumber = 0;
 		
@@ -151,10 +155,13 @@ public class CanGenerator extends AbstractGenerator {
 				if (msgconfig.isMobDisabled()) mob.setDisabled(true);
 				mobs.put(mobName, mob);
 				dbcEcu.addMob(mob);
+				mob_natural_order.add(mob);
 				
 				mobNumber++;
 			}
 		}
+		
+		orderMobs(config.getMessages(), mob_natural_order, 0);
 		
 		//TX Messages
 		for (DBCMessage msg : dbcEcu.getTxMsgs()) {
@@ -306,6 +313,129 @@ public class CanGenerator extends AbstractGenerator {
 		
 		
 		return null;
+	}
+
+	/** Shared MObs can match more messages than they should, so they can steal
+	 * messages that should go into other MObs. This message tries to change the
+	 * MOb priorities to avoid that problem (first MOb wins). The existing order
+	 * will be preserved, if possible. The method will return false, if it cannot
+	 * find a working order. An error will be reported in that case. If the method
+	 * returns true, the parameter mobs will contain the new order; if it returns
+	 * false, the value of that list is undefined.
+	 * @param messages messages object to report warnings and errors
+	 * @param mobs a list of MObs to re-order - it will be changed
+	 * @param first_mob_id the MObs will get IDs starting with this one (0 to 15)
+	 * @return true, if successful; false, if impossible
+	 */
+	private boolean orderMobs(Messages messages, ArrayList<Mob> mobs, int first_mob_id) {
+		HashMap<Mob, List<Mob>> steals_from = new HashMap<Mob, List<Mob>>();
+		for (Mob mob : mobs)
+			steals_from.put(mob, new LinkedList<Mob>());
+		for (Mob mob1 : mobs)
+			for (Mob mob2 : mobs)
+				if (mob1 != mob2 && mob1.mayStealMessagesOf(mob2))
+					steals_from.get(mob1).add(mob2);
+
+		Set<Mob> todo = new HashSet<Mob>(mobs);
+		ArrayList<Mob> result = new ArrayList<Mob>();
+		// Put each of them into the result list one by one.
+		while (todo.size() > 0) {
+			// Find a MOb that doesn't have any conflicts. We prefer the
+			// MObs near the start of the list to preserve its order.
+			boolean found_one = false;
+			boolean in_order = true;
+			for (Mob mob : mobs) {
+				// ignore MObs that we already put in there
+				if (!todo.contains(mob))
+					continue;
+				
+				// does it have any conflicts left?
+				boolean has_conflict = false;
+				for (Mob conflict : steals_from.get(mob)) {
+					if (todo.contains(conflict)) {
+						has_conflict = true;
+						break;
+					}
+				}
+				if (has_conflict) {
+					// not ready, yet
+					in_order = false;
+					continue;
+				}
+				
+				// we can use that one
+				todo.remove(mob);
+				result.add(mob);
+				found_one = true;
+				
+				// report
+				if (!in_order) {
+					StringBuffer sb = new StringBuffer();
+					LinkedList<Mob> stealing = new LinkedList<Mob>();
+					for (Mob mob2 : mobs)
+						if (todo.contains(mob2) && steals_from.get(mob2).contains(mob))
+							stealing.add(mob2);
+					appendMobList(sb, stealing);
+					messages.info("MOb '%s' gets a higher priority, so it won't be shadowed by other MObs: %s",
+								mob.getName(), sb.toString());
+				}
+				
+				// we abort the loop here and continue checking the
+				// front of the list again (we prefer those, remember?)
+				break;
+			}
+			
+			// avoid an endless loop, if we don't have any options left
+			if (!found_one) {
+				StringBuffer sb = new StringBuffer();
+				sb.append("I cannot figure out an order for your shared MObs. I'm stuck with those:");
+				for (Mob mob : mobs) {
+					if (!todo.contains(mob))
+						continue;
+					
+					sb.append("\n  - '" + mob.getName() + "' would steal from ");
+
+					List<Mob> conflicting_mobs = steals_from.get(mob);
+					appendMobList(sb, conflicting_mobs);
+				}
+				
+				messages.error("%s", sb.toString());
+				return false;
+			}
+		}
+		
+		// We have a valid order
+		// -> almost done :-)
+		
+		// put the new order into the provided list
+		//NOTE This won't change anything because the source file will use the order in dbcEcu.getMobs(). However,
+		//     this is quite good because that way we can easily see which MObs got another ID.
+		mobs.clear();
+		mobs.addAll(result);
+		
+		// assign new MOb IDs
+		int mob_id = first_mob_id;
+		for (Mob mob : result) {
+			//if (mob.getMobId() != mob_id)
+			//	messages.info("MOb '%s' gets another ID (%d -> %d), so it won't be shadowed by or shadow another MOb.",
+			//			mob.getName(), mob.getMobId(), mob_id);
+			mob.updateMobId(mob_id);
+			++mob_id;
+		}
+		
+		return true;
+	}
+
+	private static void appendMobList(StringBuffer sb, List<Mob> mobs) {
+		boolean first = true;
+		for (Mob mob : mobs) {
+			if (first)
+				first = false;
+			else
+				sb.append(", ");
+			
+			sb.append("'" + mob.getName() + "'");
+		}
 	}
 
 	private void addGlobalVariables(MCUConfiguration config,

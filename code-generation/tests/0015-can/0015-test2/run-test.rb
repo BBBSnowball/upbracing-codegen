@@ -93,9 +93,9 @@ $helper.first_serial.write <<EOF
 
 EOF
 vals["TestTransmit4:Test1"] = 0x1234
-#vals["TestTransmit6:Test1"] = 0x1235
-#vals["TestTransmit7:Test1"] = 0x1730
-#vals["TestTransmit7:Test2"] = 0xfa
+vals["TestTransmit6:Test1"] = 0x1235
+vals["TestTransmit7:Test1"] = 0x1730
+vals["TestTransmit7:Test2"] = 0xfa
 vals["TestTransmit8:Test1"] = 0x1620
 vals["TestTransmit8:Test2"] = 0xfb
 testB vals
@@ -109,9 +109,9 @@ $helper.first_serial.write <<EOF
 
 EOF
 vals["TestTransmit4:Test1"] = 0x5678
-#vals["TestTransmit6:Test1"] = 0x5679
-#vals["TestTransmit7:Test1"] = 0x2231
-#vals["TestTransmit7:Test2"] = 0xae
+vals["TestTransmit6:Test1"] = 0x5679
+vals["TestTransmit7:Test1"] = 0x2231
+vals["TestTransmit7:Test2"] = 0xae
 vals["TestTransmit8:Test1"] = 0x2331
 vals["TestTransmit8:Test2"] = 0xaf
 testB vals

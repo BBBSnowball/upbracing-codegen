@@ -90,13 +90,27 @@ public class Mob {
 	public void setDisabled(boolean disabled) {
 		this.disabled = disabled;
 	}
+	
+	/** Return significant bits in CANIDTn
+	 * @param extended is it an extended message/MOb?
+	 * @return an array of bit masks (mask for CANIDT1 is at
+	 *     index 0): a 1 means that this bit is significant
+	 */
+	public int[] getSignificantBits(boolean extended) {
+		if (extended)
+			// CANIDT4 has some special bits
+			// We include RTRTAG, but not RB{0,1}TAG.
+			return new int[] { 0xff, 0xff, 0xff, 0xfc };
+		else
+			return new int[] { 0xff, 0xe0, 0x00, 0x04 };
+	}
 
 	/**
 	 * Calculates the values id, mask, significantDiffs and extended.
 	 * If one of these values is read for the first time, the method is called internally.
 	 * It only needs to be called externally if the messages of this mob have changed since the last access
 	 */
-	public void calculateValues() {
+	private void calculateValues() {
 		int[] zeros = {0xff, 0xff, 0xff, 0xff}; // if any ID has a zero somewhere, so will this value
 		int[] ones = {0, 0, 0, 0}; // if any ID has a one  somewhere, so will this value
 		int[] mask = {0xff, 0xff, 0xff, 0xff}; // combined mask (zeros win)
@@ -107,10 +121,9 @@ public class Mob {
 		for(DBCMessageConfig msg : rxMessages) {
 			int[] id = msg.canIdForMob();
 			int[] significant1;
-			int[] mask1 = {0xff, 0xff, 0xff, 0xfd};
+			int[] mask1 = {0xff, 0xff, 0xff, 0xfc};
 			
-			if (msg.isExtended()) significant1 = new int[]{0xff, 0xff, 0xff, 0xfd};
-			else significant1 = new int[]{0xff, 0xe0, 0x00, 0x04};
+			significant1 = getSignificantBits(msg.isExtended());
 			
 			allExtended = allExtended && msg.isExtended();
 			allNotExtended = allNotExtended && !msg.isExtended();
@@ -136,18 +149,62 @@ public class Mob {
 		if (idemsk)
 			mask[3] |= 1;
 		else
-			mask[4] &= ~1;
+			mask[3] &= ~1;
 		
 		// As ID we could use either zeros or ones, as they are now equal in all significant bits.
 		this.id = ones;
 		this.mask = mask;
 		this.significantDiffs = significantDiffs;
 		this.extended = allExtended;
-		
 	}
 	
+	/** Check whether this MOb would receive messages that
+	 * are meant for the other mob, if this MOb had a higher
+	 * priority.
+	 * NOTE: (a.mayStealMessagesOf(b) && b.mayStealMessagesOf(a)) can be true!
+	 * @param mob the other MOb (that we might steal messages from)
+	 * @return true, if this MOb might steal messages; false, if that isn't possible
+	 */
+	public boolean mayStealMessagesOf(Mob mob) {
+		for (DBCMessageConfig msg : mob.getRxMessages()) {
+			if (this.doesCaptureMessage(msg))
+				return true;
+		}
+		
+		return false;
+	}
 	
-	
+	/** Check whether this MOb can receive this message (probably
+	 * not intended, but permitted by the mask).
+	 * @param msg the message
+	 * @return whether the message would pass the filter
+	 */
+	private boolean doesCaptureMessage(DBCMessageConfig msg) {
+		// first check IDE (extended or not)
+		int mask[] = getMask();
+		if ((mask[3] & 1) != 1) {
+			// MOb receives both kinds of messages
+			// -> We will definitely have a match here.
+		} else {
+			if (this.isExtended() != msg.isExtended())
+				// IDE bit will prevent a match
+				return false;
+		}
+		
+		int msg_id[] = msg.canIdForMob();
+		int significant[] = getSignificantBits(msg.isExtended());
+		
+		// mask bits in ID (non-significant bits become 0)
+		msg_id = bitAnd(bitAnd(msg_id, mask), significant);
+		
+		// do the same thing to the ID of the MOb
+		// (probably not necessary)
+		int mob_id[] = bitAnd(bitAnd(getID(), mask), significant);
+		
+		// If they are equal now, we have a match.
+		return bitEqual(msg_id, mob_id);
+	}
+
 	private int[] bitAnd(int[] a, int[] b) {
 		if (a != null && b != null && a.length == b.length) {
 			int[] result = new int[a.length];
@@ -187,6 +244,13 @@ public class Mob {
 		}
 		return null;
 	}
+	
+	private boolean bitEqual(int[] a, int[] b) {
+		for(int i = 0; i<a.length; i++)
+			if (a[i] != b[i])
+				return false;
+		return true;
+	}
 
 	public String getOnRx() {
 		return on_rx;
@@ -194,5 +258,10 @@ public class Mob {
 
 	public void setOnRx(String on_rx) {
 		this.on_rx = on_rx;
+	}
+
+	/** change the MOb ID after creation - don't use, unless you know what you are doing! */
+	public void updateMobId(int mobId) {
+		this.mobId = mobId;
 	}
 }
