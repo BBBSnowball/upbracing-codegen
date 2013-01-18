@@ -30,11 +30,6 @@ void testA(void) {
 
 	send_TestTransmit5_nowait();
 
-	// relaying messages to the PC takes some time
-	// -> let the buffer empty
-	// 30ms * 11 messages
-	_delay_ms(350*2);
-
 	send_TestTransmit6_nowait(0x1234);
 	send_TestTransmit6_nowait(0x5678);
 
