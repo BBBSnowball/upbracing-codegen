@@ -36,6 +36,9 @@ typedef struct {
 			uint8_t data[6];
 			uint8_t dummy;
 		} instruction1;
+		struct {
+			uint32_t lost_messages;
+		} instruction4;
 	};
 } instruction_t;
 

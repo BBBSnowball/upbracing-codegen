@@ -346,6 +346,21 @@ static void can_helper_master_receive_relay(void) {
 			// enable interrupts again (if they have been enabled before)
 			SREG = sreg_backup;
 			break;
+		case 0x04:
+			// we lost some messages
+
+			// disable interrupts
+			sreg_backup = SREG;
+			cli();
+
+			// notify PC
+			usart_send_str_P(PSTR("~L:"));
+			usart_send_number(inst.instruction4.lost_messages, 10, 0);
+			usart_send_str_P(PSTR("\r\n"));
+
+			// enable interrupts again (if they have been enabled before)
+			SREG = sreg_backup;
+			break;
 		default:
 			// error: we don't know that code
 
