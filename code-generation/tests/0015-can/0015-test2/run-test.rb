@@ -3,8 +3,9 @@ $helper.first_serial.ensure_baudrate 9600
 $helper.flash_processor
 
 # startup
+# At some point the board started to send a stray 0xff...
+$helper.first_serial.expect_regex "[^\r\n]?\r\n"
 $helper.first_serial.expect_string <<EOF.gsub("\n", "\r\n")
-
 Starting CAN master.
 Initialize CAN with 500kbps.
 Initialize CAN mobs.
@@ -17,23 +18,23 @@ EOF
 #     DBC file, so we use a regex to allow any data in
 #     those parts of the messages.
 $helper.first_serial.write "A"
-$helper.first_serial.expect_regex <<EOF.gsub("\n", "\r\n")
+$helper.first_serial.expect_regex <<EOF.gsub("\n", "\r\n").gsub(" ", "[ \\t]*")
 ^Running test A
-~t0110
-~t0110
-~t0110
-~t01212a
-~t012155
-~t012142
-~t01322a07
-~t01423412
-~t0152....
-~t0167........3412..
-~t0167........7856..
-~t0178......3017fa....
-~t0178......3122ae....
-~t0188......3017fa....
-~t0188......3122ae....
+~t 011 0
+~t 011 0
+~t 011 0
+~t 012 1 2a
+~t 012 1 55
+~t 012 1 42
+~t 013 2 2a 07
+~t 014 2 34 12
+~t 015 2 .. ..
+~t 016 7 .. .. .. .. 34 12 ..
+~t 016 7 .. .. .. .. 78 56 ..
+~t 017 8 .. .. .. 30 17 fa .. ..
+~t 017 8 .. .. .. 31 22 ae .. ..
+~t 018 8 .. .. .. 30 17 fa .. ..
+~t 018 8 .. .. .. 31 22 ae .. ..
 EOF
 
 # test B
@@ -86,10 +87,10 @@ testB vals
 # test some of them in a row
 $helper.first_serial.write <<EOF
 
-~t01423412
-~t016700000000351272
-~t01780000003017fa7272
-~t01880000002016fb7272
+~t 014 2 3412
+~t 016 7 00000000 35 12 72
+~t 017 8 000000 30 17 fa 7272
+~t 018 8 000000 20 16 fb 7272
 
 EOF
 vals["TestMsg4:Test1"] = 0x1234

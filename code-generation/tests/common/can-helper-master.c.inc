@@ -211,9 +211,12 @@ static bool can_helper_master_handle_char(uint8_t c) {
 			SREG = sreg_backup;
 		}
 	} else if (pos_in_line <= sizeof(buffer) / sizeof(*buffer)) {
-		// put char in the buffer
-		buffer[pos_in_line-1] = c;
-		pos_in_line++;
+		// ignore spaces
+		if (c != ' ') {
+			// put char in the buffer
+			buffer[pos_in_line-1] = c;
+			pos_in_line++;
+		}
 	}
 
 	// we have used the char
@@ -243,6 +246,7 @@ static void can_helper_print_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 			c = 't';
 	}
 	usart_send(c);
+	usart_send(' ');
 
 	if (extended)
 		id &= CAN_ID_MASK;
@@ -258,6 +262,8 @@ static void can_helper_print_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 			digit += 'a' - 10;
 		usart_send(digit);
 	}
+	
+	usart_send(' ');
 
 	if (dlc > 8)
 		dlc = 8;
@@ -267,6 +273,8 @@ static void can_helper_print_message(uint32_t id, uint8_t dlc, uint8_t* data) {
 		for (uint8_t i = 0;i<dlc;i++) {
 			uint8_t digit;
 			uint8_t data_byte = data[i];
+
+			usart_send(' ');
 
 			digit = data_byte >> 4;
 			if (digit < 10)
