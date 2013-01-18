@@ -100,25 +100,18 @@ public class StringMatcher extends TestContext implements Runnable {
 				int real_len;
 				real_len = in.read(buf, 0, chars_to_read);
 
-				
-				// handle errors
-				if (real_len < 0) {
+				// check for "end of stream"
+				while (real_len < 0) {
 					// Our stream shouldn't have any end at all, but
 					// "end of stream" seems to be reported, if there
 					// isn't any data at the moment.
 					// (at least sometimes)
 					
 					// give it some time
-					Thread.sleep(500);
+					Thread.sleep(10);
 					
 					// try again
 					real_len = in.read();
-					
-					if (real_len < 0) {
-						// no luck -> report it
-						setResult(new Result.Error("end of stream"));
-						break;
-					}
 				}
 				
 				// compare

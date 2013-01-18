@@ -147,24 +147,18 @@ public class RegexMatcher extends TestContext implements Runnable {
 				// read one character
 				int x = in.read();
 				
-				// check for error
-				if (x < 0) {
+				// check for "end of stream"
+				while (x < 0) {
 					// Our stream shouldn't have any end at all, but
 					// "end of stream" seems to be reported, if there
 					// isn't any data at the moment.
 					// (at least sometimes)
 					
 					// give it some time
-					Thread.sleep(500);
+					Thread.sleep(10);
 					
 					// try again
 					x = in.read();
-					
-					if (x < 0) {
-						// no luck -> report it
-						setResult(new Result.Error("end of stream"));
-						break;
-					}
 				}
 				
 				// add character to buffer and increase limit accordingly
