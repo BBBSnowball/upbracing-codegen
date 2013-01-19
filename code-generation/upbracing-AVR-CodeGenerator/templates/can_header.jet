@@ -362,13 +362,12 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 %>
 inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ? "" : ", " %><%= params %>) {
 <%
-	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t\t");
+	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t");
 	for (DBCSignal signal : msgconfig.getSignalOrder()) {
-		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t\t");
+		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t");
 	}
 	
 	if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerAll(), "\t")) {
-		if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
 %>
 	// select MOB
 	CANPAGE = (MOB_<%=mobName%><<4);
@@ -379,6 +378,9 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 	// reset transmission status
 	CANSTMOB = 0;
 
+<%
+		if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
+%>
 <% //TODO we don't need that all the time (e.g. never, unless the MOB is shared) %>
 	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
 
@@ -517,13 +519,13 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 <%
 				}	// foreach signal
 			}	// no tx_handler_data
+		}	// no tx_handler
 %>
 	if (wait)
 		can_mob_transmit_wait(MOB_<%=mobName%>);
 	else
 		can_mob_transmit_nowait(MOB_<%=mobName%>);
 <%
-		}	// no tx_handler
 	}	// no tx_handler_all
 	
 	for (DBCSignal signal : msgconfig.getSignalOrder()) {
