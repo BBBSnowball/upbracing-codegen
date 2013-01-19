@@ -140,7 +140,7 @@ inline static void send_Kupplung_Calibration_Control(bool wait, boolean Kupplung
 
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_Kupplung_Calibration_Control, CAN_Kupplung_Calibration_Control_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
 
 		// writing signal KupplungKalibrationActive
@@ -173,7 +173,7 @@ inline static void send_Launch(bool wait, boolean Launch) {
 
 	can_mob_init_transmit2(MOB_Launch, CAN_Launch, CAN_Launch_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
 
 		// writing signal Launch
@@ -206,7 +206,7 @@ inline static void send_Radio(bool wait, boolean Radio) {
 
 	can_mob_init_transmit2(MOB_Radio, CAN_Radio, CAN_Radio_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
 
 		// writing signal Radio
@@ -239,7 +239,7 @@ inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightnes
 
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_CockpitBrightness, CAN_CockpitBrightness_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((4&0xf)<<DLC0);
 
 		// writing signal CockpitRPMBrightness
@@ -293,7 +293,7 @@ inline static void send_EmptyMessage(bool wait) {
 
 	can_mob_init_transmit2(MOB_EmptyMessage, CAN_EmptyMessage, CAN_EmptyMessage_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((0&0xf)<<DLC0);
 	if (wait)
 		can_mob_transmit_wait(MOB_EmptyMessage);
@@ -319,7 +319,7 @@ inline static void send_EmptyMessage2(bool wait) {
 
 	can_mob_init_transmit2(MOB_EmptyMessage2, CAN_EmptyMessage2, CAN_EmptyMessage2_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
 	if (wait)
 		can_mob_transmit_wait(MOB_EmptyMessage2);

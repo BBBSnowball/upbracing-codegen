@@ -392,8 +392,14 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 <% //TODO we don't need that all the time (e.g. never, unless the MOB is shared) %>
 	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
 
-<% //TODO set IDE for extended messages? %>
-	// disable mob, as it would be retransmitted otherwise
+<%
+	// IDE bit is set by can_mob_init_transmit2 and won't be changed here
+	// can_mob_init_transmit2 will also disable the MOb, as it replaces the value
+	// of CANCDMOB. However, it might not be called every time a message is
+	// received, so we do that here.
+	//TODO It would be more efficient to overwrite the value - we know it anyway (IDE we know, RPLV is not used)
+%>
+	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 <%
 
