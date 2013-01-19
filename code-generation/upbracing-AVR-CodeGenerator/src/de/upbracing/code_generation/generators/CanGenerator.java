@@ -375,9 +375,11 @@ public class CanGenerator extends AbstractGenerator {
 					for (Mob mob2 : mobs)
 						if (todo.contains(mob2) && steals_from.get(mob2).contains(mob))
 							stealing.add(mob2);
-					appendMobList(sb, stealing);
-					messages.info("MOb '%s' gets a higher priority, so it won't be shadowed by other MObs: %s",
-								mob.getName(), sb.toString());
+					if (!stealing.isEmpty()) {
+						appendMobList(sb, stealing);
+						messages.info("MOb '%s' gets a higher priority, so it won't be shadowed by other MObs: %s",
+									mob.getName(), sb.toString());
+					}
 				}
 				
 				// we abort the loop here and continue checking the

@@ -138,7 +138,7 @@ public class Mob {
 			zeros = bitAnd(zeros, bitOr(id, bitNeg(significant1)));
 		}
 		// If zeros and ones differ in a significant position (1 in significant), we need
-		// to clear those bits in the mask, as a zero in the mask is a "don't care". 
+		// to clear those bits in the mask, as a zero in the mask is a "don't care".
 		int[] diffs = bitXor(zeros, ones);	// different bits become 1, equal bits 0
 		int[] significantDiffs = bitAnd(diffs, significant);
 		mask = bitAnd(mask, bitNeg(significantDiffs));

@@ -30,6 +30,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.utils.Util;
 
@@ -379,8 +380,13 @@ public final class CodeGenerationMain {
 		
 		Map<IGenerator, Object> generator_data_values = new HashMap<IGenerator, Object>();
 		for (IGenerator gen : generators) {
-			if (!failed_generators.contains(gen))
+			if (!failed_generators.contains(gen)) {
 				generator_data_values.put(gen, gen.updateConfig(config));
+				
+				if (config.getMessages().getHighestSeverity().compareTo(Severity.ERROR) >= 0) {
+					return false;
+				}
+			}
 		}
 	
 		if (!validate(generators, config, true, failed_generators, generator_data_values))
