@@ -38,6 +38,13 @@ void testA(void) {
 
 	send_TestMsg8_nowait(0x1730, 0xfa);
 	send_TestMsg8_nowait(0x2231, 0xae);
+
+	send_TestMsg9_nowait(0x37);
+	send_TestMsg10_nowait(0x38);
+	send_TestMsg11_nowait(0x39);
+	send_TestMsg12_nowait(0x40);
+	send_TestMsg13_nowait(0x41);
+	send_TestMsg14_nowait(0x42);
 }
 
 void testB(void) {

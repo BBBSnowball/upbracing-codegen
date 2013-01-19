@@ -31,3 +31,21 @@ BO_ 23 TestMsg7: 8 TestBoard
 BO_ 24 TestMsg8: 8 TestBoard
  SG_ Test2 : 40|8@1+ (1,0) [0|0] "" TestBoard
  SG_ Test1 : 24|16@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 2147483714 TestMsg9 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 2147483715 TestMsg10 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 2147483716 TestMsg11 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 57 TestMsg12 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 2147483648 TestMsg13 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 2684354559 TestMsg14 : 1 TestBoard
+ SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard

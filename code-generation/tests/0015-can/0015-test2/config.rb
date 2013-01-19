@@ -29,8 +29,18 @@ $config.can.getMessage("TestMsg4").rxMob = "TestMsg3and4Rx"
 $config.can.getMessage("TestMsg3").txMob = "TestMsg3and4Tx"
 $config.can.getMessage("TestMsg4").txMob = "TestMsg3and4Tx"
 
+# so do 10, 11 and 12 (standard and extended IDs in shared MOb)
+$config.can.getMessage("TestMsg10").rxMob = "TestMsg10to12Rx"
+$config.can.getMessage("TestMsg11").rxMob = "TestMsg10to12Rx"
+$config.can.getMessage("TestMsg12").rxMob = "TestMsg10to12Rx"
+$config.can.getMessage("TestMsg10").txMob = "TestMsg10to12Tx"
+$config.can.getMessage("TestMsg11").txMob = "TestMsg10to12Tx"
+$config.can.getMessage("TestMsg12").txMob = "TestMsg10to12Tx"
+
 # the other ones use the general transmitter for tx (we're out of MObs *g*)
-(5..8).each do |i|
+not_general_transmitter = [1..4, 10..12]
+#not_general_transmitter = [1..4]
+not_general_transmitter.reduce(1..14) { |a,b| a.to_a-b.to_a }.each do |i|
   $config.can.getMessage("TestMsg#{i}").usingGeneralTransmitter = true
 end
 
