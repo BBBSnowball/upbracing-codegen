@@ -480,7 +480,13 @@ public class CanGenerator extends AbstractGenerator {
 				boolean fixed_name = signal.hasGlobalVarName();
 				if (!fixed_name) {
 					boolean use_direction_prefix = conflicting_variables.containsKey(name) && conflicting_variables.get(name).contains(signal);
-					boolean use_msg_prefix2 = use_msg_prefix || conflicting_variables.containsKey(name) && !conflicting_variables.get(name).isEmpty();
+					boolean use_msg_prefix2 = use_msg_prefix;
+					// We add a message prefix, if the other list contains some messages.
+					if (conflicting_variables.containsKey(name) && !conflicting_variables.get(name).isEmpty())
+						// However, it mustn't be the same signal - we use a direction prefix in that case (well, actually
+						// we cannot use a direction prefix, but we cannot use different names either)
+						if (!(conflicting_variables.get(name).size() == 1 && conflicting_variables.get(name).get(0) == signal))
+							use_msg_prefix2 = true;
 					
 					if (use_direction_prefix) {
 						// We cannot use two names - both directions have to use the same variable.
