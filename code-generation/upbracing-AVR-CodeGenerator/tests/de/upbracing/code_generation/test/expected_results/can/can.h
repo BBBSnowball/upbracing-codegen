@@ -171,8 +171,6 @@ inline static void send_Launch(bool wait, boolean Launch) {
 	// reset transmission status
 	CANSTMOB = 0;
 
-	can_mob_init_transmit2(MOB_Launch, CAN_Launch, CAN_Launch_IsExtended);
-
 	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
 
@@ -203,8 +201,6 @@ inline static void send_Radio(bool wait, boolean Radio) {
 
 	// reset transmission status
 	CANSTMOB = 0;
-
-	can_mob_init_transmit2(MOB_Radio, CAN_Radio, CAN_Radio_IsExtended);
 
 	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
@@ -291,8 +287,6 @@ inline static void send_EmptyMessage(bool wait) {
 	// reset transmission status
 	CANSTMOB = 0;
 
-	can_mob_init_transmit2(MOB_EmptyMessage, CAN_EmptyMessage, CAN_EmptyMessage_IsExtended);
-
 	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((0&0xf)<<DLC0);
 	if (wait)
@@ -316,8 +310,6 @@ inline static void send_EmptyMessage2(bool wait) {
 
 	// reset transmission status
 	CANSTMOB = 0;
-
-	can_mob_init_transmit2(MOB_EmptyMessage2, CAN_EmptyMessage2, CAN_EmptyMessage2_IsExtended);
 
 	// set data length and clear mode to avoid immediate transmission
 	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
