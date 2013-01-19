@@ -398,14 +398,15 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 <%
 		}
 	
-		// IDE bit is set by can_mob_init_transmit2 and won't be changed here
+		// IDE bit is set by can_mob_init_transmit2, but it doesn't hurt to set it again.
 		// can_mob_init_transmit2 will also disable the MOb, as it replaces the value
 		// of CANCDMOB. However, it might not be called every time a message is
-		// received, so we do that here.
-		//TODO It would be more efficient to overwrite the value - we know it anyway (IDE we know, RPLV is not used)
+		// received, so we do that here. We have to set the data length anyway.
+		//NOTE We're overwriting the value of the RPLV bit, but we don't use it anyway.
 %>
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_<%=msgconfig.getName()%>_IsExtended ? (1<<IDE) : 0) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 <%
 
 			if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerData(), "\t")) {

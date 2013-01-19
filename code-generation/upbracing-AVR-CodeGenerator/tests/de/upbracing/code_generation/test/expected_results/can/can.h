@@ -141,7 +141,8 @@ inline static void send_Kupplung_Calibration_Control(bool wait, boolean Kupplung
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_Kupplung_Calibration_Control, CAN_Kupplung_Calibration_Control_IsExtended);
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Kupplung_Calibration_Control_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal KupplungKalibrationActive
 		{
@@ -172,7 +173,8 @@ inline static void send_Launch(bool wait, boolean Launch) {
 	CANSTMOB = 0;
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Launch_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal Launch
 		{
@@ -203,7 +205,8 @@ inline static void send_Radio(bool wait, boolean Radio) {
 	CANSTMOB = 0;
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Radio_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal Radio
 		{
@@ -236,7 +239,8 @@ inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightnes
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_CockpitBrightness, CAN_CockpitBrightness_IsExtended);
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((4&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_CockpitBrightness_IsExtended ? (1<<IDE) : 0) | ((4&0xf)<<DLC0);
 
 		// writing signal CockpitRPMBrightness
 		{
@@ -288,7 +292,8 @@ inline static void send_EmptyMessage(bool wait) {
 	CANSTMOB = 0;
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((0&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_EmptyMessage_IsExtended ? (1<<IDE) : 0) | ((0&0xf)<<DLC0);
 	if (wait)
 		can_mob_transmit_wait(MOB_EmptyMessage);
 	else
@@ -312,7 +317,8 @@ inline static void send_EmptyMessage2(bool wait) {
 	CANSTMOB = 0;
 
 	// set data length and clear mode to avoid immediate transmission
-	CANCDMOB = (CANCDMOB&0x30) | ((2&0xf)<<DLC0);
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_EmptyMessage2_IsExtended ? (1<<IDE) : 0) | ((2&0xf)<<DLC0);
 	if (wait)
 		can_mob_transmit_wait(MOB_EmptyMessage2);
 	else
