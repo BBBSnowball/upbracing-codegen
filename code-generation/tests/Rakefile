@@ -1580,7 +1580,7 @@ EOF
 		test_helper.build_dir     = relative_path build_dir,  dir
 		test_helper.source_dir    = relative_path source_dir, dir
 		test_helper.avrdude       = AVRDUDE
-		test_helper.avrdude2      = AVRDUDE2
+		test_helper.avrdude2      = AVRDUDE2 if Object.const_defined? :AVRDUDE2
 		test_helper.serialport    = SERIALPORT
 		test_helper.configuration = configuration
 
