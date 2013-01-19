@@ -45,6 +45,12 @@ void testA(void) {
 	send_TestMsg12_nowait(0x40);
 	send_TestMsg13_nowait(0x41);
 	send_TestMsg14_nowait(0x42);
+
+	send_TestMsg15_nowait(0x5790);
+	send_TestMsg16_nowait(-10);
+	send_TestMsg16_nowait( 10);
+	send_TestMsg17_nowait(-2, -100, -100);
+	send_TestMsg17_nowait(-1000, 100, 127);
 }
 
 void testB(void) {
@@ -53,10 +59,11 @@ void testB(void) {
 	//TODO Message counters, ...
 
 	// "- Msg:Signal = 0xabc\r\n"
-#	define PRINT_VAR(msg, signal) \
+#	define PRINT_VAR2(msg, signal, varname) \
 			usart_send_str("- " #msg ":" #signal " = "); \
-			usart_send_number(get##msg##_##signal(), 16, 0); \
+			usart_send_number(get##varname(), 16, 0); \
 			usart_send_str("\r\n");
+#	define PRINT_VAR(msg, signal) PRINT_VAR2(msg, signal, msg##_##signal)
 	PRINT_VAR(TestMsg02, Test1);
 	PRINT_VAR(TestMsg03, Test1);
 	PRINT_VAR(TestMsg03, Test2);
@@ -72,6 +79,11 @@ void testB(void) {
 	PRINT_VAR(TestMsg12, Test1);
 	PRINT_VAR(TestMsg13, Test1);
 	PRINT_VAR(TestMsg14, Test1);
+	PRINT_VAR(TestMsg15, Test1);
+	PRINT_VAR(TestMsg16, Test1);
+	PRINT_VAR(TestMsg17, Test1);
+	PRINT_VAR(TestMsg17, Test2);
+	PRINT_VAR2(TestMsg17, Test3, Test3);
 #	undef PRINT_VAR
 
 	usart_send_str("\r\n");

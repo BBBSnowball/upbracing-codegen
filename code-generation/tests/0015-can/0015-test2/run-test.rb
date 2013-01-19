@@ -41,6 +41,11 @@ $helper.first_serial.expect_regex <<EOF.gsub("\n", "\r\n").gsub(" ", "[ \\t]*")
 ~t      039 1 40
 ~T 00000000 1 41
 ~T 1fffffff 1 42
+~t 055 2 57 90
+~t 056 7 .. .. .. .. ff f6 ..
+~t 056 7 .. .. .. .. 00 0a ..
+~t 057 8 .. .. .. fe ff 9c 9c ..
+~t 057 8 .. .. .. 18 fc 64 7f ..
 EOF
 
 # test B
@@ -71,7 +76,12 @@ def testB(new_vals = {})
     "TestMsg11:Test1",
     "TestMsg12:Test1",
     "TestMsg13:Test1",
-    "TestMsg14:Test1" ]
+    "TestMsg14:Test1",
+    "TestMsg15:Test1",
+    "TestMsg16:Test1",
+    "TestMsg17:Test1",
+    "TestMsg17:Test2",
+    "TestMsg17:Test3" ]
     
   unknown_vars = new_vals.keys - vars
   unless unknown_vars.empty?
@@ -82,9 +92,13 @@ def testB(new_vals = {})
   
   regex = "Running test B\r\n"
   vars.each do |var|
-    regex += "- #{var} = 0x" + ($vals[var] ? $vals[var].to_s(16) : "[0-9a-f]+") + "\r\n"
+    regex += "- #{var} = 0x" + ($vals[var] ? $vals[var].to_s(16) : "-?[0-9a-f]+") + "\r\n"
   end
   regex += "\r\n"
+  
+  # minus should be before '0x', so we fix that
+  # (optional '?' after the minus, so we fix the regex as well)
+  regex = regex.gsub /0x(-\??)/, "\\10x"
 
   $helper.first_serial.write "B\n"
   $helper.first_serial.expect_regex regex
@@ -222,3 +236,18 @@ testB "TestMsg09:Test1" => 0x17,
       "TestMsg12:Test1" => 0x20,
       "TestMsg13:Test1" => 0x21,
       "TestMsg14:Test1" => 0x22
+
+# a few tests for endianness
+$helper.first_serial.write <<EOF
+
+~t 055 2 57 91
+~t 056 7 ff ff ff ff  ff f7        ff
+~t 057 8 ff ff ff     19 fc 6f 7e  ff
+~t 057 8 ff ff ff     fd ff 9d 9e  ff
+
+EOF
+testB "TestMsg15:Test1" => 0x5791,
+      "TestMsg16:Test1" => -9,
+      "TestMsg17:Test1" => -3,
+      "TestMsg17:Test2" => -99,
+      "TestMsg17:Test3" => -98

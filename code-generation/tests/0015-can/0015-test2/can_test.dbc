@@ -49,3 +49,15 @@ BO_ 2147483648 TestMsg13 : 1 TestBoard
 
 BO_ 2684354559 TestMsg14 : 1 TestBoard
  SG_ Test1 : 0|8@1+ (1,0) [0|0] "" TestBoard
+
+BO_ 85 TestMsg15: 2 TestBoard
+ SG_ Test1 : 7|16@0+ (1,0) [0|0] "" TestBoard
+
+BO_ 86 TestMsg16: 7 TestBoard
+ SG_ Test1 : 39|16@0- (1,0) [0|0] "" TestBoard
+
+BO_ 87 TestMsg17: 8 TestBoard
+ SG_ Test1 : 24|16@1- (1,0) [0|0] "" TestBoard
+ SG_ Test2 : 40|8@1- (1,0) [0|0] "" TestBoard
+ SG_ Test3 : 55|8@0- (1,0) [0|0] "" TestBoard
+
