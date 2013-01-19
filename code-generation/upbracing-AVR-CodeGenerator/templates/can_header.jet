@@ -367,6 +367,14 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t");
 	}
 	
+	if (msgconfig.getTxHandlerAll() != null || msgconfig.getTxHandler() != null) {
+		// save MOb number in a local variable, so the handlers can use it
+%>
+	const MessageObjectID MOB = MOB_<%=mobName%>;
+
+<%
+	}
+	
 	if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerAll(), "\t")) {
 %>
 	// select MOB
