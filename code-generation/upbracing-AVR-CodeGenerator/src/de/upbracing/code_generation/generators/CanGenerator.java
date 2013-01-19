@@ -161,6 +161,32 @@ public class CanGenerator extends AbstractGenerator {
 			}
 		}
 		
+		for (Mob mob : mob_natural_order) {
+			if ((mob.getMask()[3] & 1) != 1) {
+				// From my experiments:
+				// - If you don't set the IDE bit, the MCU will only use 11 bits in the
+				//   comparison, even if an extended message is received. This means that
+				//   the MOb will "steal" a lot of messages...
+				// - If you do set the IDE bit, all the bits are compared (at least that's
+				//   my guess). Well, I noticed that a standard message cannot be received.
+				// - If I use a mask that allows arbitrary values in those positions
+				//   (CANIDT3, CANIDT4 and part of CANIDT2), the MOb "eats" messages, but
+				//   it doesn't receive them - very weird.
+				// - The CANIDTn registers are updated with the values from the message, but
+				//   that doesn't change anything for the following message because the
+				//   changed bits are masked, anyway. However, we must correct that for the
+				//   IDE bit, if we need it a certain way.
+				// - The errata say nothing about that (neither does the datasheet) :-(
+				// - It seems like that should work - why would we have a IDEMSK bit, if that
+				//   wasn't possible?!
+				// => We don't allow it. Period.
+				config.getMessages().error("MOb '%s' has standard and extended messages. The "
+						+ "AT90CAN doesn't handle that well. Most likely, it won't work and "
+						+ "break some of the other MObs!",
+						mob.getName());
+			}
+		}
+		
 		orderMobs(config.getMessages(), mob_natural_order, 0);
 		
 		//TX Messages
