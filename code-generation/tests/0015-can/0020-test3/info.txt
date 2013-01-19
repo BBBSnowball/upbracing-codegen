@@ -1,0 +1,36 @@
+Test most features of our CAN communication code generator. It uses a
+slave board that relays received messages and can be instructed to send
+messages, as well (see 0010-test2-helper).
+
+The master board (the board we run our test software on) is connected to
+the PC via the serial line. It forwards instructions to the slave board
+and at the same time, it runs the test software.
+
+This is mostly a copy of test2, but we add message and signal hooks:
+
+message:
+- rxHandler			TestMsg02
+- beforeRx			TestMsg03
+- afterRx			TestMsg03
+- txHandler			TestMsg04
+- txHandlerAll		TestMsg09
+- txHandlerData		TestMsg06
+- beforeTx			TestMsg07
+- afterTx			TestMsg07
+
+signal:
+- beforeRx			TestMsg03:Test1, TestMsg03:Test2
+- afterRx			TestMsg03:Test1, TestMsg03:Test2
+- immBeforeRx		TestMsg03:Test1, TestMsg03:Test2
+- immAfterRx		TestMsg03:Test1, TestMsg03:Test2
+- putValue			TestMsg03:Test1
+
+- beforeTx			TestMsg07:Test1, TestMsg07:Test2
+- afterTx			TestMsg07:Test1, TestMsg07:Test2
+- immBeforeTx		TestMsg07:Test1, TestMsg07:Test2
+- immAfterTx		TestMsg07:Test1, TestMsg07:Test2
+- getValue			TestMsg07:Test1
+- param				TestMsg07:Test2 (cannot be checked)
+
+- noGlobalVar		TestMsg02:Test1
+- globalVarName		TestMsg03:Test2 (set to TestMsg03:Test3)
