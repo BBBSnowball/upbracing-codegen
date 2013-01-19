@@ -349,15 +349,17 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 //     the MOB for transmitting the message, so you might have to init it
 //     for receiving, after the message has been transmitted.
 <%
-	/*echo "//TODO What does the \"wait for an ongoing transmission to finish\" loop\n";
-	echo "//     do, if the MOB is receiving messages? Does it block forever? It\n";
-	echo "//     should either do nothing or wait for the ISR to handle the message,\n";
-	echo "//     if a message has been received but not handled, yet.\n";*/
-	//           => The loop finishes immediately, if the MOB is not in transmit mode.
-	//              The rx ISR should take control after at most one asm instruction,
-	//              so if we ever found a received message, the ISR would have handled
-	//              it before we finished the check. We might receive another message
-	//              while we init the MOB, but we cannot do anything about that.
+	// What does the "wait for an ongoing transmission to finish" loop
+	// do, if the MOB is receiving messages? Does it block forever? It
+	// should either do nothing or wait for the ISR to handle the message,
+	// if a message has been received but not handled, yet.
+	//  => The loop finishes immediately, if the MOB is not in transmit mode.
+	//     The rx ISR should take control after at most one asm instruction,
+	//     so if we ever found a received message, the ISR would have handled
+	//     it before we finished the check. We might receive another message
+	//     while we init the MOB, but we cannot do anything about that.
+	//     If interrupts are disabled, we will overwrite the message, but we
+	//     cannot avoid that (unless we enable interrupts, which is a bad idea).
 	}
 %>
 inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ? "" : ", " %><%= params %>) {
