@@ -444,6 +444,8 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 		{
 			<%= type %> value;
 <%
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
+					
 					if (!CanGeneratorHelper.printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
 						/*if (!empty($signal['place']))
 							$var = $signal['place'];
@@ -463,8 +465,6 @@ inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ?
 			value = <%= var %>;
 <%		
 					}
-					
-					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
 					
 					if (len == 8) {
 %>
