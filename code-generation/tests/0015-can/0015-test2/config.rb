@@ -21,27 +21,25 @@ $config.can.addRxHandler(0, "can_helper_master_receive_relay();");
 # message 1 is sent and received in its own MOb
 
 # messages 2 uses the general transmitter MOb for tx
-$config.can.getMessage("TestMsg2").usingGeneralTransmitter = true
+$config.can.getMessage("TestMsg02").usingGeneralTransmitter = true
 
 # messages 3 and 4 share a MOb (for rx and tx respectively)
-$config.can.getMessage("TestMsg3").rxMob = "TestMsg3and4Rx"
-$config.can.getMessage("TestMsg4").rxMob = "TestMsg3and4Rx"
-$config.can.getMessage("TestMsg3").txMob = "TestMsg3and4Tx"
-$config.can.getMessage("TestMsg4").txMob = "TestMsg3and4Tx"
+$config.can.getMessage("TestMsg03").rxMob = "TestMsg3and4Rx"
+$config.can.getMessage("TestMsg04").rxMob = "TestMsg3and4Rx"
+$config.can.getMessage("TestMsg03").txMob = "TestMsg3and4Tx"
+$config.can.getMessage("TestMsg04").txMob = "TestMsg3and4Tx"
 
-# so do 10, 11 and 12 (standard and extended IDs in shared MOb)
+# so do 10  and 11 (standard and extended IDs in shared MOb)
 $config.can.getMessage("TestMsg10").rxMob = "TestMsg10to12Rx"
 $config.can.getMessage("TestMsg11").rxMob = "TestMsg10to12Rx"
-$config.can.getMessage("TestMsg12").rxMob = "TestMsg10to12Rx"
 $config.can.getMessage("TestMsg10").txMob = "TestMsg10to12Tx"
 $config.can.getMessage("TestMsg11").txMob = "TestMsg10to12Tx"
-$config.can.getMessage("TestMsg12").txMob = "TestMsg10to12Tx"
 
 # the other ones use the general transmitter for tx (we're out of MObs *g*)
-not_general_transmitter = [1..4, 10..12]
+not_general_transmitter = [1..4, 10..11]
 #not_general_transmitter = [1..4]
-not_general_transmitter.reduce(1..14) { |a,b| a.to_a-b.to_a }.each do |i|
-  $config.can.getMessage("TestMsg#{i}").usingGeneralTransmitter = true
+not_general_transmitter.reduce(1..14) { |a,b| [*a]-[*b] }.each do |i|
+  $config.can.getMessage(sprintf("TestMsg%02d", i)).usingGeneralTransmitter = true
 end
 
 if false

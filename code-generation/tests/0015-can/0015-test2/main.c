@@ -16,30 +16,30 @@
 #include "gen/global_variables.h"
 
 void testA(void) {
-	send_TestMsg1_nowait();
-	send_TestMsg1_nowait();
-	send_TestMsg1_wait();
+	send_TestMsg01_nowait();
+	send_TestMsg01_nowait();
+	send_TestMsg01_wait();
 
-	send_TestMsg2_wait(42);
-	send_TestMsg2_wait(0x55);
-	send_TestMsg2_wait(0x42);
+	send_TestMsg02_wait(42);
+	send_TestMsg02_wait(0x55);
+	send_TestMsg02_wait(0x42);
 
-	send_TestMsg3_wait(42, 7);
+	send_TestMsg03_wait(42, 7);
 
-	send_TestMsg4_wait(0x1234);
+	send_TestMsg04_wait(0x1234);
 
-	send_TestMsg5_nowait();
+	send_TestMsg05_nowait();
 
-	send_TestMsg6_nowait(0x1234);
-	send_TestMsg6_nowait(0x5678);
+	send_TestMsg06_nowait(0x1234);
+	send_TestMsg06_nowait(0x5678);
 
-	send_TestMsg7_nowait(0x1730, 0xfa);
-	send_TestMsg7_nowait(0x2231, 0xae);
+	send_TestMsg07_nowait(0x1730, 0xfa);
+	send_TestMsg07_nowait(0x2231, 0xae);
 
-	send_TestMsg8_nowait(0x1730, 0xfa);
-	send_TestMsg8_nowait(0x2231, 0xae);
+	send_TestMsg08_nowait(0x1730, 0xfa);
+	send_TestMsg08_nowait(0x2231, 0xae);
 
-	send_TestMsg9_nowait(0x37);
+	send_TestMsg09_nowait(0x37);
 	send_TestMsg10_nowait(0x38);
 	send_TestMsg11_nowait(0x39);
 	send_TestMsg12_nowait(0x40);
@@ -57,15 +57,21 @@ void testB(void) {
 			usart_send_str("- " #msg ":" #signal " = "); \
 			usart_send_number(get##msg##_##signal(), 16, 0); \
 			usart_send_str("\r\n");
-	PRINT_VAR(TestMsg2, Test1);
-	PRINT_VAR(TestMsg3, Test1);
-	PRINT_VAR(TestMsg3, Test2);
-	PRINT_VAR(TestMsg4, Test1);
-	PRINT_VAR(TestMsg6, Test1);
-	PRINT_VAR(TestMsg7, Test1);
-	PRINT_VAR(TestMsg7, Test2);
-	PRINT_VAR(TestMsg8, Test1);
-	PRINT_VAR(TestMsg8, Test2);
+	PRINT_VAR(TestMsg02, Test1);
+	PRINT_VAR(TestMsg03, Test1);
+	PRINT_VAR(TestMsg03, Test2);
+	PRINT_VAR(TestMsg04, Test1);
+	PRINT_VAR(TestMsg06, Test1);
+	PRINT_VAR(TestMsg07, Test1);
+	PRINT_VAR(TestMsg07, Test2);
+	PRINT_VAR(TestMsg08, Test1);
+	PRINT_VAR(TestMsg08, Test2);
+	PRINT_VAR(TestMsg09, Test1);
+	PRINT_VAR(TestMsg10, Test1);
+	PRINT_VAR(TestMsg11, Test1);
+	PRINT_VAR(TestMsg12, Test1);
+	PRINT_VAR(TestMsg13, Test1);
+	PRINT_VAR(TestMsg14, Test1);
 #	undef PRINT_VAR
 
 	usart_send_str("\r\n");

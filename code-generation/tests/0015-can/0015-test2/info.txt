@@ -15,5 +15,3 @@ shared MObs.
 
 Test A: Send a few instances of each message
 Test B: Receive messages and report the value of the corresponding variables
-
-TODO: Test extended messages and mixed standard/extended MObs.
