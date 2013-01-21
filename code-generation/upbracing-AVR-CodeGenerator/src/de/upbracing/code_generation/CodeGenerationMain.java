@@ -30,6 +30,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
 import de.upbracing.code_generation.utils.Util;
@@ -375,22 +376,27 @@ public final class CodeGenerationMain {
 		
 		HashSet<IGenerator> failed_generators = new HashSet<IGenerator>();
 		
-		if (!validate(generators, config, false, failed_generators, null))
-			return false;
+		boolean result = true;
+		
+		result &= validate(generators, config, false, failed_generators, null);
 		
 		Map<IGenerator, Object> generator_data_values = new HashMap<IGenerator, Object>();
 		for (IGenerator gen : generators) {
 			if (!failed_generators.contains(gen)) {
+				ContextItem context = config.getMessages().pushContext("updateConfig for " + gen.getName());
+				
 				generator_data_values.put(gen, gen.updateConfig(config));
 				
-				if (config.getMessages().getHighestSeverity().compareTo(Severity.ERROR) >= 0) {
-					return false;
+				if (config.getMessages().getHighestSeverityInContext().compareTo(Severity.ERROR) >= 0) {
+					result = false;
+					failed_generators.add(gen);
 				}
+				
+				context.pop();
 			}
 		}
 	
-		if (!validate(generators, config, true, failed_generators, generator_data_values))
-			return false;
+		result &= validate(generators, config, true, failed_generators, generator_data_values);
 		
 		for (IGenerator gen : generators) {
 			if (failed_generators.contains(gen))
@@ -447,7 +453,7 @@ public final class CodeGenerationMain {
 			}
 		}
 		
-		if (!failed_generators.isEmpty()) {
+		if (!failed_generators.isEmpty() || !result) {
 			System.err.println("\n\n!!! Parts of the code have not been generated (see above) !!!\n");
 			return false;
 		} else
