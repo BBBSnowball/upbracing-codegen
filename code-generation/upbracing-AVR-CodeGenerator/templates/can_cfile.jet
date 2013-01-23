@@ -89,9 +89,11 @@ ISR(SIG_CAN_INTERRUPT1) {
 <%
 for (Mob mob : dbcEcu.getMobs()) {
 
-	if( mob.getRxMessages().size() == 0 ) continue;
+	if( mob.getRxMessages().size() == 0 && mob.getOnRx() == null ) continue;
 	
 	String mobdesc;
+	if (mob.getOnRx() != null)
+		mobdesc = "custom mob";
 	if (mob.getRxMessages().size() == 1) {
 		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
 		mobdesc = "CAN ID: " + CanGeneratorHelper.messageId(msgconfig, true);
@@ -105,7 +107,9 @@ for (Mob mob : dbcEcu.getMobs()) {
 	} else if (can_caused_interrupt(MOB_<%= mob.getName() %>)) {		// <%= mobdesc %>
 		CANPAGE = (MOB_<%= mob.getName() %><<4);
 <%
-		if (mob.getRxMessages().size() == 1) {
+		if (mob.getOnRx() != null) {
+			CanGeneratorHelper.printCode(stringBuffer, mob.getOnRx(), "\t\t");
+		} else if (mob.getRxMessages().size() == 1) {
 			//Only one Message in MOB
 			readMessageCode(stringBuffer, messages, globVars, mob.getRxMessages().get(0), dbcEcu, "\t\t");
 		} else {
@@ -128,8 +132,21 @@ for (Mob mob : dbcEcu.getMobs()) {
 			int[] significant_diffs = mob.getSignificantDiffs();
 			int[] id = msgconfig.canIdForMob();
 			for (int i=0; i<4; i++) {
-				if (significant_diffs[i] != 0)
-					ifstatement += " && CANIDT" + (i+1) + " == " + id[i];
+				int significant_bits[] = mob.getSignificantBits(msgconfig.isExtended());
+				if (significant_diffs[i] != 0) {
+					// some bits are undefined
+					// We must make sure that we don't include them in our
+					// checks as this would yield a wrong result sometimes.
+					int mask = significant_bits[i];
+					if (mask == 0x00)
+						// do nothing
+						;
+					else if (mask == 0xff)
+						// no mask
+						ifstatement += String.format(" && CANIDT%d == 0x%02x", (i+1), id[i] & mask);
+					else
+						ifstatement += String.format(" && (CANIDT%d & 0x%02x) == 0x%02x", (i+1), mask, id[i] & mask);
+				}
 			}
 				
 			ifstatement += ")";
@@ -169,7 +186,9 @@ void can_init_mobs(void) {
 <%
 //for(Map.Entry<String, Mob> entry : mobs.entrySet()) {
 for(Mob mob : dbcEcu.getMobs()) {
-	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
+	if (mob.getRxMessages().isEmpty() && mob.getTxMessages().isEmpty()) {
+		// ignoring user MOb
+	} else if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
 %>
 	// not initialising shared MOB MOB_<%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
 <%
@@ -387,8 +406,54 @@ void readMessageCode(StringBuffer stringBuffer, Messages messages, GlobalVariabl
 						}
 					}
 					
-					if (signal.getFactor() != 1 || signal.getOffset() != 0) { //TODO: implement factor and offset
-						%><% messages.warn("This signal uses factor or offset, which is not supported yet.").formatForCode(stringBuffer); %><%
+					// Make sure that factor and offsets are as expected
+					//TODO: automatically adjust the value to match the expectations
+					//      (without using floating-point arithmetic - this can be tricky, but it's possible)
+					
+					// We have to compare the factor and offset to the expected values. This
+					// is quite tricky because a small change in the factor can be significant,
+					// if the factor is small and the amount of error we can allow for the
+					// offset depends on the factor.
+					// => If the error is much lower than the effect of a small change in the
+					//    raw value, we accept it.
+					
+					// test at different points: small - offset dominates, high - factor dominates
+					// (len is the length of the value in bits)
+					//NOTE We are using theoretical max and min. We could also use the real values,
+					//     if they are given in the DBC file.
+					int test_points[];
+					if (signal.isSignedValue()) {
+						test_points = new int[] {
+							(-1) << (len - 1),	// smallest	(0x80 for 8 bit -> -127)
+							(-1) << (len - 2),	// center negative	(0xc0 for 8 bit -> -63)
+							0,
+							(+1) << (len - 2),	// center positive	(0x40 for 8 bit -> 64)
+							((+1) << (len - 1)) - 1,	// max		(0x7f for 8 bit -> 127)
+						};
+					} else {
+						test_points = new int[] {
+							0,				// zero
+							1 << (len - 1),	// center	(0x80 for 8 bit -> 127)
+							(1 << len) - 1,	// max		(0xff for 8 bit -> 255)
+						};
+					}
+					for (int test_point : test_points) {
+						float real_a = test_point * signal.getFactor() + signal.getOffset();
+						float expected_a = test_point * signal.getExpectedFactor() + signal.getExpectedOffset();
+						float real_b = (test_point - 1) * signal.getFactor() + signal.getOffset();
+						float raw_change = real_b - real_a;
+						float error = expected_a - real_a;
+						if (Math.abs(error * 10) > Math.abs(raw_change)) {
+							messages.warn("The program expects a different formula for converting the signal " + name + " to physical units. Automatic adjustment is not supported, yet:\n"
+									+ "\texpected by program: physical_value = raw_value * " + signal.getExpectedFactorNumerator() + "/" + signal.getExpectedFactorDenominator()
+										+ " + " + signal.getExpectedOffset() + "\n"
+									+ "\ton the CAN bus: physical_value = raw_value * " + signal.getFactor() + " + " + signal.getOffset() + "\n"
+									+ "\t(For example, the error for raw_value = " + test_point + " is " + Math.abs(error) + ", but it may be higher for other values.)")
+								.formatForCode(stringBuffer);
+							
+							// don't print warnings for the other test points
+							break;
+						}
 					}
 %>
 <%=indent%>	<%= type %> value = x.value;

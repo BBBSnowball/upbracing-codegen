@@ -184,7 +184,7 @@ public class Messages {
 			
 			sb.append(getSeverity().getCodePrefix());
 			
-			sb.append(getMessage());
+			sb.append(getMessage().replace("\n", "\\\n\t"));
 			
 			if (!getContext().isEmpty()) {
 				sb.append(" in context ");

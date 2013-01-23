@@ -14,4 +14,4 @@ sleep 3
 $helper.flash_processor
 
 # check output on serial console
-$helper.first_serial.expect_string "Starting zero tasks test. This message must only show once.\n"
+$helper.first_serial.expect_string "\nStarting zero tasks test. This message must only show once.\n"

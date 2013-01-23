@@ -1,14 +1,41 @@
-# erase processor to make sure we get no further
-# stuff on the serial line
-$helper.erase_processor
-
 # open serial line
 # We do that before flashing the processor to get
 # all the output. 
 $helper.first_serial.ensure_baudrate 9600
 
-# we need some delay between invocations of avrdude
-sleep 3
+if $helper.has_second_programmer
+  # we can program the second board without user intervention
+  # -> great :-)
+  $helper.flash_processor2
+else
+  should_flash_now = $helper.ask_yes_no <<EOF
+I cannot program the auxiliary controller (slave) because
+I don't have a second programmer. Please connect the
+programmer to the slave board and choose 'yes'. If you are
+sure that the second board has the right software, you may
+skip that step. In that case, please reset the board and
+choose 'no'.
+
+Should I program the second board, now (CAN slave)? Please
+make sure that the programmer is connected to the second
+board, before choosing 'yes'.
+EOF
+
+  if should_flash_now
+    $helper.flash_processor
+
+    $helper.show_instructions <<EOF
+The slave board has been programmed. Please connect the
+programmer to the master board, now. Make sure that the
+boards can communicate via CAN, i.e. connect their CAN
+ports with an appropiate cable (2x DB9 female, pins 2
+and 7 connected straight through). In theorie, you need
+terminator resistors (120 Ohms at each end), but it
+seems to work without them.
+EOF
+  end
+end
+
 
 # write the program on the processor
 $helper.flash_processor

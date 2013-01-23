@@ -30,7 +30,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.utils.Util;
 
 public final class CodeGenerationMain {
 	private CodeGenerationMain() { }
@@ -378,8 +380,13 @@ public final class CodeGenerationMain {
 		
 		Map<IGenerator, Object> generator_data_values = new HashMap<IGenerator, Object>();
 		for (IGenerator gen : generators) {
-			if (!failed_generators.contains(gen))
+			if (!failed_generators.contains(gen)) {
 				generator_data_values.put(gen, gen.updateConfig(config));
+				
+				if (config.getMessages().getHighestSeverity().compareTo(Severity.ERROR) >= 0) {
+					return false;
+				}
+			}
 		}
 	
 		if (!validate(generators, config, true, failed_generators, generator_data_values))
@@ -408,16 +415,34 @@ public final class CodeGenerationMain {
 				// write the result into a file
 				if (contents != null) {
 					file.getParentFile().mkdirs();
+
+					Charset charset = Charset.forName("utf-8");
 					
-					try {
-						Writer w = new OutputStreamWriter(
-								new FileOutputStream(file),
-								Charset.forName("utf-8"));
-						w.write(contents);
-						w.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
+					// does it already contain the right text?
+					boolean right_content = false;
+					if (file.exists()) {
+						try {
+							Reader r = new InputStreamReader(new FileInputStream(file), charset);
+							String existing_content = JRubyHelpers.readContent(r);
+							right_content = existing_content.equals(contents);
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
 					}
+					
+					if (!right_content) {
+						try {
+							Writer w = new OutputStreamWriter(
+									new FileOutputStream(file),
+									charset);
+							w.write(contents);
+							w.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+							failed_generators.add(gen);
+						}
+					} else
+						System.out.println(" -> not changed");
 				}
 			}
 		}
@@ -512,10 +537,12 @@ public final class CodeGenerationMain {
 	 */
 	public static MCUConfiguration loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
 		String file = config.getConfigFile();
+		String script_cwd = new File(file).getAbsoluteFile().getParent();
 		return loadConfig(
 				new FileInputStream(file),
 				file,
-				new File(file).getAbsoluteFile().getParent(),
-				Collections.<String,Object>singletonMap("tempdir", config.getTempDirectory()));
+				script_cwd,
+				Collections.<String,Object>singletonMap("tempdir",
+						Util.adjustToBeRelativeTo(config.getTempDirectory(), script_cwd)));
 	}
 }

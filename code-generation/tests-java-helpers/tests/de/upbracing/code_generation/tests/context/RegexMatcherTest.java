@@ -54,7 +54,7 @@ public class RegexMatcherTest {
 		// run RegexMatcher
 		Matcher matcher;
 		try {
-			RegexMatcher m = new RegexMatcher(sh, regex);
+			RegexMatcher m = new RegexMatcher(sh.getInputStream(), regex);
 			matcher = m.run(4 * 1000);
 			
 			// make sure we have matched what we expect to
@@ -127,4 +127,46 @@ public class RegexMatcherTest {
 		testRegexError("^blub", "blu", "", "end of stream");
 		testRegexError("^blub", "blua", "bc", "regex doesn't match");
 	}
+
+	private int testInt(String match, String remaining)
+			throws TestFailedException, IOException {
+		// create some dummy objects
+		InputStream stream = stringStream(match + remaining);
+		SerialHelper sh = wrapStream(stream);
+		
+		// run RegexMatcher
+		int result;
+		try {
+			result = IntMatcher.expectInt(sh.getInputStream());
+
+			// make sure we have matched what we expect to
+			assertEquals(Integer.parseInt(match), result);
+		} finally {
+			// get remaining bytes
+			// (We also do that, if an error occurs.)
+			int remaining_len = stream.available();
+			byte buf[] = new byte[remaining_len];
+			int len = stream.read(buf);
+			//assertEquals(remaining_len, len);
+			
+			// check remaining bytes
+			// (Unfortunately, the first byte is lost.)
+			assertEquals(remaining.substring(1), new String(buf, charset()));
+		}
+		
+		// return the matcher, so it can be inspected further
+		return result;
+	}
+	
+	@Test
+	public void testInt() throws TestFailedException, IOException {
+		assertEquals(103, testInt("103", "abc"));
+		testInt("-103", "abc");
+		testInt("0", "abc");
+		testInt("103", ".");
+		testInt("103", "+");
+		testInt("103", "-");
+		testInt("3", "abc");
+	}
+	
 }

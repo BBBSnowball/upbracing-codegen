@@ -6,7 +6,8 @@ puts Dir.pwd
 $config.rtos.clock = 8000000
 $config.rtos.tick_frequency = 640
 
-$config.rtos.addTask("Monitor", SUSPENDED, 640)
+tm = $config.rtos.addTask("Monitor", SUSPENDED, 640)
+tm.alarm.phase = 640
 
 #The periods are not important as the tasks are always running
 $config.rtos.addTask("Task1", READY, 1337)

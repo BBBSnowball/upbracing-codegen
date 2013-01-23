@@ -186,23 +186,27 @@ for (Mob mob : dbcEcu.getMobs()) {
 	if (mob.getRxMessages().size() > 0) { //RX Mob
 		DBCMessageConfig msgconfig = mob.getRxMessages().get(0);
 %>
-	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageIds(mob.getRxMessages(), true)%>, receive
 <%
 		for(String alias : mob.getAliases()) {
 %>
-	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, receive, alias for <%= msgconfig.getName() %>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// receive, alias for <%= msgconfig.getName() %>
 <%
 		}
 	} else if (mob.getTxMessages().size() > 0) { //TX Mob
 		DBCMessageConfig msgconfig = mob.getTxMessages().get(0);
 %>
-	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageIds(mob.getTxMessages(), true)%>, send
 <%
 		for(String alias : mob.getAliases()) {
 %>
-	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// CAN ID: <%=CanGeneratorHelper.messageId(msgconfig, true)%>, send, alias for <%= msgconfig.getName() %>
+	MOB_<%= alias %>&&&= <%=mob.getMobId()%>, &&&// send, alias for <%= msgconfig.getName() %>
 <%
 		}
+	} else {	// user MOb
+%>
+	MOB_<%=mob.getName()%>&&&= <%=mob.getMobId()%>, &&&// not used by generated code
+<%
 	}
 }
 
@@ -217,7 +221,12 @@ t.finish(" ");
 
 <%
 for(Mob mob: dbcEcu.getMobs()) {
-	if (mob.getRxMessages().size() == 0 && mob.getTxMessages().size() > 1) {
+	if (mob.getRxMessages().isEmpty() && mob.getTxMessages().isEmpty()) {
+		// not initializing user MOb
+		continue;
+	}
+	
+	if (mob.getRxMessages().isEmpty() && mob.getTxMessages().size() > 1) {
 %>
 // not initialising shared MOB <%= mob.getName() %> for messages <%= CanGeneratorHelper.implodeMessages(mob.getTxMessages()) %>
 <%
@@ -340,26 +349,35 @@ for (DBCMessage msg : dbcEcu.getTxMsgs()) {
 //     the MOB for transmitting the message, so you might have to init it
 //     for receiving, after the message has been transmitted.
 <%
-	/*echo "//TODO What does the \"wait for an ongoing transmission to finish\" loop\n";
-	echo "//     do, if the MOB is receiving messages? Does it block forever? It\n";
-	echo "//     should either do nothing or wait for the ISR to handle the message,\n";
-	echo "//     if a message has been received but not handled, yet.\n";*/
-	//           => The loop finishes immediately, if the MOB is not in transmit mode.
-	//              The rx ISR should take control after at most one asm instruction,
-	//              so if we ever found a received message, the ISR would have handled
-	//              it before we finished the check. We might receive another message
-	//              while we init the MOB, but we cannot do anything about that.
+	// What does the "wait for an ongoing transmission to finish" loop
+	// do, if the MOB is receiving messages? Does it block forever? It
+	// should either do nothing or wait for the ISR to handle the message,
+	// if a message has been received but not handled, yet.
+	//  => The loop finishes immediately, if the MOB is not in transmit mode.
+	//     The rx ISR should take control after at most one asm instruction,
+	//     so if we ever found a received message, the ISR would have handled
+	//     it before we finished the check. We might receive another message
+	//     while we init the MOB, but we cannot do anything about that.
+	//     If interrupts are disabled, we will overwrite the message, but we
+	//     cannot avoid that (unless we enable interrupts, which is a bad idea).
 	}
 %>
-inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
+inline static void send_<%=msgconfig.getName()%>(bool wait<%= params.isEmpty() ? "" : ", " %><%= params %>) {
 <%
-	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t\t");
+	CanGeneratorHelper.printCode(stringBuffer, msgconfig.getBeforeTx(), "\t");
 	for (DBCSignal signal : msgconfig.getSignalOrder()) {
-		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t\t");
+		CanGeneratorHelper.printCode(stringBuffer, ((DBCSignalConfig)signal).getBeforeTx(), "\t");
+	}
+	
+	if (msgconfig.getTxHandlerAll() != null || msgconfig.getTxHandler() != null) {
+		// save MOb number in a local variable, so the handlers can use it
+%>
+	const MessageObjectID MOB = MOB_<%=mobName%>;
+
+<%
 	}
 	
 	if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerAll(), "\t")) {
-		if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
 %>
 	// select MOB
 	CANPAGE = (MOB_<%=mobName%><<4);
@@ -370,12 +388,27 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 	// reset transmission status
 	CANSTMOB = 0;
 
-<% //TODO we don't need that all the time (e.g. never, unless the MOB is shared) %>
+<%
+		if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandler(), "\t")) {
+%>
+<%
+		// If this MOb isn't shared, we don't have to initialize it every time.
+		if (mob == null || mob.getTxMessages().size() > 1) {
+%>
 	can_mob_init_transmit2(MOB_<%=mobName%>, CAN_<%=msgconfig.getName()%>, CAN_<%=msgconfig.getName()%>_IsExtended);
 
-<% //TODO set IDE for extended messages? %>
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
+<%
+		}
+	
+		// IDE bit is set by can_mob_init_transmit2, but it doesn't hurt to set it again.
+		// can_mob_init_transmit2 will also disable the MOb, as it replaces the value
+		// of CANCDMOB. However, it might not be called every time a message is
+		// received, so we do that here. We have to set the data length anyway.
+		//NOTE We're overwriting the value of the RPLV bit, but we don't use it anyway.
+%>
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_<%=msgconfig.getName()%>_IsExtended ? (1<<IDE) : 0) | ((<%= msgconfig.getLength() %>&0xf)<<DLC0);
 <%
 
 			if (!CanGeneratorHelper.printCode(stringBuffer, msgconfig.getTxHandlerData(), "\t")) {
@@ -435,6 +468,8 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 		{
 			<%= type %> value;
 <%
+					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
+					
 					if (!CanGeneratorHelper.printCode(stringBuffer, signalconfig.getGetValue(), "\t\t\t")) {
 						/*if (!empty($signal['place']))
 							$var = $signal['place'];
@@ -454,8 +489,6 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 			value = <%= var %>;
 <%		
 					}
-					
-					CanGeneratorHelper.printCode(stringBuffer, signalconfig.getImmBeforeTx(), "\t\t\t");
 					
 					if (len == 8) {
 %>
@@ -508,13 +541,13 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 <%
 				}	// foreach signal
 			}	// no tx_handler_data
+		}	// no tx_handler
 %>
 	if (wait)
 		can_mob_transmit_wait(MOB_<%=mobName%>);
 	else
 		can_mob_transmit_nowait(MOB_<%=mobName%>);
 <%
-		}	// no tx_handler
 	}	// no tx_handler_all
 	
 	for (DBCSignal signal : msgconfig.getSignalOrder()) {
@@ -524,11 +557,11 @@ inline static void send_<%=msgconfig.getName()%>(bool wait, <%= params %>) {
 
 %>
 }
-inline static void send_<%=msgconfig.getName()%>_wait(<%= params %>) {
-	send_<%=msgconfig.getName()%>(true, <%= param_values %>);
+inline static void send_<%=msgconfig.getName()%>_wait(<%= params.isEmpty() ? "void" : params %>) {
+	send_<%=msgconfig.getName()%>(true<%= param_values.isEmpty() ? "" : ", " %><%= param_values %>);
 }
-inline static void send_<%=msgconfig.getName()%>_nowait(<%= params %>) {
-	send_<%=msgconfig.getName()%>(false, <%= param_values %>);
+inline static void send_<%=msgconfig.getName()%>_nowait(<%= params.isEmpty() ? "void" : params %>) {
+	send_<%=msgconfig.getName()%>(false<%= param_values.isEmpty() ? "" : ", " %><%= param_values %>);
 }
 <%
 

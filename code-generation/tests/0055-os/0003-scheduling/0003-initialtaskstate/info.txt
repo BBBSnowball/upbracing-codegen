@@ -1,0 +1,5 @@
+In this test, one task has the initial task state "SUSPENDED" and a phase of 500.
+Another task has the task state "READY" and a period of 50.
+
+What should happen is, that by the time the first task is executed,
+the second task has been executed at least 10 times. 

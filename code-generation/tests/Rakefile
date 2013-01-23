@@ -190,6 +190,18 @@ if AVRDUDE.is_a? String
 	AVRDUDE = avrdude.split(/\s+/)
 end
 
+# make sure that AVRDUDE2 is an array
+if Object.const_defined? :AVRDUDE2 and AVRDUDE2.is_a? String
+	puts "WARN: AVRDUDE should be a String. Splitting at whitespace..."
+
+	avrdude = AVRDUDE2
+	
+	# remove it first to avoid warning
+	Object.send(:remove_const, :AVRDUDE2)
+
+	AVRDUDE2 = avrdude.split(/\s+/)
+end
+
 
 # dummy methods in case select-projects.rb doesn't
 # exist or doesn't define them
@@ -247,7 +259,7 @@ rescue LoadError, NameError
 			return string
 		end
 
-		def mode
+		def self.mode
 			0
 		end
 	end
@@ -423,6 +435,11 @@ class Project
 					# build
 					esc = shell_quote
 					sh "cd #{esc}#{cartos_build_dir}#{esc} #{cmd_sep} make #{esc}libcaRtos-#{md5}.a#{esc}"
+
+					# remove feature header, so it won't be used by another project
+					# (Files in the project include OS headers which may include the config. They
+					#  must use the config in the project folder instead of this one.)
+					rm features_header_for_build
 
 					puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
 				end
@@ -620,7 +637,7 @@ class Project
 	end
 
 	def additional_include_dirs(source_dir, source_file, target_dir, configuration)
-		["#/../../avr-programs/upbracing-common", "."]
+		["#/../../avr-programs/upbracing-common", ".", "gen"]
 	end
 
 	def cflags(source_dir, source_file, target_dir, configuration)
@@ -702,12 +719,24 @@ class Project
 				x = x.strip.sub(/^[^:]*:\s*/, "")
 				# split on spaces
 				x = x.split(/\s+/)
-				# add dependencies to compile task
-				#puts "dependencies for #{target}: #{x.inspect}"
-				t.enhance x
 
-				# remember that we are sucessfully using the dependency file
-				can_read_dependencies = true
+				# We shouldn't add dependencies that don't exist
+				# because rake would try to build them and abort
+				# if it cannot. For example, this will happen, if
+				# a header file is renamed.
+				dependencies_exist = x.all? { |file| File.exists? file }
+
+				if dependencies_exist
+					# add dependencies to compile task
+					#puts "dependencies for #{target}: #{x.inspect}"
+					t.enhance x
+
+					# remember that we are sucessfully using the dependency file
+					can_read_dependencies = true
+				else
+					# we force rebuilding this file
+					can_read_dependencies = false
+				end
 			else
 				puts "WARN: Ignoring empty dependencies file '#{dependency_file}'"
 			end
@@ -1242,7 +1271,7 @@ end
 
 class TestHelper
 	attr_accessor :toolkit
-	attr_accessor :avrdude, :serialport
+	attr_accessor :avrdude, :serialport, :avrdude2
 	attr_accessor :name, :build_dir, :source_dir, :configuration
 
 	# set up environment for tests; called automatically
@@ -1268,11 +1297,15 @@ class TestHelper
 		end
 	end
 
-	def erase_processor
-		toolkit.run "erase processor", (@avrdude + ["-e"]).to_java(Java::java::lang::String)
+	def run(name, *args)
+		toolkit.run name, args.flatten.to_java(Java::java::lang::String)
 	end
 
-	def flash_processor_action(parts = [:flash])
+	def erase_processor
+		run "erase processor", @avrdude, "-e"
+	end
+
+	def flash_processor_action(parts = [:flash], avrdude = @avrdude)
 		parts = [parts] if parts.is_a? String or parts.is_a? Symbol
 		return { "dependencies" => [], "cmdline" => "" } if parts.empty?
 
@@ -1300,13 +1333,25 @@ class TestHelper
 			commands << "-U#{type}:w:#{File.expand_path(file)}:a"
 		end
 
-		cmdline = @avrdude + commands
+		cmdline = avrdude + commands
 
 		{ "dependencies" => dependencies, "cmdline" => cmdline }
 	end
 
 	def flash_processor(parts = [:flash])
-		toolkit.run "flash processor", flash_processor_action(parts)["cmdline"].to_java(Java::java::lang::String)
+		run "flash processor", flash_processor_action(parts)["cmdline"]
+	end
+
+	def has_second_programmer
+		!!@avrdude2
+	end
+
+	def erase_processor2
+		run "erase processor 2", @avrdude2, "-e"
+	end
+
+	def flash_processor2(parts = [:flash])
+		run "flash processor 2", flash_processor_action(parts, @avrdude2)["cmdline"]
 	end
 end
 
@@ -1535,6 +1580,7 @@ EOF
 		test_helper.build_dir     = relative_path build_dir,  dir
 		test_helper.source_dir    = relative_path source_dir, dir
 		test_helper.avrdude       = AVRDUDE
+		test_helper.avrdude2      = AVRDUDE2 if Object.const_defined? :AVRDUDE2
 		test_helper.serialport    = SERIALPORT
 		test_helper.configuration = configuration
 
@@ -1709,7 +1755,8 @@ end
 
 class ProjectWithCommon < Project
 	@@common_libraries = {
-		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] }
+		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] },
+		"can"   => { :sources => ["can_at90_ref.c"] }
 	}
 
 	def initialize
@@ -1739,6 +1786,7 @@ class ProjectWithCommon < Project
 				raise "not found: common file or library '#{arg}'"
 			end
 		end
+		self
 	end
 end
 

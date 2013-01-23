@@ -296,6 +296,20 @@ public class TestCanGenerator {
 		dbc.getMessages().put("CockpitBrightness", message);
 		dbc.getMessages().put("2147500610", message);
 
+		message = new DBCMessage(123, "123", false, "EmptyMessage", 0, Arrays.asList(ecu));
+		message.setSignals(new HashMap<String, DBCSignal>());
+		message.setSignalOrder(new ArrayList<DBCSignal>());
+		ecu.getTxMsgs().add(message);
+		dbc.getMessages().put("EmptyMessage", message);
+		dbc.getMessages().put("123", message);
+
+		message = new DBCMessage(124, "124", false, "EmptyMessage2", 2, Arrays.asList(ecu));
+		message.setSignals(new HashMap<String, DBCSignal>());
+		message.setSignalOrder(new ArrayList<DBCSignal>());
+		ecu.getTxMsgs().add(message);
+		dbc.getMessages().put("EmptyMessage2", message);
+		dbc.getMessages().put("124", message);
+
 		config.setCan(dbc);
 		config.selectEcu("Lenkrad-Display");
 		
@@ -368,6 +382,9 @@ public class TestCanGenerator {
 		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setBeforeReadValueTask("//Test before read value");
 		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setReadValueTask("34");
 		canconfig.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").setAfterReadValueTask("//Test after read value");
+
+		canconfig.getMessage("OpenSquirt_Sensoren1").getSignal("Temp_Wasser").setExpectedFactor(10, 1);
+		canconfig.getMessage("OpenSquirt_Sensoren1").getSignal("Boardspannung").setExpectedFactor(10, 1);
 
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");

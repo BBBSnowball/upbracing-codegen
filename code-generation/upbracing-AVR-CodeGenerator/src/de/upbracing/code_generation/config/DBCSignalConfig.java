@@ -29,6 +29,22 @@ public class DBCSignalConfig extends DBCSignal {
 	
 	private boolean noGlobalVar = false;
 	private String globalVarName = null;
+	
+	// The raw value on the CAN bus can be converted to a physical
+	// value using offset and factor. According to CAETEC DBC file
+	// format documentation:
+	//   physical_value = raw_value * factor + offset
+	//   raw_value = (physical_value – offset) / factor
+	// We use fractions for the factor, so we could implement it on
+	// the MCU without using floating-point arithmetics. At the moment,
+	// those values are only used to print a warning.
+	
+	/** expected offset of the value */
+	private float expected_offset = 0;
+	/** expected factor (numerator part) */
+	private int expected_factor_numerator = 1;
+	/** expected factor (denominator part) */
+	private int expected_factor_denominator = 1;
 
 	public DBCSignalConfig(DBCSignal signal, List<DBCEcu> newrxecus, DBCMessageConfig newMessage) {
 		//unfortunately the creation of the new rxEcu List has to be done before the constructor is called
@@ -198,6 +214,11 @@ public class DBCSignalConfig extends DBCSignal {
 	public void setNoGlobalVar(boolean noGlobalVar) {
 		this.noGlobalVar = noGlobalVar;
 	}
+	
+	/** Returns whether the global variable name has been set. */
+	public boolean hasGlobalVarName() {
+		return globalVarName != null;
+	}
 
 	/**
 	 * Returns the name of the global variable associated to this signal.
@@ -215,7 +236,43 @@ public class DBCSignalConfig extends DBCSignal {
 	public void setGlobalVarName(String globalVarName) {
 		this.globalVarName = globalVarName;
 	}
+
+	/** get expected offset for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public float getExpectedOffset() {
+		return expected_offset;
+	}
+
+	/** set expected offset for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public void setExpectedOffset(float offset) {
+		this.expected_offset = offset;
+	}
+
+	/** get expected factor (numerator part) for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public int getExpectedFactorNumerator() {
+		return expected_factor_numerator;
+	}
+
+	/** get expected factor (denominator part) for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public int getExpectedFactorDenominator() {
+		return expected_factor_denominator;
+	}
 	
+	/** get expected factor (as float) for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public float getExpectedFactor() {
+		return expected_factor_numerator / (float) expected_factor_denominator;
+	}
+
+	/** get expected factor (as fraction) for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public void setExpectedFactor(int numerator, int denominator) {
+		this.expected_factor_numerator = numerator;
+		this.expected_factor_denominator = denominator;
+	}
+
+	/** get expected factor (as Ruby fraction object) for conversion to physical units (physical_value = raw_value * factor + offset) */
+	public void setExpectedFactor(org.jruby.RubyRational factor) {
+		//NOTE numerator and denominator don't use the context parameter, so we can
+		//     pass a null. This might change though...
+		this.expected_factor_numerator = (Integer)factor.numerator(null).toJava(Integer.class);
+		this.expected_factor_denominator = (Integer)factor.denominator(null).toJava(Integer.class);
+	}
 }
-
-

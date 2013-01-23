@@ -24,9 +24,9 @@ begin
   # Don't measure the first task...
   $helper.first_serial.expect_string "One second\n", 5000
 
-  # The test on the board runs forever. We check the first ten task outputs
+  # The task on the board runs 10 times
   t_start = Time.now
-  for i in 1..10
+  for i in 2..10
     $helper.first_serial.expect_string "One second\n", 5000
     
     #Measure time

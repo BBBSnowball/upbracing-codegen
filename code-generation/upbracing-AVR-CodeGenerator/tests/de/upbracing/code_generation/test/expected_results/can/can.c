@@ -34,7 +34,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 	} else if (can_caused_interrupt(MOB_Kupplung)) {		// shared mob
 		CANPAGE = (MOB_Kupplung<<4);
 		if (0) {	// dummy clause to make code generation easier
-		} else if (1 && CANIDT3 == 0 && CANIDT4 == 128) {		// Kupplung_Soll, CAN ID: 0x10x
+		} else if (1 && CANIDT3 == 0x00 && (CANIDT4 & 0xfc) == 0x80) {		// Kupplung_Soll, CAN ID: 0x10x
 
 			// reading signal Kupplung_Soll
 			{
@@ -45,7 +45,7 @@ ISR(SIG_CAN_INTERRUPT1) {
 				}
 			}
 			clutch_calibration_mode = false;
-		} else if (1 && CANIDT3 == 8 && CANIDT4 == 8) {		// Kupplung_Calibration, CAN ID: 0x101x
+		} else if (1 && CANIDT3 == 0x08 && (CANIDT4 & 0xfc) == 0x08) {		// Kupplung_Calibration, CAN ID: 0x101x
 
 			// reading signal Kupplung_RAW
 			{
@@ -161,7 +161,10 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
 
-#warning This signal uses factor or offset, which is not supported yet.
+#warning The program expects a different formula for converting the signal Druck_Ansaug to physical units. Automatic adjustment is not supported, yet:\
+		expected by program: physical_value = raw_value * 1/1 + 0.0\
+		on the CAN bus: physical_value = raw_value * 10.0 + 0.0\
+		(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
 
 			int16_t value = x.value;
 			setDruck_Ansaug(value);
@@ -179,7 +182,10 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
 
-#warning This signal uses factor or offset, which is not supported yet.
+#warning The program expects a different formula for converting the signal Lambda to physical units. Automatic adjustment is not supported, yet:\
+		expected by program: physical_value = raw_value * 1/1 + 0.0\
+		on the CAN bus: physical_value = raw_value * 147.0 + 0.0\
+		(For example, the error for raw_value = -32768 is 4784128.0, but it may be higher for other values.)
 
 			int16_t value = x.value;
 			setLambda(value);
@@ -197,7 +203,10 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
 
-#warning This signal uses factor or offset, which is not supported yet.
+#warning The program expects a different formula for converting the signal ThrottlePosition to physical units. Automatic adjustment is not supported, yet:\
+		expected by program: physical_value = raw_value * 1/1 + 0.0\
+		on the CAN bus: physical_value = raw_value * 10.0 + 0.0\
+		(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
 
 			int16_t value = x.value;
 			setThrottlePosition(value);
@@ -219,9 +228,6 @@ ISR(SIG_CAN_INTERRUPT1) {
 			} x;
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
-
-#warning This signal uses factor or offset, which is not supported yet.
-
 			int16_t value = x.value;
 			setTemp_Wasser(value);
 		}
@@ -238,7 +244,10 @@ ISR(SIG_CAN_INTERRUPT1) {
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
 
-#warning This signal uses factor or offset, which is not supported yet.
+#warning The program expects a different formula for converting the signal Temp_Ansaug to physical units. Automatic adjustment is not supported, yet:\
+		expected by program: physical_value = raw_value * 1/1 + 0.0\
+		on the CAN bus: physical_value = raw_value * 10.0 + 0.0\
+		(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
 
 			int16_t value = x.value;
 			setTemp_Ansaug(value);
@@ -255,9 +264,6 @@ ISR(SIG_CAN_INTERRUPT1) {
 			} x;
 			x.bytes.byte1 = CANMSG;
 			x.bytes.byte0 = CANMSG;
-
-#warning This signal uses factor or offset, which is not supported yet.
-
 			int16_t value = x.value;
 			setBoardspannung(value);
 		}
@@ -310,6 +316,8 @@ void can_init_mobs(void) {
 	can_init_MOB_Lenkrad_main2display();
 	can_init_MOB_Launch();
 	can_init_MOB_Radio();
+	can_init_MOB_EmptyMessage();
+	can_init_MOB_EmptyMessage2();
 }
 
 #include "Os.h"
@@ -368,12 +376,22 @@ TASK(CockpitBrightness) { //period: 333333 us. Task for message CockpitBrightnes
 	TerminateTask();
 }
 
-#warning There were 6 warnings and/or errors
+#warning There were 4 warnings and/or errors
 /*
-WARN:  This signal uses factor or offset, which is not supported yet.
-WARN:  This signal uses factor or offset, which is not supported yet.
-WARN:  This signal uses factor or offset, which is not supported yet.
-WARN:  This signal uses factor or offset, which is not supported yet.
-WARN:  This signal uses factor or offset, which is not supported yet.
-WARN:  This signal uses factor or offset, which is not supported yet.
+WARN:  The program expects a different formula for converting the signal Druck_Ansaug to physical units. Automatic adjustment is not supported, yet:
+	expected by program: physical_value = raw_value * 1/1 + 0.0
+	on the CAN bus: physical_value = raw_value * 10.0 + 0.0
+	(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
+WARN:  The program expects a different formula for converting the signal Lambda to physical units. Automatic adjustment is not supported, yet:
+	expected by program: physical_value = raw_value * 1/1 + 0.0
+	on the CAN bus: physical_value = raw_value * 147.0 + 0.0
+	(For example, the error for raw_value = -32768 is 4784128.0, but it may be higher for other values.)
+WARN:  The program expects a different formula for converting the signal ThrottlePosition to physical units. Automatic adjustment is not supported, yet:
+	expected by program: physical_value = raw_value * 1/1 + 0.0
+	on the CAN bus: physical_value = raw_value * 10.0 + 0.0
+	(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
+WARN:  The program expects a different formula for converting the signal Temp_Ansaug to physical units. Automatic adjustment is not supported, yet:
+	expected by program: physical_value = raw_value * 1/1 + 0.0
+	on the CAN bus: physical_value = raw_value * 10.0 + 0.0
+	(For example, the error for raw_value = -32768 is 294912.0, but it may be higher for other values.)
 */

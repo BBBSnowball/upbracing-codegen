@@ -13,5 +13,19 @@ sleep 3
 # write the program on the processor
 $helper.flash_processor
 
-# check output on serial console
-$helper.first_serial.expect_string "Starting initial task state test.\n"
+# Initialization
+$helper.first_serial.expect_string "\nStarting initial task state test.\n"
+
+# Test
+test = $helper.start_test "Initial Task State"
+begin
+  
+  $helper.first_serial.expect_string "Test successful. Counter = ", 5000
+  $helper.first_serial.expectInt
+  $helper.first_serial.expect_string "(expected >= 10)\n", 5000
+  
+  test.succeed
+rescue Java::de::upbracing::code_generation::tests::TestFailedException
+  test.fail "Failed."
+end
+test.pop

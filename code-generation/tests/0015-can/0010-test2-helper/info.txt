@@ -1,0 +1,21 @@
+This helper can be instructed to send messages and it relays received
+messages. It must be programmed on a board that is connected to the
+DUT via CAN before running test2-dut.
+
+It receives instructions (messages to send) with message identifier
+CAN_INSTRUCTION_ID (usually 0x1371, extended identifiers):
+1st message: 0x00, ID1, ID2, ID3, ID4, DLC, DATA1, DATA2
+2nd message: 0x01, DATA3 .. DATA8, 0x00
+You have to always send both messages (even if DLC<=2). The first
+message must be the first that is received and there mustn't be any
+other instruction messages between those two. The second message
+triggers sending the message.
+If the highest bit of the ID (bit 7 of ID4) is 1, an extended frame
+will be sent. If the second to highest bit (bit 6 of ID4) is 1, a
+remote frame will be sent.
+
+It relays received messages (except instructions) to CAN_RELAY_ID
+(usually 0x1372, extended identifiers):
+Message format is the same as for instructions. Unused data bytes
+might contain data of previous messages, so don't expect them to
+be 0x00.

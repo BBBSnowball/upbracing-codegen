@@ -21,6 +21,8 @@ public class DBCConfig extends DBC {
 	private String cfile_declarations;
 	private MCUConfiguration config;
 	
+	private Map<Integer, String> user_mob_rx_handlers = new HashMap<Integer, String>();
+	
 	public final String NL = System.getProperties().getProperty("line.separator");
 
 	public DBCConfig(DBC dbc, MCUConfiguration config) {
@@ -174,5 +176,19 @@ public class DBCConfig extends DBC {
 	
 	public void addDeclarationsInCFile(String decls) {
 		cfile_declarations = combineDeclarations(cfile_declarations, decls);
+	}
+	
+	public Map<Integer, String> getUserMobRxHandlers() {
+		return user_mob_rx_handlers;
+	}
+	
+	public void addRxHandler(int user_mob, String handler) {
+		String value = user_mob_rx_handlers.get(user_mob);
+		if (value == null || value.isEmpty())
+			value = handler;
+		else
+			value += "\n" + handler;
+		
+		user_mob_rx_handlers.put(user_mob, value);
 	}
 }

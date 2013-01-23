@@ -64,7 +64,6 @@ $config.can.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").re
 $config.can.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").afterReadValueTask = "//Test after read value";
 
 
-
-
-
-
+# set expected factors to avoid warnings
+can_config('signal(Temp_Wasser)', 'expected_factor', Rational(10, 1))
+can_config('signal(Boardspannung)', 'expected_factor', Rational(10, 1))

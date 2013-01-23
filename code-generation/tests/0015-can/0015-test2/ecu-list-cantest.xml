@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECUs>
+	<ecu
+		name="TestBoard"
+		type="AT90CAN"
+		node_id="0x1234"
+		node_name="TestBoard">
+	</ecu>
+</ECUs>

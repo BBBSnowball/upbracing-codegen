@@ -28,6 +28,8 @@ typedef enum uint32_t {
 	CAN_Launch                       = 0x60,   // send
 	CAN_Radio                        = 0x90,   // send
 	CAN_CockpitBrightness            = 0x4242, // send
+	CAN_EmptyMessage                 = 0x7b,   // send
+	CAN_EmptyMessage2                = 0x7c,   // send
 } CAN_msgID;
 
 // do the messages use extended CAN ids or not (0 = standard, 1 = extended)
@@ -49,10 +51,12 @@ typedef enum {
 	CAN_Launch_IsExtended                       = 1,
 	CAN_Radio_IsExtended                        = 1,
 	CAN_CockpitBrightness_IsExtended            = 1,
+	CAN_EmptyMessage_IsExtended                 = 0,
+	CAN_EmptyMessage2_IsExtended                = 0,
 } CAN_isExtended;
 
 /*
-tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness
+tx_msgs: Kupplung_Calibration_Control Launch Radio CockpitBrightness EmptyMessage EmptyMessage2
 rx_msgs: Bootloader_SelectNode Bootloader_1 ClutchGetPos Kupplung_Soll Gear Sensoren Sensoren_2 OpenSquirt_Engine Kupplung_Calibration OpenSquirt_Sensoren1 Geschwindigkeit Lenkrad_main2display
 rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel Druck_Oel Druck_Kraftstoff Drehzahl Druck_Ansaug Lambda ThrottlePosition Kupplung_RAW Temp_Wasser Temp_Ansaug Boardspannung Geschwindigkeit Lenkrad_main2display
 */
@@ -62,20 +66,22 @@ rx_signals: Bootloader_SelectNode Clutch_IstPosition Kupplung_Soll Gang Temp_Oel
 typedef enum {
 	MOB_Bootloader_SelectNode = 0,   // CAN ID: 0x0, receive
 	MOB_Bootloader_1          = 1,   // CAN ID: 0x1, receive
-	MOB_RS232_FORWARD_DATA    = 1,   // CAN ID: 0x1, receive, alias for Bootloader_1
+	MOB_RS232_FORWARD_DATA    = 1,   // receive, alias for Bootloader_1
 	MOB_ClutchGetPos          = 2,   // CAN ID: 0x5ff, receive
-	MOB_Kupplung              = 3,   // CAN ID: 0x10x, receive
-	MOB_Gear                  = 4,   // CAN ID: 0x71x, receive
-	MOB_Sensoren              = 5,   // CAN ID: 0x80x, receive
-	MOB_Sensoren_2            = 6,   // CAN ID: 0x81x, receive
-	MOB_OpenSquirt_Engine     = 7,   // CAN ID: 0x88x, receive
-	MOB_OpenSquirt_Sensoren1  = 8,   // CAN ID: 0x108x, receive
-	MOB_Geschwindigkeit       = 9,   // CAN ID: 0x110x, receive
+	MOB_Kupplung              = 9,   // CAN ID: 0x10x, 0x101x, receive
+	MOB_Gear                  = 3,   // CAN ID: 0x71x, receive
+	MOB_Sensoren              = 4,   // CAN ID: 0x80x, receive
+	MOB_Sensoren_2            = 5,   // CAN ID: 0x81x, receive
+	MOB_OpenSquirt_Engine     = 6,   // CAN ID: 0x88x, receive
+	MOB_OpenSquirt_Sensoren1  = 7,   // CAN ID: 0x108x, receive
+	MOB_Geschwindigkeit       = 8,   // CAN ID: 0x110x, receive
 	MOB_Lenkrad_main2display  = 10,  // CAN ID: 0x4201x, receive
 	MOB_Launch                = 11,  // CAN ID: 0x60x, send
 	MOB_Radio                 = 12,  // CAN ID: 0x90x, send
+	MOB_EmptyMessage          = 13,  // CAN ID: 0x7b, send
+	MOB_EmptyMessage2         = 14,  // CAN ID: 0x7c, send
 
-	MOB_GENERAL_MESSAGE_TRANSMITTER = 13
+	MOB_GENERAL_MESSAGE_TRANSMITTER = 15
 } MessageObjectID;
 
 #include "can_at90.h"
@@ -113,6 +119,8 @@ inline static void can_init_MOB_Geschwindigkeit(void) { can_mob_init_receive2(MO
 inline static void can_init_MOB_Lenkrad_main2display(void) { can_mob_init_receive2(MOB_Lenkrad_main2display, CAN_Lenkrad_main2display, true); }
 inline static void can_init_MOB_Launch(void) { can_mob_init_transmit2(MOB_Launch, CAN_Launch, true); }
 inline static void can_init_MOB_Radio(void) { can_mob_init_transmit2(MOB_Radio, CAN_Radio, true); }
+inline static void can_init_MOB_EmptyMessage(void) { can_mob_init_transmit2(MOB_EmptyMessage, CAN_EmptyMessage, false); }
+inline static void can_init_MOB_EmptyMessage2(void) { can_mob_init_transmit2(MOB_EmptyMessage2, CAN_EmptyMessage2, false); }
 
 void can_init_mobs(void);
 
@@ -132,8 +140,9 @@ inline static void send_Kupplung_Calibration_Control(bool wait, boolean Kupplung
 
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_Kupplung_Calibration_Control, CAN_Kupplung_Calibration_Control_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Kupplung_Calibration_Control_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal KupplungKalibrationActive
 		{
@@ -163,10 +172,9 @@ inline static void send_Launch(bool wait, boolean Launch) {
 	// reset transmission status
 	CANSTMOB = 0;
 
-	can_mob_init_transmit2(MOB_Launch, CAN_Launch, CAN_Launch_IsExtended);
-
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Launch_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal Launch
 		{
@@ -196,10 +204,9 @@ inline static void send_Radio(bool wait, boolean Radio) {
 	// reset transmission status
 	CANSTMOB = 0;
 
-	can_mob_init_transmit2(MOB_Radio, CAN_Radio, CAN_Radio_IsExtended);
-
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((1&0xf)<<DLC0);
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_Radio_IsExtended ? (1<<IDE) : 0) | ((1&0xf)<<DLC0);
 
 		// writing signal Radio
 		{
@@ -231,8 +238,9 @@ inline static void send_CockpitBrightness(bool wait, uint8_t CockpitRPMBrightnes
 
 	can_mob_init_transmit2(MOB_GENERAL_MESSAGE_TRANSMITTER, CAN_CockpitBrightness, CAN_CockpitBrightness_IsExtended);
 
-	// disable mob, as it would be retransmitted otherwise
-	CANCDMOB = (CANCDMOB&0x30) | ((4&0xf)<<DLC0);
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_CockpitBrightness_IsExtended ? (1<<IDE) : 0) | ((4&0xf)<<DLC0);
 
 		// writing signal CockpitRPMBrightness
 		{
@@ -271,6 +279,56 @@ inline static void send_CockpitBrightness_wait(uint8_t CockpitRPMBrightness, uin
 }
 inline static void send_CockpitBrightness_nowait(uint8_t CockpitRPMBrightness, uint8_t CockpitGangBrightness, uint8_t CockpitShiftLightPeriod, uint8_t CockpitShiftLightAlwaysFlash) {
 	send_CockpitBrightness(false, CockpitRPMBrightness, CockpitGangBrightness, CockpitShiftLightPeriod, CockpitShiftLightAlwaysFlash);
+}
+// 0x7b
+inline static void send_EmptyMessage(bool wait) {
+	// select MOB
+	CANPAGE = (MOB_EmptyMessage<<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_EmptyMessage_IsExtended ? (1<<IDE) : 0) | ((0&0xf)<<DLC0);
+	if (wait)
+		can_mob_transmit_wait(MOB_EmptyMessage);
+	else
+		can_mob_transmit_nowait(MOB_EmptyMessage);
+}
+inline static void send_EmptyMessage_wait(void) {
+	send_EmptyMessage(true);
+}
+inline static void send_EmptyMessage_nowait(void) {
+	send_EmptyMessage(false);
+}
+// 0x7c
+inline static void send_EmptyMessage2(bool wait) {
+	// select MOB
+	CANPAGE = (MOB_EmptyMessage2<<4);
+
+	// wait for an ongoing transmission to finish
+	can_mob_wait_for_transmission_of_current_mob();
+
+	// reset transmission status
+	CANSTMOB = 0;
+
+	// set data length and clear mode to avoid immediate transmission
+	// (We could preserve the IDE bit, but setting it again is faster.)
+	CANCDMOB = (CAN_EmptyMessage2_IsExtended ? (1<<IDE) : 0) | ((2&0xf)<<DLC0);
+	if (wait)
+		can_mob_transmit_wait(MOB_EmptyMessage2);
+	else
+		can_mob_transmit_nowait(MOB_EmptyMessage2);
+}
+inline static void send_EmptyMessage2_wait(void) {
+	send_EmptyMessage2(true);
+}
+inline static void send_EmptyMessage2_nowait(void) {
+	send_EmptyMessage2(false);
 }
 
 #endif	// defined CAN_LENKRADDISPLAY_DEFS_H_

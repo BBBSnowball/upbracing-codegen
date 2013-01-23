@@ -1,0 +1,17 @@
+Test most features of our CAN communication code generator. It uses a
+slave board that relays received messages and can be instructed to send
+messages, as well (see 0010-test2-helper).
+
+The master board (the board we run our test software on) is connected to
+the PC via the serial line. It forwards instructions to the slave board
+and at the same time, it runs the test software.
+
+The DBC file contains some messages that test certain aspects, e.g.
+empty messages, order of signals, undefined parts. The messages can
+be sent and received by the MCU. Sending is done with the general
+transmitter for most messages, but we also use dedicated and shared MObs
+for some. Most MObs are used for reception. Again, we have dedicated and
+shared MObs.
+
+Test A: Send a few instances of each message
+Test B: Receive messages and report the value of the corresponding variables
