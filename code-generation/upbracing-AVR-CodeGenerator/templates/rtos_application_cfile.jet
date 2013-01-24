@@ -3,7 +3,7 @@
 	class="RTOSApplicationCFileTemplate"
 	skeleton="generator.skeleton"
 	imports="de.upbracing.code_generation.config.rtos.*" %>
-<% RTOSConfig rtos = config.getRtos(); %>
+<% RTOSConfig rtos = RTOSConfigProvider.get(config); %>
 /*
  * Os_cfg_application.c
  *

@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="TimerHeaderTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.*" %>
+	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.* de.upbracing.code_generation.config.TimerConfigProvider" %>
 /*
  * <%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.h
  *
@@ -11,14 +11,14 @@
  * NOTE: This file was generated and should not be altered manually!
  */
 	
-<% if (config.getTimerConfig() == null) { %>
+<% if (TimerConfigProvider.get(config) == null) { %>
 // no timer config present
 <% } else { %>
 #ifndef <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_
 #define <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_
 
 <%
-for (UseCaseModel m : config.getTimerConfig().getConfigurations()) {
+for (UseCaseModel m : TimerConfigProvider.get(config).getConfigurations()) {
 %>
 /* Timer Configuration: <%=m.getName()%> */
 // Init function (Mode: <%=m.getMode()%>)
@@ -34,4 +34,4 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 %>
 #endif /* <%=TimerGeneratorHelper.getFilePrefix(generator_data).toUpperCase()%>_H_ */
 
-<% } // config.getTimerConfig() == null %>
+<% } // TimerConfigProvider.get(config) == null %>

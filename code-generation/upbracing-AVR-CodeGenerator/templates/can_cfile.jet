@@ -10,8 +10,8 @@
 
 boolean run_generator = true;
 
-de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
-DBCConfig can_config = config.getCan();
+de.upbracing.eculist.ECUDefinition current_ecu = config.getState(ECUListProvider.STATE_CURRENT_ECU);
+DBCConfig can_config = config.getState(CANConfigProvider.STATE);
 
 if (can_config == null) {
 	run_generator = false;
@@ -57,7 +57,7 @@ if (run_generator) {
 #include <avr/interrupt.h>
 
 <%
-String cdecls = config.getCan().getCFileDeclarations();
+String cdecls = config.getState(CANConfigProvider.STATE).getCFileDeclarations();
 if (cdecls != null && !cdecls.isEmpty()) {
 %>
 
@@ -70,7 +70,7 @@ if (cdecls != null && !cdecls.isEmpty()) {
 <%
 }
 
-GlobalVariableConfig globVars = config.getGlobalVariables();
+GlobalVariableConfig globVars = GlobalVariableConfigProvider.get(config);
 
 
 

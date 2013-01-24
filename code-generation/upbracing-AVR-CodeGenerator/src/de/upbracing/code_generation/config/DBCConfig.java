@@ -9,6 +9,7 @@ import java.util.Map;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
 import de.upbracing.dbc.DBCMessage;
+import de.upbracing.eculist.ECUDefinition;
 
 /**
  * Wrapper for DBC class.
@@ -19,13 +20,13 @@ import de.upbracing.dbc.DBCMessage;
 public class DBCConfig extends DBC {
 	private String header_declarations;
 	private String cfile_declarations;
-	private MCUConfiguration config;
+	private CodeGeneratorConfigurations config;
 	
 	private Map<Integer, String> user_mob_rx_handlers = new HashMap<Integer, String>();
 	
 	public final String NL = System.getProperties().getProperty("line.separator");
 
-	public DBCConfig(DBC dbc, MCUConfiguration config) {
+	public DBCConfig(DBC dbc, CodeGeneratorConfigurations config) {
 		super(dbc.getVersion());
 		this.config = config;
 		
@@ -121,12 +122,14 @@ public class DBCConfig extends DBC {
 	public void addRx(DBCMessageConfig msg) {
 		DBCEcuConfig ecu = null;
 		
-		if (config.getCurrentEcu() != null) {
-			ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getNodeName());
+		ECUDefinition currentEcu = config.getState(ECUListProvider.STATE_CURRENT_ECU);
+		if (currentEcu != null) {
+			if (currentEcu.getNodeName() != null && ! currentEcu.getNodeName().isEmpty())
+				ecu = (DBCEcuConfig)getEcu(currentEcu.getNodeName());
 		
 			//If it fails, try with normal name
 			if (ecu == null)
-				ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getName());
+				ecu = (DBCEcuConfig)getEcu(currentEcu.getName());
 		}
 		
 		if (ecu == null) {

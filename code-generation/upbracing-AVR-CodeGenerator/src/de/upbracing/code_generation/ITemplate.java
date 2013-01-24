@@ -12,5 +12,5 @@ public interface ITemplate {
 	 * @param data that has been returned by the corresponding IGenerator.updateConfig method
 	 * @return the generated code
 	 */
-	String generate(de.upbracing.code_generation.config.MCUConfiguration config, Object generator_data);
+	String generate(de.upbracing.code_generation.config.CodeGeneratorConfigurations config, Object generator_data);
 }

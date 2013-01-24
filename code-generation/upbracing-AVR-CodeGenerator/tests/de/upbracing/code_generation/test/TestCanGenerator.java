@@ -9,9 +9,11 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import de.upbracing.code_generation.CodeGenerationMain;
+import de.upbracing.code_generation.config.CANConfigProvider;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.ECUListProvider;
 import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
@@ -27,7 +29,7 @@ public class TestCanGenerator {
 	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
 
-		MCUConfiguration config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
+		CodeGeneratorConfigurations config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
 		
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");
@@ -36,8 +38,8 @@ public class TestCanGenerator {
 	@Test
 	public void testGenerate() {
 		
-		MCUConfiguration config = new MCUConfiguration();
-		config.setEcus(new ArrayList<ECUDefinition>());
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
+		ECUListProvider.setEcus(config, new ArrayList<ECUDefinition>());
 		
 		DBC dbc = new DBC("");
 		dbc.setEcus(new HashMap<String, DBCEcu>());
@@ -78,7 +80,7 @@ public class TestCanGenerator {
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
 		dbc.getEcus().put("LenkradDisplay", ecu);
 		dbc.getEcuNames().add("LenkradDisplay");
-		config.getEcus().add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
+		ECUListProvider.get(config).add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));
@@ -310,12 +312,12 @@ public class TestCanGenerator {
 		dbc.getMessages().put("EmptyMessage2", message);
 		dbc.getMessages().put("124", message);
 
-		config.setCan(dbc);
-		config.selectEcu("Lenkrad-Display");
+		CANConfigProvider.setCan(config, dbc);
+		ECUListProvider.selectEcu(config, "Lenkrad-Display");
 		
 		
 		//Configuration:
-		DBCConfig canconfig = config.getCan();
+		DBCConfig canconfig = config.getState(CANConfigProvider.STATE);
 		
 		//Alias
 		canconfig.getMessage("Bootloader_1").addAlias("RS232_FORWARD_DATA");

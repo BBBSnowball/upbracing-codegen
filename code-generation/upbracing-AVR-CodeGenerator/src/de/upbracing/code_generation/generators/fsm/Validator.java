@@ -18,7 +18,8 @@ import statemachine.Transition;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.ParserException;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.TransitionInfo;
@@ -26,13 +27,13 @@ import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 /** The validation part of {@link StatemachineGenerator} */
 public class Validator {
-	private MCUConfiguration config;
+	private CodeGeneratorConfigurations config;
 	private boolean after_update_config;
 	@SuppressWarnings("unused")
 	private Object generator_data;
 	private Messages messages;
 
-	public Validator(MCUConfiguration config, boolean after_update_config,
+	public Validator(CodeGeneratorConfigurations config, boolean after_update_config,
 			Object generator_data) {
 		this.config = config;
 		this.after_update_config = after_update_config;
@@ -68,7 +69,7 @@ public class Validator {
 				.pushContext("statemachine validator");
 
 		// make sure that we have the appropiate values on the root object
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			ContextItem smg_context = messages.pushContext(smg);
 
 			if (smg.getBasePeriodAsString() == null) {
@@ -116,14 +117,14 @@ public class Validator {
 		}
 
 		// check states and regions for duplicate names
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			if ((!duplicateNames(smg, smg.getStates())) && after_update_config)
 				return false;
 		}
 
 		// run the validator before the updator has been run
 		if (!after_update_config) {
-			for (StateMachineForGeneration smg : config.getStatemachines()) {
+			for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 
 				// push the statemachine context
 				ContextItem statemachine_context = messages.pushContext(smg);
@@ -495,7 +496,7 @@ public class Validator {
 		// make sure that we don't have any unexpected null values
 		ContextItem task_context = messages
 				.pushContext("check for null values in inappropiate places");
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			ContextItem smg_context = messages.pushContext(smg);
 
 			if (!validateNotNull(smg.getGlobalCodeBoxes(), "global code boxes"))

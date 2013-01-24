@@ -9,7 +9,8 @@ import statemachine.StateWithActions;
 
 
 import de.upbracing.code_generation.ITemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.StatemachineWithWay;
@@ -19,7 +20,7 @@ import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder.Wayp
 public class StatemachineTestTemplate implements ITemplate {
 
 	@Override
-	public String generate(MCUConfiguration config, Object generator_data) {
+	public String generate(CodeGeneratorConfigurations config, Object generator_data) {
 		@SuppressWarnings("unchecked")
 		Map<StateMachineForGeneration, StatemachineWithWay> ways
 			= (Map<StateMachineForGeneration, StatemachineWithWay>) generator_data;
@@ -28,7 +29,7 @@ public class StatemachineTestTemplate implements ITemplate {
 		
 		printHeader(stringBuffer);
 		
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			StatemachineWithWay smw = ways.get(smg);
 			if (smw != null)
 				generateTest(smg, smw, stringBuffer);
@@ -130,9 +131,9 @@ public class StatemachineTestTemplate implements ITemplate {
 
 	}
 
-	private void printFooter(MCUConfiguration config, Map<StateMachineForGeneration, StatemachineWithWay> ways, StringBuffer stringBuffer) {
+	private void printFooter(CodeGeneratorConfigurations config, Map<StateMachineForGeneration, StatemachineWithWay> ways, StringBuffer stringBuffer) {
 		stringBuffer.append("int random_test_add_suites(void) {\n");
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			StatemachineWithWay smw = ways.get(smg);
 			if (smw != null) {
 				stringBuffer.append(

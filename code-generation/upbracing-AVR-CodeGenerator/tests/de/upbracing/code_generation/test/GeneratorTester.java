@@ -7,14 +7,14 @@ import java.util.Map.Entry;
 
 import de.upbracing.code_generation.IGenerator;
 import de.upbracing.code_generation.ITemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 
 public class GeneratorTester {
 	private IGenerator gen;
-	private MCUConfiguration config;
+	private CodeGeneratorConfigurations config;
 	private Object generator_data;
 
-	public GeneratorTester(IGenerator gen, MCUConfiguration config) {
+	public GeneratorTester(IGenerator gen, CodeGeneratorConfigurations config) {
 		this.gen = gen;
 		this.config = config;
 		

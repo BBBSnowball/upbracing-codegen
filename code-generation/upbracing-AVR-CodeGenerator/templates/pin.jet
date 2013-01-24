@@ -19,7 +19,7 @@
 /////////////////////////
 
 <%
-for (java.util.Map.Entry<String, Pin> e : config.getPins().entrySet()) {
+for (java.util.Map.Entry<String, Pin> e : PinConfigProvider.get(config).entrySet()) {
 	String name = e.getKey();
 	Pin pin = e.getValue();
 	char port = pin.getPortName();
@@ -34,7 +34,7 @@ for (java.util.Map.Entry<String, Pin> e : config.getPins().entrySet()) {
 <% } %>
 
 <%
-for (java.util.Map.Entry<String, Character> e : config.getPins().getPorts().entrySet()) {
+for (java.util.Map.Entry<String, Character> e : PinConfigProvider.get(config).getPorts().entrySet()) {
 	String name = e.getKey();
 	char port = e.getValue();
 %>

@@ -2,7 +2,6 @@ package de.upbracing.configurationeditor.timer.popup.actions;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -14,6 +13,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbench;
@@ -25,9 +25,9 @@ import de.upbracing.code_generation.ITemplate;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.TimerConfigProvider;
 import de.upbracing.code_generation.generators.TimerGenerator;
-import de.upbracing.eculist.ECUDefinition;
 import de.upbracing.shared.timer.model.ConfigurationModel;
 
 public class GenerateCodeAction implements IObjectActionDelegate {
@@ -74,13 +74,13 @@ public class GenerateCodeAction implements IObjectActionDelegate {
 	public void run(IFile file, ConfigurationModel model) {
         // Generate the code
 		try {
-			MCUConfiguration mcu = new MCUConfiguration(true);
-			mcu.setEcus(new ArrayList<ECUDefinition>());
+			@SuppressWarnings("unchecked")
+			CodeGeneratorConfigurations config = new CodeGeneratorConfigurations(TimerConfigProvider.class);
 			
 			// Get the configuration file name:
 			String projectFileName = file.getRawLocation().toFile().getName();
 			projectFileName = projectFileName.substring(0, projectFileName.indexOf("."));
-			mcu.setTimerConfig(model);
+			config.setState(TimerConfigProvider.STATE, model);
 			
 			// Create Generator:
 			TimerGenerator gen = new TimerGenerator(projectFileName);
@@ -88,12 +88,12 @@ public class GenerateCodeAction implements IObjectActionDelegate {
 			ITemplate hTemp = gen.getFiles().get(projectFileName + ".h");
 			
 			// Validate the model and get the messages
-			gen.validate(mcu, true, null);
-			Messages messages = mcu.getMessages();
+			gen.validate(config, true, null);
+			Messages messages = config.getMessages();
 			
 			// Generate code:
-			String cFileContents = cTemp.generate(mcu, projectFileName);
-			String headerContents = hTemp.generate(mcu, projectFileName);
+			String cFileContents = cTemp.generate(config, projectFileName);
+			String headerContents = hTemp.generate(config, projectFileName);
 			
 			// If there are messages, show error/warning dialog
 			String dialogTxt = "";

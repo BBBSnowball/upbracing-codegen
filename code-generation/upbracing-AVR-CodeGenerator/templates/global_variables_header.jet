@@ -16,8 +16,8 @@
 
 <%
 
-if (config.getGlobalVariables().getDeclarations().isEmpty()
-	&& config.getGlobalVariables().isEmpty()) {
+if (GlobalVariableConfigProvider.get(config).getDeclarations().isEmpty()
+	&& GlobalVariableConfigProvider.get(config).isEmpty()) {
 
 %>
 
@@ -31,14 +31,14 @@ if (config.getGlobalVariables().getDeclarations().isEmpty()
 
 <%
 
-if (config.getGlobalVariables().getDeclarations().size() > 0) {
+if (GlobalVariableConfigProvider.get(config).getDeclarations().size() > 0) {
 %>
 
 // Generated declarations
 <%
 }
 
-for(String declaration : config.getGlobalVariables().getDeclarations()) {
+for(String declaration : GlobalVariableConfigProvider.get(config).getDeclarations()) {
 %>
 <%= declaration %><%
 }
@@ -53,7 +53,7 @@ for(String declaration : config.getGlobalVariables().getDeclarations()) {
 HashMap<String, String> varnames = (HashMap<String, String>) generator_data;
 Table t = new Table(stringBuffer);
 t.start();
-for (GlobalVariable var : config.getGlobalVariables()) {
+for (GlobalVariable var : GlobalVariableConfigProvider.get(config)) {
 	String varname = varnames.get(var.getName());
 %>
 extern <%= var.getType() %>&&&<%= varname %>;
@@ -61,7 +61,7 @@ extern <%= var.getType() %>&&&<%= varname %>;
 
 
 <%
-for (GlobalVariable var : config.getGlobalVariables()) {
+for (GlobalVariable var : GlobalVariableConfigProvider.get(config)) {
 	String name = var.getName();
 	String varname = varnames.get(name);
 	//String Name = TemplateHelpers.capitalize(name);

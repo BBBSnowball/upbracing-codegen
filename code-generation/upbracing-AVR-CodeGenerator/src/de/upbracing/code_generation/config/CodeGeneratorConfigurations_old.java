@@ -24,7 +24,7 @@ import de.upbracing.shared.timer.model.ConfigurationModel;
  * @author benny
  */
 @Default(required=false)
-public class MCUConfiguration {
+public class CodeGeneratorConfigurations_old {
 	private List<ECUDefinition> ecus;
 	private ECUDefinition currentEcu;
 	private DBCConfig canConfig;
@@ -37,7 +37,7 @@ public class MCUConfiguration {
 
 	private Messages messages;
 	
-	public MCUConfiguration() {
+	public CodeGeneratorConfigurations_old() {
 		messages = new Messages().withOutputTo(System.err, Severity.INFO);
 		statemachines = new StatemachinesConfig();
 		statemachines.addFormatters(messages);
@@ -46,7 +46,7 @@ public class MCUConfiguration {
 	// Note (Peer): This was necessary in order to keep the TimerConfigurationEditor
 	//              working with this package of code generators. Otherwise the editor
 	//              would need to include the whole StateMachineEditor model.
-	public MCUConfiguration(boolean ignoreMe) {
+	public CodeGeneratorConfigurations_old(boolean ignoreMe) {
 		messages = new Messages().withOutputTo(System.err, Severity.INFO);
 	}
 	
@@ -112,7 +112,7 @@ public class MCUConfiguration {
 	 * This is the ECU we are generating code for.
 	 * 
 	 * @return the ecu definition object
-	 * @see MCUConfiguration#selectEcu(ECUDefinition)
+	 * @see CodeGeneratorConfigurations#selectEcu(ECUDefinition)
 	 */
 	public ECUDefinition getCurrentEcu() {
 		return currentEcu;
@@ -135,7 +135,8 @@ public class MCUConfiguration {
 	 * @param can the CAN config
 	 */
 	public void setCan(DBC can) {
-		setCan(new DBCConfig(can, this));
+		//setCan(new DBCConfig(can, this));
+		throw new RuntimeException("not implemented (anymore)");
 	}
 	
 	/**
@@ -217,8 +218,8 @@ public class MCUConfiguration {
 	 * The EEPROM value definitions are automatically copied to the EEPROM configuration.
 	 * 
 	 * @param ecu the ECU definition
-	 * @see MCUConfiguration#getEcus()
-	 * @see MCUConfiguration#getEeprom()
+	 * @see CodeGeneratorConfigurations#getEcus()
+	 * @see CodeGeneratorConfigurations#getEeprom()
 	 */
 	public void selectEcu(ECUDefinition ecu) {
 		if (ecus == null || !ecus.contains(ecu))
@@ -238,8 +239,8 @@ public class MCUConfiguration {
 	 * The EEPROM value definitions are automatically copied to the EEPROM configuration.
 	 * 
 	 * @param name the ECU name
-	 * @see MCUConfiguration#getEcus()
-	 * @see MCUConfiguration#getEeprom()
+	 * @see CodeGeneratorConfigurations#getEcus()
+	 * @see CodeGeneratorConfigurations#getEeprom()
 	 */
 	public void selectEcu(String name) {
 		for (ECUDefinition ecu : getEcus()) {

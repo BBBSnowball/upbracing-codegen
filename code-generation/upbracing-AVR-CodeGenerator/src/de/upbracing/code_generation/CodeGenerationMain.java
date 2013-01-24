@@ -32,7 +32,8 @@ import javax.script.ScriptException;
 
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CWDProvider;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.utils.Util;
 
 public final class CodeGenerationMain {
@@ -348,7 +349,7 @@ public final class CodeGenerationMain {
 	 * @return
 	 */
 	private static boolean validate(Iterable<IGenerator> generators,
-			MCUConfiguration config, boolean after_update_config, HashSet<IGenerator> failed_generators,
+			CodeGeneratorConfigurations config, boolean after_update_config, HashSet<IGenerator> failed_generators,
 			Map<IGenerator, Object> generator_data) {
 		boolean validation_passed = true;
 		for (IGenerator gen : generators) {
@@ -370,7 +371,7 @@ public final class CodeGenerationMain {
 	 * @param config the configuration object
 	 * @param target_directory directory for the generated files
 	 */
-	public static boolean runGenerators(MCUConfiguration config,
+	public static boolean runGenerators(CodeGeneratorConfigurations config,
 			String target_directory) {
 		Iterable<IGenerator> generators = sortGenerators(findGenerators());
 		
@@ -468,7 +469,7 @@ public final class CodeGenerationMain {
 	 * @return the configuration object
 	 * @throws ScriptException if the config script contains errors or raises an exception
 	 */
-	public static MCUConfiguration loadConfig(InputStream stream, String script_filename, String directory, Map<String, Object> global_vars) throws ScriptException {
+	public static CodeGeneratorConfigurations loadConfig(InputStream stream, String script_filename, String directory, Map<String, Object> global_vars) throws ScriptException {
 		// use JSR 223 API to invoke JRuby
 		ScriptEngineManager factory = new ScriptEngineManager();
 		ScriptEngine engine = factory.getEngineByName("jruby");
@@ -479,7 +480,7 @@ public final class CodeGenerationMain {
 		// System.setProperty("org.jruby.embed.class.path", ...);
 
 		// create a configuration object and put it into the script engine
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		engine.put("config", config);
 		
 		for (Entry<String, Object> pair : global_vars.entrySet())
@@ -493,7 +494,7 @@ public final class CodeGenerationMain {
 			old_pwd = engine.eval("Dir.pwd").toString();
 			engine.put("directory", directory);
 			engine.eval("Dir.chdir($directory)");
-			MCUConfiguration.setCurrentDirectory(directory);
+			CWDProvider.setCurrentDirectory(directory);
 		}
 		
 		// execute the script
@@ -513,7 +514,7 @@ public final class CodeGenerationMain {
 		}
 		
 		// return the configuration object
-		config = (MCUConfiguration) engine.get("config");
+		config = (CodeGeneratorConfigurations) engine.get("config");
 		return config;
 	}
 	
@@ -525,7 +526,7 @@ public final class CodeGenerationMain {
 	 * @throws ScriptException if the config script contains errors or raises an exception
 	 * @throws FileNotFoundException if the config file cannot be opened
 	 */
-	public static MCUConfiguration loadConfig(String file) throws FileNotFoundException, ScriptException {
+	public static CodeGeneratorConfigurations loadConfig(String file) throws FileNotFoundException, ScriptException {
 		return loadConfig(
 				new FileInputStream(file),
 				file,
@@ -541,7 +542,7 @@ public final class CodeGenerationMain {
 	 * @throws ScriptException if the config script contains errors or raises an exception
 	 * @throws FileNotFoundException if the config file cannot be opened
 	 */
-	public static MCUConfiguration loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
+	public static CodeGeneratorConfigurations loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
 		String file = config.getConfigFile();
 		String script_cwd = new File(file).getAbsoluteFile().getParent();
 		return loadConfig(

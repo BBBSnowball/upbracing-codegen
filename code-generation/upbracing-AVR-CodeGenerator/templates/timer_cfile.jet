@@ -2,7 +2,7 @@
 	package="de.upbracing.code_generation"
 	class="TimerCFileTemplate"
 	skeleton="generator.skeleton"
-	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.* de.upbracing.shared.timer.model.validation.*" %>
+	imports="de.upbracing.code_generation.generators.TimerGeneratorHelper de.upbracing.shared.timer.model.* de.upbracing.shared.timer.model.enums.* de.upbracing.shared.timer.model.validation.* de.upbracing.code_generation.config.TimerConfigProvider" %>
 /*
  * <%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.c
  *
@@ -11,16 +11,16 @@
  * NOTE: This file was generated and should not be altered manually!
  */
 
-<% if (config.getTimerConfig() == null) { %>
+<% if (TimerConfigProvider.get(config) == null) { %>
 // no timer config present
 <% } else { %>
 #include <avr/io.h>
 #include "<%=TimerGeneratorHelper.getFilePrefix(generator_data)%>.h"
 
 <%
-for (UseCaseModel m : config.getTimerConfig().getConfigurations()) {
+for (UseCaseModel m : TimerConfigProvider.get(config).getConfigurations()) {
 
-UseCaseModelValidator validator = new UseCaseModelValidator(config.getTimerConfig(), m);
+UseCaseModelValidator validator = new UseCaseModelValidator(TimerConfigProvider.get(config), m);
 %>
 /* Timer Configuration: <%=m.getName()%> */
 <%@ include file="timer/normal_cfile.jetinclude" %>
@@ -58,4 +58,4 @@ void timer_<%=m.getName()%>_setCounterValue(<%=TimerGeneratorHelper.getDataType(
 }
 %>
 
-<% } // config.getTimerConfig() == null %>
+<% } // TimerConfigProvider.get(config) == null %>

@@ -9,10 +9,11 @@ import de.upbracing.code_generation.Messages.Severity;
 import de.upbracing.code_generation.RTOSApplicationCFileTemplate;
 import de.upbracing.code_generation.RTOSApplicationHeaderTemplate;
 import de.upbracing.code_generation.RTOSFeaturesTemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.rtos.RTOSAlarm;
 import de.upbracing.code_generation.config.rtos.RTOSConfig;
 import de.upbracing.code_generation.config.rtos.RTOSTask;
+import de.upbracing.code_generation.config.rtos.RTOSConfigProvider;
 
 public class RTOSGenerator extends AbstractGenerator {
 	public RTOSGenerator() {
@@ -23,13 +24,13 @@ public class RTOSGenerator extends AbstractGenerator {
 	
 	@Override
 	public boolean isTemplateActive(String filename, ITemplate template,
-			MCUConfiguration config) {
-		return config.getRtos().isUsed();
+			CodeGeneratorConfigurations config) {
+		return RTOSConfigProvider.get(config).isUsed();
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
-		RTOSConfig rtos = config.getRtos();
+	public boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data) {
+		RTOSConfig rtos = RTOSConfigProvider.get(config);
 
 		if (!rtos.isUsed())
 			return true;
@@ -110,8 +111,8 @@ public class RTOSGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public Object updateConfig(MCUConfiguration config) {
-		config.getRtos().updateTaskIDs();
+	public Object updateConfig(CodeGeneratorConfigurations config) {
+		RTOSConfigProvider.get(config).updateTaskIDs();
 		
 		return super.updateConfig(config);
 	}

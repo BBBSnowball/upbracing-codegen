@@ -21,7 +21,8 @@ import statemachine.StateMachine;
 import statemachine.SuperState;
 
 import de.upbracing.code_generation.JRubyHelpers;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Updater;
 import de.upbracing.code_generation.test.TestHelpers;
@@ -83,8 +84,8 @@ public class TestAssignNames {
 		norm[2].setName("Sup2_norm");
 		
 		StateMachineForGeneration smg = new StateMachineForGeneration("AssignNames", statemachine);
-		MCUConfiguration config = new MCUConfiguration();
-		config.getStatemachines().add(smg);
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
+		StatemachinesConfigProvider.get(config).add(smg);
 				
 		Updater updatenames = new Updater(config);
 		updatenames.updateConfig(config);
@@ -130,8 +131,8 @@ public class TestAssignNames {
 		sb.append("One level state machine with unnamed states and region" + NL + NL);
 		
 		StateMachineForGeneration smg_1 = new StateMachineForGeneration("noNames_1", statm_1);
-		MCUConfiguration config_1 = new MCUConfiguration();
-		config_1.getStatemachines().add(smg_1);
+		CodeGeneratorConfigurations config_1 = new CodeGeneratorConfigurations();
+		StatemachinesConfigProvider.get(config_1).add(smg_1);
 		
 		Updater update_1 = new Updater(config_1);
 		update_1.updateConfig(config_1);
@@ -200,8 +201,8 @@ public class TestAssignNames {
 		sb.append("Two level state machine with unnamed states and region(s) assigned names" + NL + NL);
 		
 		StateMachineForGeneration smg_2 = new StateMachineForGeneration("noNames_2", statm_2);
-		MCUConfiguration config_2 = new MCUConfiguration();
-		config_2.getStatemachines().add(smg_2);
+		CodeGeneratorConfigurations config_2 = new CodeGeneratorConfigurations();
+		StatemachinesConfigProvider.get(config_2).add(smg_2);
 		
 		Updater update_2 = new Updater(config_2);
 		update_2.updateConfig(config_2);
@@ -280,8 +281,8 @@ public class TestAssignNames {
 		sb.append("Three level state machine with unnamed states and region(s) assigned names" + NL + NL);
 		
 		StateMachineForGeneration smg_3 = new StateMachineForGeneration("noNames_2", statm_3);
-		MCUConfiguration config_3 = new MCUConfiguration();
-		config_3.getStatemachines().add(smg_3);
+		CodeGeneratorConfigurations config_3 = new CodeGeneratorConfigurations();
+		StatemachinesConfigProvider.get(config_3).add(smg_3);
 		
 		Updater update_3 = new Updater(config_3);
 		update_3.updateConfig(config_3);
