@@ -391,22 +391,63 @@ class RubyConfigurationExtender
       names.uniq.each do |mname|
         define_method(mname.intern) do |*args|
           # get parameter types (without the first one which is the config)
-          param_types = method.parameter_types[1..-1]
+          param_types = method.parameter_types[1..-1].to_a
           if method.isVarArgs
-            #TODO support var-args: isVarArgs
-            # Find out whether the user tries to call it variadic (and
-            # not with an array) and replace the variadic param type
-            # by some copies of the array item type.
+            # Find out whether the user tries to call it variadic (not with an array)
+            #var_arg_type = param_types[-1]
+            var_arg = args[-1]
+            # If the uses passed too many arguments, we obviously use the variadic variant.
+            uses_var_arg = args.length > param_types.length
+            if !uses_var_arg
+              # It might be a single variadic argument or an array.
+              #  May not work for all cases, but at least for the ones in my test - that should be enough.
+              is_array = var_arg.is_a?(Array) || (var_arg.respond_to?(:java_class) && var_arg.java_class.array?)
+              uses_var_arg = !is_array
+            end
+
+            if uses_var_arg
+              # Get the type of the variadic items
+              var_arg_type = param_types[-1].component_type
+              
+              # Replace the variadic param type by
+              # some copies of the array item type.
+              # (and make sure it is a Ruby list)
+              param_types = [*param_types[0..-2]]
+              
+              (args.length - param_types.length).times do
+                param_types << var_arg_type
+              end
+            end
           end
           if param_types.length != args.length
             raise "I need #{param_types.length} arguments#{method.isVarArgs ? " (or more)" : ""}, but you gave me #{args.length}!"
           end
           
           # tell JRuby to cast the values appropiately
-          args = param_types.zip(args).map { |x| x[1].to_java(x[0]) }
+          args = param_types.zip(args).map do |type,value|
+            #puts "#{value.inspect} -> #{type}"
+            if !type.isArray
+              value.to_java(type)
+            else
+              # to_java of (JRuby) Array needs the item type
+              value.to_a.to_java(type.component_type)
+            end
+          end
           
-          #method.invoke(nil, [self.to_java(CodeGeneratorConfigurations), *args]) # -> doesn't work
-          self.call name, *args
+          if uses_var_arg
+            # pack them into an array
+            
+            # non-variadic arguments (not counting config and the variadic array argument)
+            non_var_args = method.parameter_types.length - 2
+            
+            non_variadic = args[0...non_var_args]
+            vardiac_arg = args[non_var_args..-1].to_java(var_arg_type)
+            
+            args = non_variadic + [vardiac_arg]
+          end
+          
+          method.invoke(nil, [self.to_java(CodeGeneratorConfigurations), *args].to_java)
+          #self.call name, *args
         end
       end
     end

@@ -18,6 +18,22 @@ public class TestConfigExtProvider implements IConfigProvider {
 		config.setState(STATE_TEST2, x);
 	}
 
+	@ConfigurationMethod
+	public static String doSomethingVariadic(CodeGeneratorConfigurations config, int... values) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(config.getState(STATE_TEST2));
+		for (int value : values) {
+			sb.append(", ");
+			sb.append(value);
+		}
+		return sb.toString();
+	}
+
+	@ConfigurationMethod
+	public static String doSomeMoreVariadicStuff(CodeGeneratorConfigurations config, String msg, int... values) {
+		return msg + " - " + doSomethingVariadic(config, values);
+	}
+
 	@Override
 	public void extendConfiguration(RichConfigurationExtender ext) {
 		ext.addState(STATE_TEST1, String.class);

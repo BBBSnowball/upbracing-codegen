@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.TestConfigExtProvider;
 
 public class TestCodeGeneratorConfigurations {
 	//NOTE This test assumes that TestConfigExtProvider is enabled
@@ -104,5 +105,20 @@ public class TestCodeGeneratorConfigurations {
 
 		engine.eval("$config.something_else = 23");	// sets test2
 		assertEquals(23, config.getProperty("test2"));
+		
+		
+		TestConfigExtProvider.setSomethingElse(config, 3);	// set test2
+		engine.put("some_numbers", new int[] { 7, -1 });
+		assertEquals("3, 7, -1", engine.eval("$config.doSomethingVariadic($some_numbers)"));
+		assertEquals("3, 9, 22", engine.eval("$config.do_something_variadic([9,22])"));
+		assertEquals("3, 0, 34", engine.eval("$config.doSomethingVariadic(0, 34)"));
+		assertEquals("3, 42", engine.eval("$config.doSomethingVariadic(42)"));
+
+		TestConfigExtProvider.setSomethingElse(config, 3);	// set test2
+		engine.put("some_numbers", new int[] { 7, -1 });
+		assertEquals("abc6 - 3, 7, -1", engine.eval("$config.doSomeMoreVariadicStuff('abc6', $some_numbers)"));
+		assertEquals("abc7 - 3, 9, 22", engine.eval("$config.doSomeMoreVariadicStuff('abc7', [9,22])"));
+		assertEquals("abc8 - 3, 0, 34", engine.eval("$config.doSomeMoreVariadicStuff('abc8', 0, 34)"));
+		assertEquals("abc9 - 3, 42", engine.eval("$config.do_some_more_variadic_stuff('abc9', 42)"));
 	}
 }
