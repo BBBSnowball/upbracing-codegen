@@ -11,7 +11,8 @@ import de.upbracing.code_generation.test.statemachine.AllValidatorTests;
 		TestGlobalVariableGenerator.class, TestPinGenerator.class,
 		TestRTOSGenerator.class, TestStatemachineGenerator.class,
 		TestTable.class,
-		TestMessages.class, TestUtils.class, AllValidatorTests.class })
+		TestMessages.class, TestUtils.class, AllValidatorTests.class,
+		TestCodeGeneratorConfigurations.class })
 public class AllTests {
 
 }

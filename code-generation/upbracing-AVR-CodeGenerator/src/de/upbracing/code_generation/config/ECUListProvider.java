@@ -6,7 +6,6 @@ import java.util.List;
 
 import de.upbracing.code_generation.Messages;
 import de.upbracing.eculist.ECUDefinition;
-import de.upbracing.eculist.EEPROMValue;
 
 public class ECUListProvider implements IConfigProvider {
 	
@@ -23,6 +22,9 @@ public class ECUListProvider implements IConfigProvider {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void extendConfiguration(RichConfigurationExtender ext) {
+		if (ext.hasState(STATE_ECUS_W))
+			return;
+		
 		ext.<List<ECUDefinition>>addState(STATE_ECUS_W, (Class<List<ECUDefinition>>)(Object)List.class);
 		ext.addReadonlyProperty("ecus", STATE_ECUS_W);
 		
@@ -34,14 +36,15 @@ public class ECUListProvider implements IConfigProvider {
 
 	@Override
 	public void initConfiguration(CodeGeneratorConfigurations config) {
-		// TODO Auto-generated method stub
-
+		setEcus(config, new ArrayList<ECUDefinition>());
 	}
 
 	@Override
 	public void addFormatters(Messages messages) {
-		// TODO Auto-generated method stub
-
+	}
+	
+	public static List<ECUDefinition> get(CodeGeneratorConfigurations config) {
+		return config.getState(STATE_ECUS);
 	}
 
 	/**
@@ -73,11 +76,6 @@ public class ECUListProvider implements IConfigProvider {
 			throw new IllegalArgumentException("The current ECU must be in the ECU list.");
 		
 		config.setState(STATE_CURRENT_ECU_W, ecu);
-		
-		for (EEPROMValue v : ecu.getEepromValues()) {
-			//getEeprom().add(v.getName(), v.getType(), v.getDefault());
-			throw new RuntimeException("TODO");
-		}
 	}
 
 	/**

@@ -32,6 +32,9 @@ public class TestCodeGeneratorConfigurations {
 		
 		config.call("setSomethingElse", 7);	// sets test2
 		assertEquals(7, config.getProperty("test2"));
+		
+		config.setProperty("test1", "pax");
+		assertEquals("pax", config.getState(TestConfigExtProvider.STATE_TEST1.readonly()));
 	}
 
 	private void assertLastMessageEquals(String expected, CodeGeneratorConfigurations config) {

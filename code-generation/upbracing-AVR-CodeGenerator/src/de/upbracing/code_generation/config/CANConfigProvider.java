@@ -10,6 +10,7 @@ public class CANConfigProvider implements IConfigProvider {
 	@Override
 	public void extendConfiguration(RichConfigurationExtender ext) {
 		ext.addState(STATE_W, DBCConfig.class);
+		ext.addProperty("can", STATE_W);
 		
 		ext.addMethods(CANConfigProvider.class);
 	}
@@ -20,6 +21,10 @@ public class CANConfigProvider implements IConfigProvider {
 
 	@Override
 	public void addFormatters(Messages messages) {
+	}
+
+	public static DBCConfig setCan(CodeGeneratorConfigurations config) {
+		return config.getState(STATE);
 	}
 
 	@ConfigurationMethod

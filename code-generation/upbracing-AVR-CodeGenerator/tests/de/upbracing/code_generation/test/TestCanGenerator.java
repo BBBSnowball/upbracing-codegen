@@ -39,8 +39,7 @@ public class TestCanGenerator {
 	public void testGenerate() {
 		
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
-		ArrayList<ECUDefinition> ecus = new ArrayList<ECUDefinition>();
-		ECUListProvider.setEcus(config, ecus);
+		ECUListProvider.setEcus(config, new ArrayList<ECUDefinition>());
 		
 		DBC dbc = new DBC("");
 		dbc.setEcus(new HashMap<String, DBCEcu>());
@@ -81,7 +80,7 @@ public class TestCanGenerator {
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
 		dbc.getEcus().put("LenkradDisplay", ecu);
 		dbc.getEcuNames().add("LenkradDisplay");
-		ecus.add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
+		ECUListProvider.get(config).add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));

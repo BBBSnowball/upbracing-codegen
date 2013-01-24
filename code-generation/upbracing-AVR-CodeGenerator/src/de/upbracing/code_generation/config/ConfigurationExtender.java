@@ -13,6 +13,15 @@ public interface ConfigurationExtender {
 	/** add invisible state */
 	<T> void addState(ConfigState<T> state, Class<T> cls);
 	
+	/** is this state registered with the configuration?
+	 * 
+	 * You can use this method to test whether your initialization has already
+	 * been done. This will be useful, if dependent config providers call your
+	 * initialization to make sure they may use your stuff.
+	 * @return 
+	 */
+	boolean hasState(ReadableConfigState<?> state);
+	
 	/** add a method
 	 * 
 	 * NOTE: Method names must be unique - you cannot overload them.

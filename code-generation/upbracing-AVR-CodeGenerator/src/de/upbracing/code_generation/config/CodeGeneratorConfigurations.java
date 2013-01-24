@@ -245,15 +245,26 @@ public class CodeGeneratorConfigurations {
 		}
 	}
 	
-	public static <T> void addStateChangeListener(ConfigState<T> state, StateChangeListener<T> ext) {
+	/** add a listener that is called whenever the value of the state changes */
+	public static <T> void addStateChangeListener(ReadableConfigState<T> state, StateChangeListener<T> ext) {
 		synchronized (extension_sync_root) {
-			state_change_listeners.get(state).add(ext);
+			ExtState<T> extstate = getExtState(state);
+			
+			List<StateChangeListener<?>> listeners = state_change_listeners.get(state);
+			if (listeners == null) {
+				listeners = new LinkedList<StateChangeListener<?>>();
+				state_change_listeners.put(extstate.config_state, listeners);
+			}
+			listeners.add(ext);
 		}
 	}
 	
-	public static <T> void removeStateChangeListener(ConfigState<T> state, StateChangeListener<T> ext) {
+	/** remove a listener added by {@link #addStateChangeListener} */
+	public static <T> void removeStateChangeListener(ReadableConfigState<T> state, StateChangeListener<T> ext) {
 		synchronized (extension_sync_root) {
-			state_change_listeners.get(state).remove(ext);
+			List<StateChangeListener<?>> listeners = state_change_listeners.get(state);
+			if (listeners != null)
+				listeners.remove(ext);
 		}
 	}
 	
@@ -324,6 +335,11 @@ public class CodeGeneratorConfigurations {
 		}
 
 		@Override
+		public boolean hasState(ReadableConfigState<?> state) {
+			return states.containsKey(state);
+		}
+
+		@Override
 		public void addMethod(String name, Method method) {
 			synchronized (extension_sync_root) {
 				if (methods.containsKey(name))
@@ -379,6 +395,18 @@ public class CodeGeneratorConfigurations {
 					addMethod(name, method);
 				}
 			}
+		}
+		
+		@Override
+		public <T> void addStateChangeListener(ReadableConfigState<T> state,
+				StateChangeListener<T> ext) {
+			CodeGeneratorConfigurations.addStateChangeListener(state, ext);
+		}
+		
+		@Override
+		public <T> void removeStateChangeListener(ReadableConfigState<T> state,
+				StateChangeListener<T> ext) {
+			CodeGeneratorConfigurations.removeStateChangeListener(state, ext);
 		}
 	}
 	

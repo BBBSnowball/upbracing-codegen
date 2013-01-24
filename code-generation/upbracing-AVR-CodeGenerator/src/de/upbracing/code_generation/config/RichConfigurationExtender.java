@@ -17,4 +17,12 @@ public interface RichConfigurationExtender extends ConfigurationExtender {
 	 * @param method static method which can take an CodeGeneratorConfigurations as its first argument
 	 */
 	void addMethod(Method method);
+	
+
+	/** add a state change listener */
+	<T> void addStateChangeListener(ReadableConfigState<T> state, StateChangeListener<T> ext);
+
+	/** remove a state change listener */
+	<T> void removeStateChangeListener(ReadableConfigState<T> state, StateChangeListener<T> ext);
+	
 }

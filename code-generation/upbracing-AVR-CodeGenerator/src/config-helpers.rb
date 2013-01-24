@@ -426,7 +426,10 @@ class RubyConfigurationExtender
           # tell JRuby to cast the values appropiately
           args = param_types.zip(args).map do |type,value|
             #puts "#{value.inspect} -> #{type}"
-            if !type.isArray
+            if type.interface?
+              # JRuby doesn't seem to be able to convert this
+              value
+            elsif !type.isArray
               value.to_java(type)
             else
               # to_java of (JRuby) Array needs the item type
