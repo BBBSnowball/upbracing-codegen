@@ -3,6 +3,7 @@ package de.upbracing.code_generation.config;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -62,6 +63,9 @@ public class CodeGeneratorConfigurations {
 
 	private Messages messages;
 	
+	/** Initialize a configuration with all extensions on the class path
+	 * (Well, only extenions that are registered with the ServiceLoader framework.)
+	 */
 	public CodeGeneratorConfigurations() {
 		// load config providers (in case the classpath has been extended)
 		//TODO Is that possible in Java? (in JRuby it is...)
@@ -72,6 +76,53 @@ public class CodeGeneratorConfigurations {
 
 		// initialize this object
 		for (IConfigProvider provider : ServiceLoader.load(IConfigProvider.class)) {
+			provider.initConfiguration(this);
+			provider.addFormatters(messages);
+		}
+	}
+
+	/** Initialize a configuration for selected extensions
+	 * 
+	 * There are several caveats:
+	 * - Extensions may initialize further extensions that they depend on.
+	 * - Extensions that aren't in used_providers may be present on the object,
+	 *   but they won't be initialized. The constructor will not load them, so
+	 *   this will only happen, if someone else has loaded them or will load
+	 *   them.
+	 * - All extensions in used_providers will be added to the global
+	 *   extension store. They will be present on all config objects, but
+	 *   they won't be initialized unless they are registered with the
+	 *   ServiceLoader framework. This means that you might break things
+	 *   in subtle ways for other users of the config objects, if you use
+	 *   providers that are not registered with the ServiceLoader framework.
+	 * 
+	 * @param used_providers the extensions you want to have
+	 */
+	public CodeGeneratorConfigurations(Class<? extends IConfigProvider>... used_providers) {
+		// load only the selected config providers
+		// (They don't have to be put into the ServiceLoader file, but they
+		//  will be added to the global extension store nonetheless. However,
+		//  their initializer won't be called, if you use the other variant
+		//  of the constructor.)
+		List<IConfigProvider> providers = new ArrayList<IConfigProvider>(used_providers.length);
+		try {
+			for (Class<? extends IConfigProvider> provider_class : used_providers) {
+				IConfigProvider provider = provider_class.newInstance();
+				providers.add(provider);
+				
+				loadConfigProvider(provider);
+			}
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+		
+		// create an instance of messages
+		messages = new Messages().withOutputTo(System.err, Severity.INFO);
+
+		// initialize this object
+		for (IConfigProvider provider : providers) {
 			provider.initConfiguration(this);
 			provider.addFormatters(messages);
 		}
@@ -414,15 +465,15 @@ public class CodeGeneratorConfigurations {
 	
 	public static void loadConfigProviders() {
 		for (IConfigProvider provider : ServiceLoader.load(IConfigProvider.class)) {
-			if (done_config_providers.contains(provider.getClass()))
-				continue;
-			done_config_providers.add(provider.getClass());
-			
-			provider.extendConfiguration(Extender.instance);
+			loadConfigProvider(provider);
 		}
 	}
-	
-	static {
-		loadConfigProviders();
+
+	private static void loadConfigProvider(IConfigProvider provider) {
+		if (done_config_providers.contains(provider.getClass()))
+			return;
+		done_config_providers.add(provider.getClass());
+		
+		provider.extendConfiguration(Extender.instance);
 	}
 }

@@ -6,7 +6,7 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.shared.timer.model.ConfigurationModel;
 
 public class TimerConfigProvider implements IConfigProvider {
-	private static final ConfigState<ConfigurationModel> STATE
+	public static final ConfigState<ConfigurationModel> STATE
 			= new ConfigState<ConfigurationModel>("timerConfig");
 
 	@Override
