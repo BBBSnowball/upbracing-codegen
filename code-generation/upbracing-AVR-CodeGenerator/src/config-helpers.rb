@@ -330,3 +330,64 @@ end
 #    $can_aliases['signals_back'][$old] = array();
 #  $can_aliases['signals_back'][$old][] = $new;
 #}
+
+CodeGeneratorConfigurations = Java::de::upbracing::code_generation::config::CodeGeneratorConfigurations
+ConfigurationExtender       = Java::de::upbracing::code_generation::config::ConfigurationExtender
+
+def snake_case(name)
+  name.gsub(/[a-z0-9][A-Z]/) { |a| a[0] + "_" + a[1].downcase }
+end
+
+def upcase_first(name)
+  name[0].upcase + name[1..-1]
+end
+
+# add configuration extensions (methods and properties) to the configuration object (for use by JRuby)
+class RubyConfigurationExtender
+  include ConfigurationExtender
+  # add a property that you can get and set by name (you must first add it as state)
+  def addProperty(name, state)
+    snake_name = snake_case name
+    getters = [ name, snake_name, "get" + upcase_first(name) ].uniq
+    setters = [ name+"=", snake_name+"=", "set" + upcase_first(name) ].uniq
+    CodeGeneratorConfigurations.class_eval do
+      getters.each do |mname|
+        define_method(mname.intern) { self.getProperty name }
+      end
+      setters.each do |mname|
+        define_method(mname.intern) { |*args| self.setProperty name, *args }
+      end
+    end
+  end
+  
+  # add a read-only property that you can get by name (you must first add it as state)
+  def addReadonlyProperty(name, state)
+    snake_name = snake_case name
+    getters = [ name, snake_name, "get" + upcase_first(name) ].uniq
+    CodeGeneratorConfigurations.class_eval do
+      getters.each do |mname|
+        define_method(mname.intern) { self.getProperty name }
+      end
+    end
+  end
+  
+  # add invisible state
+  def addState(state, cls)
+    # we don't care about this
+  end
+  
+  # add a method
+  def addMethod(name, method)
+    CodeGeneratorConfigurations.class_eval do
+      [name, snake_case(name)].uniq.each do |mname|
+        define_method(mname) do |*args|
+          #TODO do we have to cast arguments?
+          #method.invoke(nil, [self.to_java(CodeGeneratorConfigurations), *args]) # -> doesn't work
+          self.call name, *args
+        end
+      end
+    end
+  end
+end
+
+CodeGeneratorConfigurations.add_extension_listener RubyConfigurationExtender.new
