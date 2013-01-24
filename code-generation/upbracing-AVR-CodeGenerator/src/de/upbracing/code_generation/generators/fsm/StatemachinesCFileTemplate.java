@@ -41,7 +41,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append("/*\n * statemachines.c\n *\n * This file defines all statemachines.\n *\n"
 				+" * Generated automatically. DO NOT MODIFY! Change config.rb instead.\n */\n\n");
 
-		if (config.getStatemachines().isEmpty()) {
+		if (StatemachinesConfigProvider.get(config).isEmpty()) {
 
 			stringBuffer.append("// no statemachines loaded\n"
 					+ "// use $config.statemachines.load(statemachine_file)\n");
@@ -50,7 +50,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 			this.stringBuffer = stringBuffer;
 
-			StatemachinesConfig statemachines = config.getStatemachines();
+			StatemachinesConfig statemachines = StatemachinesConfigProvider.get(config);
 
 			stringBuffer.append("#include \"statemachines.h\"\n");
 			

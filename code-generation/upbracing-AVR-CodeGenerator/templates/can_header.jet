@@ -9,8 +9,8 @@
 
 boolean run_generator = true;
 
-de.upbracing.eculist.ECUDefinition current_ecu = config.getCurrentEcu();
-DBCConfig can_config = config.getCan();
+de.upbracing.eculist.ECUDefinition current_ecu = config.getState(ECUListProvider.STATE_CURRENT_ECU);
+DBCConfig can_config = config.getState(CANConfigProvider.STATE);
 
 if (can_config == null) {
 	run_generator = false;
@@ -50,13 +50,13 @@ if (run_generator) {
 	Messages messages = new Messages().withOutputTo(System.err);
 	
 %>
-#ifndef CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
-#define CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
+#ifndef CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
+#define CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
 
-#define ECU_NODE_ID <%=config.getCurrentEcu().getNodeId()%>
+#define ECU_NODE_ID <%=config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeId()%>
 
 <%
-String hdecls = config.getCan().getHeaderDeclarations();
+String hdecls = config.getState(CANConfigProvider.STATE).getHeaderDeclarations();
 if (hdecls != null && !hdecls.isEmpty()) {
 %>
 /////////////////////////
@@ -568,7 +568,7 @@ inline static void send_<%=msgconfig.getName()%>_nowait(<%= params.isEmpty() ? "
 }
 %>
 
-#endif	// defined CAN_<%= config.getCurrentEcu().getNodeName().toUpperCase() %>_DEFS_H_
+#endif	// defined CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
 <% messages.summarizeForCode(stringBuffer); %>
 
 <%

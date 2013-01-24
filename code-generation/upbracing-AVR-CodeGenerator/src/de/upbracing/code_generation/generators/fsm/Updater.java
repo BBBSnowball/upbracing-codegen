@@ -19,6 +19,7 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.common.Times;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.Action;
 import de.upbracing.code_generation.fsm.model.ActionType;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
@@ -53,7 +54,7 @@ public class Updater {
 		// remains valid because the structure of the statemachine
 		// won't change anymore.
 
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			updateParents(smg.getStates(), smg.getStateMachine());
 		}
 	}
@@ -84,7 +85,7 @@ public class Updater {
 	
 	
 	private void collapseFinalStates(CodeGeneratorConfigurations config) {
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			collapseFinalStates(smg.getStateMachine());
 		}
 	}
@@ -146,7 +147,7 @@ public class Updater {
 	}
 	
 	private void assignNames(CodeGeneratorConfigurations config) {
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			assignNamesCounter = 0;
 			
 			assignNames(smg.getStateMachine());
@@ -196,7 +197,7 @@ public class Updater {
 	}
 
 	private void addStateVariables(CodeGeneratorConfigurations config) {
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			addStateVariables(smg, smg.getStateMachine());
 		}
 	}
@@ -237,7 +238,7 @@ public class Updater {
 	 *            the configuration to convert
 	 */
 	private void convertWaitToActionsAndConditions(CodeGeneratorConfigurations config) {
-		for (StateMachineForGeneration smg : config.getStatemachines()) {
+		for (StateMachineForGeneration smg : StatemachinesConfigProvider.get(config)) {
 			Set<StateWithActions> statesWithWait = new HashSet<StateWithActions>();
 
 			for (Transition t : smg.getTransitions()) {

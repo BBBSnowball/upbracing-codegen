@@ -14,7 +14,7 @@
 #ifndef EEPROM_DATA_H_
 #define EEPROM_DATA_H_
 
-<% if (config.getEeprom().isEmpty()) { %>
+<% if (EEPROMConfigProvider.get(config).isEmpty()) { %>
 // no EEPROM variables found
 // You need to load an ECU configuration and select
 // an ECU in your config file (config.rb).
@@ -41,7 +41,7 @@ typedef struct {
 <%
 Table t = new Table(stringBuffer);
 t.start();
-for (EEPROMVariable var : config.getEeprom()) { %>
+for (EEPROMVariable var : EEPROMConfigProvider.get(config)) { %>
 	<%=var.getType()%>&&&<%=var.getName()%>;
 <%
 }
@@ -57,7 +57,7 @@ extern EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE;
 #define EEPROM_POINTER(name) &eeprom_data.name
 
 <%
-for (EEPROMVariable var : config.getEeprom()) {
+for (EEPROMVariable var : EEPROMConfigProvider.get(config)) {
 	String name = var.getName();
 	String NAME = var.getName().toUpperCase();
 	String type = var.getType();

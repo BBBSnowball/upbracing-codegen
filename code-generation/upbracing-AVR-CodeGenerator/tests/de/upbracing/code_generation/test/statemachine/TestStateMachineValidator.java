@@ -53,6 +53,7 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 import de.upbracing.code_generation.generators.fsm.Validator;
@@ -209,7 +210,7 @@ public class TestStateMachineValidator {
 				"FailedStateMachine", statemachine);
 
 		CodeGeneratorConfigurations config_fail = new CodeGeneratorConfigurations();
-		config_fail.getStatemachines().add(smg_1);
+		StatemachinesConfigProvider.get(config_fail).add(smg_1);
 		Validator validate_fail = new Validator(config_fail, false, null);
 
 		validate_fail.setMessages(messages[0]);
@@ -317,7 +318,7 @@ public class TestStateMachineValidator {
 				"PassedStatemachine", statem_pass);
 
 		CodeGeneratorConfigurations config_pass = new CodeGeneratorConfigurations();
-		config_pass.getStatemachines().add(smg_2);
+		StatemachinesConfigProvider.get(config_pass).add(smg_2);
 
 		Validator validate_pass = new Validator(config_pass, false, null);
 		sb.setLength(0);
@@ -330,7 +331,7 @@ public class TestStateMachineValidator {
 		 * states in region_1 have same names
 		 */
 
-		config[0].getStatemachines().load("duplicate_names", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[0]).load("duplicate_names", URI.createURI(TestHelpers
 					.getResourceURL("files/validator_statemachines/duplicate_names.statemachine").toString()));
 		
 		sb.setLength(0);
@@ -343,7 +344,7 @@ public class TestStateMachineValidator {
 		 */
 		
 		//load statemachine to the configuration
-		config[1].getStatemachines().load("invalidName", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[1]).load("invalidName", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/invalidName.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -355,7 +356,7 @@ public class TestStateMachineValidator {
 		/**Statemachine fails test because there are two initial states in statemachine*/
 		
 		//load statemachine to the configuration
-		config[2].getStatemachines().load("moreThanOneInitial_1", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[2]).load("moreThanOneInitial_1", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/Initial_statemachine.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -369,7 +370,7 @@ public class TestStateMachineValidator {
 		 * at region_3 and region_2
 		 */
 		
-		config[3].getStatemachines().load("moreThanOneInitial_2", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[3]).load("moreThanOneInitial_2", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/initial_superstate.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -383,7 +384,7 @@ public class TestStateMachineValidator {
 		 * and in super state super_1 and super_2
 		 */
 		
-		config[4].getStatemachines().load("final", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[4]).load("final", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/final_statemachine.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -397,7 +398,7 @@ public class TestStateMachineValidator {
 		 * have incoming transitions
 		 */
 		
-		config[5].getStatemachines().load("initial_incoming", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[5]).load("initial_incoming", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/initial_incoming.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -411,7 +412,7 @@ public class TestStateMachineValidator {
 		 * have more than one outgoing transitions
 		 */
 		
-		config[6].getStatemachines().load("initial_outgoing", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[6]).load("initial_outgoing", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/initial_outgoing.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -425,7 +426,7 @@ public class TestStateMachineValidator {
 		 * have a waiting Transitions, or event, or condition
 		 */
 		
-		config[7].getStatemachines().load("initial_transitionInfo", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[7]).load("initial_transitionInfo", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/initial_transitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -439,7 +440,7 @@ public class TestStateMachineValidator {
 		 * in statemachine, region_1, and region_3 have event or condition when waitType is "wait"
 		 */
 		
-		config[8].getStatemachines().load("wait_transitionInfo", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[8]).load("wait_transitionInfo", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/wait_TransitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -453,7 +454,7 @@ public class TestStateMachineValidator {
 		 * region_1, and region_3 do not have event or condition or both when waitType is "before"
 		 */
 		
-		config[9].getStatemachines().load("before_transitionInfo", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[9]).load("before_transitionInfo", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/before_transitionInfo.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -467,7 +468,7 @@ public class TestStateMachineValidator {
 		 * do not have valid C identifier names
 		 */
 		
-		config[10].getStatemachines().load("dup_inavalidnames", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[10]).load("dup_inavalidnames", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/dup_invalidnames.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -481,7 +482,7 @@ public class TestStateMachineValidator {
 		 * duplicate names, and invalid names
 		 */
 		
-		config[11].getStatemachines().load("dup_invalidnames_moreInitial", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[11]).load("dup_invalidnames_moreInitial", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/dup_invName_moreInit.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -496,7 +497,7 @@ public class TestStateMachineValidator {
 		 */
 		
 
-		config[12].getStatemachines().load("dup_invNames_initVal", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[12]).load("dup_invNames_initVal", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/dup_invN_moreIn_IncIn.statemachine").toString()));
 		
 		//reset stringbuffer
@@ -510,7 +511,7 @@ public class TestStateMachineValidator {
 		 * than one initial states, and initial state with incoming/more than 1 outgoing transitions/
 		 * condition/event/wait transition
 		 */
-		config[13].getStatemachines().load("fails_first4_cases", URI.createURI(TestHelpers
+		StatemachinesConfigProvider.get(config[13]).load("fails_first4_cases", URI.createURI(TestHelpers
 				.getResourceURL("files/validator_statemachines/fails_alltests.statemachine").toString()));
 		
 		//reset stringbuffer

@@ -40,6 +40,7 @@ import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 import de.upbracing.code_generation.generators.fsm.Validator;
@@ -58,7 +59,7 @@ public class TestStateTransitions {
 			message[i] = new Messages();
 			config[i] = new CodeGeneratorConfigurations();
 			Helpers.addStatemachineFormatters(message[i],
-					config[i].getStatemachines());
+					StatemachinesConfigProvider.get(config[i]));
 
 			// add message listener
 			message[i].addMessageListener(new MessageListener() {
@@ -205,7 +206,7 @@ public class TestStateTransitions {
 		StateMachineForGeneration smg_1 = new StateMachineForGeneration(
 				"Testtransitions", statemachine);
 
-		config[0].getStatemachines().add(smg_1);
+		StatemachinesConfigProvider.get(config[0]).add(smg_1);
 
 		assertEquals(false, validator[0].validate());
 		assertEquals(
@@ -251,7 +252,7 @@ public class TestStateTransitions {
 		// create object of statemachineforGeneration and add it to the config
 		StateMachineForGeneration smg_2 = new StateMachineForGeneration(
 				"initalHasWait", statm_1);
-		config[1].getStatemachines().add(smg_2);
+		StatemachinesConfigProvider.get(config[1]).add(smg_2);
 
 		sb.setLength(0);
 
@@ -298,7 +299,7 @@ public class TestStateTransitions {
 		// create object of statemachineforGeneration and add it to the config
 		StateMachineForGeneration smg_3 = new StateMachineForGeneration(
 				"initalHasEvent", statm_2);
-		config[2].getStatemachines().add(smg_3);
+		StatemachinesConfigProvider.get(config[2]).add(smg_3);
 
 		sb.setLength(0);
 
@@ -342,7 +343,7 @@ public class TestStateTransitions {
 
 		StateMachineForGeneration smg_4 = new StateMachineForGeneration(
 				"initalHasCondition", statm_3);
-		config[3].getStatemachines().add(smg_4);
+		StatemachinesConfigProvider.get(config[3]).add(smg_4);
 
 		sb.setLength(0);
 
@@ -386,7 +387,7 @@ public class TestStateTransitions {
 
 		StateMachineForGeneration smg_5 = new StateMachineForGeneration(
 				"initalmeetsConditions", statm_4);
-		config[4].getStatemachines().add(smg_5);
+		StatemachinesConfigProvider.get(config[4]).add(smg_5);
 
 		sb.setLength(0);
 
@@ -455,7 +456,7 @@ public class TestStateTransitions {
 
 		StateMachineForGeneration smg_6 = new StateMachineForGeneration(
 				"transitionHasEvent", statm_5);
-		config[5].getStatemachines().add(smg_6);
+		StatemachinesConfigProvider.get(config[5]).add(smg_6);
 
 		sb.setLength(0);
 
@@ -516,7 +517,7 @@ public class TestStateTransitions {
 
 		StateMachineForGeneration smg_7 = new StateMachineForGeneration(
 				"transitionHasCondition", statm_6);
-		config[6].getStatemachines().add(smg_7);
+		StatemachinesConfigProvider.get(config[6]).add(smg_7);
 
 		sb.setLength(0);
 
@@ -577,7 +578,7 @@ public class TestStateTransitions {
 		
 		StateMachineForGeneration smg_8 = new StateMachineForGeneration(
 				"transitionHasNoConditionOrEvent", statm_7);
-		config[7].getStatemachines().add(smg_8);
+		StatemachinesConfigProvider.get(config[7]).add(smg_8);
 
 		sb.setLength(0);
 
@@ -639,7 +640,7 @@ public class TestStateTransitions {
 		
 		StateMachineForGeneration smg_9 = new StateMachineForGeneration(
 				"transitionHasNoEventOrCondition", statm_8);
-		config[8].getStatemachines().add(smg_9);
+		StatemachinesConfigProvider.get(config[8]).add(smg_9);
 
 		sb.setLength(0);
 
@@ -697,7 +698,7 @@ public class TestStateTransitions {
 		
 		StateMachineForGeneration smg_10 = new StateMachineForGeneration(
 				"transitionHasCondition", statm_9);
-		config[9].getStatemachines().add(smg_10);
+		StatemachinesConfigProvider.get(config[9]).add(smg_10);
 
 		sb.setLength(0);
 

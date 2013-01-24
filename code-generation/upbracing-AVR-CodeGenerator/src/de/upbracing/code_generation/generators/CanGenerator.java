@@ -18,7 +18,10 @@ import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.ECUListProvider;
+import de.upbracing.code_generation.config.GlobalVariableConfigProvider;
 import de.upbracing.code_generation.config.Mob;
+import de.upbracing.code_generation.config.rtos.RTOSConfigProvider;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
 
@@ -30,9 +33,13 @@ import de.upbracing.dbc.DBCSignal;
  */
 public class CanGenerator extends AbstractGenerator {
 	public CanGenerator() {
-		super(GlobalVariableGenerator.class, "can.h", new CanHeaderTemplate(), 
-											 "can.c", new CanCFileTemplate(), 
-											 "can_valuetables.h", new CanValueTablesTemplate());
+		super(GlobalVariableGenerator.class,
+				RTOSGenerator.class,
+				
+				"can.h", new CanHeaderTemplate(), 
+				"can.c", new CanCFileTemplate(),
+				"can_valuetables.h", new CanValueTablesTemplate()
+		);
 	}
 	
 	@Override
@@ -40,16 +47,16 @@ public class CanGenerator extends AbstractGenerator {
 		if (config.getState(CANConfigProvider.STATE) == null)
 			return true;
 		
-		if (config.getCurrentEcu() == null) {
+		if (config.getState(ECUListProvider.STATE_CURRENT_ECU) == null) {
 			System.err.println("ERROR: Ecu not set.");
 			return false;
 		}
 		
 		if (after_update_config) {
-			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getNodeName());
+			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName());
 
 			if (dbcEcu == null) //If node name fails, try normal name
-				dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getName());
+				dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getState(ECUListProvider.STATE_CURRENT_ECU).getName());
 			
 			if (dbcEcu == null) {
 				System.err.println("ERROR: Could not find the ecu.");
@@ -96,7 +103,7 @@ public class CanGenerator extends AbstractGenerator {
 		if (config.getState(CANConfigProvider.STATE) == null)
 			return null;
 		
-		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getNodeName());
+		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName());
 
 		//Sort messages and signals by raw id
 		java.util.Collections.sort((List<DBCMessage>)dbcEcu.getRxMsgs(), new Comparator<DBCMessage>() {
@@ -324,8 +331,8 @@ public class CanGenerator extends AbstractGenerator {
 				
 				if (!foundMessage) {
 					//Create new task
-					int ticksPerBase = (int)(msgconfig.getPeriod() * ((double)config.getRtos().getTickFrequency()));
-					config.getRtos().addTask(msgconfig.getName(), ticksPerBase);
+					int ticksPerBase = (int)(msgconfig.getPeriod() * ((double)RTOSConfigProvider.get(config).getTickFrequency()));
+					RTOSConfigProvider.get(config).addTask(msgconfig.getName(), ticksPerBase);
 
 					//Add this task in a new list to the task list
 					List<DBCMessageConfig> list = new LinkedList<DBCMessageConfig>();
@@ -336,7 +343,7 @@ public class CanGenerator extends AbstractGenerator {
 		}
 		
 		//Add declaration for value tables to global variables
-		config.getGlobalVariables().addDeclaration("#include \"can_valuetables.h\"");
+		GlobalVariableConfigProvider.get(config).addDeclaration("#include \"can_valuetables.h\"");
 		
 		
 		return null;
@@ -509,13 +516,13 @@ public class CanGenerator extends AbstractGenerator {
 					// a warning because they may be intentional.
 				}
 				
-				if (!config.getGlobalVariables().containsKey(name))
-					config.getGlobalVariables().add(name, signal.getCType());
+				if (!GlobalVariableConfigProvider.get(config).containsKey(name))
+					GlobalVariableConfigProvider.get(config).add(name, signal.getCType());
 				else {
 					if (!fixed_name) {
 						// Append a suffix to change the name and make it unique
 						int suffix = 1;
-						while(config.getGlobalVariables().containsKey(name + "_" + suffix)) {
+						while(GlobalVariableConfigProvider.get(config).containsKey(name + "_" + suffix)) {
 							suffix++;
 						}
 						
@@ -528,7 +535,7 @@ public class CanGenerator extends AbstractGenerator {
 								+ "code generator runs. Please set the variable name in your configuration or remove the offending variable.",
 								name, signal.getName(), signal.getMessage().getName(), signal.getGlobalVarName());
 						
-						config.getGlobalVariables().add(signal.getGlobalVarName(), signal.getCType());
+						GlobalVariableConfigProvider.get(config).add(signal.getGlobalVarName(), signal.getCType());
 					} else {
 						config.getMessages().info("Not creating global variable '%s' (for signal '%s' in message '%s') because it exists and the name has been set by the user",
 								name, signal.getName(), signal.getMessage().getName());

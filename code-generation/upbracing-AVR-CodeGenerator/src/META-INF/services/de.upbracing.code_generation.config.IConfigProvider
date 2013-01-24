@@ -1,1 +1,9 @@
 de.upbracing.code_generation.config.TestConfigExtProvider
+de.upbracing.code_generation.config.CANConfigProvider
+de.upbracing.code_generation.config.ECUListProvider
+de.upbracing.code_generation.config.EEPROMConfigProvider
+de.upbracing.code_generation.config.GlobalVariableConfigProvider
+de.upbracing.code_generation.config.PinConfigProvider
+de.upbracing.code_generation.config.StatemachinesConfigProvider
+de.upbracing.code_generation.config.TimerConfigProvider
+de.upbracing.code_generation.config.rtos.RTOSConfigProvider

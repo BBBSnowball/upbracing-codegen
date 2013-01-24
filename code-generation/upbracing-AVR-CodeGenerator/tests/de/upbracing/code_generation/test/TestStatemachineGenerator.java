@@ -4,6 +4,7 @@ import org.eclipse.emf.common.util.URI;
 import org.junit.Test;
 
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 public class TestStatemachineGenerator {
@@ -12,7 +13,7 @@ public class TestStatemachineGenerator {
 	public void testCounterStatemachine() {
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		
-		config.getStatemachines().load("counter",
+		StatemachinesConfigProvider.get(config).load("counter",
 				URI.createURI(TestHelpers.getResourceURL("files/counter.statemachine").toString()));
 
 		
@@ -26,7 +27,7 @@ public class TestStatemachineGenerator {
 	public void testSimplePCStatemachine() {
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		
-		config.getStatemachines().load("simple_pc",
+		StatemachinesConfigProvider.get(config).load("simple_pc",
 				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statemachine").toString()));
 
 		
@@ -39,10 +40,10 @@ public class TestStatemachineGenerator {
 	public void testTwoStatemachines() {
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		
-		config.getStatemachines().load("counter",
+		StatemachinesConfigProvider.get(config).load("counter",
 				URI.createURI(TestHelpers.getResourceURL("files/counter.statemachine").toString()));
 
-		config.getStatemachines().load("simple_pc",
+		StatemachinesConfigProvider.get(config).load("simple_pc",
 				URI.createURI(TestHelpers.getResourceURL("files/simple-pc.statemachine").toString()));
 
 		

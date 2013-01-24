@@ -32,6 +32,7 @@ import javax.script.ScriptException;
 
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
+import de.upbracing.code_generation.config.CWDProvider;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.utils.Util;
 
@@ -493,7 +494,7 @@ public final class CodeGenerationMain {
 			old_pwd = engine.eval("Dir.pwd").toString();
 			engine.put("directory", directory);
 			engine.eval("Dir.chdir($directory)");
-			CodeGeneratorConfigurations.setCurrentDirectory(directory);
+			CWDProvider.setCurrentDirectory(directory);
 		}
 		
 		// execute the script

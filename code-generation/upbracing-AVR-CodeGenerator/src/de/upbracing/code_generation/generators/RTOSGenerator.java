@@ -13,6 +13,7 @@ import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.rtos.RTOSAlarm;
 import de.upbracing.code_generation.config.rtos.RTOSConfig;
 import de.upbracing.code_generation.config.rtos.RTOSTask;
+import de.upbracing.code_generation.config.rtos.RTOSConfigProvider;
 
 public class RTOSGenerator extends AbstractGenerator {
 	public RTOSGenerator() {
@@ -24,12 +25,12 @@ public class RTOSGenerator extends AbstractGenerator {
 	@Override
 	public boolean isTemplateActive(String filename, ITemplate template,
 			CodeGeneratorConfigurations config) {
-		return config.getRtos().isUsed();
+		return RTOSConfigProvider.get(config).isUsed();
 	}
 	
 	@Override
 	public boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data) {
-		RTOSConfig rtos = config.getRtos();
+		RTOSConfig rtos = RTOSConfigProvider.get(config);
 
 		if (!rtos.isUsed())
 			return true;
@@ -111,7 +112,7 @@ public class RTOSGenerator extends AbstractGenerator {
 	
 	@Override
 	public Object updateConfig(CodeGeneratorConfigurations config) {
-		config.getRtos().updateTaskIDs();
+		RTOSConfigProvider.get(config).updateTaskIDs();
 		
 		return super.updateConfig(config);
 	}

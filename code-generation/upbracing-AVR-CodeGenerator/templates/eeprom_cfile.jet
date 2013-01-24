@@ -13,14 +13,14 @@
 
 #include "eeprom_accessors.h"
 
-<% if (config.getEeprom().isEmpty()) { %>
+<% if (EEPROMConfigProvider.get(config).isEmpty()) { %>
 // no EEPROM variables found
 <% } else { %>
 EEPROMDATA eeprom_data EEMEM NO_UNUSED_WARNING_PLEASE = {
 <%
 Table t = new Table(stringBuffer);
 t.start();
-for (EEPROMVariable var : config.getEeprom()) {
+for (EEPROMVariable var : EEPROMConfigProvider.get(config)) {
 	Object defaultValue = var.getDefaultValue();
 	if (defaultValue == null)
 		defaultValue = "(" + var.getType() + ")(uint64_t)-1";

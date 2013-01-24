@@ -10,7 +10,7 @@
 
 boolean run_generator = true;
 
-DBCConfig can_config = config.getCan();
+DBCConfig can_config = config.getState(CANConfigProvider.STATE);
 
 if (can_config == null) {
 	run_generator = false;

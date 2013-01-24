@@ -18,7 +18,7 @@
 HashMap<String, String> varnames = (HashMap<String, String>) generator_data;
 Table t = new Table(stringBuffer);
 t.start();
-for (GlobalVariable var : config.getGlobalVariables()) {
+for (GlobalVariable var : GlobalVariableConfigProvider.get(config)) {
 	String varname = varnames.get(var.getName());
 %>
 <%= var.getType() %>&&&<%= varname %><% if (var.getInitialValue() != null) { %>&&&= <%= var.getInitialValue() %><% } %>;

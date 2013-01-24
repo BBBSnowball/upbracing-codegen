@@ -9,9 +9,11 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import de.upbracing.code_generation.CodeGenerationMain;
+import de.upbracing.code_generation.config.CANConfigProvider;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.ECUListProvider;
 import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
@@ -37,7 +39,8 @@ public class TestCanGenerator {
 	public void testGenerate() {
 		
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
-		config.setEcus(new ArrayList<ECUDefinition>());
+		ArrayList<ECUDefinition> ecus = new ArrayList<ECUDefinition>();
+		ECUListProvider.setEcus(config, ecus);
 		
 		DBC dbc = new DBC("");
 		dbc.setEcus(new HashMap<String, DBCEcu>());
@@ -78,7 +81,7 @@ public class TestCanGenerator {
 		ecu.setTxMsgs(new ArrayList<DBCMessage>());
 		dbc.getEcus().put("LenkradDisplay", ecu);
 		dbc.getEcuNames().add("LenkradDisplay");
-		config.getEcus().add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
+		ecus.add(new ECUDefinition("Lenkrad-Display", "", "", "", "0x43", "LenkradDisplay"));
 		
 		//RX Messages
 		DBCMessage message = new DBCMessage(0x0, "0", false, "Bootloader_SelectNode", 1, Arrays.asList(ecu));
@@ -310,8 +313,8 @@ public class TestCanGenerator {
 		dbc.getMessages().put("EmptyMessage2", message);
 		dbc.getMessages().put("124", message);
 
-		config.setCan(dbc);
-		config.selectEcu("Lenkrad-Display");
+		CANConfigProvider.setCan(config, dbc);
+		ECUListProvider.selectEcu(config, "Lenkrad-Display");
 		
 		
 		//Configuration:

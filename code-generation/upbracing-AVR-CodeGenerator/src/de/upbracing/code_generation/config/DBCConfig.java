@@ -9,6 +9,7 @@ import java.util.Map;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
 import de.upbracing.dbc.DBCMessage;
+import de.upbracing.eculist.ECUDefinition;
 
 /**
  * Wrapper for DBC class.
@@ -121,12 +122,14 @@ public class DBCConfig extends DBC {
 	public void addRx(DBCMessageConfig msg) {
 		DBCEcuConfig ecu = null;
 		
-		if (config.getCurrentEcu() != null) {
-			ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getNodeName());
+		ECUDefinition currentEcu = config.getState(ECUListProvider.STATE_CURRENT_ECU);
+		if (currentEcu != null) {
+			if (currentEcu.getNodeName() != null && ! currentEcu.getNodeName().isEmpty())
+				ecu = (DBCEcuConfig)getEcu(currentEcu.getNodeName());
 		
 			//If it fails, try with normal name
 			if (ecu == null)
-				ecu = (DBCEcuConfig)getEcu(config.getCurrentEcu().getName());
+				ecu = (DBCEcuConfig)getEcu(currentEcu.getName());
 		}
 		
 		if (ecu == null) {

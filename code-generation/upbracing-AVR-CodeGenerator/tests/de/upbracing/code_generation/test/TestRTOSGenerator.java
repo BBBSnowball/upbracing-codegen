@@ -5,6 +5,7 @@ import org.junit.Test;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.rtos.RTOSTask;
 import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
+import de.upbracing.code_generation.config.rtos.RTOSConfigProvider;
 import de.upbracing.code_generation.generators.RTOSGenerator;
 
 public class TestRTOSGenerator {
@@ -12,14 +13,14 @@ public class TestRTOSGenerator {
 	public void testGenerate() {
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		
-		config.getRtos().setClock(8000000);
-		config.getRtos().setTickFrequency(5);
-//		config.getRtos().setConformanceClass("BCC1");
+		RTOSConfigProvider.get(config).setClock(8000000);
+		RTOSConfigProvider.get(config).setTickFrequency(5);
+//		RtosConfigProvider.get(config).setConformanceClass("BCC1");
 
 		@SuppressWarnings("unused")
-		RTOSTask update_task = config.getRtos().addTask("Update", TaskState.SUSPENDED, 1);
-		config.getRtos().addTask("Increment", TaskState.SUSPENDED, 5);
-		config.getRtos().addTask("Shift", TaskState.SUSPENDED, 1);
+		RTOSTask update_task = RTOSConfigProvider.get(config).addTask("Update", TaskState.SUSPENDED, 1);
+		RTOSConfigProvider.get(config).addTask("Increment", TaskState.SUSPENDED, 5);
+		RTOSConfigProvider.get(config).addTask("Shift", TaskState.SUSPENDED, 1);
 		
 		
 		GeneratorTester gen = new GeneratorTester(new RTOSGenerator(), config);

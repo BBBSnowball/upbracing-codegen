@@ -7,6 +7,7 @@ import de.upbracing.code_generation.GlobalVariableHeaderTemplate;
 import de.upbracing.code_generation.TemplateHelpers;
 import de.upbracing.code_generation.config.GlobalVariable;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.GlobalVariableConfigProvider;
 
 /**
  * Generator for global variable accessors
@@ -22,7 +23,7 @@ public class GlobalVariableGenerator extends AbstractGenerator {
 	@Override
 	public Object updateConfig(CodeGeneratorConfigurations config) {
 		HashMap<String, String> varnames = new HashMap<String, String>();
-		for (GlobalVariable var : config.getGlobalVariables()) {
+		for (GlobalVariable var : GlobalVariableConfigProvider.get(config)) {
 			String varname = var.getName();
 			varname += "_" + TemplateHelpers.md5(varname);
 			varnames.put(var.getName(), varname);

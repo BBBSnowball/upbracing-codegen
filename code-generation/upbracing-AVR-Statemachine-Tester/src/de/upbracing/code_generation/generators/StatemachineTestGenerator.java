@@ -16,6 +16,7 @@ import statemachine.StateWithActions;
 import statemachine.SuperState;
 
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.StatemachinesCFileTemplate;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder;
@@ -49,7 +50,7 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 			StateMachine sm = smw.statemachine;
 			
 			StateMachineForGeneration smg = new StateMachineForGeneration("sm"+i, sm);
-			config.getStatemachines().add(smg);
+			StatemachinesConfigProvider.get(config).add(smg);
 			ways.put(smg, smw);
 			
 			addTestActions(smg);
