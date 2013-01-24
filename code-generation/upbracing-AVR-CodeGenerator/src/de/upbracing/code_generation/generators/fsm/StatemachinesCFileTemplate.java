@@ -36,7 +36,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	 * 
 	 * @see IGenerator#generate(Object)
 	 */
-	public String generate(MCUConfiguration config, Object generator_data) {
+	public String generate(CodeGeneratorConfigurations config, Object generator_data) {
 		final StringBuffer stringBuffer = new StringBuffer();
 		stringBuffer.append("/*\n * statemachines.c\n *\n * This file defines all statemachines.\n *\n"
 				+" * Generated automatically. DO NOT MODIFY! Change config.rb instead.\n */\n\n");

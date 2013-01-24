@@ -34,7 +34,7 @@ import statemachine.SuperState;
 import statemachine.Transition;
 
 import de.upbracing.code_generation.JRubyHelpers;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Updater;
 import de.upbracing.code_generation.test.TestHelpers;
@@ -102,7 +102,7 @@ public class TestCollapseFinalStates {
 			statm_1.getTransitions().add(trans_1[i]);
 		
 		StateMachineForGeneration smg_1 = new StateMachineForGeneration("Collapsefinalstates_1", statm_1);
-		MCUConfiguration config_1 = new MCUConfiguration();
+		CodeGeneratorConfigurations config_1 = new CodeGeneratorConfigurations();
 		config_1.getStatemachines().add(smg_1);
 		Updater collapsefinal_1 = new Updater(config_1);
 		collapsefinal_1.updateConfig(config_1);
@@ -217,7 +217,7 @@ public class TestCollapseFinalStates {
 			statemachine.getTransitions().add(trans[i]);
 		
 		StateMachineForGeneration smg = new StateMachineForGeneration("Collapsefinalstates", statemachine);
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		config.getStatemachines().add(smg);
 		Updater collapsefinal = new Updater(config);
 		collapsefinal.updateConfig(config);
@@ -356,7 +356,7 @@ public class TestCollapseFinalStates {
 			statemachine.getTransitions().add(trans[i]);
 		
 		StateMachineForGeneration smg_3 = new StateMachineForGeneration("Collapsefinalstates_3", statm_3);
-		MCUConfiguration config_3 = new MCUConfiguration();
+		CodeGeneratorConfigurations config_3 = new CodeGeneratorConfigurations();
 		config_3.getStatemachines().add(smg_3);
 		Updater collapsefinal_3 = new Updater(config_3);
 		collapsefinal_3.updateConfig(config_3);
@@ -507,7 +507,7 @@ public class TestCollapseFinalStates {
 			statm_2.getTransitions().add(tran_2[i]);
 		
 		StateMachineForGeneration smg_2 = new StateMachineForGeneration("Collapsefinalstates_2", statm_2);
-		MCUConfiguration config_2 = new MCUConfiguration();
+		CodeGeneratorConfigurations config_2 = new CodeGeneratorConfigurations();
 		config_2.getStatemachines().add(smg_2);
 		Updater collapsefinal_2 = new Updater(config_2);
 		collapsefinal_2.updateConfig(config_2);

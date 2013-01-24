@@ -3,7 +3,8 @@ require 'parse-dbc.rb'
 require 'parse-ecu-list.rb'
 
 JRubyHelpers     = Java::de::upbracing::code_generation::JRubyHelpers
-MCUConfiguration = Java::de::upbracing::code_generation::config::MCUConfiguration
+CodeGeneratorConfigurations = Java::de::upbracing::code_generation::config::CodeGeneratorConfigurations
+ConfigurationExtender       = Java::de::upbracing::code_generation::config::ConfigurationExtender
 
 def port(*args) ; $config.pins.addPort(*args) ; end
 def pin(*args)  ; $config.pins.add(*args)     ; end
@@ -330,9 +331,6 @@ end
 #    $can_aliases['signals_back'][$old] = array();
 #  $can_aliases['signals_back'][$old][] = $new;
 #}
-
-CodeGeneratorConfigurations = Java::de::upbracing::code_generation::config::CodeGeneratorConfigurations
-ConfigurationExtender       = Java::de::upbracing::code_generation::config::ConfigurationExtender
 
 def snake_case(name)
   name.gsub(/[a-z0-9][A-Z]/) { |a| a[0] + "_" + a[1].downcase }

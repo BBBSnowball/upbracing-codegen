@@ -13,10 +13,11 @@ import de.upbracing.code_generation.CanHeaderTemplate;
 import de.upbracing.code_generation.CanCFileTemplate;
 import de.upbracing.code_generation.CanValueTablesTemplate;
 import de.upbracing.code_generation.Messages;
+import de.upbracing.code_generation.config.CANConfigProvider;
 import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.Mob;
 import de.upbracing.dbc.DBCMessage;
 import de.upbracing.dbc.DBCSignal;
@@ -35,8 +36,8 @@ public class CanGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
-		if (config.getCan() == null)
+	public boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data) {
+		if (config.getState(CANConfigProvider.STATE) == null)
 			return true;
 		
 		if (config.getCurrentEcu() == null) {
@@ -45,10 +46,10 @@ public class CanGenerator extends AbstractGenerator {
 		}
 		
 		if (after_update_config) {
-			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
+			DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getNodeName());
 
 			if (dbcEcu == null) //If node name fails, try normal name
-				dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getName());
+				dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getName());
 			
 			if (dbcEcu == null) {
 				System.err.println("ERROR: Could not find the ecu.");
@@ -91,11 +92,11 @@ public class CanGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public Object updateConfig(MCUConfiguration config) {
-		if (config.getCan() == null)
+	public Object updateConfig(CodeGeneratorConfigurations config) {
+		if (config.getState(CANConfigProvider.STATE) == null)
 			return null;
 		
-		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getCan().getEcu(config.getCurrentEcu().getNodeName());
+		DBCEcuConfig dbcEcu = (DBCEcuConfig)config.getState(CANConfigProvider.STATE).getEcu(config.getCurrentEcu().getNodeName());
 
 		//Sort messages and signals by raw id
 		java.util.Collections.sort((List<DBCMessage>)dbcEcu.getRxMsgs(), new Comparator<DBCMessage>() {
@@ -245,7 +246,7 @@ public class CanGenerator extends AbstractGenerator {
 				mobs.put(mobName, mob);
 				dbcEcu.addMob(mob);
 				
-				String rx_handler = config.getCan().getUserMobRxHandlers().get(user_mob_id);
+				String rx_handler = config.getState(CANConfigProvider.STATE).getUserMobRxHandlers().get(user_mob_id);
 				if (rx_handler != null)
 					mob.setOnRx(rx_handler);
 			}
@@ -466,7 +467,7 @@ public class CanGenerator extends AbstractGenerator {
 		}
 	}
 
-	private void addGlobalVariables(MCUConfiguration config,
+	private void addGlobalVariables(CodeGeneratorConfigurations config,
 			HashMap<String, LinkedList<DBCSignalConfig>> variables_to_add,
 			HashMap<String, LinkedList<DBCSignalConfig>> conflicting_variables,
 			String direction_prefix) {

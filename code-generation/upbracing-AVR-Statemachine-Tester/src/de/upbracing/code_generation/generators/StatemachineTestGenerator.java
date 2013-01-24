@@ -15,7 +15,7 @@ import statemachine.StateScope;
 import statemachine.StateWithActions;
 import statemachine.SuperState;
 
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.StatemachinesCFileTemplate;
 import de.upbracing.code_generation.generators.fsm_test.StatemachineBuilder;
@@ -32,7 +32,7 @@ public class StatemachineTestGenerator extends AbstractGenerator {
 	private Map<StateMachineForGeneration, StatemachineWithWay> ways;
 
 	@Override
-	public Object updateConfig(MCUConfiguration config) {
+	public Object updateConfig(CodeGeneratorConfigurations config) {
 		ways = new HashMap<StateMachineForGeneration, StatemachineWithWay>();
 		
 		for (int i=0;i<4;i++) {

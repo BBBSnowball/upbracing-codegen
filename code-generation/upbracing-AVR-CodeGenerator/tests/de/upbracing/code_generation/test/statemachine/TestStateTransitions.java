@@ -39,7 +39,7 @@ import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 import de.upbracing.code_generation.generators.fsm.Validator;
@@ -48,7 +48,7 @@ import de.upbracing.code_generation.test.TestHelpers;
 public class TestStateTransitions {
 	final StringBuffer sb = new StringBuffer();
 	Messages[] message = new Messages[10];
-	MCUConfiguration[] config = new MCUConfiguration[10];
+	CodeGeneratorConfigurations[] config = new CodeGeneratorConfigurations[10];
 	Validator[] validator = new Validator[10];
 
 	@Test
@@ -56,7 +56,7 @@ public class TestStateTransitions {
 		// create messages object, config object, and add statemachineformatters
 		for (int i = 0; i < message.length; i++) {
 			message[i] = new Messages();
-			config[i] = new MCUConfiguration();
+			config[i] = new CodeGeneratorConfigurations();
 			Helpers.addStatemachineFormatters(message[i],
 					config[i].getStatemachines());
 

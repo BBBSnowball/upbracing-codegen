@@ -2,7 +2,7 @@ package de.upbracing.code_generation.test;
 
 import org.junit.Test;
 
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.rtos.RTOSTask;
 import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 import de.upbracing.code_generation.generators.RTOSGenerator;
@@ -10,7 +10,7 @@ import de.upbracing.code_generation.generators.RTOSGenerator;
 public class TestRTOSGenerator {
 	@Test
 	public void testGenerate() {
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		
 		config.getRtos().setClock(8000000);
 		config.getRtos().setTickFrequency(5);

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import de.upbracing.code_generation.TimerHeaderTemplate;
 import de.upbracing.code_generation.TimerCFileTemplate;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.validation.ConfigurationModelValidator;
 import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
@@ -24,7 +24,7 @@ public class TimerGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
+	public boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data) {
 		// if we don't have a model, there is nothing to do
 		if (config.getTimerConfig() == null)
 			return true;

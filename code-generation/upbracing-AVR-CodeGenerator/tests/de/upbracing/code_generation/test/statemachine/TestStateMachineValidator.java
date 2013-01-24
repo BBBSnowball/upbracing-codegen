@@ -52,7 +52,7 @@ import de.upbracing.code_generation.JRubyHelpers;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.Message;
 import de.upbracing.code_generation.Messages.MessageListener;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.generators.fsm.Helpers;
 import de.upbracing.code_generation.generators.fsm.Validator;
@@ -63,13 +63,13 @@ public class TestStateMachineValidator {
 	Messages[] messages = new Messages[15];
 	Validator[] validate = new Validator[15];
 	final StringBuffer sb = new StringBuffer();
-	MCUConfiguration[] config = new MCUConfiguration[15];
+	CodeGeneratorConfigurations[] config = new CodeGeneratorConfigurations[15];
 
 	@Test
 	public void test() {
 
 		for (int i = 0; i < messages.length; i++) {
-			config[i] = new MCUConfiguration();
+			config[i] = new CodeGeneratorConfigurations();
 			messages[i] = new Messages();
 			validate[i] = new Validator(config[i], false, null);
 			Helpers.addStatemachineFormatters(messages[i],
@@ -208,7 +208,7 @@ public class TestStateMachineValidator {
 		StateMachineForGeneration smg_1 = new StateMachineForGeneration(
 				"FailedStateMachine", statemachine);
 
-		MCUConfiguration config_fail = new MCUConfiguration();
+		CodeGeneratorConfigurations config_fail = new CodeGeneratorConfigurations();
 		config_fail.getStatemachines().add(smg_1);
 		Validator validate_fail = new Validator(config_fail, false, null);
 
@@ -316,7 +316,7 @@ public class TestStateMachineValidator {
 		StateMachineForGeneration smg_2 = new StateMachineForGeneration(
 				"PassedStatemachine", statem_pass);
 
-		MCUConfiguration config_pass = new MCUConfiguration();
+		CodeGeneratorConfigurations config_pass = new CodeGeneratorConfigurations();
 		config_pass.getStatemachines().add(smg_2);
 
 		Validator validate_pass = new Validator(config_pass, false, null);

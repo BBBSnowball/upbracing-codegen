@@ -11,7 +11,7 @@ import org.junit.Test;
 import de.upbracing.code_generation.CodeGenerationMain;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.dbc.DBC;
 import de.upbracing.dbc.DBCEcu;
@@ -27,7 +27,7 @@ public class TestCanGenerator {
 	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
 
-		MCUConfiguration config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
+		CodeGeneratorConfigurations config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
 		
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");
@@ -36,7 +36,7 @@ public class TestCanGenerator {
 	@Test
 	public void testGenerate() {
 		
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		config.setEcus(new ArrayList<ECUDefinition>());
 		
 		DBC dbc = new DBC("");
@@ -315,7 +315,7 @@ public class TestCanGenerator {
 		
 		
 		//Configuration:
-		DBCConfig canconfig = config.getCan();
+		DBCConfig canconfig = config.getState(CANConfigProvider.STATE);
 		
 		//Alias
 		canconfig.getMessage("Bootloader_1").addAlias("RS232_FORWARD_DATA");

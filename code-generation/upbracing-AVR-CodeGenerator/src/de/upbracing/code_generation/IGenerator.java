@@ -2,7 +2,7 @@ package de.upbracing.code_generation;
 
 import java.util.Map;
 
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 
 /**
  * Interface for a code generator
@@ -26,7 +26,7 @@ public interface IGenerator {
 	 * @return true, if the file should be generated
 	 */
 	boolean isTemplateActive(String filename, ITemplate template,
-			MCUConfiguration config);
+			CodeGeneratorConfigurations config);
 	
 	/**
 	 * Validate the configuration
@@ -36,7 +36,7 @@ public interface IGenerator {
 	 * @param generator_data data returned by updateConfig or null
 	 * @return whether the configuration is valid
 	 */
-	boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data);
+	boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data);
 	
 	/**
 	 * Get all generators that are used by this generator
@@ -54,5 +54,5 @@ public interface IGenerator {
 	 * @param config the configuration
 	 * @return data that will be passed into the template (generator_data)
 	 */
-	Object updateConfig(MCUConfiguration config);
+	Object updateConfig(CodeGeneratorConfigurations config);
 }

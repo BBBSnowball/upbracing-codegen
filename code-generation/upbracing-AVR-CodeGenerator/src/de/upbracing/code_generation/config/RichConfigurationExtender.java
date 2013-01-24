@@ -14,7 +14,7 @@ public interface RichConfigurationExtender extends ConfigurationExtender {
 	 * 
 	 * NOTE: Method names must be unique - you cannot overload them.
 	 * 
-	 * @param method static method which can take an MCUConfiguration as its first argument
+	 * @param method static method which can take an CodeGeneratorConfigurations as its first argument
 	 */
 	void addMethod(Method method);
 }

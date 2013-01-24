@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import de.upbracing.code_generation.IGenerator;
 import de.upbracing.code_generation.ITemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 
 /**
  * Generic implementation of the IGenerator interface
@@ -61,17 +61,17 @@ public abstract class AbstractGenerator implements IGenerator {
 
 	@Override
 	public boolean isTemplateActive(String filename, ITemplate template,
-			de.upbracing.code_generation.config.MCUConfiguration config) {
+			de.upbracing.code_generation.config.CodeGeneratorConfigurations config) {
 		return true;
 	}
 	
 	@Override
-	public Object updateConfig(MCUConfiguration config) {
+	public Object updateConfig(CodeGeneratorConfigurations config) {
 		return null;
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config,
+	public boolean validate(CodeGeneratorConfigurations config,
 			boolean after_update_config, Object generator_data) {
 		return true;
 	}

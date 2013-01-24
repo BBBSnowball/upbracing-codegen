@@ -12,7 +12,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 import de.upbracing.code_generation.CodeGenerationMain.Arguments;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 
 import static de.upbracing.code_generation.CodeGenerationMain.*;
 
@@ -92,7 +92,7 @@ public class Main {
 		}
 		
 		// load config file
-		MCUConfiguration mcu_config = loadConfig(config);
+		CodeGeneratorConfigurations mcu_config = loadConfig(config);
 		
 		// generate the files
 		if (!runGenerators(mcu_config, config.getTargetDirectory()))

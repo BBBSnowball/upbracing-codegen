@@ -19,13 +19,13 @@ import de.upbracing.dbc.DBCMessage;
 public class DBCConfig extends DBC {
 	private String header_declarations;
 	private String cfile_declarations;
-	private MCUConfiguration config;
+	private CodeGeneratorConfigurations config;
 	
 	private Map<Integer, String> user_mob_rx_handlers = new HashMap<Integer, String>();
 	
 	public final String NL = System.getProperties().getProperty("line.separator");
 
-	public DBCConfig(DBC dbc, MCUConfiguration config) {
+	public DBCConfig(DBC dbc, CodeGeneratorConfigurations config) {
 		super(dbc.getVersion());
 		this.config = config;
 		

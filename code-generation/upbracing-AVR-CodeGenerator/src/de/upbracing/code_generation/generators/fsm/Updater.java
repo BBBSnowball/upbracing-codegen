@@ -18,7 +18,7 @@ import statemachine.Transition;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.common.Times;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.Action;
 import de.upbracing.code_generation.fsm.model.ActionType;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
@@ -29,11 +29,11 @@ import de.upbracing.code_generation.fsm.model.TransitionInfo;
 public class Updater {
 	private Messages messages;
 
-	public Updater(MCUConfiguration config) {
+	public Updater(CodeGeneratorConfigurations config) {
 		this.messages = config.getMessages();
 	}
 
-	public Object updateConfig(MCUConfiguration config) {
+	public Object updateConfig(CodeGeneratorConfigurations config) {
 		ContextItem context = messages.pushContext("updateConfig");
 		
 		updateParents(config);
@@ -47,7 +47,7 @@ public class Updater {
 		return null;
 	}
 
-	private void updateParents(MCUConfiguration config) {
+	private void updateParents(CodeGeneratorConfigurations config) {
 		// Unfortunately, the parents of most elements are not set
 		// automatically. We correct this here. The information
 		// remains valid because the structure of the statemachine
@@ -83,7 +83,7 @@ public class Updater {
 	// to set each transition to the right one.
 	
 	
-	private void collapseFinalStates(MCUConfiguration config) {
+	private void collapseFinalStates(CodeGeneratorConfigurations config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			collapseFinalStates(smg.getStateMachine());
 		}
@@ -145,7 +145,7 @@ public class Updater {
 		return prefix + Integer.toHexString(++assignNamesCounter).toUpperCase();
 	}
 	
-	private void assignNames(MCUConfiguration config) {
+	private void assignNames(CodeGeneratorConfigurations config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			assignNamesCounter = 0;
 			
@@ -195,7 +195,7 @@ public class Updater {
 		return obj == null || obj.isEmpty();
 	}
 
-	private void addStateVariables(MCUConfiguration config) {
+	private void addStateVariables(CodeGeneratorConfigurations config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			addStateVariables(smg, smg.getStateMachine());
 		}
@@ -236,7 +236,7 @@ public class Updater {
 	 * @param config
 	 *            the configuration to convert
 	 */
-	private void convertWaitToActionsAndConditions(MCUConfiguration config) {
+	private void convertWaitToActionsAndConditions(CodeGeneratorConfigurations config) {
 		for (StateMachineForGeneration smg : config.getStatemachines()) {
 			Set<StateWithActions> statesWithWait = new HashSet<StateWithActions>();
 

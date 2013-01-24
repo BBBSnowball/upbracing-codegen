@@ -3,14 +3,14 @@ package de.upbracing.code_generation.test;
 import org.junit.Test;
 
 import de.upbracing.code_generation.config.EEPROMVariable;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.generators.EEPROMAccessorGenerator;
 
 public class TestEepromGenerator {
 
 	@Test
 	public void testGenerate() {
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		config.getEeprom().add(new EEPROMVariable("wdt_reset_count", "uint8_t", 17));
 		config.getEeprom().add(new EEPROMVariable("foo", "s16", "0x4242"));
 		config.getEeprom().add("bar", "unsigned char");

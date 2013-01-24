@@ -18,7 +18,7 @@ import statemachine.Transition;
 import de.upbracing.code_generation.Messages;
 import de.upbracing.code_generation.Messages.ContextItem;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.fsm.model.ParserException;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.TransitionInfo;
@@ -26,13 +26,13 @@ import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 /** The validation part of {@link StatemachineGenerator} */
 public class Validator {
-	private MCUConfiguration config;
+	private CodeGeneratorConfigurations config;
 	private boolean after_update_config;
 	@SuppressWarnings("unused")
 	private Object generator_data;
 	private Messages messages;
 
-	public Validator(MCUConfiguration config, boolean after_update_config,
+	public Validator(CodeGeneratorConfigurations config, boolean after_update_config,
 			Object generator_data) {
 		this.config = config;
 		this.after_update_config = after_update_config;

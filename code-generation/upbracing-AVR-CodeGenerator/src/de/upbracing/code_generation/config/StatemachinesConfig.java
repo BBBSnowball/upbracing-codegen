@@ -37,7 +37,7 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 	 */
 	public StateMachineForGeneration load(String name, String filename) {
 		// make absolute path
-		filename = MCUConfiguration.makeAbsolute(filename);
+		filename = CodeGeneratorConfigurations.makeAbsolute(filename);
 		
 		return load(name, URI.createURI(filename));
 	}

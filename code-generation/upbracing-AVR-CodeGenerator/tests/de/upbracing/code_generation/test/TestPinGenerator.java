@@ -3,14 +3,14 @@ package de.upbracing.code_generation.test;
 import org.junit.Test;
 
 import de.upbracing.code_generation.PinTemplate;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.Pin;
 import de.upbracing.code_generation.generators.PinNameGenerator;
 
 public class TestPinGenerator {
 	@Test
 	public void testGenerate() {
-		MCUConfiguration config = new MCUConfiguration();
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		config.getPins().add("FOO", "PC0");
 		config.getPins().add("BAR", new Pin("PA3"));
 		config.getPins().add("ABC", new Pin('A', 2));
