@@ -13,6 +13,11 @@ public class TestConfigExtProvider implements IConfigProvider {
 		return 42;
 	}
 
+	@ConfigurationMethod
+	public static void setSomethingElse(CodeGeneratorConfigurations config, int x) {
+		config.setState(STATE_TEST2, x);
+	}
+
 	@Override
 	public void extendConfiguration(RichConfigurationExtender ext) {
 		ext.addState(STATE_TEST1, String.class);

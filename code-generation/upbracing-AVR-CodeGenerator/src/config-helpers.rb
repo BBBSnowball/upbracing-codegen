@@ -340,6 +340,10 @@ def upcase_first(name)
   name[0].upcase + name[1..-1]
 end
 
+def downcase_first(name)
+  name[0].downcase + name[1..-1]
+end
+
 # add configuration extensions (methods and properties) to the configuration object (for use by JRuby)
 class RubyConfigurationExtender
   include ConfigurationExtender
@@ -377,8 +381,15 @@ class RubyConfigurationExtender
   # add a method
   def addMethod(name, method)
     CodeGeneratorConfigurations.class_eval do
-      [name, snake_case(name)].uniq.each do |mname|
-        define_method(mname) do |*args|
+      names = [name, snake_case(name)]
+      if name =~ /^set/
+        # It is a setter, so we add the usual aliases.
+        name2 = downcase_first(name.sub(/^set/, ""))
+        names << name2+"="
+        names << snake_case(name2)+"="
+      end
+      names.uniq.each do |mname|
+        define_method(mname.intern) do |*args|
           #TODO do we have to cast arguments?
           #method.invoke(nil, [self.to_java(CodeGeneratorConfigurations), *args]) # -> doesn't work
           self.call name, *args

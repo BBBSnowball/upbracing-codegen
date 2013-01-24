@@ -28,6 +28,9 @@ public class TestCodeGeneratorConfigurations {
 		
 		assertEquals(42, config.call("doSomething", "x"));
 		assertLastMessageEquals("blub: x", config);
+		
+		config.call("setSomethingElse", 7);	// sets test2
+		assertEquals(7, config.getProperty("test2"));
 	}
 
 	private void assertLastMessageEquals(String expected, CodeGeneratorConfigurations config) {
@@ -97,5 +100,9 @@ public class TestCodeGeneratorConfigurations {
 
 		assertEquals(42L, engine.eval("$config.do_something 'xyz2'"));
 		assertLastMessageEquals("abc: xyz2", config);
+		
+
+		engine.eval("$config.something_else = 23");	// sets test2
+		assertEquals(23, config.getProperty("test2"));
 	}
 }
