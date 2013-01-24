@@ -56,6 +56,7 @@ public class CodeGeneratorConfigurations {
 	private static Map<String, ExtState<?>> properties = new HashMap<String, ExtState<?>>();
 	private static Map<String, Method> methods = new HashMap<String, Method>();
 	private static List<ConfigurationExtender> config_extension_listeners = new LinkedList<ConfigurationExtender>();
+	private static Map<ConfigState<?>, List<StateChangeListener<?>>> state_change_listeners = new HashMap<ConfigState<?>, List<StateChangeListener<?>>>();
 	
 	private Map<ConfigState<?>, Object> state_values = new HashMap<ConfigState<?>, Object>();
 
@@ -146,7 +147,11 @@ public class CodeGeneratorConfigurations {
 		if (! x.write_type.isAssignableFrom(new_value.getClass()))
 			throw new IllegalArgumentException("invalid type");
 		
+		Object old_value = state_values.get(x.config_state);
+		
 		state_values.put(x.config_state, new_value);
+		
+		fireStateChange(this, x.config_state, old_value, new_value);
 	}
 	
 	
@@ -240,6 +245,29 @@ public class CodeGeneratorConfigurations {
 		}
 	}
 	
+	public static <T> void addStateChangeListener(ConfigState<T> state, StateChangeListener<T> ext) {
+		synchronized (extension_sync_root) {
+			state_change_listeners.get(state).add(ext);
+		}
+	}
+	
+	public static <T> void removeStateChangeListener(ConfigState<T> state, StateChangeListener<T> ext) {
+		synchronized (extension_sync_root) {
+			state_change_listeners.get(state).remove(ext);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	//NOTE The value parameters are objects, so we have all the 'unchecked' casts in one place.
+	private static <T> void fireStateChange(CodeGeneratorConfigurations instance,
+			ConfigState<T> config_state, Object old_value, Object new_value) {
+		List<StateChangeListener<?>> listeners = state_change_listeners.get(config_state);
+		if (listeners != null)
+			for (StateChangeListener<?> listener : listeners)
+				((StateChangeListener<T>)listener).stateChanged(instance, config_state,
+						(T)old_value, (T)new_value);
+	}
+	
 	private static class Extender implements RichConfigurationExtender {
 		public static final Extender instance = new Extender();
 
@@ -303,6 +331,10 @@ public class CodeGeneratorConfigurations {
 				
 				if ((method.getModifiers() & Modifier.STATIC) == 0)
 					throw new IllegalArgumentException("Only static methods are allowed");
+				
+				Class<?>[] parameterTypes = method.getParameterTypes();
+				if (parameterTypes.length <= 0 || ! parameterTypes[0].equals(CodeGeneratorConfigurations.class))
+					throw new IllegalArgumentException("First parameter must have the type " + CodeGeneratorConfigurations.class.getName());
 				
 				methods.put(name, method);
 			}
