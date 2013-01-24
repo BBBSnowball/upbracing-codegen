@@ -390,7 +390,21 @@ class RubyConfigurationExtender
       end
       names.uniq.each do |mname|
         define_method(mname.intern) do |*args|
-          #TODO do we have to cast arguments?
+          # get parameter types (without the first one which is the config)
+          param_types = method.parameter_types[1..-1]
+          if method.isVarArgs
+            #TODO support var-args: isVarArgs
+            # Find out whether the user tries to call it variadic (and
+            # not with an array) and replace the variadic param type
+            # by some copies of the array item type.
+          end
+          if param_types.length != args.length
+            raise "I need #{param_types.length} arguments#{method.isVarArgs ? " (or more)" : ""}, but you gave me #{args.length}!"
+          end
+          
+          # tell JRuby to cast the values appropiately
+          args = param_types.zip(args).map { |x| x[1].to_java(x[0]) }
+          
           #method.invoke(nil, [self.to_java(CodeGeneratorConfigurations), *args]) # -> doesn't work
           self.call name, *args
         end
