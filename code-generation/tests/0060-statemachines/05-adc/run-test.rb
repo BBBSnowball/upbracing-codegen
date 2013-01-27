@@ -7,7 +7,7 @@ $helper.first_serial.ensure_baudrate 9600
 $helper.flash_processor
 
 # check output on serial console
-$helper.first_serial.expect_string "\r\n\r\nADC test\r\n"
+$helper.first_serial.expect_regex ".?\r\n\r\nADC test\r\n"
 
 # let's first make sure that the ADC is fine
 

@@ -29,10 +29,15 @@ void counter_tick();
 
 // statemachine counter
 
+void counter_event_ISR_INT0(void);
 void counter_event_reset(void);
 void counter_event_startstop_pressed(void);
 
 // accumulated event functions
+
+inline static void event_ISR_INT0() {
+	counter_event_ISR_INT0();
+}
 
 inline static void event_reset() {
 	counter_event_reset();

@@ -12,6 +12,7 @@ import info.reflectionsofmind.parser.matcher.NamedMatcher;
 import info.reflectionsofmind.parser.node.AbstractNode;
 import info.reflectionsofmind.parser.node.Nodes;
 import info.reflectionsofmind.parser.transform.AbstractTransformer;
+import info.reflectionsofmind.parser.transform.ChildTransformer1;
 import info.reflectionsofmind.parser.transform.ChildTransformer2;
 import info.reflectionsofmind.parser.transform.ChildTransformer5;
 import info.reflectionsofmind.parser.transform.ITransform;
@@ -23,6 +24,9 @@ import java.util.Map;
 
 import de.upbracing.code_generation.common.Parser;
 import de.upbracing.code_generation.common.Times;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.EventName;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.ISREventName;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.NormalEventName;
 
 /** parsers for parts of the statemachine model: transition text and state actions
  * 
@@ -117,13 +121,34 @@ public final class FSMParsers {
 		
 		transformCopyValueFromChild(transform, "condition", ">condition-text");
 		
-		transform.add(new ChildTransformer5<String, String, Double, String, String>(
-				String.class, String.class, Double.class, String.class, String.class,
+		transformUseTextAsValue(transform, "normal-event-name");
+		
+		transform.add(new ChildTransformer1<String>(String.class,
+				"isr-event", ">>identifier#text") {
+			@Override
+			protected Object transform(String isr_name) {
+				return new ISREventName(isr_name);
+			}
+		});
+		
+		transform.add(new ChildTransformer2<ISREventName, String>(ISREventName.class, String.class,
+				"event-name",  "?>>isr-event", "?>>normal-event-name") {
+			@Override
+			protected Object transform(ISREventName isr, String event_name) {
+				if (isr != null)
+					return isr;
+				else
+					return new NormalEventName(event_name);
+			}
+		});
+		
+		transform.add(new ChildTransformer5<EventName, String, Double, String, String>(
+				EventName.class, String.class, Double.class, String.class, String.class,
 				"transition-info", "~ws", 
-				"?>>event-name#text", "?>>wait-event-type#text", "?>>time",
+				"?>>event-name", "?>>wait-event-type#text", "?>>time",
 				"?>condition", "?>transition-action#text") {
 			@Override
-			protected Object transform(String event_name, String wait_type, Double wait_time,
+			protected Object transform(EventName event_name, String wait_type, Double wait_time,
 					String condition, String action) {
 				// most things can be null and we don't care
 				// However, for the Double value this would cause a NullPointerException,
@@ -163,7 +188,6 @@ public final class FSMParsers {
 		
 		return transform;
 	}
-
 	
 	public static void main(String args[]) throws Exception {
 		String parserName, text;

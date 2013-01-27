@@ -1,19 +1,11 @@
 package de.upbracing.code_generation.fsm.model;
 
 public class TransitionInfo {
-	private String eventName, condition, action, waitType;
+	private EventName eventName;
+	private String condition, action, waitType;
 	private double waitTime;
 
-	public TransitionInfo(String eventName, String condition, String action) {
-		super();
-		this.eventName = eventName;
-		this.condition = condition;
-		this.action = action;
-		this.waitType = null;
-		this.waitTime = Double.NaN;
-	}
-
-	public TransitionInfo(String eventName, String condition, String action,
+	public TransitionInfo(EventName eventName, String condition, String action,
 			String waitType, double waitTime) {
 		super();
 		this.eventName = eventName;
@@ -23,7 +15,20 @@ public class TransitionInfo {
 		this.waitTime = waitTime;
 	}
 
-	public String getEventName() {
+	public TransitionInfo(EventName eventName, String condition, String action) {
+		this(eventName, condition, action, null, Double.NaN);
+	}
+
+	public TransitionInfo(String eventName, String condition, String action) {
+		this(new NormalEventName(eventName), condition, action);
+	}
+
+	public TransitionInfo(String eventName, String condition, String action,
+			String waitType, double waitTime) {
+		this(new NormalEventName(eventName), condition, action, waitType, waitTime);
+	}
+
+	public EventName getEventName() {
 		return eventName;
 	}
 
@@ -48,7 +53,7 @@ public class TransitionInfo {
 	}
 
 	
-	public void setEventName(String eventName) {
+	public void setEventName(EventName eventName) {
 		this.eventName = eventName;
 	}
 
@@ -127,5 +132,69 @@ public class TransitionInfo {
 		} else if (!waitType.equals(other.waitType))
 			return false;
 		return true;
+	}
+	
+	public static abstract class EventName {
+		protected String name;
+		
+		public EventName(String name) {
+			this.name = name;
+		}
+		
+		public abstract String getEventName();
+		
+		@Override
+		public String toString() {
+			return getEventName();
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = this.getClass().hashCode();
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			EventName other = (EventName) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			return true;
+		}
+	}
+	
+	public static class NormalEventName extends EventName {
+		public NormalEventName(String name) {
+			super(name);
+		}
+
+		public String getEventName() {
+			return name;
+		}
+	}
+	
+	public static class ISREventName extends EventName {
+		public ISREventName(String name) {
+			super(name);
+		}
+
+		public String getEventName() {
+			return "ISR_" + name;
+		}
+
+		public String getInterruptName() {
+			return name;
+		}
 	}
 }

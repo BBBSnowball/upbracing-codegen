@@ -23,6 +23,7 @@ import de.upbracing.code_generation.config.StatemachinesConfigProvider;
 import de.upbracing.code_generation.fsm.model.ParserException;
 import de.upbracing.code_generation.fsm.model.StateMachineForGeneration;
 import de.upbracing.code_generation.fsm.model.TransitionInfo;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.EventName;
 import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 /** The validation part of {@link StatemachineGenerator} */
@@ -616,7 +617,7 @@ public class Validator {
 				messages.error("Initial transitions cannot be waiting transitions");
 			
 			//if the transition is triggered by an event then set an error message
-			if (!emptyOrNull(ti.getEventName()))
+			if (ti.getEventName() != null)
 				messages.error("Initial transitions cannot be triggered by an event");
 			
 			//if transition is triggered by a condition then set an error message. The transition
@@ -645,21 +646,19 @@ public class Validator {
 			ContextItem trans_context = messages.pushContext(trans);
 
 			String condition = ti.getCondition();
-			String eventname = ti.getEventName();
+			EventName eventname = ti.getEventName();
 			String waitType = ti.getWaitType();
 
 			if (waitType != null) {
 				if (waitType.equals("wait")) {
 					// If an edge has a condition or an event, the waitType
-					// cannot
-					// be "wait" ("after" and all the others are ok).
-					if (!emptyOrNull(condition) || !emptyOrNull(eventname))
+					// cannot be "wait" ("after" and all the others are ok).
+					if (!emptyOrNull(condition) || eventname != null)
 						messages.error("Transition has waitType 'wait', but condition or event not empty");
 				} else if (waitType.equals("before")) {
 					// If an edge has waitType=="before", it must have a
-					// condition
-					// or an event (or both)
-					if (emptyOrNull(condition) && emptyOrNull(eventname))
+					// condition or an event (or both)
+					if (emptyOrNull(condition) && eventname == null)
 						messages.error("Transition has waitType 'before' but neither condition nor event");
 				}
 			}

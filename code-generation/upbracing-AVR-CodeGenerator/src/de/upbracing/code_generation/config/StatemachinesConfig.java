@@ -2,10 +2,12 @@ package de.upbracing.code_generation.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -29,6 +31,11 @@ import de.upbracing.code_generation.generators.fsm.Helpers;
  */
 public class StatemachinesConfig implements List<StateMachineForGeneration> {
 	private ArrayList<StateMachineForGeneration> list = new ArrayList<StateMachineForGeneration>();
+
+	// interrupt hooks
+	// key: interrupt name
+	// value: additional user code for the interrupt handler (default: empty String)
+	private Map<String, String> interrupt_user_code = new TreeMap<String, String>();
 	
 	/** load a statemachine and add it to the list of statemachines to generate code for
 	 * 
@@ -191,5 +198,25 @@ public class StatemachinesConfig implements List<StateMachineForGeneration> {
 
 	void addFormatters(Messages messages) {
 		Helpers.addStatemachineFormatters(messages, this);
+	}
+	
+	public Map<String, String> getInterruptUserCode() {
+		return Collections.unmodifiableMap(interrupt_user_code);
+	}
+	
+	public String getInterruptUserCode(String interrupt_name) {
+		return interrupt_user_code.get(interrupt_name);
+	}
+
+	private String combineCode(String a, String b) {
+		if (a != null)
+			return a + "\n" + b;
+		else
+			return b;
+	}
+	
+	public void addInterruptUserCode(String interrupt_name, String code) {
+		String code2 = combineCode(interrupt_user_code.get(interrupt_name), code);
+		interrupt_user_code.put(interrupt_name, code2);
 	}
 }

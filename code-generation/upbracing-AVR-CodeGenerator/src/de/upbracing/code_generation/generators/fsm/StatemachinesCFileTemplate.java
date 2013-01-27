@@ -52,6 +52,9 @@ public class StatemachinesCFileTemplate implements ITemplate {
 
 			StatemachinesConfig statemachines = StatemachinesConfigProvider.get(config);
 
+			if (anyStatemachineUsesInterrupts(statemachines))
+				stringBuffer.append("#include <avr/interrupt.h>\n");
+			
 			stringBuffer.append("#include \"statemachines.h\"\n");
 			
 			printWarningsAndErrors(stringBuffer, config.getMessages());
@@ -77,8 +80,10 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				generateTickFunction(stringBuffer, smg, smg.getStateMachine());
 
 				generateEventFunctions(stringBuffer, smg, smg.getStateMachine());
-			}
-		} // for each statemachine
+			}	// for each statemachine
+			
+			generateISRFunctions(stringBuffer, statemachines);
+		}	// there are some statemachines
 
 		this.stringBuffer = null;
 		this.smg = null;
@@ -775,7 +780,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 					// equals fails for the null value, the '==' operator doesn't work for objects
 					// -> use the appropiate one depending on the value of event
 					if (event != null)
-						isForThisEvent = smg.getTransitionInfo(t).getEventName().equals(event);
+						isForThisEvent = smg.getTransitionInfo(t).getEventName() != null
+								&& smg.getTransitionInfo(t).getEventName().getEventName().equals(event);
 					else
 						isForThisEvent = smg.getTransitionInfo(t).getEventName() == null;
 					
@@ -869,5 +875,55 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			return name;
 		} else
 			throw new IllegalArgumentException("Expecting a StateMachine or something with a name (a state or region)");
+	}
+
+	private boolean anyStatemachineUsesInterrupts(
+			StatemachinesConfig statemachines) {
+		if (!statemachines.getInterruptUserCode().isEmpty())
+			return true;
+		
+		for (StateMachineForGeneration smg : statemachines) {
+			if (!smg.getUsedInterrupts().isEmpty())
+				return true;
+		}
+		
+		return false;
+	}
+
+	private void generateISRFunctions(StringBuffer stringBuffer,
+			StatemachinesConfig statemachines) {
+		Map<String, String> interrupt_user_code = statemachines.getInterruptUserCode();
+		
+		Set<String> used_interrupts = new TreeSet<String>();
+		for (StateMachineForGeneration smg : statemachines) {
+			used_interrupts.addAll(smg.getUsedInterrupts());
+		}
+
+		Set<String> all_interrupts = new TreeSet<String>();
+		all_interrupts.addAll(interrupt_user_code.keySet());
+		all_interrupts.addAll(used_interrupts);
+
+		if (all_interrupts.isEmpty())
+			return;
+		
+		stringBuffer.append('\n');
+		hugeBanner("interrupts");
+		
+		for (String interrupt : all_interrupts) {
+			stringBuffer.append("\nISR(" + interrupt + "_vect) {\n");
+			
+			if (used_interrupts.contains(interrupt))
+				stringBuffer.append("\tevent_ISR_" + interrupt + "();\n");
+			else
+				stringBuffer.append("\t// This interrupt is not used by any statemachine, but it has some user code.\n");
+
+			String user_code = interrupt_user_code.get(interrupt);
+			if (user_code != null && !user_code.isEmpty())
+				stringBuffer.append("\n\t// user code for ISR " + interrupt + "\n\t"
+						+ user_code.trim().replace("\n", "\n\t")
+						+ "\n");
+			
+			stringBuffer.append("}\n");
+		}
 	}
 }
