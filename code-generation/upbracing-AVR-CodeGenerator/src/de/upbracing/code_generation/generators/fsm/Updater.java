@@ -262,7 +262,7 @@ public class Updater {
 								StateVariablePurposes.WAIT, source);
 					}
 
-					addCondition(
+					addConditionBefore(
 							tinfo,
 							waitConditionFor(timerVar.getRealName(), tinfo,
 									smg.getBasePeriod()));
@@ -292,13 +292,13 @@ public class Updater {
 		}
 	}
 
-	private void addCondition(TransitionInfo tinfo, String and_condition) {
+	private void addConditionBefore(TransitionInfo tinfo, String and_condition) {
 		String condition = tinfo.getCondition();
 
 		if (condition == null || condition.trim().equals(""))
 			condition = and_condition;
 		else
-			condition = "(" + condition + ") && (" + and_condition + ")";
+			condition = "(" + and_condition + ") && (" + condition + ")";
 
 		tinfo.setCondition(condition);
 	}
