@@ -2,7 +2,6 @@ package de.upbracing.code_generation.test;
 
 import org.junit.Test;
 
-import de.upbracing.code_generation.PinTemplate;
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.Pin;
 import de.upbracing.code_generation.config.PinConfigProvider;
@@ -19,8 +18,6 @@ public class TestPinGenerator {
 		PinConfigProvider.get(config).addPort("RPM", 'D');
 
 		GeneratorTester gen = new GeneratorTester(new PinNameGenerator(), config);
-		
-		gen.testTemplate(new PinTemplate(),
-				"TestPinGenerator.testGenerate.result1.txt");
+		gen.testTemplates("expected_results/pins");
 	}
 }

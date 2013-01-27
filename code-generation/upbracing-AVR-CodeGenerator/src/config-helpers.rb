@@ -28,7 +28,10 @@ def getResourceAsStream(name)
 end
 
 def generate_pins_from_eagle(eagle_sch_file, output)
-  return if File.exists?(output) and File.mtime(output) >= File.mtime(eagle_sch_file)
+  # return, if the output file is present and new enough
+  # We don't run this check for classpath items because we cannot (usually)
+  # get an mtime for them.
+  return if !(eagle_sch_file =~ /^classpath:/) and File.exists?(output) and File.mtime(output) >= File.mtime(eagle_sch_file)
   
   if File.exists?(output) and not system("which eagle")
     puts "WARNING: Cannot find Eagle, so '#{output}' will not be refreshed!"
@@ -37,11 +40,22 @@ def generate_pins_from_eagle(eagle_sch_file, output)
   
   ulp = JRubyHelpers.readResource("processor_pins.ulp")
   
+  eagle_sch_file_tmp = nil
+  
   require 'tempfile'
   file = Tempfile.new(["processor_pins", ".ulp"])
   begin
     file.write ulp
     file.close
+     
+    if eagle_sch_file =~ /^classpath:/
+      # we have to put it into a temporary file
+      eagle_sch_file_tmp = Tempfile.new(["schematic", ".sch"])
+      eagle_sch_file_tmp.write(File.read(eagle_sch_file))
+      eagle_sch_file_tmp.close
+      
+      eagle_sch_file = eagle_sch_file_tmp.path
+    end
     
     prefix = ""
     prefix = "xvfb-run" if system "which xvfb-run"
@@ -57,6 +71,11 @@ def generate_pins_from_eagle(eagle_sch_file, output)
   ensure
     file.close
     file.unlink
+    
+    if eagle_sch_file_tmp
+      eagle_sch_file_tmp.close
+      eagle_sch_file_tmp.unlink
+    end
   end
 end
 

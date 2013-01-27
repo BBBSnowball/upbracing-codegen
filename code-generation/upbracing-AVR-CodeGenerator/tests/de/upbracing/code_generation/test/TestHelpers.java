@@ -7,7 +7,12 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
+import javax.script.ScriptException;
+
+import de.upbracing.code_generation.CodeGenerationMain;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.utils.Util;
 
 public final class TestHelpers {
@@ -16,9 +21,20 @@ public final class TestHelpers {
 	public static URL getResourceURL(String name) {
 		return Util.getResourceURL(TestHelpers.class, name);
 	}
+
+	public static String getResourceURLForJRuby(String name) {
+		return Util.getResourceURLForJRuby(TestHelpers.class, name);
+	}
 	
 	public static String loadResource(String name) {
 		return Util.loadResource(TestHelpers.class, name);
+	}
+
+	public static CodeGeneratorConfigurations loadConfigFromRessource(
+			String name, Map<String, Object> global_vars) throws ScriptException {
+		return CodeGenerationMain.loadConfig(
+				Util.getResourceStream(TestHelpers.class, name),
+				name, null, global_vars);
 	}
 	
 	public static void assertListEquals(Collection<?> expected, Collection<?> actual) {

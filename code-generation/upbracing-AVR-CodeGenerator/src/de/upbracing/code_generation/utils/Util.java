@@ -37,13 +37,23 @@ public class Util {
 		return clazz.getClassLoader().getResource(path);
 	}
 	
-	public static String loadResourceRaw(Class<?> clazz, String name) {
+	public static String getResourceURLForJRuby(Class<?> clazz, String name) {
+		String path = getResourcePath(clazz, name);
+		return "classpath:/" + path;
+	}
+
+	public static InputStream getResourceStream(Class<?> clazz, String name) {
 		String path = getResourcePath(clazz, name);
 		InputStream stream = clazz.getClassLoader().getResourceAsStream(path);
 		if (stream == null)
 			throw new IllegalArgumentException("invalid ressource name: " + name
 					+ ", relative to class " + clazz.getCanonicalName()
 					+ " -> " + path);
+		return stream;
+	}
+	
+	public static String loadResourceRaw(Class<?> clazz, String name) {
+		InputStream stream = getResourceStream(clazz, name);
 		
 		try {
 			return loadStream(stream, UTF8);

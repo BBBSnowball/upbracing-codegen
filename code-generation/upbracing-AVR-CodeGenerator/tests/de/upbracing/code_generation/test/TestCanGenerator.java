@@ -3,12 +3,12 @@ package de.upbracing.code_generation.test;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import javax.script.ScriptException;
 import org.junit.Test;
 
-import de.upbracing.code_generation.CodeGenerationMain;
 import de.upbracing.code_generation.config.CANConfigProvider;
 import de.upbracing.code_generation.config.DBCConfig;
 import de.upbracing.code_generation.config.DBCSignalConfig;
@@ -28,8 +28,9 @@ public class TestCanGenerator {
 
 	@Test
 	public void testGenerateFromDBC() throws FileNotFoundException, ScriptException {
-
-		CodeGeneratorConfigurations config = CodeGenerationMain.loadConfig("tests/de/upbracing/code_generation/test/files/cantest_config.rb");
+		CodeGeneratorConfigurations config = TestHelpers.loadConfigFromRessource(
+				"files/cantest_config.rb",
+				Collections.<String,Object>emptyMap());
 		
 		GeneratorTester gen = new GeneratorTester(new CanGenerator(), config);
 		gen.testTemplates("expected_results/can");
