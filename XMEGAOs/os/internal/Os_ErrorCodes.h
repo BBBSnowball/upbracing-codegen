@@ -59,6 +59,11 @@ typedef enum {
 	// asynchronous semaphore operation
 	OS_ERROR_SEM_INVALID_TOKEN,
 
+	// a character has been dropeed because the
+	// receive queue is full
+	// (raised by fast USART driver)
+	OS_ERROR_USART_RX_OVERFLOW,
+
 	// error codes between OS_ERROR_FIXABLE_MIN and
 	// OS_ERROR_FIXABLE_MAX are fatal
 	// This value will never be passed to OS_error.
