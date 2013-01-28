@@ -11,6 +11,12 @@ fi
 
 DEST="$(cd "$(dirname "$0")" ; pwd)/Os_application_dependent_code.c"
 
+DIFF="`which diff`"
+if [ -n "$DIFF" -a -e "$DEST" ] ; then
+    REAL_DEST="$DEST"
+    DEST="$DEST.tmp"
+fi
+
 cat >"$DEST" <<EOF
 /*
  * Os_application_dependent_code.c
@@ -42,3 +48,14 @@ EOF
 PROJECT_DIR_NAME="$(basename "$(cd "$(dirname "$0")/../" ; pwd)")"
 cd "$(dirname "$0")/../../"
 find "$PROJECT_DIR_NAME" -iname "*.c" -exec "$SED" -ne '/^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s\)/,/^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ { s§^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s.*$\)§\n\n\/\/ from file {}:\n§ ; /^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ !p }' {} \; >>"$DEST"
+
+if [ -n "$DEST" -a -n "$REAL_DEST" ] ; then
+    if "$DIFF" "$DEST" "$REAL_DEST" >/dev/null ; then
+        # not changed -> don't touch the file
+        rm "$DEST"
+    else
+        # really change
+        mv "$DEST" "$REAL_DEST"
+    fi
+fi
+
