@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,8 @@ import de.upbracing.code_generation.tests.streams.MonitoredOutputStream;
 import gnu.io.NRSerialPort;
 
 public class SerialHelper {
+	public static final Charset DEFAULT_CHARSET = Charset.forName("iso-8859-1");
+	
 	public interface SerialPortProvider {
 		String[] getSerialPorts();
 	}
@@ -320,7 +323,7 @@ public class SerialHelper {
 	}
 	
 	public void write(String str) throws IOException {
-		getOutputStream().write(str.getBytes());
+		getOutputStream().write(str.getBytes(SerialHelper.DEFAULT_CHARSET));
 	}
 	
 	/** @see RegexMatcher */

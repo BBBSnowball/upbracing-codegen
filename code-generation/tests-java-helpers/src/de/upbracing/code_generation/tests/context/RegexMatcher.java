@@ -1,12 +1,12 @@
 package de.upbracing.code_generation.tests.context;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.upbracing.code_generation.tests.TestFailedException;
+import de.upbracing.code_generation.tests.serial.SerialHelper;
 
 //TODO This class has a lot of code in common with StringMatcher. We should
 //      refactor the timeout stuff into a common base class.
@@ -32,7 +32,7 @@ public class RegexMatcher extends TestContext implements Runnable {
 	 * @param expected regex pattern for expected string
 	 */
 	public RegexMatcher(InputStream stream, String expected) {
-		this(stream, Pattern.compile(expected), 4096, Charset.forName("iso-8859-1"));
+		this(stream, Pattern.compile(expected), 4096, SerialHelper.DEFAULT_CHARSET);
 	}
 
 	/** constructor

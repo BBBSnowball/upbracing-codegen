@@ -1,6 +1,18 @@
 #include "rs232-helpers.h"
 
-void usart_send_number(int32_t number, uint8_t base, uint8_t min_places) {
+// If the functions are marked static with RS232_SPEC,
+// the compiler print a warning for the ones that aren't
+// used. We suppress this warning.
+#ifdef __GNUC__
+#	define PROBABLY_UNUSED __attribute__ ((unused))
+#else
+#	define PROBABLY_UNUSED
+#endif
+
+RS232_SPEC void usart_send_number(int32_t number, uint8_t base, uint8_t min_places) PROBABLY_UNUSED;
+
+
+RS232_SPEC void usart_send_number(int32_t number, uint8_t base, uint8_t min_places) {
 	char chars[32 + 2 + 1];
 	char* x = chars + sizeof(chars) / sizeof(*chars);
 	*(--x) = 0;

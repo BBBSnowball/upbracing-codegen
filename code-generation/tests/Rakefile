@@ -1756,6 +1756,7 @@ end
 class ProjectWithCommon < Project
 	@@common_libraries = {
 		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] },
+    "rs232_headers" => { },
 		"can"   => { :sources => ["can_at90_ref.c"] }
 	}
 
@@ -1776,7 +1777,7 @@ class ProjectWithCommon < Project
 			arg = arg.to_s
 			lib = @@common_libraries[arg]
 			if lib
-				sources = lib[:sources].map { |file| "#/common/#{file}" }
+				sources = (lib[:sources] || []).map { |file| "#/common/#{file}" }
 				@used_common_source_files.push(*sources)
 			elsif File.exists? "common/#{arg}.c"
 				@used_common_source_files << "common/#{arg}.c"

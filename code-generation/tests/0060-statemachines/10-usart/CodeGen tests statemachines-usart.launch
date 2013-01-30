@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/upbracing-AVR-CodeGenerator/src/de/upbracing/code_generation/Main.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<mapAttribute key="org.eclipse.debug.core.environmentVariables">
+<mapEntry key="CARTOS_DIR" value="${CARTOS_DIR_VARIABLE}"/>
+<mapEntry key="CODE_GENERATOR_DIR" value="${CODE_GENERATOR_DIR_VARIABLE}"/>
+</mapAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.upbracing.code_generation.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-C gen -T bin config.rb"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="upbracing-AVR-CodeGenerator"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:tests/0060-statemachines/10-usart}"/>
+</launchConfiguration>

@@ -55,8 +55,15 @@
 #	error Please select USART 0 or 1
 #endif
 
+// You can mark the methods static to avoid name clashes, if you
+// use this as a fallback driver. If nobody has defined it, we
+// assume that you want it normal.
+// You get the static one with: #define RS232_SPEC static
+#ifndef RS232_SPEC
+#	define RS232_SPEC
+#endif
 
-void usart_init(void);
+RS232_SPEC void usart_init(void);
 
 inline static void usart_send(uint8_t data) {
 	while (!(UCSRxA & (1<<UDREx)))
@@ -74,10 +81,10 @@ inline static uint8_t usart_recv_char_available(void) {
 	return (UCSRxA & (1<<RXCx));
 }
 
-void usart_send_str(const char* s);
+RS232_SPEC void usart_send_str(const char* s);
 
-void usart_send_str_P(const char* s);
+RS232_SPEC void usart_send_str_P(const char* s);
 
-uint8_t usart_wait_byte_timeout(uint32_t timeout_loops);
+//RS232_SPEC uint8_t usart_wait_byte_timeout(uint32_t timeout_loops);
 
 #endif /* RS232_H_ */

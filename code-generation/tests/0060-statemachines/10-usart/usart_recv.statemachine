@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine">
+  <transitions source="//@states.1" destination="//@states.2" transitionInfo="enable"/>
+  <transitions source="//@states.2" destination="//@states.1" transitionInfo="disable"/>
+  <transitions source="//@states.0" destination="//@states.1"/>
+  <transitions source="//@states.2" destination="//@states.2" transitionInfo="ISR(USARTx_RX) /&#xA;&#x9;usart_receive_interrupt();"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.2"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.1 //@transitions.2" outgoingTransitions="//@transitions.0" actions="ENTER /&#xA;&#x9;usart_disable_all();" name="disabled"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0 //@transitions.3" outgoingTransitions="//@transitions.1 //@transitions.3" actions="ENTER_NOT_FROM_SELF /&#xA;&#x9;usart_init_for_statemachine();" name="receiving"/>
+  <globalCodeBoxes name="Includes" code="#include &quot;usart_fast_internal.h&quot;"/>
+</statemachine:StateMachine>
