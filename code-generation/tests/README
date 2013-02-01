@@ -28,6 +28,7 @@ There are several things that you can put in a test folder:
 - project.rb: You can use that file to tweak all parts of the build process. It must create an instance of Project and put it into the global variable $project. You can use your own subclass of Project and overwrite some methods to change its behaviour. See the Rakefile for details on the Project class. Please remove all global variables (except $project) and constants (including your classes) that you have created because the scripts share the global namespace. You should create an instance of ProjectWithCommon, if you want to use files from the "common" directory. You can then use its "add_common" method to add libraries or single files, e.g. $project.add_common :rs232
 - run-test.rb: This script will be called to run the test. It should write the program to the microcontroller. For an automated test, it will then listen on the serial line and validate the data coming from the MCU. For a manual test, it prints detailed information to the console and accepts user input. If you don't want to do that in JRuby, you can let the script execute a Java method.
 - Java source files: Java source files in the 'java' directory of each project are compiled and available for the test script.
+- caRTOS config file (Os_cfg_features.h): caRTOS will be build with that config file and linked to your application. You also need Os_cfg_application.h and .c for the build to succeed. You can put them into your test folder or let the code generator handle that.
 
 
 Common files:
