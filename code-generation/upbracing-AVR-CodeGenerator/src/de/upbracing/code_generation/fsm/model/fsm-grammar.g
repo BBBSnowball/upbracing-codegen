@@ -21,7 +21,9 @@ quoted-nl ::= "\\\n"
 
 // parser for transition information
 transition-info ::= (ws [<event-name-and-wait> ws] [condition ws] ["/" ws transition-action])
-event-name ::= identifier
+isr-event ::= ("ISR" ws "(" ws identifier ws ")")
+normal-event-name ::= identifier
+event-name ::= (normal-event-name | isr-event)
 event-name-and-wait ::= ((event-name ws [":" ws wait-event]) | ([":" ws] wait-event))
 condition ::= ("[" condition-text "]")
 transition-action ::= action-text-with-nl

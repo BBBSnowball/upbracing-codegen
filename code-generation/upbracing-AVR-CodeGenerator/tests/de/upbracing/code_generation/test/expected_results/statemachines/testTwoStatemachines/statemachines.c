@@ -6,6 +6,7 @@
  * Generated automatically. DO NOT MODIFY! Change config.rb instead.
  */
 
+#include <avr/interrupt.h>
 #include "statemachines.h"
 
 //////////////////////////////////////////////////
@@ -152,6 +153,30 @@ void counter_tick() {
 //////////////////////////////////////////////////
 //               event functions                //
 //////////////////////////////////////////////////
+
+void counter_event_ISR_INT0() {
+	counter_enter_critical();
+
+	switch (counter_state.state) {
+
+	case counter_running_state:
+		if (1) {
+			// running -> stopped
+			counter_running_exit();
+			counter_state.state = counter_stopped_state;
+			counter_stopped_always();
+			counter_stopped_enter();
+		}
+
+		break;
+
+	case counter_stopped_state:
+		break;
+
+	}
+
+	counter_exit_critical();
+}
 
 void counter_event_reset() {
 	counter_enter_critical();
@@ -1385,4 +1410,16 @@ void simple_pc_event_turn_on() {
 	}
 
 	simple_pc_exit_critical();
+}
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+/////                                        /////
+//                  interrupts                  //
+/////                                        /////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+ISR(INT0_vect) {
+	event_ISR_INT0();
 }

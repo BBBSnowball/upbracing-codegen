@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import de.upbracing.code_generation.TimerHeaderTemplate;
 import de.upbracing.code_generation.TimerCFileTemplate;
 import de.upbracing.code_generation.Messages.Severity;
-import de.upbracing.code_generation.config.MCUConfiguration;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.TimerConfigProvider;
 import de.upbracing.shared.timer.model.UseCaseModel;
 import de.upbracing.shared.timer.model.validation.ConfigurationModelValidator;
 import de.upbracing.shared.timer.model.validation.UseCaseModelValidator;
@@ -24,12 +25,12 @@ public class TimerGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	public boolean validate(MCUConfiguration config, boolean after_update_config, Object generator_data) {
+	public boolean validate(CodeGeneratorConfigurations config, boolean after_update_config, Object generator_data) {
 		// if we don't have a model, there is nothing to do
-		if (config.getTimerConfig() == null)
+		if (TimerConfigProvider.get(config) == null)
 			return true;
 		
-		ConfigurationModelValidator modelValidator = new ConfigurationModelValidator(config.getTimerConfig());
+		ConfigurationModelValidator modelValidator = new ConfigurationModelValidator(TimerConfigProvider.get(config));
 		
 		// 1) Check UseCaseModel Container (ConfigurationModel)
 		if (modelValidator.validate().equals(ValidationResult.ERROR)) {
@@ -39,9 +40,9 @@ public class TimerGenerator extends AbstractGenerator {
 		
 		// 2) Check each UseCaseConfiguration 
 		ArrayList<UseCaseModel> faultyModels = new ArrayList<UseCaseModel>();		
-		for (UseCaseModel m: config.getTimerConfig().getConfigurations()) {
+		for (UseCaseModel m: TimerConfigProvider.get(config).getConfigurations()) {
 
-			UseCaseModelValidator ucValidator = new UseCaseModelValidator(config.getTimerConfig(), m);
+			UseCaseModelValidator ucValidator = new UseCaseModelValidator(TimerConfigProvider.get(config), m);
 			String message;
 			if (ucValidator.validate().equals(ValidationResult.ERROR)) {
 				// This is not really a showstopper, but the user should be warned,
@@ -58,7 +59,7 @@ public class TimerGenerator extends AbstractGenerator {
 		
 		// Remove the faulty models from code generation process (Part 2)
 		for (UseCaseModel m: faultyModels) {
-			config.getTimerConfig().getConfigurations().remove(m);
+			TimerConfigProvider.get(config).getConfigurations().remove(m);
 		}
 		
 		return true;

@@ -2,6 +2,7 @@ package de.upbracing.code_generation.fsm.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import statemachine.SuperState;
 import statemachine.Transition;
 
 import de.upbracing.code_generation.common.Times;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.EventName;
+import de.upbracing.code_generation.fsm.model.TransitionInfo.ISREventName;
 
 
 public class StateMachineForGeneration {
@@ -59,6 +62,9 @@ public class StateMachineForGeneration {
 	//NOTE This must be INTERRUPT, if any part of the statemachine
 	//     could be called from an interrupt.
 	private StatemachineLockMethod lock_method = StatemachineLockMethod.NO_LOCK;
+	
+	// interrupts used by the statemachine
+	private Set<String> used_interrupts;
 	
 	// values computed for the inner statemachine
 	
@@ -195,30 +201,38 @@ public class StateMachineForGeneration {
 	public void update() {
 		initActions();
 		initTransitionInfos();
-		initEvents();
+		initEventsAndInterrupts();
 		
 		updateParents();
 	}
 
 	//NOTE Must be called after initTransitionInfos()
-	private void initEvents() {
+	private void initEventsAndInterrupts() {
 		events = new TreeMap<String, Set<Transition>>();
+		used_interrupts = new TreeSet<String>();
 		
 		for (Transition transition : getTransitions()) {
 			TransitionInfo ti = getTransitionInfo(transition);
-			String eventName = ti.getEventName();
+			EventName eventName = ti.getEventName();
+			String eventNameStr = (eventName != null ? eventName.getEventName() : null);
+			
+			// keep track of used interrupts
+			if (eventName instanceof ISREventName) {
+				ISREventName isr = (ISREventName) eventName;
+				used_interrupts.add(isr.getInterruptName());
+			}
 			
 			// If eventName is null, it will be put into the
 			// map nonetheless. Those transitions are used
 			// for the tick function. However, the map wouldn't
 			// accept null keys, so we use the empty string instead.
-			if (eventName == null)
-				eventName = "";
+			if (eventNameStr == null)
+				eventNameStr = "";
 			
-			Set<Transition> transitions = events.get(eventName);
+			Set<Transition> transitions = events.get(eventNameStr);
 			if (transitions == null) {
 				transitions = new HashSet<Transition>();
-				events.put(eventName, transitions);
+				events.put(eventNameStr, transitions);
 			}
 			
 			transitions.add(transition);
@@ -503,5 +517,9 @@ public class StateMachineForGeneration {
 
 	public SortedSet<Transition> sortedTransitionSet() {
 		return new TreeSet<Transition>(cmpTransitions);
+	}
+	
+	public Set<String> getUsedInterrupts() {
+		return Collections.unmodifiableSet(used_interrupts);
 	}
 }

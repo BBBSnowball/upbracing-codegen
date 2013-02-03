@@ -15,13 +15,13 @@
 #define STATEMACHINES_H_
 
 <%
-if (config.getStatemachines().isEmpty()) {
+if (StatemachinesConfigProvider.get(config).isEmpty()) {
 %>// no statemachines loaded
 // use $config.statemachines.load(statemachine_file)
 <%
 } else {
 
-StatemachinesConfig statemachines = config.getStatemachines();
+StatemachinesConfig statemachines = StatemachinesConfigProvider.get(config);
 
 %>
 

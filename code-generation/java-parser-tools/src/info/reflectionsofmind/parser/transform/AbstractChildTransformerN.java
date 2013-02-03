@@ -225,7 +225,7 @@ public abstract class AbstractChildTransformerN implements Transformer {
 				value = op.apply(node);
 
 				if (value != null && !value_classes[i].isAssignableFrom(value.getClass()))
-					throw new IllegalStateException("object has wrong type " + value.getClass().getName());
+					throw new IllegalStateException("object has wrong type " + value.getClass().getName() + " instead of " + value_classes[i].getName());
 			}
 			
 			values[i] = value;
