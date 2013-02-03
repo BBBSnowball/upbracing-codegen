@@ -165,9 +165,9 @@ TASK(Shift)
 	
 	//USARTEnqueue(5,"Shift");
 	// Increment shifter variable
-	shift++;
+	/*shift++;
 	if (shift == 8)
-		shift = 0;
+		shift = 0;*/
 	
 	
 	

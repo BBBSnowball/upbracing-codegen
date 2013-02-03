@@ -114,7 +114,7 @@ TASK(Shift)
 	#elif PROGRAM_MODE == KRISHNA_204b6f
 
 	/*SYNCHRONOUS QUEUES*/
-	USARTEnqueue(5,"Shift");
+	//USARTEnqueue(5,"Shift");
 	
 	
 	#else
