@@ -180,7 +180,7 @@ exit 1 if user_config_error
 
 # make sure that AVRDUDE is an array
 if AVRDUDE.is_a? String
-	puts "WARN: AVRDUDE should be a String. Splitting at whitespace..."
+	puts "WARN: AVRDUDE should be an Array. Splitting at whitespace..."
 
 	avrdude = AVRDUDE
 	
@@ -192,7 +192,7 @@ end
 
 # make sure that AVRDUDE2 is an array
 if Object.const_defined? :AVRDUDE2 and AVRDUDE2.is_a? String
-	puts "WARN: AVRDUDE should be a String. Splitting at whitespace..."
+	puts "WARN: AVRDUDE2 should be an Array. Splitting at whitespace..."
 
 	avrdude = AVRDUDE2
 	
