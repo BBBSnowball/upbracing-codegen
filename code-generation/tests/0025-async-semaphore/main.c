@@ -11,10 +11,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Os.h"
-#include "USART.h"
-#include "Gpio.h"
-#include "semaphore.h"
-#include "Os_error.h"
+#include "drivers/USART.h"
+#include "drivers/Gpio.h"
+#include "semaphores/semaphore.h"
+#include "internal/Os_error.h"
+#include "Os_cfg_application.h"
+#include "Os_cfg_features.h"
 
 volatile uint8_t j = 1;
 volatile uint8_t shift = 0;
@@ -165,9 +167,9 @@ TASK(Shift)
 	
 	//USARTEnqueue(5,"Shift");
 	// Increment shifter variable
-	/*shift++;
+	shift++;
 	if (shift == 8)
-		shift = 0;*/
+		shift = 0;
 	
 	
 	
