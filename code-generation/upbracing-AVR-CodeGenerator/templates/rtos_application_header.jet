@@ -29,6 +29,28 @@ extern TASK(<%= task.getName() %>);
 #define OS_NUMBER_OF_TCBS_DEFINE   <%= rtos.getTasks().size() %>
 #define OS_NUMBER_OF_ALARMS_DEFINE <%= rtos.getAlarms().size() %>
 
+
+<%
+if (rtos.isTickFrequencyValid()) {
+	// Timer constants have been calculated by the generator,
+	// so we add a frequency check and print the values that
+	// the user has set (in addition to the calculated raw
+	// values).
+%>
+// tick frequency is <%= rtos.getTickFrequency() %>
+<%
+}
+// check for CPU frequency
+if (rtos.isTickFrequencyValid() || rtos.getClock() > 0) {
+%>
+#if F_CPU != <%= rtos.getClock() %>
+#	error Wrong CPU frequency!
+#endif
+<% } %>
+#define OS_TIMER_PRESCALE			TIMER_PRESCALE_<%= rtos.getTimerPrescaler() %>_bm
+#define OS_TIMER_COMPARE_VALUE		<%= rtos.getTimerCountTo() %>
+
+
 <%
 rtos.addConfigValues("", stringBuffer, RTOSConfigValue.ConfigFile.APPLICATION);
 %>

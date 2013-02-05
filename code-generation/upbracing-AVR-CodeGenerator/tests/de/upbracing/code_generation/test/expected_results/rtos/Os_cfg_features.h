@@ -13,13 +13,6 @@
 #	error Expecting AT90CAN128. Either update your project configuration / Makefile or the code generator configuration.
 #endif
 
-// tick frequency is 5.0
-#if F_CPU != 8000000
-#	error Wrong CPU frequency!
-#endif
-#define OS_TIMER_PRESCALE			TIMER_PRESCALE_64_bm
-#define OS_TIMER_COMPARE_VALUE		24999
-
 // category: drivers/usart
 
 // enable USART driver

@@ -25,6 +25,15 @@ extern TASK(Shift);
 #define OS_NUMBER_OF_TCBS_DEFINE   4
 #define OS_NUMBER_OF_ALARMS_DEFINE 3
 
+
+// tick frequency is 5.0
+#if F_CPU != 8000000
+#	error Wrong CPU frequency!
+#endif
+#define OS_TIMER_PRESCALE			TIMER_PRESCALE_64_bm
+#define OS_TIMER_COMPARE_VALUE		24999
+
+
 // category: drivers/usart
 
 // length of the usart transmit buffer
