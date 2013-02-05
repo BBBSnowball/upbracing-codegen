@@ -10,6 +10,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import de.upbracing.code_generation.common.Times;
 import de.upbracing.code_generation.config.rtos.RTOSConfigValue.ConfigFile;
 import de.upbracing.code_generation.config.rtos.RTOSTask.TaskState;
 
@@ -210,6 +211,17 @@ public class RTOSConfig {
 		this.tick_frequency = tick_frequency;
 		used = true;
 		updateTimerSettings();
+	}
+	
+	/**
+	 * Sets the period for periodic sending of this message.
+	 * It can parse a time like "1.7ms", "1:30:02.7" or even "1/3 day"
+	 * Also calls setPeriodic(true);
+	 * 
+	 * @param period String of period
+	 */
+	public void setTickPeriod(String period) {
+		setTickFrequency((float)(1 / Times.parseTime(period)));
 	}
 	
 	/**

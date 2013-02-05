@@ -1,6 +1,7 @@
 package de.upbracing.code_generation.test;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.rtos.RTOSTask;
@@ -25,5 +26,12 @@ public class TestRTOSGenerator {
 		
 		GeneratorTester gen = new GeneratorTester(new RTOSGenerator(), config);
 		gen.testTemplates("expected_results/rtos");
+	}
+	
+	@Test
+	public void testTimeParser() {
+		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
+		RTOSConfigProvider.get(config).setTickPeriod("5ms");
+		assertEquals(200, RTOSConfigProvider.get(config).getTickFrequency(), 0.5);
 	}
 }
