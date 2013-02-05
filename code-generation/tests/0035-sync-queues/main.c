@@ -14,7 +14,7 @@
 #include "drivers/USART.h"
 #include "drivers/Gpio.h"
 #include "semaphores/semaphore.h"
-#include "internal/Os_error.h"
+#include "internal/Os_Error.h"
 #include "Os_cfg_application.h"
 #include "Os_cfg_features.h"
 

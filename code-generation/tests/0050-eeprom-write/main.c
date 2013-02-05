@@ -14,7 +14,7 @@
 //#include "USART.h"
 //#include "Gpio.h"
 //#include "semaphore.h"
-//#include "Os_error.h"
+//#include "Os_Error.h"
 #include "gen/eeprom_accessors.h"
 #include "D:\coll\project\program\program\code-generation\tests\common\rs232.h"
 #include "D:\coll\project\program\program\code-generation\tests\common\rs232-helpers.h"
