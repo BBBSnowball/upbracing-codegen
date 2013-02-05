@@ -90,7 +90,7 @@ TASK(Increment)
 	BOOL check;
 	#if PROGRAM_MODE == TEST_SYNC_QUEUE
 
-	USARTEnqueue(10, "Increment\n");
+	USARTEnqueue(10, "Incr1234\r\n");
 	
 
 	#elif PROGRAM_MODE == KRISHNA_204b6f
