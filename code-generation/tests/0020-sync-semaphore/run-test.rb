@@ -1,22 +1,23 @@
-strings = ["Update", "Incr1234", "Shift"]
+strings = ["Update", "Increment", "Shift"]
 period  = [32, 512, 96]
 frequency = period.map { |p| period.max / p }
 min_count = 5 # we want each string to occur at least 5 times
 wait_for_n_strings = min_count * frequency.reduce { |a,b| a+b }
 
-# seen in experiment: 30 chars in 2.5 sec -> ~83 chars/sec
-# We would expect about 1 sec / 4ms = 250 because of the sending task's period.
-time_per_char = 2500/30
-
-# '*2' is just to be sure
-timeout = wait_for_n_strings * strings.map { |s| s.length }.max * time_per_char * 2
+# slowest task will need (min_count * period.max) milliseconds
+# The other tasks need about the same time (faster, but need
+# to do more).
+# We give them a bit more time (25%).
+#NOTE: It will be much faster because the tasks terminate
+#      themselves before their time is up.
+timeout = min_count * period.max * period.length * 5/4
 puts "timeout: #{timeout} ms"
 
-$helper.first_serial.ensure_baudrate 57600
+$helper.first_serial.ensure_baudrate 9600
 
 $helper.flash_processor
 
-x = $helper.first_serial.expect_regex "(Update|Incr1234\\r\\n|Shift){#{wait_for_n_strings}}", timeout
+x = $helper.first_serial.expect_regex "(Update|Increment\\r\\n|Shift){#{wait_for_n_strings}}", timeout
 text = x.group.to_s
 
 counts = strings.map { |str| text.scan(str).length }

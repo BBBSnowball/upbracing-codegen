@@ -5,49 +5,30 @@
  *  Author: peer
  */ 
 
-//#define PROGRAM_MODE TEST_SYNC_QUEUE
-#define PROGRAM_MODE KRISHNA_204b6f
+// You can use this #define to disable the semaphores. The test
+// should fail, if you do so!
+//#define DISABLE_SEMAPHORES
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
+
 #include "Os.h"
-#include "drivers/USART.h"
-#include "drivers/Gpio.h"
-#include "semaphores/semaphore.h"
-#include "internal/Os_Error.h"
-#include "Os_cfg_application.h"
-#include "Os_cfg_features.h"
+#include <semaphores/semaphore.h>
+#include <internal/Os_Error.h>
 
-volatile uint8_t j = 1;
-volatile uint8_t shift = 0;
+#include <rs232.h>
 
-#if PROGRAM_MODE == TEST_SYNC_QUEUE
-//SEMAPHORE(led,1,4);
-SEMAPHORE_N(led,5,1);
-#elif PROGRAM_MODE == KRISHNA_204b6f
-SEMAPHORE(led,1,4);
-//SEMAPHORE_N(led,5,1);
-#endif
-
-QUEUE(ipc,10,1,2);
+SEMAPHORE(our_semaphore, 1, 4);
 
 int main(void)
 {	
-	// Init GPIO: (demo: DDRA = 0xFF)
-	GpioInit();
+	// Init GPIO: all leds on
+	DDRA  = 0xFF;
 	PORTA = 0xFF;
-	
-	// Init the USART (57600 8N1)
-	USARTInit(8);
-	
-	// NOTE(Peer):
-	// DO NOT enable Interrupts here
-	// StartOs will call Os_StartFirstTask.
-	// Os_StartFirstTask will enable interrupts when system is ready.
-	// If we enable interrupts now, the first timer tick
-	// most likely comes too early if the timer freq is high enough.
-	//// Globally enable interrupts
-	//sei();
+
+	// init USART (9600 baud, 8N1)
+	usart_init();
 	
 	// Init Os
 	StartOS();
@@ -58,80 +39,68 @@ int main(void)
 
 TASK(Update)
 {
-	sem_token_t led_token1, read_token, queue_token2, led_tokens[10] ;
-	BOOL see, look;
-	char data[3];
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+#	ifndef DISABLE_SEMAPHORES
+	sem_wait(our_semaphore);
+#	endif
 
-	USARTEnqueue(6, "Update");
+ 	usart_send_str("Up");
 
-	
+	// make sure that another task will interrupt us, if it can
+	_delay_ms(10);
 
+ 	usart_send_str("date");
 
-	#elif PROGRAM_MODE == KRISHNA_204b6f
+#	ifndef DISABLE_SEMAPHORES
+	sem_signal(our_semaphore);
+#	endif
 
-	/*SYNCHRONOUS SEMAPHORE*/
-	
-	sem_wait(led);
- 	usart_send_str("Update");
- 	sem_signal(led);
-
-	#else
-	
-	#endif
-	
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Increment)
 {
-	sem_token_t led_token2, free_token1, queue_token1;
-	BOOL check;
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+#	ifndef DISABLE_SEMAPHORES
+	sem_wait(our_semaphore);
+#	endif
 
-	USARTEnqueue(10, "Incr1234\r\n");
-	
+	usart_send_str("Incre");
 
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-	/*SYNCHRONOUS SEMAPHORES*/
-		
-		sem_wait(led);
-		usart_send_str("Increment");
-	 	sem_signal(led);
-		
-	
+	// make sure that another task will interrupt us, if it can
+	_delay_ms(10);
 
-	#else
-	
-	#endif
-	
+	usart_send_str("ment\r\n");
+
+#	ifndef DISABLE_SEMAPHORES
+	sem_signal(our_semaphore);
+#	endif
+
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Shift)
 {
-	
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
+#	ifndef DISABLE_SEMAPHORES
+	sem_wait(our_semaphore);
+#	endif
 
-	USARTEnqueue(5,"Shift");
+	usart_send_str("Shi");
 
-	#elif PROGRAM_MODE == KRISHNA_204b6f
+	// make sure that another task will interrupt us, if it can
+	_delay_ms(10);
 
-	
-	
-	#else
-	
-	
-	#endif
-	
+	usart_send_str("ft");
+
+#	ifndef DISABLE_SEMAPHORES
+	sem_signal(our_semaphore);
+#	endif
+
 	// Terminate this task
 	TerminateTask();
 }
 
 void OS_error(OS_ERROR_CODE error)
 {
-	//TODO DO NOT use OS function to report the error!
 	usart_send_str("error");
 }
