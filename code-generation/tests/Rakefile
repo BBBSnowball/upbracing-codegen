@@ -401,7 +401,8 @@ class Project
 
 	def build_caRTOS(name, features_header_file, configuration = "Debug")
 		#TODO make this a special kind of task and implement needed?
-		cartos_task = task unique_task_id("caRTOS-lib") => features_header_file do |t|
+		depends_on = [ features_header_file ] + Dir[File.join(CARTOS_DIR, "**/*.{c,h}")]
+		cartos_task = task unique_task_id("caRTOS-lib") => depends_on do |t|
 			# don't do anything, if we don't have a features header file
 			# (This can happen, if we expected it to be generated, but it
 			#  wasn't because it hasn't been configured in the config file.
