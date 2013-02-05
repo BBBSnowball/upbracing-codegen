@@ -226,6 +226,26 @@ public class SerialHelper {
 			setupStreams();
 		}
 		
+		// skip garbage in buffer
+		try {
+			MonitoredInputStream inputStream = getInputStream();
+			System.out.println("available bytes: " + inputStream.available());
+			if (inputStream.available() > 0) {
+				System.out.println("blub");
+				toolkit.getMessages().info("Skipping garbage on serial line...");
+				//NOTE This will only skip data in the buffer. If the processor keeps sending,
+				//     we are out of luck. We 
+				for (int i=0;i<10 && inputStream.available() > 0;i++) {
+					inputStream.skip(128);
+					Thread.sleep(100);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// ignore
+		}
+		
 		return true;
 	}
 

@@ -1597,64 +1597,69 @@ EOF
 			classpath = test_classpath(dir, test_helper)
 
 			begin
-				run_jruby_script test_script, classpath,					\
-					:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 		\
-					"$helper" => test_helper,								\
-					:init => "$helper.start" + "\n" + RubyPWdProviderCode,	\
-					:TestResult => TestResult, :SerialHelper => SerialHelper
-			rescue TestFailed => ex
-				message = "Test failed: " + ex.message
+				begin
+					run_jruby_script test_script, classpath,					\
+						:AVRDUDE => AVRDUDE, :SERIALPORT => SERIALPORT, 		\
+						"$helper" => test_helper,								\
+						:init => "$helper.start" + "\n" + RubyPWdProviderCode,	\
+						:TestResult => TestResult, :SerialHelper => SerialHelper
+				rescue TestFailed => ex
+					message = "Test failed: " + ex.message
 
-				throwable = ex.cause || ex.result && ex.result.status == "error" && ex.result.exception
-				if throwable
+					throwable = ex.cause || ex.result && ex.result.status == "error" && ex.result.exception
+					if throwable
+						# get full backtrace
+						bt = throwable.backtrace.join("\r\n\t\t")
+						
+						# cut trace after run_test method
+						bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
+
+						message += "\r\n\t\t" + bt if Rake::application.options.trace
+
+						message += "\r\n\tin test:"
+					end
+
 					# get full backtrace
-					bt = throwable.backtrace.join("\r\n\t\t")
+					bt = ex.backtrace.join("\r\n\t\t")
 					
 					# cut trace after run_test method
 					bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
 
 					message += "\r\n\t\t" + bt if Rake::application.options.trace
 
-					message += "\r\n\tin test:"
-				end
 
-				# get full backtrace
-				bt = ex.backtrace.join("\r\n\t\t")
-				
-				# cut trace after run_test method
-				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\t\tin task #{selftask}")
+					log = toolkit.inner.messages || $log || $logger
+					if log
+						log.error message.gsub("\r\n", "\n")
+					else
+						puts message
+					end
+				rescue Exception => ex
+					# get full backtrace
+					bt = ex.backtrace.join("\r\n\t")
+					
+					# cut trace after run_test method
+					bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\tin task #{selftask}")
 
-				message += "\r\n\t\t" + bt if Rake::application.options.trace
+					message = "Exception in test script #{test_script}:\r\n" +
+						"\t" + ex.class.to_s + "\r\n" +
+						"\t" + ex.message.to_s + "\r\n"
+					message += "\t" + bt if Rake::application.options.trace
 
-
-				log = toolkit.inner.messages || $log || $logger
-				if log
-					log.error message.gsub("\r\n", "\n")
-				else
-					puts message
-				end
-			rescue Exception => ex
-				# get full backtrace
-				bt = ex.backtrace.join("\r\n\t")
-				
-				# cut trace after run_test method
-				bt = bt.sub(/(Rakefile:[0-9]+:in `run_test').*$/m, "\\1\r\n\tin task #{selftask}")
-
-				message = "Exception in test script #{test_script}:\r\n" +
-					"\t" + ex.class.to_s + "\r\n" +
-					"\t" + ex.message.to_s + "\r\n"
-				message += "\t" + bt if Rake::application.options.trace
-
-				log = toolkit.inner.messages || $log || $logger
-				if log
-					log.error message.gsub("\r\n", "\n")
-				else
-					puts message
+					log = toolkit.inner.messages || $log || $logger
+					if log
+						log.error message.gsub("\r\n", "\n")
+					else
+						puts message
+					end
 				end
 			ensure
 				# read remaining chars on serial line
 				[toolkit.first_serial,toolkit.second_serial].each do |serial|
 					if serial and serial.isOpen
+						# wait a bit to give the MCU the chance to send something
+						sleep 0.1
+
 						instream = serial.input_stream
 						if instream.available > 0
 							# read a lot of data: 1kB -> more than 10 lines (without '\n')
