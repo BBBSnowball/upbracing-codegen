@@ -32,6 +32,14 @@ extern TASK(UsartTransmit);
 #define OS_NUMBER_OF_ALARMS_DEFINE 4
 
 
+// tick frequency is 250.0
+#if F_CPU != 8000000
+#	error Wrong CPU frequency!
+#endif
+#define OS_TIMER_PRESCALE			TIMER_PRESCALE_1_bm
+#define OS_TIMER_COMPARE_VALUE		31999
+
+
 // category: drivers/usart
 
 // length of the usart transmit buffer

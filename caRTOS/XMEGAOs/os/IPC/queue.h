@@ -26,15 +26,18 @@ typedef struct
 		SEMAPHORE(name##_QUEUE_MUTEX, 1, (reader_count)+(writer_count)); \
 		SEMAPHORE_N(name##_QUEUE_FREE, (writer_count), (capacity)); \
 		SEMAPHORE_N(name##_QUEUE_AVAILABLE, (reader_count), 0)
-		/* add the other semaphores here */
 
-//NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
 #define QUEUE_EXTERNAL(name) \
 		extern struct type_for_##name##_QUEUE { Queue q; } name##_QUEUE; \
 		SEMAPHORE_EXTERNAL(name##_QUEUE_MUTEX); \
 		SEMAPHORE_EXTERNAL_N(name##_QUEUE_FREE); \
 		SEMAPHORE_EXTERNAL_N(name##_QUEUE_AVAILABLE)
-		/* add the other semaphores here */
+#define QUEUE_IMPLEMENTATION(name, capacity, reader_count, writer_count) \
+		struct type_for_##name##_QUEUE name##_QUEUE \
+			= { { 0, 0, (capacity), 0 } }; \
+		SEMAPHORE(name##_QUEUE_MUTEX, 1, (reader_count)+(writer_count)); \
+		SEMAPHORE_N(name##_QUEUE_FREE, (writer_count), (capacity)); \
+		SEMAPHORE_N(name##_QUEUE_AVAILABLE, (reader_count), 0)
 
 
 #define QUEUE_REF(name)       &name##_QUEUE.q

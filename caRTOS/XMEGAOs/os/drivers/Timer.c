@@ -5,9 +5,11 @@
  *  Author: peer
  */ 
 
+// will be compiled in Os_application_dependent_code.c:
+#ifdef APPLICATION_DEPENDENT_CODE
 
 #include "config/Os_config.h"
-#include "Timer.h"
+#include "drivers/Timer.h"
 
 // Initializes Timer1 with a prescaling and a compare match value
 void TimerInit(void)
@@ -25,3 +27,5 @@ void TimerInit(void)
 	//TCC0.PER = OS_TIMER_COMPARE_VALUE;							// Compare value (user setting)
 	//PMIC.CTRL |= (1<<PIN0)|(1<<PIN1)|(1<<PIN2);
 }
+
+#endif	// end of APPLICATION_DEPENDENT_CODE

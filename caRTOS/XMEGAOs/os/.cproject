@@ -33,6 +33,7 @@
 								<option id="de.innot.avreclipse.compiler.option.optimize.1486182346" name="Optimization Level" superClass="de.innot.avreclipse.compiler.option.optimize"/>
 								<option id="de.innot.avreclipse.compiler.option.incpath.1086883617" name="Include Paths (-I)" superClass="de.innot.avreclipse.compiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/config}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.453139429" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
 							</tool>
