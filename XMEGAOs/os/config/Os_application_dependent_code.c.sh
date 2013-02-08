@@ -10,18 +10,26 @@ if avr-gcc --version | grep -q WinAVR ; then
     exit 0
 fi
 
-SED="$(which gsed)"
-if [ -z "$SED" ] ; then
-    SED="$(which sed)"
-fi
-if ! "$SED" --version | grep -q "GNU" ; then
+# WinAVR has a broken 'which' - it doesn't find sed and breaks, if executed by the Unix shell
+# => We try to run the program.
+if gsed --version 2>/dev/null | grep -q "GNU sed" ; then
+    # This is for Mac OS X. The default 'sed' is BSD-like.
+    SED=gsed
+elif sed --version 2>/dev/null | grep -q "GNU sed" ; then
+    # On Linux or Windows we have GNU tools by default.
+    SED=sed
+else
     echo "We need a GNU sed !" >&2
     exit 1
 fi
 
 DEST="$(cd "$(dirname "$0")" ; pwd)/Os_application_dependent_code.c"
 
-DIFF="$(which diff)"
+if diff --version 2>/dev/null | grep -q "GNU diffutils" ; then
+    DIFF=diff
+else
+    DIFF=
+fi
 if [ -n "$DIFF" -a -e "$DEST" ] ; then
     REAL_DEST="$DEST"
     DEST="$DEST.tmp"
@@ -57,7 +65,7 @@ EOF
 
 PROJECT_DIR_NAME="$(basename "$(cd "$(dirname "$0")/../" ; pwd)")"
 cd "$(dirname "$0")/../../"
-find "$PROJECT_DIR_NAME" -iname "*.c" -exec "$SED" -ne '/^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s\)/,/^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ { s§^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s.*$\)§\n\n\/\/ from file {}:\n§ ; /^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ !p }' {} \; >>"$DEST"
+find "$PROJECT_DIR_NAME" -iname "*.c" -exec "$SED" -ne '/^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s\)/,/^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ { s§^#ifdef\s*APPLICATION_DEPENDENT_CODE\($\|\s.*$\)§\n\n\/\/ from file {}:\n§ ; /^#\(else\|endif\)\s*\/\/\s*end of APPLICATION_DEPENDENT_CODE\($\|\s\)/ !p ; }' {} \; >>"$DEST"
 
 if [ -n "$DEST" -a -n "$REAL_DEST" ] ; then
     if "$DIFF" "$DEST" "$REAL_DEST" >/dev/null ; then
