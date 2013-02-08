@@ -85,8 +85,6 @@ StatusType Os_Schedule(void)
 	// Work with a local copy of the volatile os_nextTaskId variable
 	TaskType tempTaskId = os_nextTaskId;
 	
-	tempTaskId = _dec_wrap(tempTaskId);
-	
 	for (uint8_t i = 0; i < OS_NUMBER_OF_TCBS; i++)
 	{
 		// Search first ready task beginning from os_lastTaskId downcounting
