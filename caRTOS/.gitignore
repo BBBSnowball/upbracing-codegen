@@ -2,6 +2,8 @@ Debug
 Release
 default
 *.suo
+*.atsuo
+*.avrsuo
 caRTOS.atsuo
 .DS_Store
 ._*
