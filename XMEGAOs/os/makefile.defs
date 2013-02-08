@@ -1,4 +1,0 @@
-# make sure that Os_application_dependent_code.c is compiled and linked
-ifeq ($(findstring config/Os_application_dependent_code.o,$(OBJS)),)
-	OBJS += config/Os_application_dependent_code.o
-endif
