@@ -1,5 +1,15 @@
 #!/bin/sh
 
+if avr-gcc --version | grep -q WinAVR ; then
+    echo "This script doesn't work on Windows because WinAVR neither has 'sed' nor a"
+    echo "working 'which'."
+    echo "WARN: Os_application_dependent_code.c won't be updated. If you have changed or"
+    echo "      updated any code that should go into it, you must update it manually."
+
+    # exit with a success status, so we don't break the build
+    exit 0
+fi
+
 SED="$(which gsed)"
 if [ -z "$SED" ] ; then
     SED="$(which sed)"
@@ -11,7 +21,7 @@ fi
 
 DEST="$(cd "$(dirname "$0")" ; pwd)/Os_application_dependent_code.c"
 
-DIFF="`which diff`"
+DIFF="$(which diff)"
 if [ -n "$DIFF" -a -e "$DEST" ] ; then
     REAL_DEST="$DEST"
     DEST="$DEST.tmp"
