@@ -5,50 +5,30 @@
  *  Author: peer
  */ 
 
-//#define PROGRAM_MODE TEST_SYNC_QUEUE
-#define PROGRAM_MODE KRISHNA_204b6f
+// You can use this #define to disable the semaphores. The test
+// should fail, if you do so!
+//#define DISABLE_SEMAPHORES
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
+
 #include "Os.h"
-#include "drivers/USART.h"
-#include "drivers/Gpio.h"
-#include "semaphores/semaphore.h"
-#include "internal/Os_Error.h"
-#include "Os_cfg_application.h"
-#include "Os_cfg_features.h"
+#include <IPC/queue.h>
+#include <internal/Os_Error.h>
 
+#include <rs232.h>
 
-volatile uint8_t j = 1;
-volatile uint8_t shift = 0;
-
-#if PROGRAM_MODE == TEST_SYNC_QUEUE
-//SEMAPHORE(led,1,4);
-SEMAPHORE_N(led,5,1);
-#elif PROGRAM_MODE == KRISHNA_204b6f
-SEMAPHORE(led,1,4);
-//SEMAPHORE_N(led,5,1);
-#endif
-
-QUEUE(ipc,10,1,2);
+QUEUE(our_queue,10,1,2);
 
 int main(void)
 {	
-	// Init GPIO: (demo: DDRA = 0xFF)
-	GpioInit();
+	// Init GPIO: all leds on
+	DDRA  = 0xFF;
 	PORTA = 0xFF;
-	
-	// Init the USART (57600 8N1)
-	USARTInit(8);
-	
-	// NOTE(Peer):
-	// DO NOT enable Interrupts here
-	// StartOs will call Os_StartFirstTask.
-	// Os_StartFirstTask will enable interrupts when system is ready.
-	// If we enable interrupts now, the first timer tick
-	// most likely comes too early if the timer freq is high enough.
-	//// Globally enable interrupts
-	//sei();
+
+	// init USART (9600 baud, 8N1)
+	usart_init();
 	
 	// Init Os
 	StartOS();
@@ -59,73 +39,49 @@ int main(void)
 
 TASK(Update)
 {
-	sem_token_t led_token1, read_token, queue_token2, led_tokens[10] ;
-	BOOL see, look;
-	char data[3];
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(6, "Update");
-
-	#elif PROGRAM_MODE == KRISHNA_204b6f
+	sem_token_t queue_token2;
+	
+	char data[5];
 	
 	/*ASYNCHRONOUS QUEUES*/	
-	queue_token2 = queue_start_dequeue(ipc,2);
-	while (queue_continue_dequeue(ipc,queue_token2) == FALSE)
+	queue_token2 = queue_start_dequeue(our_queue,2);
+	while (queue_continue_dequeue(our_queue,queue_token2) == FALSE)
 	{
 	}
-	if (queue_continue_dequeue(ipc,queue_token2) == TRUE)
+	if (queue_continue_dequeue(our_queue,queue_token2) == TRUE)
 	{
-		queue_finish_dequeue(ipc,queue_token2,2,&data);
+		queue_finish_dequeue(our_queue,queue_token2,2,&data);
 		usart_send_str(&data);
-		//USARTEnqueue(3,&data);
+		
 	}
 
-	#else
-	#endif
-	
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Increment)
 {
-	sem_token_t led_token2, free_token1, queue_token1;
-	BOOL check;
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(10, "Increment\n");
+	sem_token_t queue_token1;
 	
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-
-	/*ASYNCHRONOUS QUEUES*/
-
- 	queue_token1 = queue_start_enqueue(ipc,2);
-	while (queue_continue_enqueue(ipc,queue_token1) == FALSE)
+ 	queue_token1 = queue_start_enqueue(our_queue,2);
+	while (queue_continue_enqueue(our_queue,queue_token1) == FALSE)
  	{
  	}
- 	if (queue_continue_enqueue(ipc,queue_token1) == TRUE)
+ 	if (queue_continue_enqueue(our_queue,queue_token1) == TRUE)
  	{
- 		queue_finish_enqueue(ipc,queue_token1,2,"OK");
+ 		queue_finish_enqueue(our_queue,queue_token1,2,"OK");
  	}
 
-
-	#else
-	#endif
-	
 	// Terminate this task
 	TerminateTask();
 }
 
 TASK(Shift)
 {
+	sem_token_t queue_token3;
 	
-	#if PROGRAM_MODE == TEST_SYNC_QUEUE
-
-	USARTEnqueue(5,"Shift");
-
-	#elif PROGRAM_MODE == KRISHNA_204b6f
-	#else
-	#endif
+	queue_token3 = queue_start_enqueue(our_queue,5);
+	queue_abort_enqueue(our_queue, queue_token3);
 	
 	// Terminate this task
 	TerminateTask();

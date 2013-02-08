@@ -31,18 +31,24 @@ QUEUE(usart,USART_TRANSMIT_QUEUE_LENGTH,1,OS_NUMBER_OF_TCBS_DEFINE-1);
 QUEUE_EXTERNAL(usart);
 #endif
 
+// UBRR = F_CPU/16/BAUD - 1
+// 9600 Baud, 8MHz
+//#define UBRR_VALUE 51
+
+#define UBRR_VALUE ((F_CPU) / 16 / 9600 - 1)
+
+
 // Static initialization with 9600 Baud and 1 Stop Bit
 void USARTInit(uint16_t ubrr_value)
 {
-	// Set baud rate
-	UBRR0L = ubrr_value;
-	UBRR0H = (ubrr_value>>8);
-
-	// Flow control: 8 Bits, 1 Stop Bit, No Parity
-	UCSR0C = (1<<UCSZ01) | (1<<UCSZ00);
-
-	// Enable the receiver and transmitter
-	UCSR0B=(1<<RXEN0)|(1<<TXEN0);
+	UBRRxH = (UBRR_VALUE >> 8);
+	UBRRxL = (UBRR_VALUE & 0xff);
+	// normal mode
+	UCSRxA = 0;
+	// set frame format 8N1
+	UCSRxC = (1<<UCSZx0) | (1<<UCSZx1);
+	// enable RX and TX
+	UCSRxB = (1<<RXENx) | (1<<TXENx);
 }
 
 // This function enqueues <length> bytes for transmit
@@ -55,12 +61,12 @@ void USARTEnqueue(uint8_t length, const char * text)
 TASK(UsartTransmit)
 {
 	// Check, if Transmitter is ready:
-	if (UCSR0A & (1<<UDRE0))
+	if (UCSRxA & (1<<UDREx))
 	{
 		char c;
 		// This blocks, if there is no char ready to read!
 		c = queue_dequeue(usart);
-		UDR0 = c;
+		UDRx = c;
 	}
 	TerminateTask();
 }
