@@ -1,10 +1,19 @@
 #!/bin/sh
 
+if ruby --version &>/dev/null ; then
+    # We have Ruby :-)
+    # => use the Ruby script instead, as it works on Windows
+    #    and has better error messages
+    ruby "$(dirname "$0")/Os_application_dependent_code.c.rb"
+fi
+
 if avr-gcc --version | grep -q WinAVR ; then
-    echo "This script doesn't work on Windows because WinAVR neither has 'sed' nor a"
-    echo "working 'which'."
-    echo "WARN: Os_application_dependent_code.c won't be updated. If you have changed or"
-    echo "      updated any code that should go into it, you must update it manually."
+    echo "This script doesn't work on Windows because WinAVR neither has 'sed' nor a"     >&2
+    echo "working 'which'."                                                               >&2
+    echo "WARN: Os_application_dependent_code.c won't be updated. If you have changed or" >&2
+    echo "      updated any code that should go into it, you must update it manually."    >&2
+    echo "NOTE: You can use the Ruby script instead. If ruby.exe was on the PATH, I"      >&2
+    echo "      would call it for you."                                                   >&2
 
     # exit with a success status, so we don't break the build
     exit 0
