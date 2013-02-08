@@ -10,8 +10,3 @@ endif
 
 # add the caRtos library
 LIBS += -lcaRtos-$(FEATURES_MD5)
-
-# make sure that Os_cfg_application.c is compiled and linked to the application
-ifeq ($(findstring Os_cfg_application.o,$(OBJS)),)
-	OBJS += Os_cfg_application.o
-endif
