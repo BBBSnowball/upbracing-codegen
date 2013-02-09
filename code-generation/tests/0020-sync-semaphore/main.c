@@ -19,7 +19,7 @@
 
 #include <rs232.h>
 
-SEMAPHORE(our_semaphore, 1, 4);
+SEMAPHORE(our_semaphore, 1, 3);
 
 int main(void)
 {	
@@ -30,11 +30,39 @@ int main(void)
 	// init USART (9600 baud, 8N1)
 	usart_init();
 	
+	// make sure the USART works
+	// (and PC can check that it has the right test)
+	usart_send_str("sync-semaphore test\r\n");
+
+	// wait for the PC
+	while (usart_recv() != 's')
+		usart_send('?');
+
+	// enable USART receive interrupts
+	UCSRxB |= (1<<RXCIE0);
+
 	// Init Os
 	StartOS();
 
 	//NOTE: Since OS is used, program will never get here!
     while(1);
+}
+
+// USART receive interrupt
+#if (USE_USART_NUMBER == 0)
+ISR(USART0_RX_vect) {
+#elif (USE_USART_NUMBER == 1)
+ISR(USART1_RX_vect) {
+#endif
+	if (UDRx == 'e') {
+		usart_send_str("stopped");
+
+		// don't send any further data
+		// We simply make sure that the program
+		// cannot continue.
+		// (interrupts are disabled in an interrupt handler)
+		while (1);
+	}
 }
 
 TASK(Update)

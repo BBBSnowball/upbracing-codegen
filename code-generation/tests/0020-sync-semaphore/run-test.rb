@@ -17,7 +17,12 @@ $helper.first_serial.ensure_baudrate 9600
 
 $helper.flash_processor
 
-x = $helper.first_serial.expect_regex "(Update|Increment\\r\\n|Shift){#{wait_for_n_strings}}", timeout
+$helper.first_serial.expect_regex ".?sync-semaphore test\\r\\n"
+
+# start it
+$helper.first_serial.write "s"
+
+x = $helper.first_serial.expect_regex "^(Update|Increment\\r\\n|Shift){#{wait_for_n_strings}}", timeout
 text = x.group.to_s
 
 counts = strings.map { |str| text.scan(str).length }
@@ -38,6 +43,6 @@ strings.zip(frequency, counts) do |string, freq, count|
 end
 $helper.messages.info "The counts are within the accepted bounds (+/- 20%%)." if ok
 
-# We cannot tell the processor to stop sending stuff, so we have to erase it.
-#NOTE The framework would do this for us, but we shouldn't rely on that.
-$helper.erase_processor
+# stop it
+$helper.first_serial.write "e"
+$helper.first_serial.expect_regex ".{0,300}stopped"
