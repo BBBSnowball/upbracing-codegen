@@ -20,7 +20,7 @@
 #include <rs232.h>
 #include <common.h>
 
-SEMAPHORE_N(our_semaphore, 4, 1);
+SEMAPHORE_N(our_semaphore, 1, 4);
 
 int main(void)
 {	
