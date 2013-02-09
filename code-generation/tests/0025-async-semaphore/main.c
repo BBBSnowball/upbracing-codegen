@@ -176,8 +176,3 @@ TASK(Shift)
 	// Terminate this task
 	TerminateTask();
 }
-
-void OS_error(OS_ERROR_CODE error)
-{
-	usart_send_str("error");
-}

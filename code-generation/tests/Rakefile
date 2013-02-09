@@ -443,6 +443,7 @@ class Project
 					rm features_header_for_build
 
 					puts "finished building caRTOS: md5=#{md5}, configuration = #{configuration}"
+					#TODO We have to make sure that this triggers the linker...
 				end
 			else
 				puts "INFO: Not linking with caRTOS because the feature file hasn't been generated."
@@ -1762,8 +1763,9 @@ end
 class ProjectWithCommon < Project
 	@@common_libraries = {
 		"rs232" => { :sources => ["rs232.c", "rs232-helpers.c"] },
-    "rs232_headers" => { },
-		"can"   => { :sources => ["can_at90_ref.c"] }
+    	"rs232_headers" => { },
+		"can"   => { :sources => ["can_at90_ref.c"] },
+		"os_errors_on_usart" => { :sources => ["usart_OS_error.c"] }
 	}
 
 	def initialize
