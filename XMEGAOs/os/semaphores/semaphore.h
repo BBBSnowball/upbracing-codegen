@@ -92,7 +92,7 @@ typedef struct Semaphore_n{
 	Semaphore_n_queue_entry queue [1];
 } Semaphore_n;
 
-#define SEMAPHORE_N(name , queue_capacity, initial_value ) \
+#define SEMAPHORE_N(name, initial_value, queue_capacity) \
 	struct type_for_##name##_SEM_n { Semaphore_n sem; Semaphore_n_queue_entry rest_of_queue[(queue_capacity)-1+1]; } name##_SEM \
 		= { { (initial_value), OS_TASKTYPE_MAX, (initial_value), 0, 0, (queue_capacity)+1 } }
 //#define SEMAPHORE_REF_N(name) SEMAPHORE_REF(name)
