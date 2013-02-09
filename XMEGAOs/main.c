@@ -21,10 +21,10 @@ volatile uint8_t shift = 0;
 
 #if PROGRAM_MODE == TEST_SYNC_QUEUE
 //SEMAPHORE(led,1,5);
-SEMAPHORE_N(led,5,1);
+SEMAPHORE_N(led,1,5);
 #elif PROGRAM_MODE == KRISHNA_204b6f
 SEMAPHORE(led,1,5);
-//SEMAPHORE_N(led,5,1);
+//SEMAPHORE_N(led,1,5);
 #endif
 
 QUEUE(ipc,10,1,2);

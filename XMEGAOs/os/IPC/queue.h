@@ -24,8 +24,8 @@ typedef struct
 		struct type_for_##name##_QUEUE { Queue q; uint8_t rest_q_queue[(capacity)-1]; } name##_QUEUE \
 			= { { 0, 0, (capacity), 0 } }; \
 		SEMAPHORE(name##_QUEUE_MUTEX, 1, (reader_count)+(writer_count)); \
-		SEMAPHORE_N(name##_QUEUE_FREE, (writer_count), (capacity)); \
-		SEMAPHORE_N(name##_QUEUE_AVAILABLE, (reader_count), 0)
+		SEMAPHORE_N(name##_QUEUE_FREE, (capacity), (writer_count)); \
+		SEMAPHORE_N(name##_QUEUE_AVAILABLE, 0, (reader_count))
 
 #define QUEUE_EXTERNAL(name) \
 		extern struct type_for_##name##_QUEUE { Queue q; } name##_QUEUE; \
