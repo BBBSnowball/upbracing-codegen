@@ -161,7 +161,7 @@ TASK(Shift)
 	// mix it with asynchronous access
 #	ifndef DISABLE_SEMAPHORES
 	sem_wait(our_semaphore);
-#	endif DISABLE_SEMAPHORES
+#	endif
 	
 	// report that we finished our test cases
 	// (we're still within a critical section, so
@@ -171,7 +171,7 @@ TASK(Shift)
 	// leave critical section
 #	ifndef DISABLE_SEMAPHORES
 	sem_signal(our_semaphore);
-#	endif DISABLE_SEMAPHORES
+#	endif
 
 	// Terminate this task
 	TerminateTask();
