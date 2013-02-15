@@ -127,6 +127,7 @@ TASK(Increment)
 TASK(Shift)
 {
 	sem_token_t led_token3, led_token4;
+	sem_token_t led_token5;
 
 	// abort a wait
 	led_token3 = sem_start_wait_n(our_semaphore, 1);
@@ -157,6 +158,10 @@ TASK(Shift)
 	while ( ! sem_continue_wait_n(our_semaphore, led_token3) )
 		;
 	sem_abort_wait_n(our_semaphore, led_token3);
+	
+	// abort an uninitialized token
+	// NOTE: This MUST result in an error
+	sem_abort_wait(our_semaphore, led_token5);
 
 	// mix it with asynchronous access
 #	ifndef DISABLE_SEMAPHORES
