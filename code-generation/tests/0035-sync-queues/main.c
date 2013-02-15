@@ -26,7 +26,7 @@
 // 'largest' requests are at the front of the
 // reader and writer waiting queues. We need at
 // least (write_max + read_max - 1) bytes.
-QUEUE(our_queue, 15, 2, 2);
+QUEUE(our_queue, 15, 3, 2);
 // mutex for sending serial data
 SEMAPHORE(mutex, 1, 2);
 
@@ -44,8 +44,8 @@ int main(void)
 	usart_send_str("sync-queues test\r\n");
 
 	// wait for the PC
-	//while (usart_recv() != 's')
-	//	usart_send('?');
+	while (usart_recv() != 's')
+		usart_send('?');
 
 	// enable USART receive interrupts
 	UCSRxB |= (1<<RXCIE0);
