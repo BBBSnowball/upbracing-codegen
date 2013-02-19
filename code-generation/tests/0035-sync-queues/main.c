@@ -20,7 +20,7 @@
 #include <rs232.h>
 #include <rs232-helpers.h>
 
-// queue for 13 chars, 2 readers, 2 writers
+// queue for 13 chars, 3 readers, 2 writers
 // We need enough space to avoid deadlocks, i.e.
 // the program mustn't deadlock, if the two
 // 'largest' requests are at the front of the
