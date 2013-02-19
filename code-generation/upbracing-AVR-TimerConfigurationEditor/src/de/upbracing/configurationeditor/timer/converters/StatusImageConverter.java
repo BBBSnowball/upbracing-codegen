@@ -1,6 +1,7 @@
 package de.upbracing.configurationeditor.timer.converters;
 
 import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -22,7 +23,15 @@ public class StatusImageConverter implements IConverter {
 	 * Loads the images for error, warning and ok statuses.
 	 */
 	public StatusImageConverter() {
-		okImage = Activator.getImageDescriptor("./images/icon_ok.gif").createImage();
+		ImageDescriptor imageDescriptor = Activator.getImageDescriptor("./images/icon_ok.gif");
+		if (imageDescriptor != null)
+			okImage = imageDescriptor.createImage();
+		else
+			// fallback in case we cannot load the image file
+			// (I don't know how to solve the problem, so I add this workaround.)
+			okImage = PlatformUI.getWorkbench().
+				getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+		
 		errorImage = PlatformUI.getWorkbench().
 				getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
 		warningImage = PlatformUI.getWorkbench().
