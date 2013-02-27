@@ -190,10 +190,10 @@ sem_token_t _sem_start_wait_n (Semaphore_n* sem, uint8_t n);
 #define sem_continue_wait_n(sem, token) _sem_continue_wait_n(SEMAPHORE_REF_N(sem), token)
 BOOL _sem_continue_wait_n (Semaphore_n* sem, sem_token_t token );
  
-#define sem_finish_wait_n(sem, token) _sem_finish_wait_n(SEMAPHORE_REF(sem), (token))
+#define sem_finish_wait_n(sem, token) _sem_finish_wait_n(SEMAPHORE_REF_N(sem), (token))
 uint8_t _sem_finish_wait_n(Semaphore_n* sem, sem_token_t token);
 
-#define sem_abort_wait_n(sem, token) _sem_abort_wait_n(SEMAPHORE_REF(sem), (token))
+#define sem_abort_wait_n(sem, token) _sem_abort_wait_n(SEMAPHORE_REF_N(sem), (token))
 void _sem_abort_wait_n(Semaphore_n* sem, sem_token_t token);
 
 
