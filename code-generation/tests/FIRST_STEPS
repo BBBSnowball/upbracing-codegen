@@ -2,6 +2,11 @@ How to setup our projects on Windows
 
 1. install JDK (Java Development Kit; JRE is not enough!)
 2. install Eclipse with GMF and Eugenia (Software\Eclipse)
+  If you want to compile our plugins, do it like this:
+  a) Download "Eclipse Modelling Tools", Indigo (Juno might work, as well)
+  b) in Eclipse: Help -> Install Modelling Components (not available in a normal Eclipse)
+     install JET and Graphical Modelling Framework (GMF)
+  c) install Eugenia and Emfatic
 3. add AVR-Eclipse plugin (eclipse-plugins-3rdPart.zip)
 4. import most projects in the code-generation folder
    java-parser-tools
