@@ -34,7 +34,8 @@ public final class TestHelpers {
 			String name, Map<String, Object> global_vars) throws ScriptException {
 		return CodeGenerationMain.loadConfig(
 				Util.getResourceStream(TestHelpers.class, name),
-				name, null, global_vars);
+				Util.getResourceURLForJRuby(TestHelpers.class, name),
+				null, global_vars);
 	}
 	
 	public static void assertListEquals(Collection<?> expected, Collection<?> actual) {

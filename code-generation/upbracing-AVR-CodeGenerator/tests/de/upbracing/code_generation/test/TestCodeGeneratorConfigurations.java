@@ -54,7 +54,7 @@ public class TestCodeGeneratorConfigurations {
 		CodeGeneratorConfigurations config = new CodeGeneratorConfigurations();
 		engine.put("config", config);
 		
-		engine.eval("require 'config-helpers.rb'");
+		engine.eval("require 'de/upbracing/code_generation/ruby/config-helpers.rb'");
 		
 		engine.put(ScriptEngine.FILENAME, "TestCodeGeneratorConfigurations#testJRuby");
 		

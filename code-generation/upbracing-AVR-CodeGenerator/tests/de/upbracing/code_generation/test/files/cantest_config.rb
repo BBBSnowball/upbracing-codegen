@@ -1,8 +1,16 @@
+# create temporary copies of the xml file, as we cannot load it from the JAR file
+# (works for the DBC file because we load it with the JRuby File class)
+require 'tempfile'
+xmlfile = Tempfile.new(["ecu-list-cantest", ".xml"])
+begin
+xmlfile.write JRubyHelpers.readResource("de/upbracing/code_generation/test/files/ecu-list-cantest.xml")
+xmlfile.close
 
-ecus = read_ecu_list("ecu-list-cantest.xml")
+
+ecus = read_ecu_list(xmlfile.path)
 $config.ecus = ecus
 
-$config.can = parse_dbc("cantest.dbc")
+$config.can = parse_dbc("classpath:/de/upbracing/code_generation/test/files/cantest.dbc")
 NL = $config.can.NL
 
 $config.selectEcu("Lenkrad-Display")
@@ -67,3 +75,9 @@ $config.can.getMessage("CockpitBrightness").getSignal("CockpitRPMBrightness").af
 # set expected factors to avoid warnings
 can_config('signal(Temp_Wasser)', 'expected_factor', Rational(10, 1))
 can_config('signal(Boardspannung)', 'expected_factor', Rational(10, 1))
+
+  
+ensure
+  xmlfile.close
+  xmlfile.unlink
+end

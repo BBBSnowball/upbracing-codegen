@@ -486,7 +486,7 @@ public final class CodeGenerationMain {
 		for (Entry<String, Object> pair : global_vars.entrySet())
 			engine.put(pair.getKey(), pair.getValue());
 		
-		engine.eval("require 'config-helpers.rb'");
+		engine.eval("require 'de/upbracing/code_generation/ruby/config-helpers.rb'");
 		
 		// go to directory of the script
 		String old_pwd = null;
