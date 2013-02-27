@@ -59,7 +59,7 @@ typedef enum {
 	// asynchronous semaphore operation
 	OS_ERROR_SEM_INVALID_TOKEN,
 
-	// a character has been dropeed because the
+	// a character has been dropped because the
 	// receive queue is full
 	// (raised by fast USART driver)
 	OS_ERROR_USART_RX_OVERFLOW,
