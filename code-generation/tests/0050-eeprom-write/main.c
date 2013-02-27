@@ -16,8 +16,8 @@
 //#include "semaphore.h"
 //#include "Os_Error.h"
 #include "gen/eeprom_accessors.h"
-#include "D:\coll\project\program\program\code-generation\tests\common\rs232.h"
-#include "D:\coll\project\program\program\code-generation\tests\common\rs232-helpers.h"
+#include "rs232.h"
+#include "rs232-helpers.h"
 
 volatile uint8_t j = 1;
 volatile uint8_t shift = 0;
