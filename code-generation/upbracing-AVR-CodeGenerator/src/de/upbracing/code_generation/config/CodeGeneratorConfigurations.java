@@ -459,6 +459,12 @@ public class CodeGeneratorConfigurations {
 				StateChangeListener<T> ext) {
 			CodeGeneratorConfigurations.removeStateChangeListener(state, ext);
 		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <ITEM> void addListState(ConfigState<List<ITEM>> state) {
+			this.<List<ITEM>>addState(state, (Class<List<ITEM>>)(Object)List.class);
+		}
 	}
 	
 	private static Set<Class<?>> done_config_providers = new HashSet<Class<?>>();

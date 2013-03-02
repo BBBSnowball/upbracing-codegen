@@ -6,11 +6,15 @@ import de.upbracing.dbc.DBC;
 public class CANConfigProvider implements IConfigProvider {
 	public static final ConfigState<DBCConfig> STATE_W = new ConfigState<DBCConfig>("can");
 	public static final ReadableConfigState<DBCConfig> STATE = STATE_W.readonly();
+	public static final ConfigState<String> USE_CAN_NODE = new ConfigState<String>("use_can_node");
 	
 	@Override
 	public void extendConfiguration(RichConfigurationExtender ext) {
 		ext.addState(STATE_W, DBCConfig.class);
 		ext.addProperty("can", STATE_W);
+		
+		ext.addState(USE_CAN_NODE, String.class);
+		ext.addProperty("use_can_node", USE_CAN_NODE);
 		
 		ext.addMethods(CANConfigProvider.class);
 	}
