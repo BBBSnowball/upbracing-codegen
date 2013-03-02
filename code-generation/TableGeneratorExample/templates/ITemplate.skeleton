@@ -1,0 +1,8 @@
+public class CLASS implements de.upbracing.code_generation.ITemplate {
+  /* (non-javadoc)
+    * @see IGenerator#generate(Object)
+    */
+  public String generate(de.upbracing.code_generation.config.CodeGeneratorConfigurations config, Object generator_data) {
+    return "";
+  }
+}

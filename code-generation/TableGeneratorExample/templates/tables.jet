@@ -1,0 +1,40 @@
+<%@ jet
+	package="fred"
+	class="TablesTemplate"
+	skeleton="ITemplate.skeleton"
+	imports="" %>
+/*
+ * tables.h
+ *
+ * This file defines the features the the Timers should have.
+ * 
+ * NOTE: This file was generated and should not be altered manually!
+ */
+
+<%
+for (TableConfig table : config.getState(TableConfigProvider.STATE)) {
+%>
+
+typedef struct {
+<% for (int i=0;i<table.getNames().size();i++) { %>
+	<%= table.getTypes().get(i) %> <%= table.getNames().get(i) %>;
+<% } %>
+} <%= table.getName() %>_t;
+
+<%= table.getName() %>_t <%= table.getName() %>[] = {
+<%
+for (Object[] data : table.getData()) {
+	stringBuffer.append("\n\t{ ");
+	for (int j=0;j<data.length;j++) {
+		if (j > 0)
+			stringBuffer.append(", ");
+		stringBuffer.append(data[j]);
+	}
+	stringBuffer.append(" },");
+}
+%>
+};
+
+<%
+}
+%>
