@@ -8,6 +8,7 @@ CodeGeneratorConfigurations = Java::de::upbracing::code_generation::config::Code
 ConfigurationExtender       = Java::de::upbracing::code_generation::config::ConfigurationExtender
 
 # include all helpers
-["config-object", "pins", "pins-from-eagle", "statemachine", "rtos", "can"].each do |name|
+["config-object", "pins", "pins-from-eagle",
+    "statemachine", "statemachine-dsl", "rtos", "can"].each do |name|
   require "#$ruby_helpers_package/#{name}.rb"
 end

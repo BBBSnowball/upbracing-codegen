@@ -1,10 +1,15 @@
 package de.upbracing.code_generation.test;
 
+import java.util.Collections;
+
+import javax.script.ScriptException;
+
 import org.eclipse.emf.common.util.URI;
 import org.junit.Test;
 
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.StatemachinesConfigProvider;
+import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 public class TestStatemachineGenerator {
@@ -49,5 +54,20 @@ public class TestStatemachineGenerator {
 		
 		GeneratorTester gen = new GeneratorTester(new StatemachineGenerator(), config);
 		gen.testTemplates("expected_results/statemachines/testTwoStatemachines");
+	}
+	
+	@Test
+	public void testStatemachineDSL() throws ScriptException {
+		testStatemachineWithConfig("files/statemachine1.rb", "testCounterStatemachine");
+		testStatemachineWithConfig("files/statemachine2.rb", "testCounterStatemachine");
+	}
+
+	private void testStatemachineWithConfig(String configfile, String resultname) throws ScriptException {
+		CodeGeneratorConfigurations config = TestHelpers.loadConfigFromRessource(
+				configfile,
+				Collections.<String,Object>emptyMap());
+
+		GeneratorTester gen = new GeneratorTester(new StatemachineGenerator(), config);
+		gen.testTemplates("expected_results/statemachines/" + resultname);
 	}
 }
