@@ -3,6 +3,8 @@ package de.upbracing.code_generation;
 import java.io.IOException;
 import java.util.Collection;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.apache.commons.cli.CommandLine;
@@ -32,6 +34,7 @@ public class Main {
 		opts.addOption("h", "help", false, "Print this help");
 		opts.addOption("C", "directory", true, "Generate files in directory");
 		opts.addOption("T", "temp-directory", true, "Put intermediate files in this directory");
+		opts.addOption("c", "check-config", false, "Only load the configuration file");
 		
 		// parse the program arguments
 		Arguments config = new Arguments();
@@ -55,6 +58,8 @@ public class Main {
 		config.setTargetDirectory(cmd.getOptionValue('C', "."));
 		
 		config.setTempDirectory(cmd.getOptionValue('T', config.getTargetDirectory()));
+		
+		boolean only_check_config = cmd.hasOption('c');
 		
 		// configuration file should be the only left-over argument
 		args = cmd.getArgs();
@@ -93,6 +98,10 @@ public class Main {
 		
 		// load config file
 		CodeGeneratorConfigurations mcu_config = loadConfig(config);
+		
+		if (only_check_config) {
+			return;
+		}
 		
 		// generate the files
 		if (!runGenerators(mcu_config, config.getTargetDirectory()))

@@ -518,6 +518,15 @@ public final class CodeGenerationMain {
 		return config;
 	}
 	
+	private static InputStream openFile(String path) throws FileNotFoundException {
+		if (!path.startsWith("classpath:/"))
+			return new FileInputStream(path);
+		else {
+			path = path.substring("classpath:/".length());
+			return CodeGenerationMain.class.getClassLoader().getResourceAsStream(path);
+		}
+	}
+	
 	/**
 	 * load a JRuby configuration file
 	 * 
@@ -528,7 +537,7 @@ public final class CodeGenerationMain {
 	 */
 	public static CodeGeneratorConfigurations loadConfig(String file) throws FileNotFoundException, ScriptException {
 		return loadConfig(
-				new FileInputStream(file),
+				openFile(file),
 				file,
 				new File(file).getAbsoluteFile().getParent(),
 				Collections.<String,Object>emptyMap());
@@ -545,8 +554,10 @@ public final class CodeGenerationMain {
 	public static CodeGeneratorConfigurations loadConfig(Arguments config) throws FileNotFoundException, ScriptException {
 		String file = config.getConfigFile();
 		String script_cwd = new File(file).getAbsoluteFile().getParent();
+		if (file.startsWith("classpath:/"))
+			script_cwd = ".";
 		return loadConfig(
-				new FileInputStream(file),
+				openFile(file),
 				file,
 				script_cwd,
 				Collections.<String,Object>singletonMap("tempdir",
