@@ -15,6 +15,7 @@ import de.upbracing.code_generation.utils.Util;
 import static de.upbracing.code_generation.common.Times.formatTime;
 import static de.upbracing.code_generation.fsm.model.StateMachineForGeneration.*;
 
+/** generates the code for statemachines.c */
 //NOTE This used to be a JET template, but I was using stringBuffer.append(...) anyway and with code completion it's MUCH easier :-)
 public class StatemachinesCFileTemplate implements ITemplate {
 
@@ -25,6 +26,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return result;
 	}
 
+	/** print a warning */
 	public void warn(StringBuffer stringBuffer, String message) {
 		stringBuffer.append("\n#warning ");
 		stringBuffer.append(message);
@@ -36,6 +38,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 	 * 
 	 * @see IGenerator#generate(Object)
 	 */
+	/// main generator method (entry point)
 	public String generate(CodeGeneratorConfigurations config, Object generator_data) {
 		final StringBuffer stringBuffer = new StringBuffer();
 		stringBuffer.append("/*\n * statemachines.c\n *\n * This file defines all statemachines.\n *\n"
@@ -89,9 +92,15 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		this.smg = null;
 		this.existing_action_methods = null;
 
+		// for convenience we use normal '\n' in the generator code,
+		// so we have to fix the newlines before returning the string
+		// (on Windows it should be "\r\n")
 		return Util.fixNL(stringBuffer.toString());
 	} // end of method generate(...)
 
+	/** print errors and warnings from validation and preprocessing,
+	 * so they appear in the generated code
+	 */
 	private void printWarningsAndErrors(StringBuffer stringBuffer,
 			Messages messages) {
 		if (!messages.isEmpty()) {
@@ -103,6 +112,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** print the code of all global code boxes */
 	private void generateCodeForGlobalCodeBoxes(
 			final StringBuffer stringBuffer, StatemachinesConfig statemachines) {
 		stringBuffer.append('\n');
@@ -129,6 +139,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** generate appropriate macros for locking */
 	private void generateLockMacros(final StringBuffer stringBuffer,
 			StatemachinesConfig statemachines) {
 		stringBuffer.append('\n');
@@ -185,6 +196,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** generate the type declaration and variable declaration for
+	 * the statemachine data (StateVariables) */
 	private void generateStatemachineData(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg) {
 		stringBuffer.append('\n');
@@ -207,6 +220,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append(statemachine_root_data_type + " " + container.name + ";\n");
 	}
 
+	/** generate typedef for state variable type */
 	private void generateCodeForNamedTypesInContainer(
 			VariableContainer container) {
 		
@@ -225,6 +239,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** generate part of the type declaration for state variables */
 	private void generateCodeForVariableContainer(String indent, VariableContainer container) {
 		if (container instanceof AllOf)
 			stringBuffer.append("struct");
@@ -260,6 +275,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append(indent + "}");
 	}
 
+	/** generate a function for each non-empty action (e.g. ENTER for state1) */
 	private void generateActionFunctions(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg) {
 		stringBuffer.append('\n');
@@ -271,6 +287,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		generateActionFunctions(stringBuffer, smg, smg.getStateMachine());
 	}
 
+	/** generate a function for each non-empty action (e.g. ENTER for state1) */
 	private void generateActionFunctions(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg,
 			StateParent parent) {
@@ -307,6 +324,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** generate the init function for the statemachine */
 	private void generateInitFunction(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg) {
 		stringBuffer.append('\n');
@@ -346,6 +364,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append("}\n");
 	}
 
+	/** get the name of the state variable */
 	private String getStateVariableName(StateParent containing_state) {
 		StateVariable state_variable = smg.getStateVariables()
 				.getVariable(containing_state, StateVariablePurposes.STATE);
@@ -354,6 +373,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return state_variable.getRealName();
 	}
 
+	/** generate the tick function for the statemachine */
 	private void generateTickFunction(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg,
 			StateParent parent) {
@@ -368,6 +388,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		generateEventFunction(null, parent, smg.getEvents().get(""));
 	}
 
+	/** generate all event functions for the statemachine */
 	private void generateEventFunctions(final StringBuffer stringBuffer,
 			StateMachineForGeneration smg, StateParent parent) {
 		stringBuffer.append('\n');
@@ -386,21 +407,27 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/// the string buffer we use for code generation
 	private StringBuffer stringBuffer;
+	/// the statemachine that is active
 	private StateMachineForGeneration smg;
+	/// action methods that exist (We use it to avoid calls to non-existing/empty methods.)
 	private Set<String> existing_action_methods;
 
+	/** print n copies of the string */
 	@SuppressWarnings("unused")
 	private void times(int n, String s) {
 		for (int i = 0; i < n; i++)
 			stringBuffer.append(s);
 	}
 
+	/** print n copies of the character */
 	private void times(int n, char c) {
 		for (int i = 0; i < n; i++)
 			stringBuffer.append(c);
 	}
 
+	/** print a normal banner (3 lines of comments around the message) */
 	private void banner(String message) {
 		int width = 50;
 		int padding = 4;
@@ -428,6 +455,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 	}
 
+	/** print a bigger banner (5 lines of comments around the message) */
 	private void hugeBanner(String message) {
 		int width = 50;
 		int padding = 4;
@@ -465,6 +493,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append('\n');
 	}
 
+	/** select all actions with that type */
 	private List<Action> filterActionsByType(List<Action> actions,
 			ActionType type) {
 		List<Action> actions2 = new LinkedList<Action>();
@@ -474,6 +503,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return actions2;
 	}
 
+	/** get the name of the action method */
 	private String actionMethod(State state, ActionType actionType) {
 		String state_name = getFullStateName(state);
 		
@@ -481,20 +511,24 @@ public class StatemachinesCFileTemplate implements ITemplate {
 				+ actionType.toString().toLowerCase();
 	}
 
+	/** get the state name */
 	private String stateName(State state) {
 		return smg.stateName(state);
 	}
 
+	/** get the name of the time variable */
 	public static String timeVariableForState(StateMachineForGeneration smg,
 			StateWithActions state) {
 		return smg.getName() + ".state_time";
 	}
 
+	/** get the name of the time variable */
 	@SuppressWarnings("unused")
 	private String timeVariableForState(StateWithActions state) {
 		return timeVariableForState(smg, state);
 	}
 
+	/** format and print the actions */
 	private boolean printActions(String indent, List<Action> actions) {
 		boolean printedSomething = false;
 		int i = 0;
@@ -506,11 +540,13 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return printedSomething;
 	}
 
+	/** format and print the action */
 	@SuppressWarnings("unused")
 	private boolean printActions(String indent, Action action) {
 		return printActions(indent, Arrays.asList(action));
 	}
 	
+	/** print everything that should happen while the state remains active */
 	private boolean executeDuringState(String indent, State state) {
 		boolean printedCode = false;
 		
@@ -523,6 +559,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return printedCode;
 	}
 
+	/** print everything that should happen for that transition */
 	private void executeTransition(String indent, Transition trans) {
 		stringBuffer.append(indent + "// " + getName(trans.getSource()) + " -> " + getName(trans.getDestination()) + "\n");
 		
@@ -588,6 +625,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** get all parents of state up to but not including common_parent */
 	private List<StateWithActions> getStatesBelow(State state,
 			StateScope common_parent) {
 		List<StateWithActions> parents = new LinkedList<StateWithActions>();
@@ -601,6 +639,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return parents;
 	}
 
+	/** print actions that should happen for the state self,
+	 * if the transition source->destination occurs
+	 * bottom_up == true:  start with the children
+	 * bottom_up == false: start with the state
+	 */
 	private void printActionsForStateAndChildren(String indent, ActionType type, State self,
 			State source, State destination, boolean bottom_up) {
 		if (!bottom_up) {
@@ -614,6 +657,11 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** print actions that should happen for the state self,
+	 * if the transition source->destination occurs
+	 * bottom_up == true:  start with the children
+	 * bottom_up == false: start with the state
+	 */
 	private void printActionsForChildren(String indent, ActionType type, State self, State source,
 			State destination, boolean bottom_up) {
 		if (self instanceof SuperState) {
@@ -641,12 +689,15 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** print initial actions for the state and all children */
 	private void printInitialActionsForStateAndChildren(String indent, ActionType type, State self) {
 		printActionsForState(indent, type, self, null, self);
 		
 		printInitialActionsForChildren(indent, type, self);
 	}
 
+	/** print actions that should happen for the state self,
+	 * if the transition source->destination occurs */
 	private void printActionsForState(String indent, ActionType type,
 			State self, State source, State destination) {
 		String actionMethodName = actionMethod(self, type);
@@ -654,11 +705,13 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			printCode(indent, actionMethodName + "();\n");
 	}
 
+	/** print initial actions for all children */
 	private void printInitialActionsForChildren(String indent, ActionType type, State self) {
 		if (self instanceof StateParent)
 			printInitialActionsForChildren(indent, type, (StateParent)self);
 	}
 
+	/** print initial actions for all children */
 	private void printInitialActionsForChildren(String indent, ActionType type, StateParent self) {
 		if (self instanceof SuperState) {
 			SuperState superstate = (SuperState) self;
@@ -688,6 +741,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		}
 	}
 
+	/** format a piece of action code */
 	private boolean printCode(String indent, String code, boolean inline) {
 		if (code == null)
 			return false;
@@ -721,10 +775,12 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return true;
 	}
 
+	/** format a piece of action code */
 	private boolean printCode(String indent, String code) {
 		return printCode(indent, code, false);
 	}
 
+	/** generate the function for an event; if event is null, this is the tick function */
 	private void generateEventFunction(String event, StateParent parent, Iterable<Transition> transitions) {
 		String sm_name = smg.getName();
 		if (transitions == null)
@@ -748,6 +804,8 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append("}\n");
 	}
 
+	/** generate a switch-case that handles the event according to the
+	 * current state of parent */
 	private void generateEventSwitchCase(String indent, String event,
 			StateParent parent, Iterable<Transition> transitions) {
 		//TODO If this is a nested switch-case, a previous one might
@@ -840,6 +898,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		stringBuffer.append(indent + "}\n");
 	}
 
+	/** add trace code (debug output), if enabled */
 	private boolean genTrace(int level, String indent, String message) {
 		if (!smg.shouldPrintTraceForLevel(level))
 			return false;
@@ -863,6 +922,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return true;
 	}
 
+	/** return the complete state name including parents */
 	public static String getFullStateName(StateScope state) {
 		if (state instanceof StateMachine)
 			return null;
@@ -877,6 +937,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 			throw new IllegalArgumentException("Expecting a StateMachine or something with a name (a state or region)");
 	}
 
+	/** does any statemachine use an interrupt? */
 	private boolean anyStatemachineUsesInterrupts(
 			StatemachinesConfig statemachines) {
 		if (!statemachines.getInterruptUserCode().isEmpty())
@@ -890,6 +951,7 @@ public class StatemachinesCFileTemplate implements ITemplate {
 		return false;
 	}
 
+	/** generate interrupt handlers - they simply call the appropriate event */
 	private void generateISRFunctions(StringBuffer stringBuffer,
 			StatemachinesConfig statemachines) {
 		Map<String, String> interrupt_user_code = statemachines.getInterruptUserCode();
