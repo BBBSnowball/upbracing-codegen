@@ -265,6 +265,10 @@ TASK(<%= list.get(0).getName() %>) { //<%= taskDescription %>
 	}
 }
 %>
+
+// include code for CAN library
+#include "can_at90.c"
+
 <% messages.summarizeForCode(stringBuffer); %>
 
 <%

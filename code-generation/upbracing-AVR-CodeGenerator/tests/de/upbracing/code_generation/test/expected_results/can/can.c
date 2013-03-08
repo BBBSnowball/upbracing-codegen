@@ -376,6 +376,10 @@ TASK(CockpitBrightness) { //period: 333333 us. Task for message CockpitBrightnes
 	TerminateTask();
 }
 
+// include code for CAN library
+#include "can_at90.c"
+
+
 #warning There were 4 warnings and/or errors
 /*
 WARN:  The program expects a different formula for converting the signal Druck_Ansaug to physical units. Automatic adjustment is not supported, yet:
