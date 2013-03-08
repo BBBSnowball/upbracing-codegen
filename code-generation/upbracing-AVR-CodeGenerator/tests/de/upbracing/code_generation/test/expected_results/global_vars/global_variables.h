@@ -12,6 +12,22 @@
 
 #include <stdint.h>
 
+// definitions for critical sections, if you're not using caRTOS
+#ifndef USE_CARTOS
+#	ifndef OS_ENTER_CRITICAL
+#		define OS_ENTER_CRITICAL()                          \
+			asm volatile("in __tmp_reg__, __SREG__" :: );   \
+			asm volatile("cli" :: );                        \
+			asm volatile("push __tmp_reg__" :: )
+#	endif // not defined OS_ENTER_CRITICAL
+
+#	ifndef OS_EXIT_CRITICAL
+#		define OS_EXIT_CRITICAL()                           \
+			asm volatile("pop __tmp_reg__" :: );            \
+			asm volatile("out __SREG__, __tmp_reg__" :: )
+#	endif // not defined OS_EXIT_CRITICAL
+#endif	// not defined USE_CARTOS
+
 
 //////////////////////////
 ///  global variables  ///
