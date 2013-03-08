@@ -27,7 +27,6 @@ if (GlobalVariableConfigProvider.get(config).getDeclarations().isEmpty()
 <% } else { %>
 
 #include <stdint.h>
-#include <Os.h>
 
 <%
 
