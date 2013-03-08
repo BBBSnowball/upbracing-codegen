@@ -5,8 +5,13 @@
 #);
 
 def current_can_ecu
-  return $config.current_ecu && $config.current_ecu.node_name \
-    && $config.can.getEcu($config.current_ecu.node_name)
+  if $config.use_can_node
+    $config.can.getEcu($config.use_can_node)
+  elsif $config.current_ecu && $config.current_ecu.node_name
+    $config.can.getEcu($config.current_ecu.node_name)
+  else
+    nil
+  end
 end
 
 def find_can_object(objspec, search_global = false)
@@ -35,7 +40,7 @@ def find_can_object(objspec, search_global = false)
 
   elsif v_SIGNAL_REGEX =~ objspec
     name = $1
-    msg_name = $2
+    msg_name = $3
     
     if msg_name
       return $config.can.getMessage(msg_name).getSignal(name)
