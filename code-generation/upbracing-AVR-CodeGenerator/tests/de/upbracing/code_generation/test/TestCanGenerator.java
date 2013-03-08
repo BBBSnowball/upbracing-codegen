@@ -74,7 +74,7 @@ public class TestCanGenerator {
 		dbc.getValueTables().put("boolean", valTable);		
 		
 		//Ecu
-		DBCEcu ecu = new DBCEcu("Lenkrad-Display");
+		DBCEcu ecu = new DBCEcu("LenkradDisplay");
 		ecu.setComment("Test Comment");
 		ecu.setRxMsgs(new ArrayList<DBCMessage>());
 		ecu.setRxSignals(new ArrayList<DBCSignal>());

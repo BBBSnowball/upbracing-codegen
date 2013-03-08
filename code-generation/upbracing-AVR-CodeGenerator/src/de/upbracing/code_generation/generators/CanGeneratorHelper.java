@@ -2,8 +2,14 @@ package de.upbracing.code_generation.generators;
 
 import java.util.List;
 
+import de.upbracing.code_generation.config.CANConfigProvider;
+import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
+import de.upbracing.code_generation.config.DBCConfig;
+import de.upbracing.code_generation.config.DBCEcuConfig;
 import de.upbracing.code_generation.config.DBCMessageConfig;
+import de.upbracing.code_generation.config.ECUListProvider;
 import de.upbracing.dbc.DBCMessage;
+import de.upbracing.eculist.ECUDefinition;
 
 /**
  * Helper functions for the CAN code generator
@@ -100,5 +106,54 @@ public class CanGeneratorHelper {
 		}
 		
 		return result;
+	}
+
+	/** get config for the CAN node that the user has selected
+	 * 
+	 * @param config the config object
+	 * @param required print an error, if there is a can config, but no node has been selected?
+	 * @return config for the selected node
+	 */
+	public static DBCEcuConfig getActiveEcuConfig(CodeGeneratorConfigurations config, boolean required) {
+		DBCConfig can_config = config.getState(CANConfigProvider.STATE);
+		if (can_config == null)
+			return null;
+		
+		DBCEcuConfig dbcEcu = null;
+		
+		String node_name = config.getState(CANConfigProvider.USE_CAN_NODE);
+		if (node_name != null) {
+			dbcEcu = (DBCEcuConfig)can_config.getEcu(node_name);
+			
+			if (dbcEcu == null)
+				config.getMessages().error("Couldn't find CAN node '%s' (referenced by $config.use_node_name)", node_name);
+			
+			return dbcEcu;
+		}
+		
+		ECUDefinition current_ECU = config.getState(ECUListProvider.STATE_CURRENT_ECU);
+		if (current_ECU == null) {
+			if (required)
+				config.getMessages().error("You should select an Ecu or set $config.use_can_node");
+			return null;
+		}
+		
+		node_name = current_ECU.getNodeName();
+		if (node_name != null)
+			dbcEcu = (DBCEcuConfig)can_config.getEcu(node_name);
+
+		if (dbcEcu == null) {
+			//If node name fails, try normal name
+			dbcEcu = (DBCEcuConfig)can_config.getEcu(current_ECU.getName());
+			
+			if (dbcEcu != null && node_name != null)
+				// node name is set, but invalid - we found it using the normal name
+				config.getMessages().warn("node name '%s' is invalid, so we used the normal name '%s' to find the CAN node", node_name, current_ECU.getName());
+		}
+		
+		if (dbcEcu == null)
+			config.getMessages().error("Could not find the CAN definition for this ecu.");
+		
+		return dbcEcu;
 	}
 }

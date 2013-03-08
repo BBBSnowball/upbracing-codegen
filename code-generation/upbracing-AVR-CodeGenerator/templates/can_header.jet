@@ -9,39 +9,19 @@
 
 boolean run_generator = true;
 
-de.upbracing.eculist.ECUDefinition current_ecu = config.getState(ECUListProvider.STATE_CURRENT_ECU);
 DBCConfig can_config = config.getState(CANConfigProvider.STATE);
+DBCEcuConfig dbcEcu = CanGeneratorHelper.getActiveEcuConfig(config, false);
 
 if (can_config == null) {
 	run_generator = false;
 %>// not generating CAN code because DBC file hasn't been provided
 // use $config.can = parse_dbc(dbc_file)
 <%
-} else if (current_ecu == null) {
+} else if (dbcEcu == null) {
 	run_generator = false;
 %>// not generating CAN code because no ECU has been selected
-// use $config.selectEcu(name)
+// use $config.selectEcu("ECU name") or $config.can_use_node = "node name"
 <%
-}
-
-// if we still want to run, check the name
-DBCEcuConfig dbcEcu = null;
-if (run_generator) {
-	// find ecu by its node name (the one meant for lookup in the DBC file)
-	DBCEcu dbcEcu_ = can_config.getEcus().get(current_ecu.getNodeName());
-	
-	// use the normal name as backup
-	if (dbcEcu_ == null)
-		dbcEcu_ = can_config.getEcus().get(current_ecu.getName());
-	
-	// check, whether we have a config
-	if (dbcEcu_ != null) {
-		dbcEcu = (DBCEcuConfig) dbcEcu_;
-	} else {
-		run_generator = false;
-	%>#error The DBC file doesn't have an ECU with name '<%= current_ecu.getNodeName() %>'
-	<%
-	}
 }
 
 
@@ -50,10 +30,12 @@ if (run_generator) {
 	Messages messages = new Messages().withOutputTo(System.err);
 	
 %>
-#ifndef CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
-#define CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
+#ifndef CAN_<%= dbcEcu.getName().toUpperCase() %>_DEFS_H_
+#define CAN_<%= dbcEcu.getName().toUpperCase() %>_DEFS_H_
 
+<% if (config.getState(ECUListProvider.STATE_CURRENT_ECU) != null) { %>
 #define ECU_NODE_ID <%=config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeId()%>
+<% } %>
 
 <%
 String hdecls = config.getState(CANConfigProvider.STATE).getHeaderDeclarations();
@@ -568,7 +550,7 @@ inline static void send_<%=msgconfig.getName()%>_nowait(<%= params.isEmpty() ? "
 }
 %>
 
-#endif	// defined CAN_<%= config.getState(ECUListProvider.STATE_CURRENT_ECU).getNodeName().toUpperCase() %>_DEFS_H_
+#endif	// defined CAN_<%= dbcEcu.getName().toUpperCase() %>_DEFS_H_
 <% messages.summarizeForCode(stringBuffer); %>
 
 <%
