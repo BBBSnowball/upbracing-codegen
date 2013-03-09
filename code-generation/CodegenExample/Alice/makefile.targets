@@ -1,0 +1,4 @@
+# the new code generator for config.rb
+#CODE_GENERATOR_DIR=../../../dist
+CODE_GENERATOR_DIR=../../../upbracing-AVR-CodeGenerator
+include $(CODE_GENERATOR_DIR)/makefile.targets-inc

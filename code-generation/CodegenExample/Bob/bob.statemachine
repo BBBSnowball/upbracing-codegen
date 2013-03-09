@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine:StateMachine xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:statemachine="http://www.upbracing.de/code_generation/statemachine" basePeriod="100ms">
+  <transitions source="//@states.2" destination="//@states.0"/>
+  <transitions source="//@states.0" destination="//@states.1" transitionInfo="suggested"/>
+  <transitions source="//@states.1" destination="//@states.0" transitionInfo="decline&#xA;/ send_AcceptMeeting_wait(false);"/>
+  <transitions source="//@states.1" destination="//@states.0" transitionInfo="Alice_cancelled"/>
+  <transitions source="//@states.3/@regions.0/@states.0" destination="//@states.3/@regions.0/@states.1" transitionInfo="[time_left() &lt; 14]"/>
+  <transitions source="//@states.3" destination="//@states.0" transitionInfo="Alice_cancelled"/>
+  <transitions source="//@states.3" destination="//@states.0" transitionInfo="cancel /&#xA;send_CancelMeeting_wait(0);"/>
+  <transitions source="//@states.1" destination="//@states.3" transitionInfo="accept /&#xA;send_AcceptMeeting_wait(true);"/>
+  <transitions source="//@states.3/@regions.0/@states.2" destination="//@states.3/@regions.0/@states.0"/>
+  <transitions source="//@states.1" destination="//@states.1" transitionInfo="wait(500ms) /&#xA;  TOGGLE(LED4);"/>
+  <transitions source="//@states.3/@regions.0/@states.1" destination="//@states.3/@regions.0/@states.1" transitionInfo="wait(300ms) /&#xA;  TOGGLE(LED5);"/>
+  <transitions source="//@states.0" destination="//@states.0" transitionInfo="request / send_RequestMeeting_wait(42);"/>
+  <transitions source="//@states.3" destination="//@states.0" transitionInfo="[time_left() &lt; 0]"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.0 //@transitions.2 //@transitions.3 //@transitions.5 //@transitions.6 //@transitions.11 //@transitions.12" outgoingTransitions="//@transitions.1 //@transitions.11" actions="ENTER / LED_OUTPUT();&#xA;ENTER / SET_LED('B');" name="no_meeting"/>
+  <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.1 //@transitions.9" outgoingTransitions="//@transitions.2 //@transitions.3 //@transitions.7 //@transitions.9" actions="ENTER_NOT_FROM_SELF / HIGH(LED4);&#xA;EXIT_NOT_TO_SELF / LOW(LED4);" name="meeting_suggested"/>
+  <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.0"/>
+  <states xsi:type="statemachine:SuperState" incomingTransitions="//@transitions.7" outgoingTransitions="//@transitions.5 //@transitions.6 //@transitions.12" actions="ENTER / HIGH(LED5);" name="meeting_planned">
+    <regions name="region">
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.8" outgoingTransitions="//@transitions.4" name="not_soon"/>
+      <states xsi:type="statemachine:NormalState" incomingTransitions="//@transitions.4 //@transitions.10" outgoingTransitions="//@transitions.10" actions="EXIT / LOW(LED5);" name="soon"/>
+      <states xsi:type="statemachine:InitialState" outgoingTransitions="//@transitions.8"/>
+    </regions>
+  </states>
+  <globalCodeBoxes name="includes" code="#include &lt;common.h>&#xA;#include &quot;pins.h&quot;&#xA;#include &quot;can.h&quot;&#xA;&#xA;inline static int&#xA;time_left(void) {&#xA;    return 42;&#xA;}"/>
+</statemachine:StateMachine>

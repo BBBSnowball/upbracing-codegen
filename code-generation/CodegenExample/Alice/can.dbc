@@ -1,0 +1,19 @@
+VERSION ""
+
+BU_: Alice Bob
+
+BO_ 42 SuggestMeeting: 3 Alice
+ SG_ hour : 0|8@1+ (1,0) [0|0] "" Bob
+ SG_ minute : 8|8@1+ (1,0) [0|0] "" Bob
+ SG_ location : 16|8@1+ (1,0) [0|0] "" Bob
+
+BO_ 43 AcceptMeeting: 1 Bob
+ SG_ accepted : 0|8@1+ (1,0) [0|0] "" Alice
+
+BO_ 44 RequestMeeting: 1 Bob
+ SG_ location : 0|8@1+ (1,0) [0|0] "" Alice
+
+BO_ 45 CancelMeeting: 1 Vector__XXX
+ SG_ reason : 0|8@1+ (1,0) [0|0] "" Alice,Bob
+
+BO_TX_BU_ 45 : Alice,Bob
