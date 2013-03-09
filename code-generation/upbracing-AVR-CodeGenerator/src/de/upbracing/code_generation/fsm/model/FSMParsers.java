@@ -50,7 +50,12 @@ public final class FSMParsers {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
 		
-		return (List<Action>)getParser().parse("state-actions", text + "\n");
+		try {
+			return (List<Action>)getParser().parse("state-actions", text + "\n");
+		} catch (ParserException e) {
+			throw new ParserException("'" + text + "' is not valid as state action (" +
+					e.getMessage() + ")", e);
+		}
 	}
 
 	/** parse transition text
@@ -74,7 +79,12 @@ public final class FSMParsers {
 		// we cannot use newlines in the editor, so we use '###' to simulate it
 		text = text.replace("###", "\n");
 
-		return (TransitionInfo)getParser().parse("transition-info", text);
+		try {
+			return (TransitionInfo)getParser().parse("transition-info", text);
+		} catch (ParserException e) {
+			throw new ParserException("'" + text + "' is not valid as state action (" +
+					e.getMessage() + ")", e);
+		}
 	}
 	
 	private static Matcher getStateActionTypeMatcher() {
