@@ -1,0 +1,35 @@
+#NOTE When make dies without printing an error, it may be because of a bug in make:
+#     http://savannah.gnu.org/bugs/index.php?15110
+#     You can run make with "-d" parameter to get LOTS of output.
+
+CODE_GENERATOR_BIN=$(CODE_GENERATOR_DIR)/run
+TARGET_DIR=../gen
+CODE_GENERATOR=$(CODE_GENERATOR_BIN) -C $(TARGET_DIR) $(CONFIG)
+
+ifeq ($(wildcard ../config.rb),../config.rb)
+	CONFIG := ../config.rb
+else
+  ifeq ($(words $(wildcard ../config-*.rb)),1)
+  	CONFIG := $(wildcard ../config-*.rb)
+  else
+    ifeq ($(words $(wildcard ../*.rb)),1)
+      CONFIG := $(wildcard ../*.rb)
+    else
+      # we couldn't find a configuration file :-(
+    endif
+  endif
+endif
+
+ifdef CONFIG
+
+# before we build any objects (thus compile C files), we must generate the code
+$(OBJS): $(shell $(CODE_GENERATOR) -w)
+
+# rule to execute the code generator
+CODE_GEN_DUMMY=$(TARGET_DIR)/last_gen_time
+$(shell $(CODE_GENERATOR) -w): $(CODE_GEN_DUMMY)
+
+$(CODE_GEN_DUMMY): $(CONFIG) $(shell $(CODE_GENERATOR) -D)
+	$(CODE_GENERATOR) && touch $(CODE_GEN_DUMMY)
+
+endif
