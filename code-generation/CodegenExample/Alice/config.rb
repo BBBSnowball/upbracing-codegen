@@ -1,6 +1,45 @@
-# load the DBC file
-#DEPENDS ON:
-$config.can = parse_dbc("can.dbc")
+# You can either load the DBC file or use the Ruby DSL.
+use_dbc_file = true
+
+if use_dbc_file
+  # load the DBC file
+  #DEPENDS ON:
+  $config.can = parse_dbc("can.dbc")
+else
+  # don't use a DBC file and define the protocol in this file
+  $config.can = empty_dbc do
+    alice = create_ecu "Alice"
+    bob   = create_ecu "Bob"
+  
+    # create_message(name, id, :standard/:extended, length)
+    create_message "SuggestMeeting", 42, :standard, 3 do
+      create_signal "hour"
+      create_signal "minute", :start => 8
+      create_signal "location", :start => 16
+      
+      sent_by alice
+      all_signals_received_by bob
+    end
+    
+    create_message "AcceptMeeting", 43, :standard do
+      sent_by bob
+      
+      create_signal "accepted" do received_by alice end
+    end
+    
+    create_message "RequestMeeting", 44, :standard do
+      sent_by bob
+      
+      create_signal "location" do received_by alice end
+    end
+    
+    create_message "CancelMeeting", 45, :standard do
+      sent_by alice, bob
+      
+      create_signal "reason" do received_by alice, bob end
+    end
+  end
+end
 # select messages for Alice
 $config.use_can_node = "Alice"
 
