@@ -21,20 +21,6 @@
 //                simply use the next one.
 //NOTE(Krishna):  Global tokens have been disabled and semaphore specific tokens have been declared.
 
-//struct  
-//{
-	//uint8_t token_count; // the count of how many tokens have been given out
-	////NOTE(Benjamin): This is always the first ID which is not used for a task. Therefore, you
-	////                can use the constant OS_NUMBER_OF_TCBS.
-	////                It cannot be 9000, if you use a uint8_t.
-	//uint8_t token_base_value; //= 9000, the first token value
-	////NOTE(Benjamin): This is always the maximum of the numeric type
-	//uint8_t token_limit; // = 255, max tokens that can be given out
-	//uint8_t token_array[255]; // array holding tokens
-//}SEM_TOKEN;
-//Global tokens not used.
-//Initialize token_array: 9000-9255
-
 typedef struct { 
 	int8_t count;
 	uint8_t token_count; // = OS_TASKTYPE_MAX
@@ -147,8 +133,8 @@ sem_token_t _sem_start_wait (Semaphore* sem);
 	@return				True, if semaphore granted. False, if semaphore not granted.
 	
 	@detail	Query the state of an asynchronous waiting token . 
-			If the semaphore has been granted to the owner of the token, a non-zero value is returned. In that case , you mustn't use the token again . 
-			If false (or zero ) is returned , you must try again later. It returns true without further action, if the token is zero.
+			If the semaphore has been granted to the owner of the token, a non-zero value is returned. In that case , you mustn't use the token again.
+			If false (zero) is returned, you must try again later (or abort waiting).
 */
 #define sem_continue_wait(sem, token) _sem_continue_wait(SEMAPHORE_REF(sem), (token))
 BOOL _sem_continue_wait (Semaphore* sem , sem_token_t token );

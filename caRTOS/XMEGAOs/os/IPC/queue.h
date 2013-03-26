@@ -19,7 +19,9 @@ typedef struct
 	uint8_t q_queue[1];
 } Queue;
 
-//NOTE(Benjamin): We have to add a parameter - the size of the semaphore queues.
+// define a queue
+// Use this in a source file. Don't use in a header. You can only access the
+// queue from one file.
 #define QUEUE(name, capacity, reader_count, writer_count) \
 		struct type_for_##name##_QUEUE { Queue q; uint8_t rest_q_queue[(capacity)-1]; } name##_QUEUE \
 			= { { 0, 0, (capacity), 0 } }; \
@@ -27,6 +29,8 @@ typedef struct
 		SEMAPHORE_N(name##_QUEUE_FREE, (capacity), (writer_count)); \
 		SEMAPHORE_N(name##_QUEUE_AVAILABLE, 0, (reader_count))
 
+//WARNING: Those macros haven't been tested and we have reason to believe that
+//         they don't work. If you need them, write a test ;-)
 #define QUEUE_EXTERNAL(name) \
 		extern struct type_for_##name##_QUEUE { Queue q; } name##_QUEUE; \
 		SEMAPHORE_EXTERNAL(name##_QUEUE_MUTEX); \
@@ -40,6 +44,7 @@ typedef struct
 		SEMAPHORE_N(name##_QUEUE_AVAILABLE, (reader_count), 0)
 
 
+// get a reference to the queue/an associated semaphore
 #define QUEUE_REF(name)       &name##_QUEUE.q
 #define QUEUE_MUTEX_REF(name) SEMAPHORE_REF(name##_QUEUE_MUTEX)
 #define QUEUE_PROD_REF(name)  SEMAPHORE_REF_N(name##_QUEUE_FREE)
