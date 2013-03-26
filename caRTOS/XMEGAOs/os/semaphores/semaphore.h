@@ -153,18 +153,6 @@ sem_token_t _sem_start_wait (Semaphore* sem);
 #define sem_continue_wait(sem, token) _sem_continue_wait(SEMAPHORE_REF(sem), (token))
 BOOL _sem_continue_wait (Semaphore* sem , sem_token_t token );
 
-/*	@brief	Stop waiting on semaphore
-
-	@param[in]name		Semaphore name whose availability is not needed
-	@param[in]token		Semaphore token of the corresponding semaphore
-	
-	@detail	Stop waiting for a semaphore. 
-			You mustn't use the token after calling this function. 
-			It does nothing , if the token is zero.
-*/
-#define sem_stop_wait(sem, token) _sem_stop_wait(SEMAPHORE_REF(sem), (token))
-void _sem_stop_wait (Semaphore* sem , sem_token_t token );
-
 /*  @brief Finish waiting on a semaphore after using resource
 
 	@param[in]name		Semaphore which is used
