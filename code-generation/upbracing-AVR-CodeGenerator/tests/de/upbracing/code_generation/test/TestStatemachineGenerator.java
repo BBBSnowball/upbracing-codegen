@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import de.upbracing.code_generation.config.CodeGeneratorConfigurations;
 import de.upbracing.code_generation.config.StatemachinesConfigProvider;
-import de.upbracing.code_generation.generators.CanGenerator;
 import de.upbracing.code_generation.generators.StatemachineGenerator;
 
 public class TestStatemachineGenerator {

@@ -1,6 +1,5 @@
 package de.upbracing.code_generation.tests.context;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import de.upbracing.code_generation.tests.TestFailedException;

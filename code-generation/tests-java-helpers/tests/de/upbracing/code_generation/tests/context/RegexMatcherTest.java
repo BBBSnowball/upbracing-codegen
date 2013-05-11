@@ -5,8 +5,6 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -67,7 +65,7 @@ public class RegexMatcherTest {
 			// (We also do that, if an error occurs.)
 			int remaining_len = stream.available();
 			byte buf[] = new byte[remaining_len];
-			int len = stream.read(buf);
+			//int len = stream.read(buf);
 			//assertEquals(remaining_len, len);
 			
 			// check remaining bytes
@@ -146,7 +144,7 @@ public class RegexMatcherTest {
 			// (We also do that, if an error occurs.)
 			int remaining_len = stream.available();
 			byte buf[] = new byte[remaining_len];
-			int len = stream.read(buf);
+			//int len = stream.read(buf);
 			//assertEquals(remaining_len, len);
 			
 			// check remaining bytes
