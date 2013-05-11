@@ -165,64 +165,57 @@
             <srcdir dir="." includes="templates/**/*.jet"/>
         </jet.compile>
     </target>
+    <presetdef name="my.javac">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin"
+                source="${source}" target="${target}" encoding="utf-8"
+                includeantruntime="false">
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+    </presetdef>
     <target depends="init,generate_jet" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        <my.javac>
             <src path="src"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="codegen-framework"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-base-eculist"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-base-variable"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-eeprom"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-timer"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-globalvar"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-can"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-statemachine"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-rtos"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generator-pinname"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="src-gen"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="generators"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        </my.javac>
+        <my.javac>
             <src path="tests"/>
-            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
-        </javac>
+        </my.javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${TableGeneratorExample.location}" inheritAll="false" target="clean"/>
