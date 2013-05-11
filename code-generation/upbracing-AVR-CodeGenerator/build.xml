@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="upbracing-AVR-CodeGenerator">
+    <property environment="env"/>
+    <property name="upbracing-AVR-TimerConfigurationModel.location" value="../upbracing-AVR-TimerConfigurationModel"/>
+    <property name="ECLIPSE_HOME" value="../../../../../../eclipse-pg5"/>
+    <property name="TableGeneratorExample.location" value="../TableGeneratorExample"/>
+    <property name="tests-java-helpers.location" value="../tests-java-helpers"/>
+    <property name="upbracing-AVR-Statemachine-Tester.location" value="../upbracing-AVR-Statemachine-Tester"/>
+    <property name="workspace_loc:tests/0060-statemachines/10-usart" value="../tests/0060-statemachines/10-usart"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="Statemachine.location" value="../StatemachineEditor/Statemachine"/>
+    <property name="java-parser-tools.location" value="../java-parser-tools"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="JUnit 4.libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.junit_4.8.2.v4_8_2_v20110321-1705/junit.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+    </path>
+    <path id="Plug-in Dependencies.libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.core.runtime_3.7.0.v20110110.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.osgi_3.7.2.v20120110-1415.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.common_3.6.0.v20110523.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.core.jobs_3.5.101.v20120113-1953.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.core.runtime.compatibility.registry_3.5.0.v20110505/runtime_registry_compatibility.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.registry_3.5.101.R37x_v20110810-1611.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.preferences_3.4.2.v20120111-2020.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.app_1.3.100.v20110321.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+    </path>
+    <path id="Statemachine.classpath">
+        <pathelement location="${Statemachine.location}/bin"/>
+        <path refid="Plug-in Dependencies.libraryclasspath"/>
+    </path>
+    <path id="java-parser-tools.classpath">
+        <pathelement location="${java-parser-tools.location}/bin"/>
+        <path refid="JUnit 4.libraryclasspath"/>
+    </path>
+    <path id="upbracing-AVR-CodeGenerator.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="libs/jruby-complete-1.7.0.jar"/>
+        <pathelement location="libs/simple-xml-2.6.4.jar"/>
+        <pathelement location="libs/ruby-gems.jar"/>
+        <pathelement location="libs/commons-cli-1.2.jar"/>
+        <pathelement location="libs/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="libs/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="libs/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="libs/guava-13.0.1.jar"/>
+        <path refid="JUnit 4.libraryclasspath"/>
+        <path refid="Statemachine.classpath"/>
+        <path refid="java-parser-tools.classpath"/>
+        <pathelement location="${upbracing-AVR-TimerConfigurationModel.location}/dist/de.upbracing.timer.configurationmodel.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <!--
+        src-gen won't exist before we compile the JET templates and there will be only Java files
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src-gen">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        -->
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="tests">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="codegen-framework">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-can">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-eeprom">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-timer">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-globalvar">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-statemachine">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-rtos">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-base-variable">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-pinname">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="generator-base-eculist">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+        <delete dir="src-gen/*"/>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${Statemachine.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${java-parser-tools.location}" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${Statemachine.location}" inheritAll="false" target="build-project">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+        <ant antfile="build.xml" dir="${java-parser-tools.location}" inheritAll="false" target="build-project">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <!-- TODO I would like to only build it, if the target is not up-to-date -->
+    <target name="generate_jet">
+        <!-- http://wiki.eclipse.org/JET_FAQ_How_to_I_compile_JET_templates_in_a_headless_build -->
+        <!-- https://bugs.eclipse.org/bugs/show_bug.cgi?id=210447 -->
+        <property name="projectDescriptionLocation" location=".project" />
+        <upbracing.addproject path="${projectDescriptionLocation}" />
+
+        <!-- javac sometimes fails because it uses some files with JET2Context and JET2Writer. This
+             happens (almost?) every time, if the jet.compile is directly before the javac task.
+             It seems to work, if we put it into a dedicated task. If it still fails sometimes, we
+             could try running jet.compile twice. -->
+        <jet.compile project="${ant.project.name}" destdir="src-gen" >
+            <srcdir dir="." includes="templates/**/*.jet"/>
+        </jet.compile>
+    </target>
+    <target depends="init,generate_jet" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="codegen-framework"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-base-eculist"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-base-variable"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-eeprom"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-timer"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-globalvar"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-can"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-statemachine"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-rtos"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generator-pinname"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="src-gen"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="generators"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="tests"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${TableGeneratorExample.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${TableGeneratorExample.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+        <ant antfile="build.xml" dir="${tests-java-helpers.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${tests-java-helpers.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+        <ant antfile="build.xml" dir="${upbracing-AVR-Statemachine-Tester.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${upbracing-AVR-Statemachine-Tester.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="TestPinGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestPinGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestCanGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestCanGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestGlobalVariableGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestGlobalVariableGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestStatemachineGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestStatemachineGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestCodeGeneratorConfigurations">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestCodeGeneratorConfigurations" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestPinsFromEagle">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestPinsFromEagle" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="Main">
+        <java classname="de.upbracing.code_generation.Main" failonerror="true" fork="yes">
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="TestParsers">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.fsm.model.TestParsers" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="FSMParsers">
+        <java classname="de.upbracing.code_generation.fsm.model.FSMParsers" failonerror="true" fork="yes">
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="TestCommonHeaderGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestCommonHeaderGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestParsers (1)">
+        <java classname="de.upbracing.code_generation.fsm.model.TestParsers" failonerror="true" fork="yes">
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="TestParsers (2)">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.fsm.model.TestParsers" todir="${junit.output.dir}"/>
+            <jvmarg line="-agentlib:hprof=cpu=samples,depth=10,thread=y"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestStateNameValidation">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestStateNameValidation" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="AllTests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.AllTests" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestMessages">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestMessages" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestUtils">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestUtils" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="TestRTOSGenerator">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.test.TestRTOSGenerator" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="Run">
+        <java classname="de.upbracing.code_generation.Main" failonerror="true" fork="yes">
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="Ruby IRB for Config">
+        <java classname="de.upbracing.code_generation.Main" failonerror="true" fork="yes">
+            <arg line="-T tmp classpath:/run-irb.rb"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="CodeGen tests statemachines-usart">
+        <java classname="de.upbracing.code_generation.Main" dir="${workspace_loc:tests/0060-statemachines/10-usart}" failonerror="true" fork="yes">
+            <env key="CODE_GENERATOR_DIR" value="${CODE_GENERATOR_DIR_VARIABLE}"/>
+            <env key="CARTOS_DIR" value="${CARTOS_DIR_VARIABLE}"/>
+            <arg line="-C gen -T bin config.rb"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </java>
+    </target>
+    <target name="tests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="de.upbracing.code_generation.fsm.model.TestParsers" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.AllTests" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestCanGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestCodeGeneratorConfigurations" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestEepromGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestGlobalVariableGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestMessages" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestPinGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestPinsFromEagle" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestRTOSGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestStatemachineGenerator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestTable" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.TestUtils" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.AllValidatorTests" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestAssignNames" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestCollapseFinalStates" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestDuplicateNames" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestStateMachineValidator" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestStateNameValidation" todir="${junit.output.dir}"/>
+            <test name="de.upbracing.code_generation.test.statemachine.TestStateTransitions" todir="${junit.output.dir}"/>
+            <classpath refid="upbracing-AVR-CodeGenerator.classpath"/>
+        </junit>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+</project>
