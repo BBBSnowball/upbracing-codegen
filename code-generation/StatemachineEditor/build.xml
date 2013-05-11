@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="feature_export" name="build">
+	THIS DOES NOT WORK YET!!!
+
+	<!-- TODO We really need the other plugins, but Eugenia won't generate them in headless mode :-( -->
+    <property name="StatemachineProjectDescription" location="Statemachine.project" />
+    <upbracing.addproject path="${StatemachineProjectDescription}" />
+
+    <property name="pdlTimerModel" location="../upbracing-AVR-TimerConfigurationModel/.project" />
+    <upbracing.addproject path="${pdlTimerModel}" />
+    <property name="pdlTimerEditor" location="../upbracing-AVR-TimerConfigurationEditor/.project" />
+    <upbracing.addproject path="${pdlTimerEditor}" />
+    <property name="pdlTimerFeature" location="../upbracing-AVR-TimerConfigurationFeature/.project" />
+    <upbracing.addproject path="${pdlTimerFeature}" />
+
+    <property name="pdlAntHelpers" location="../build-helpers/AntHelpers/.project" />
+    <upbracing.addproject path="${pdlAntHelpers}" />
+    <property name="pdlBuildHelpersFeature" location="../build-helpers/upbracing build helpers feature/.project" />
+    <upbracing.addproject path="${pdlBuildHelpersFeature}" />
+
+	<target name="plugin_export">
+		<pde.exportPlugins destination="blub" exportSource="false" exportType="directory" plugins="AntHelpers,Statemachine,Statemachine.edit,Statemachine.editor,Statemachine.tests,upbracing-AVR-TimerConfigurationEditor" useJARFormat="true"/>
+	</target>
+
+	<target name="feature_export">
+		<pde.exportFeatures destination="." exportSource="false" exportType="zip" features="UPBracingAVRTimerConfiguration,UPBracingBuildHelpers,UPBracingStatemachineEditor" filename="EclipsePlugins.zip" useJARFormat="true"/>
+	</target>
+
+	<!-- http://help.eclipse.org/galileo/index.jsp?topic=/org.eclipse.pde.doc.user/tasks/pde_p2_buildtasks.htm -->
+	<!-- http://code.google.com/p/google-dic-view/source/browse/trunk/net.jeeeyul.eclipse.googledic.feature/repository.build.xml?r=93 -->
+	<!--
+	<eclipse.publish.featuresAndBundles repository="file:C:/build/repository" category="file:C:/build/category.xml" >
+		<features dir="C:\eclipse\features\" includes="org.eclipse.cvs_1.1.100.v20090514-7E79FEc9BJ99r9XGQ3CICF"	/>
+		<bundles dir="C:\eclipse\plugins" includes="org.eclipse.cvs_1.0.300.v20090520.jar"	/>
+		<bundles dir="C:\eclipse\plugins" includes="org.eclipse.team.cvs.core_3.3.200.I20090430-0408.jar"	/>
+		<bundles dir="C:\eclipse\plugins" includes="org.eclipse.team.cvs.ssh_3.2.100.I20090508-2000.jar"	/>
+		<bundles dir="C:\eclipse\plugins" includes="org.eclipse.team.cvs.ssh2_3.2.200.I20090508-2000.jar"	/>
+		<bundles dir="C:\eclipse\plugins" includes="org.eclipse.team.cvs.ui_3.3.200.I20090521-1750.jar"	/>
+	</eclipse.publish.featuresAndBundles>
+	-->
+	<!-- right-click on plugin.xml -> PDE Tools -> Generate ANT file -->
+	<!-- There is an ant task called "eclipse.buildscript". This task is used in the pde headless build to generate the build.xml files for the features and plugins. I think that is what you need. -->
+</project>

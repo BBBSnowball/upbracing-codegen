@@ -18,6 +18,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+    <property name="distfolder" location="../dist"/>
     <path id="JUnit 4.libraryclasspath">
         <pathelement location="${ECLIPSE_HOME}/plugins/org.junit_4.8.2.v4_8_2_v20110321-1705/junit.jar"/>
         <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
@@ -149,6 +150,13 @@
                 <propertyref name="build.compiler"/>
             </propertyset>
         </ant>
+        <ant antfile="build.xml" dir="${upbracing-AVR-TimerConfigurationModel.location}" inheritAll="false">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+            <target name="compile"/>
+            <target name="jar"/>
+        </ant>
     </target>
     <!-- TODO I would like to only build it, if the target is not up-to-date -->
     <target name="generate_jet">
@@ -161,6 +169,9 @@
              happens (almost?) every time, if the jet.compile is directly before the javac task.
              It seems to work, if we put it into a dedicated task. If it still fails sometimes, we
              could try running jet.compile twice. -->
+        <jet.compile project="${ant.project.name}" destdir="src-gen" >
+            <srcdir dir="." includes="templates/**/*.jet"/>
+        </jet.compile>
         <jet.compile project="${ant.project.name}" destdir="src-gen" >
             <srcdir dir="." includes="templates/**/*.jet"/>
         </jet.compile>
@@ -431,5 +442,42 @@
             </fileset>
             <report format="frames" todir="${junit.output.dir}"/>
         </junitreport>
+    </target>
+
+    <target name="create_run_jar" depends="build">
+        <property name="libdir" location="libs"/>
+        <mkdir dir="${distfolder}" />
+        <jar destfile="${distfolder}/de.upbracing.code_generation.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="de.upbracing.code_generation.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/jruby-complete-1.7.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/simple-xml-2.6.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/ruby-gems.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/commons-cli-1.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${libdir}/guava-13.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.junit_4.8.2.v4_8_2_v20110321-1705/junit.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+            <fileset dir="${Statemachine.location}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.core.runtime_3.7.0.v20110110.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.osgi_3.7.2.v20120110-1415.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.common_3.6.0.v20110523.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.core.jobs_3.5.101.v20120113-1953.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.core.runtime.compatibility.registry_3.5.0.v20110505/runtime_registry_compatibility.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.registry_3.5.101.R37x_v20110810-1611.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.preferences_3.4.2.v20120111-2020.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.equinox.app_1.3.100.v20110321.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${ECLIPSE_HOME}/plugins/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+            <fileset dir="${java-parser-tools.location}/bin"/>
+            <!-- <zipfileset excludes="META-INF/*.SF" src="${upbracing-AVR-TimerConfigurationModel.location}/dist/de.upbracing.timer.configurationmodel.jar"/> -->
+            <fileset dir="${upbracing-AVR-TimerConfigurationModel.location}/bin"/>
+        </jar>
     </target>
 </project>
